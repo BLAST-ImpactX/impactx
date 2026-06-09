@@ -16,8 +16,9 @@
 
 namespace impactx
 {
+    template<class T_PC>
     void push (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         elements::KnownElements & element_variant,
         int step,
         int period
@@ -32,6 +33,14 @@ namespace impactx
             element(pc, step, period);
         }, element_variant);
     }
+
+    // explicit instantiation for the default precision
+    template void push<ImpactXParticleContainer> (
+        ImpactXParticleContainer &,
+        elements::KnownElements &,
+        int,
+        int
+    );
 
     void push (
         RefPart & ref,

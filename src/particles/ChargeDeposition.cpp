@@ -54,8 +54,9 @@ namespace impactx
         return rho_2d;
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::DepositCharge (
+    ImpactXParticleContainerT<T_PT>::DepositCharge (
         std::unordered_map<int, amrex::MultiFab> & rho,
         amrex::Vector<amrex::IntVect> const & ref_ratio)
     {
@@ -86,7 +87,7 @@ namespace impactx
             {
                 amrex::FArrayBox local_rho_fab;
 
-                using ParIt = ImpactXParticleContainer::iterator;
+                using ParIt = typename ImpactXParticleContainerT<T_PT>::iterator;
                 for (ParIt pti(*this, lev); pti.isValid(); ++pti) {
                     // preparing access to particle data: SoA of Reals
                     auto & AMREX_RESTRICT soa_real = pti.GetStructOfArrays().GetRealData();
@@ -118,7 +119,7 @@ namespace impactx
                     // RZ modes (unused)
                     int const n_rz_azimuthal_modes = 0;
 
-                    ablastr::particles::deposit_charge<ImpactXParticleContainer>
+                    ablastr::particles::deposit_charge<ImpactXParticleContainerT<T_PT>>
                             (pti, wp, charge, ion_lev, &rho_at_level,
                              local_rho_fab,
                              m_particle_shape.value(),
@@ -217,4 +218,10 @@ namespace impactx
             rho_at_level.SumBoundary_finish();
         }
     }
+
+    // explicit template instantiation for the default precision
+    template void
+    ImpactXParticleContainerT<IMPACTX_PARTICLE_REAL>::DepositCharge (
+        std::unordered_map<int, amrex::MultiFab> &,
+        amrex::Vector<amrex::IntVect> const &);
 } // namespace impactx

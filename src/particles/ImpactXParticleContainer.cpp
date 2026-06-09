@@ -44,41 +44,44 @@ namespace
 
 namespace impactx
 {
-    ParIterSoA::ParIterSoA (ContainerType& pc, int level)
-        : amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(pc, level,
-                   amrex::MFItInfo().SetDynamic(do_omp_dynamic())) {}
+    template <class T_PT>
+    ParIterSoAT<T_PT>::ParIterSoAT (ContainerType& pc, int level)
+        : base_t(pc, level, amrex::MFItInfo().SetDynamic(do_omp_dynamic())) {}
 
-    ParIterSoA::ParIterSoA (ContainerType& pc, int level, amrex::MFItInfo& info)
-        : amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(pc, level,
-              info.SetDynamic(do_omp_dynamic())) {}
+    template <class T_PT>
+    ParIterSoAT<T_PT>::ParIterSoAT (ContainerType& pc, int level, amrex::MFItInfo& info)
+        : base_t(pc, level, info.SetDynamic(do_omp_dynamic())) {}
 
-    ParConstIterSoA::ParConstIterSoA (ContainerType& pc, int level)
-        : amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(pc, level,
-              amrex::MFItInfo().SetDynamic(do_omp_dynamic())) {}
+    template <class T_PT>
+    ParConstIterSoAT<T_PT>::ParConstIterSoAT (ContainerType& pc, int level)
+        : base_t(pc, level, amrex::MFItInfo().SetDynamic(do_omp_dynamic())) {}
 
-    ParConstIterSoA::ParConstIterSoA (ContainerType& pc, int level, amrex::MFItInfo& info)
-        : amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(pc, level,
-              info.SetDynamic(do_omp_dynamic())) {}
+    template <class T_PT>
+    ParConstIterSoAT<T_PT>::ParConstIterSoAT (ContainerType& pc, int level, amrex::MFItInfo& info)
+        : base_t(pc, level, info.SetDynamic(do_omp_dynamic())) {}
 
-    ImpactXParticleContainer::ImpactXParticleContainer (initialization::AmrCoreData* amr_core)
-        : amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>(amr_core->GetParGDB())
+    template <class T_PT>
+    ImpactXParticleContainerT<T_PT>::ImpactXParticleContainerT (initialization::AmrCoreData* amr_core)
+        : base_t(amr_core->GetParGDB())
     {
-        SetArena(amrex::The_Arena());
-        SetParticleSize();
-        SetSoACompileTimeNames(
+        this->SetArena(amrex::The_Arena());
+        this->SetParticleSize();
+        this->SetSoACompileTimeNames(
             {RealSoA::names_s.begin(), RealSoA::names_s.end()},
             {IntSoA::names_s.begin(), IntSoA::names_s.end()}
         );
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::SetLostParticleContainer (ImpactXParticleContainer * lost_pc)
+    ImpactXParticleContainerT<T_PT>::SetLostParticleContainer (ImpactXParticleContainerT<T_PT> * lost_pc)
     {
         m_particles_lost = lost_pc;
     }
 
-    ImpactXParticleContainer *
-    ImpactXParticleContainer::GetLostParticleContainer ()
+    template <class T_PT>
+    ImpactXParticleContainerT<T_PT> *
+    ImpactXParticleContainerT<T_PT>::GetLostParticleContainer ()
     {
         if (m_particles_lost == nullptr)
         {
@@ -89,7 +92,8 @@ namespace impactx
         }
     }
 
-    void ImpactXParticleContainer::SetParticleShape (int order) {
+    template <class T_PT>
+    void ImpactXParticleContainerT<T_PT>::SetParticleShape (int order) {
         if (m_particle_shape.has_value())
         {
             throw std::logic_error(
@@ -103,7 +107,8 @@ namespace impactx
         }
     }
 
-    void ImpactXParticleContainer::SetParticleShape ()
+    template <class T_PT>
+    void ImpactXParticleContainerT<T_PT>::SetParticleShape ()
     {
         amrex::ParmParse const pp_algo("algo");
         int v = 0;
@@ -123,26 +128,29 @@ namespace impactx
         SetParticleShape(v);
     }
 
-    void ImpactXParticleContainer::SetBucketLength (amrex::ParticleReal bucket_length)
+    template <class T_PT>
+    void ImpactXParticleContainerT<T_PT>::SetBucketLength (amrex::ParticleReal bucket_length)
     {
         m_bucket_length = bucket_length;
     }
 
+    template <class T_PT>
     amrex::ParticleReal
-    ImpactXParticleContainer::GetBucketLength ()
+    ImpactXParticleContainerT<T_PT>::GetBucketLength ()
     {
         return m_bucket_length;
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::prepare ()
+    ImpactXParticleContainerT<T_PT>::prepare ()
     {
         // make sure we have at least one box with enough tiles for each OpenMP thread
 
         // make sure level 0, grid 0 exists
         int lid = 0, gid = 0;
         {
-            const auto& pmap = ParticleDistributionMap(lid).ProcessorMap();
+            const auto& pmap = this->ParticleDistributionMap(lid).ProcessorMap();
             auto it = std::find(pmap.begin(), pmap.end(), amrex::ParallelDescriptor::MyProc());
             if (it == std::end(pmap)) {
                 amrex::Abort("Particle container needs to have at least one grid.");
@@ -180,23 +188,23 @@ namespace impactx
         }
 
         int n_logical = 0;
-        const auto& ba = ParticleBoxArray(lid);
+        const auto& ba = this->ParticleBoxArray(lid);
         if (!user_set)
         {
-            tile_size = ba[gid].size();
-            n_logical = numTilesInBox(ba[gid], true, tile_size);
+            this->tile_size = ba[gid].size();
+            n_logical = amrex::numTilesInBox(ba[gid], true, this->tile_size);
             int ntry = 0;
             constexpr int max_tries = 10;
             while ((n_logical < nthreads) && (ntry++ < max_tries))
             {
                 int idim = 2 - (ntry % 3);  // alternate between (2, 1, 0)
-                if (tile_size[idim] == 1) { continue; }
-                tile_size[idim] /= 2;
-                n_logical = numTilesInBox(ba[gid], true, tile_size);
+                if (this->tile_size[idim] == 1) { continue; }
+                this->tile_size[idim] /= 2;
+                n_logical = amrex::numTilesInBox(ba[gid], true, this->tile_size);
             }
         } else
         {
-            n_logical = numTilesInBox(ba[gid], true, tile_size);
+            n_logical = amrex::numTilesInBox(ba[gid], true, this->tile_size);
         }
 
         if (n_logical < nthreads)
@@ -209,7 +217,7 @@ namespace impactx
                 );
             }
             std::stringstream sstr_tile_size;
-            sstr_tile_size << tile_size;
+            sstr_tile_size << this->tile_size;
             warning_message.append(
                 "The number of available tiles is " +
                 std::to_string(n_logical) + " with each a size of " + sstr_tile_size.str() +
@@ -232,20 +240,22 @@ namespace impactx
 #endif
         }
 
-        reserveData();
-        resizeData();
+        this->reserveData();
+        this->resizeData();
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::clear (bool keep_mass, bool keep_charge)
+    ImpactXParticleContainerT<T_PT>::clear (bool keep_mass, bool keep_charge)
     {
         this->clearParticles();
         this->reset_beam_moments_history();
         m_refpart.reset(keep_mass, keep_charge);
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::AddNParticles (
+    ImpactXParticleContainerT<T_PT>::AddNParticles (
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & x,
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & y,
         amrex::Gpu::DeviceVector<amrex::ParticleReal> const & t,
@@ -292,7 +302,7 @@ namespace impactx
         // we add particles to lev 0, grid 0
         int lid = 0, gid = 0;
         {
-            const auto& pmap = ParticleDistributionMap(lid).ProcessorMap();
+            const auto& pmap = this->ParticleDistributionMap(lid).ProcessorMap();
             auto it = std::find(pmap.begin(), pmap.end(), amrex::ParallelDescriptor::MyProc());
             if (it == std::end(pmap)) {
                 throw std::runtime_error("AddNParticles: Attempting to add particles to box that does not exist.");
@@ -307,14 +317,14 @@ namespace impactx
 #endif
 
         // split up particles over nthreads tiles
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(numTilesInBox(ParticleBoxArray(lid)[gid], true, tile_size) >= nthreads, "Not enough tiles for the number of OpenMP threads - please try reducing particles.tile_size or increasing the number of cells in the domain.");
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(amrex::numTilesInBox(this->ParticleBoxArray(lid)[gid], true, this->tile_size) >= nthreads, "Not enough tiles for the number of OpenMP threads - please try reducing particles.tile_size or increasing the number of cells in the domain.");
         for (int ithr = 0; ithr < nthreads; ++ithr) {
-            DefineAndReturnParticleTile(lid, gid, ithr);
+            this->DefineAndReturnParticleTile(lid, gid, ithr);
         }
 
-        amrex::Long const pid = ParticleType::NextID();
+        amrex::Long const pid = base_t::ParticleType::NextID();
         amrex::Long const np = np_s;
-        ParticleType::NextID(pid + np);
+        base_t::ParticleType::NextID(pid + np);
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
             pid + np < amrex::LongParticleIds::LastParticleID,
             "ERROR: overflow on particle id numbers"
@@ -342,7 +352,7 @@ namespace impactx
             amrex::Long const my_offset = thread_chunk.offset;
             amrex::Long const num_to_add = thread_chunk.size;
 
-            auto& particle_tile = ParticlesAt(lid, gid, tid);
+            auto& particle_tile = this->ParticlesAt(lid, gid, tid);
             auto old_np = particle_tile.numParticles();
             auto new_np = old_np + num_to_add;
             particle_tile.resize(new_np);
@@ -350,17 +360,18 @@ namespace impactx
             const amrex::Long cpuid = amrex::ParallelDescriptor::MyProc();
 
             auto & soa = particle_tile.GetStructOfArrays().GetRealData();
-            amrex::ParticleReal * const AMREX_RESTRICT x_arr = soa[RealSoA::x].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT y_arr = soa[RealSoA::y].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT t_arr = soa[RealSoA::t].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT px_arr = soa[RealSoA::px].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT py_arr = soa[RealSoA::py].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT pt_arr = soa[RealSoA::pt].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT sx_arr = soa[RealSoA::sx].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT sy_arr = soa[RealSoA::sy].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT sz_arr = soa[RealSoA::sz].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT qm_arr = soa[RealSoA::qm].dataPtr();
-            amrex::ParticleReal * const AMREX_RESTRICT w_arr  = soa[RealSoA::w ].dataPtr();
+            // SoA storage real type is T_PT (single/double); deduce the pointer type
+            auto * const AMREX_RESTRICT x_arr = soa[RealSoA::x].dataPtr();
+            auto * const AMREX_RESTRICT y_arr = soa[RealSoA::y].dataPtr();
+            auto * const AMREX_RESTRICT t_arr = soa[RealSoA::t].dataPtr();
+            auto * const AMREX_RESTRICT px_arr = soa[RealSoA::px].dataPtr();
+            auto * const AMREX_RESTRICT py_arr = soa[RealSoA::py].dataPtr();
+            auto * const AMREX_RESTRICT pt_arr = soa[RealSoA::pt].dataPtr();
+            auto * const AMREX_RESTRICT sx_arr = soa[RealSoA::sx].dataPtr();
+            auto * const AMREX_RESTRICT sy_arr = soa[RealSoA::sy].dataPtr();
+            auto * const AMREX_RESTRICT sz_arr = soa[RealSoA::sz].dataPtr();
+            auto * const AMREX_RESTRICT qm_arr = soa[RealSoA::qm].dataPtr();
+            auto * const AMREX_RESTRICT w_arr  = soa[RealSoA::w ].dataPtr();
 
             uint64_t * const AMREX_RESTRICT idcpu_arr = particle_tile.GetStructOfArrays().GetIdCPUData().dataPtr();
 
@@ -409,66 +420,75 @@ namespace impactx
         amrex::Gpu::streamSynchronize();
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::SetRefParticle (RefPart const & refpart)
+    ImpactXParticleContainerT<T_PT>::SetRefParticle (RefPart const & refpart)
     {
         m_refpart = refpart;
     }
 
+    template <class T_PT>
     RefPart &
-    ImpactXParticleContainer::GetRefParticle ()
+    ImpactXParticleContainerT<T_PT>::GetRefParticle ()
     {
         return m_refpart;
     }
 
+    template <class T_PT>
     RefPart const &
-    ImpactXParticleContainer::GetRefParticle () const
+    ImpactXParticleContainerT<T_PT>::GetRefParticle () const
     {
         return m_refpart;
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::SetRefParticleEdge ()
+    ImpactXParticleContainerT<T_PT>::SetRefParticleEdge ()
     {
         m_refpart.sedge = m_refpart.s;
     }
 
+    template <class T_PT>
     std::tuple<
             amrex::ParticleReal, amrex::ParticleReal,
             amrex::ParticleReal, amrex::ParticleReal,
             amrex::ParticleReal, amrex::ParticleReal>
-    ImpactXParticleContainer::MinAndMaxPositions ()
+    ImpactXParticleContainerT<T_PT>::MinAndMaxPositions ()
     {
         BL_PROFILE("ImpactXParticleContainer::MinAndMaxPositions");
         return ablastr::particles::MinAndMaxPositions(*this);
     }
 
+    template <class T_PT>
     std::tuple<
             amrex::ParticleReal, amrex::ParticleReal,
             amrex::ParticleReal, amrex::ParticleReal,
             amrex::ParticleReal, amrex::ParticleReal>
-    ImpactXParticleContainer::MeanAndStdPositions ()
+    ImpactXParticleContainerT<T_PT>::MeanAndStdPositions ()
     {
         BL_PROFILE("ImpactXParticleContainer::MeanAndStdPositions");
         return ablastr::particles::MeanAndStdPositions<
-            ImpactXParticleContainer, RealSoA::w
+            ImpactXParticleContainerT<T_PT>, RealSoA::w
         >(*this);
     }
 
+    template <class T_PT>
     CoordSystem
-    ImpactXParticleContainer::GetCoordSystem () const
+    ImpactXParticleContainerT<T_PT>::GetCoordSystem () const
     {
         return m_coordsystem;
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::SetCoordSystem (CoordSystem coord_system)
+    ImpactXParticleContainerT<T_PT>::SetCoordSystem (CoordSystem coord_system)
     {
         m_coordsystem = coord_system;
     }
 
+    template <class T_PT>
     void
-    ImpactXParticleContainer::record_beam_moments ()
+    ImpactXParticleContainerT<T_PT>::record_beam_moments ()
     {
         BL_PROFILE("ImpactXParticleContainer::record_beam_moments");
 
@@ -479,8 +499,9 @@ namespace impactx
         m_beam_moments.push_back(rbc);
     }
 
+    template <class T_PT>
     std::unordered_map<std::string, amrex::ParticleReal>
-    ImpactXParticleContainer::beam_moments ()
+    ImpactXParticleContainerT<T_PT>::beam_moments ()
     {
         BL_PROFILE("ImpactXParticleContainer::beam_moments");
 
@@ -490,4 +511,9 @@ namespace impactx
 
         return rbc;
     }
+
+    // explicit template instantiations for the precisions ImpactX provides
+    template class ParIterSoAT<IMPACTX_PARTICLE_REAL>;
+    template class ParConstIterSoAT<IMPACTX_PARTICLE_REAL>;
+    template class ImpactXParticleContainerT<IMPACTX_PARTICLE_REAL>;
 } // namespace impactx

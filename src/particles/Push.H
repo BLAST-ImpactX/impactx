@@ -24,8 +24,9 @@ namespace impactx
      * @param[in] step global step for diagnostics
      * @param[in] period for periodic lattices, this is the current period (turn or cycle)
      */
+    template<class T_PC>
     void push (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         elements::KnownElements & element_variant,
         int step,
         int period

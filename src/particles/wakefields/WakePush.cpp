@@ -55,8 +55,8 @@ namespace impactx::particles::wakefields
                 // Access data from StructOfArrays (soa)
                 auto& soa_real = pti.GetStructOfArrays().GetRealData();
 
-                amrex::ParticleReal* const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
+                auto* const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
+                auto* const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
 
                 // Obtain constants for force normalization
                 amrex::ParticleReal const push_consts = 1_prt / ((ablastr::constant::SI::c) * pz_ref_SI);
@@ -66,8 +66,8 @@ namespace impactx::particles::wakefields
                 amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
                 {
                     // Access SoA Real data
-                    amrex::ParticleReal const & AMREX_RESTRICT t = part_t[i];
-                    amrex::ParticleReal & AMREX_RESTRICT pt = part_pt[i];
+                    auto const & AMREX_RESTRICT t = part_t[i];
+                    auto & AMREX_RESTRICT pt = part_pt[i];
 
                     // Update longitudinal momentum with the convolved wakefield force
                     int const idx = static_cast<int>((t - bin_min) / bin_size);  // Find index position along t

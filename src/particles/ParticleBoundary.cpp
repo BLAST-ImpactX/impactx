@@ -68,8 +68,8 @@ namespace impactx::particles {
                 // Access data from StructOfArrays (soa)
                 auto & soa_real = pti.GetStructOfArrays().GetRealData();
 
-                amrex::ParticleReal * const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
-                amrex::ParticleReal * const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
+                auto * const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
+                auto * const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
                 uint64_t * const AMREX_RESTRICT part_idcpu = pti.GetStructOfArrays().GetIdCPUData().dataPtr();
 
                 switch (particle_bc) {
@@ -79,7 +79,7 @@ namespace impactx::particles {
                         amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
                         {
                             // Access SoA Real data
-                            amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
+                            auto & AMREX_RESTRICT t = part_t[i];
 
                             // Periodic particle boundary condition:
                             //   apply phase wrapping in t (modulo bucket_duration)
@@ -96,7 +96,7 @@ namespace impactx::particles {
                         amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
                         {
                             // Access SoA Real data
-                            amrex::ParticleReal const & AMREX_RESTRICT t = part_t[i];
+                            auto const & AMREX_RESTRICT t = part_t[i];
 
                             // Absorbing particle boundary condition:
                             //   check particle against the boundary
@@ -112,8 +112,8 @@ namespace impactx::particles {
                         amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i)
                         {
                             // Access SoA Real data
-                            amrex::ParticleReal & AMREX_RESTRICT t = part_t[i];
-                            amrex::ParticleReal & AMREX_RESTRICT pt = part_pt[i];
+                            auto & AMREX_RESTRICT t = part_t[i];
+                            auto & AMREX_RESTRICT pt = part_pt[i];
 
                             // Reflecting particle boundary condition.
                             // TODO:  Transform (t,pt) to (z,pz) using z-to-t transformation.

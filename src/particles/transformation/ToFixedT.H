@@ -47,14 +47,15 @@ namespace impactx::transformation
          * @param[inout] py particle momentum in y
          * @param[inout] pt particle momentum in t (in), in z (out)
          */
+        template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            amrex::ParticleReal & x,
-            amrex::ParticleReal & y,
-            amrex::ParticleReal & t,
-            amrex::ParticleReal & px,
-            amrex::ParticleReal & py,
-            amrex::ParticleReal & pt) const
+            T_Real & x,
+            T_Real & y,
+            T_Real & t,
+            T_Real & px,
+            T_Real & py,
+            T_Real & pt) const
         {
             using namespace amrex::literals;
             using amrex::Math::powi;

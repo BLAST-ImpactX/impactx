@@ -45,10 +45,10 @@ namespace impactx::particles::wakefields
                     long const np = pti.numParticles();
 
                     // Access particle weights and momenta
-                    amrex::ParticleReal* const AMREX_RESTRICT d_w = soa.GetRealData(impactx::RealSoA::w).dataPtr();
+                    auto* const AMREX_RESTRICT d_w = soa.GetRealData(impactx::RealSoA::w).dataPtr();
 
                     // Access particle positions
-                    amrex::ParticleReal* const AMREX_RESTRICT pos_z = soa.GetRealData(impactx::RealSoA::z).dataPtr();
+                    auto* const AMREX_RESTRICT pos_z = soa.GetRealData(impactx::RealSoA::z).dataPtr();
 
                     // Parallel loop over particles
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE(int i)
@@ -150,10 +150,10 @@ namespace impactx::particles::wakefields
                     auto& soa = pti.GetStructOfArrays();
                     long const np = pti.numParticles();
 
-                    amrex::Real* const AMREX_RESTRICT pos_x = soa.GetRealData(impactx::RealSoA::x).dataPtr();
-                    amrex::Real* const AMREX_RESTRICT pos_y = soa.GetRealData(impactx::RealSoA::y).dataPtr();
-                    amrex::Real* const AMREX_RESTRICT pos_z = soa.GetRealData(impactx::RealSoA::z).dataPtr();
-                    amrex::Real* const AMREX_RESTRICT d_w = soa.GetRealData(impactx::RealSoA::w).dataPtr();
+                    auto* const AMREX_RESTRICT pos_x = soa.GetRealData(impactx::RealSoA::x).dataPtr();
+                    auto* const AMREX_RESTRICT pos_y = soa.GetRealData(impactx::RealSoA::y).dataPtr();
+                    auto* const AMREX_RESTRICT pos_z = soa.GetRealData(impactx::RealSoA::z).dataPtr();
+                    auto* const AMREX_RESTRICT d_w = soa.GetRealData(impactx::RealSoA::w).dataPtr();
 
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE(int i)
                     {

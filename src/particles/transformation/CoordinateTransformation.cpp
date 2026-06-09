@@ -53,48 +53,48 @@ namespace impactx::transformation
 
                 // preparing access to particle data: SoA of Reals
                 auto &soa_real = pti.GetStructOfArrays().GetRealData();
-                amrex::ParticleReal *const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
-                amrex::ParticleReal *const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
-                amrex::ParticleReal *const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
-                amrex::ParticleReal *const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
+                auto *const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
+                auto *const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
+                auto *const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
+                auto *const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
 
                 if (direction == CoordSystem::s) {
                     BL_PROFILE("impactx::transformation::CoordinateTransformation::to_fixed_s");
 
-                    amrex::ParticleReal *const AMREX_RESTRICT part_z = soa_real[RealSoA::z].dataPtr();
-                    amrex::ParticleReal *const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr();
+                    auto *const AMREX_RESTRICT part_z = soa_real[RealSoA::z].dataPtr();
+                    auto *const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr();
 
                     // Design value of pz/mc = beta*gamma
                     amrex::ParticleReal const pzd = std::sqrt(powi<2>(pd) - 1.0_prt);
 
                     ToFixedS const to_s(pzd);
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE(long i) {
-                        amrex::ParticleReal &x = part_x[i];
-                        amrex::ParticleReal &y = part_y[i];
-                        amrex::ParticleReal &z = part_z[i];
-                        amrex::ParticleReal &px = part_px[i];
-                        amrex::ParticleReal &py = part_py[i];
-                        amrex::ParticleReal &pz = part_pz[i];
+                        auto &x = part_x[i];
+                        auto &y = part_y[i];
+                        auto &z = part_z[i];
+                        auto &px = part_px[i];
+                        auto &py = part_py[i];
+                        auto &pz = part_pz[i];
 
                         to_s(x, y, z, px, py, pz);
                     });
                 } else {
                     BL_PROFILE("impactx::transformation::CoordinateTransformation::to_fixed_t");
 
-                    amrex::ParticleReal *const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
-                    amrex::ParticleReal *const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
+                    auto *const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
+                    auto *const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
 
                     // Design value of pt/mc2 = -gamma.
                     amrex::ParticleReal const ptd = pd;
 
                     ToFixedT const to_t(ptd);
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE(long i) {
-                        amrex::ParticleReal &x = part_x[i];
-                        amrex::ParticleReal &y = part_y[i];
-                        amrex::ParticleReal &t = part_t[i];
-                        amrex::ParticleReal &px = part_px[i];
-                        amrex::ParticleReal &py = part_py[i];
-                        amrex::ParticleReal &pt = part_pt[i];
+                        auto &x = part_x[i];
+                        auto &y = part_y[i];
+                        auto &t = part_t[i];
+                        auto &px = part_px[i];
+                        auto &py = part_py[i];
+                        auto &pt = part_pt[i];
 
                         to_t(x, y, t, px, py, pt);
                     });

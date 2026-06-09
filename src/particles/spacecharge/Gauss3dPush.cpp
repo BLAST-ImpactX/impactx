@@ -162,22 +162,22 @@ namespace impactx::particles::spacecharge
 
                 // preparing access to particle data: SoA of Reals
                 auto& soa_real = pti.GetStructOfArrays().GetRealData();
-                amrex::ParticleReal const * const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
-                amrex::ParticleReal const * const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
-                amrex::ParticleReal const * const AMREX_RESTRICT part_z = soa_real[RealSoA::z].dataPtr(); // note: currently for a fixed t
-                amrex::ParticleReal* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr(); // note: currently for a fixed t
+                auto const * const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
+                auto const * const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
+                auto const * const AMREX_RESTRICT part_z = soa_real[RealSoA::z].dataPtr(); // note: currently for a fixed t
+                auto* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
+                auto* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
+                auto* const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr(); // note: currently for a fixed t
 
                 // gather to each particle and push momentum
                 amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                     // access SoA Real data
-                    amrex::ParticleReal const & AMREX_RESTRICT x = part_x[i];
-                    amrex::ParticleReal const & AMREX_RESTRICT y = part_y[i];
-                    amrex::ParticleReal const & AMREX_RESTRICT z = part_z[i];
-                    amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
-                    amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
-                    amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
+                    auto const & AMREX_RESTRICT x = part_x[i];
+                    auto const & AMREX_RESTRICT y = part_y[i];
+                    auto const & AMREX_RESTRICT z = part_z[i];
+                    auto & AMREX_RESTRICT px = part_px[i];
+                    auto & AMREX_RESTRICT py = part_py[i];
+                    auto & AMREX_RESTRICT pz = part_pz[i];
 
                     // field integrals from a 3D Gaussian bunch
                     amrex::ParticleReal eintx, einty, eintz;

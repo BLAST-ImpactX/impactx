@@ -29,9 +29,9 @@ namespace impactx
      * @param[in] period for periodic lattices, this is the current period (turn or cycle)
      * @param[in] omp_parallel allow threading via OpenMP for the particle iterator loop (note: if OMP backend is active)
      */
-    template<typename T_Element>
+    template<typename T_Element, class T_PC>
     void push_all (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         T_Element & element,
         [[maybe_unused]] int step,
         [[maybe_unused]] int period,
@@ -61,7 +61,7 @@ namespace impactx
         for (int lev = 0; lev <= nLevel; ++lev)
         {
             // loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion() && omp_parallel)
 #endif

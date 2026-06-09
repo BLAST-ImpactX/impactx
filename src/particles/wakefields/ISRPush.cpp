@@ -70,17 +70,17 @@ namespace impactx::particles::wakefields
                 // Access data from StructOfArrays (soa)
                 auto& soa_real = pti.GetStructOfArrays().GetRealData();
 
-                amrex::ParticleReal* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
+                auto* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
+                auto* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
+                auto* const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
 
                 // Gather particles and push momentum
                 amrex::ParallelForRNG(np, [=] AMREX_GPU_DEVICE (int i, amrex::RandomEngine const & engine)
                 {
                     // Access SoA Real data
-                    amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
-                    amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
-                    amrex::ParticleReal & AMREX_RESTRICT pt = part_pt[i];
+                    auto & AMREX_RESTRICT px = part_px[i];
+                    auto & AMREX_RESTRICT py = part_py[i];
+                    auto & AMREX_RESTRICT pt = part_pt[i];
 
                     // Standard normal random variable used to kick this particle
                     amrex::ParticleReal const xi = amrex::RandomNormal(0.0,1.0,engine);

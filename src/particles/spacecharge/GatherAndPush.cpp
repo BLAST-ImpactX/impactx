@@ -107,12 +107,12 @@ namespace impactx::particles::spacecharge
 
                 // preparing access to particle data: SoA of Reals
                 auto& soa_real = pti.GetStructOfArrays().GetRealData();
-                amrex::ParticleReal* const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_z = soa_real[RealSoA::z].dataPtr(); // note: currently for a fixed t
-                amrex::ParticleReal* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr(); // note: currently for a fixed t
+                auto* const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
+                auto* const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
+                auto* const AMREX_RESTRICT part_z = soa_real[RealSoA::z].dataPtr(); // note: currently for a fixed t
+                auto* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
+                auto* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
+                auto* const AMREX_RESTRICT part_pz = soa_real[RealSoA::pz].dataPtr(); // note: currently for a fixed t
 
                 // group together constants for the momentum push
                 amrex::ParticleReal const push_consts = dt * charge * inv_gamma2 / pz_ref_SI;
@@ -125,12 +125,12 @@ namespace impactx::particles::spacecharge
 
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
-                        amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
-                        amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
+                        auto & AMREX_RESTRICT x = part_x[i];
+                        auto & AMREX_RESTRICT y = part_y[i];
                         amrex::ParticleReal z = 0.0_prt;  // flatten 3rd dimension
-                        amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
-                        amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
-                        amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
+                        auto & AMREX_RESTRICT px = part_px[i];
+                        auto & AMREX_RESTRICT py = part_py[i];
+                        auto & AMREX_RESTRICT pz = part_pz[i];
 
                         // force gather
                         amrex::GpuArray<amrex::Real, 3> const field_interp =
@@ -160,13 +160,13 @@ namespace impactx::particles::spacecharge
 
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
-                        amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
-                        amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
-                        amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
+                        auto & AMREX_RESTRICT x = part_x[i];
+                        auto & AMREX_RESTRICT y = part_y[i];
+                        auto & AMREX_RESTRICT z = part_z[i];
                         amrex::ParticleReal z_flat = 0.0_prt;  // flatten 3rd dimension
-                        amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
-                        amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
-                        amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
+                        auto & AMREX_RESTRICT px = part_px[i];
+                        auto & AMREX_RESTRICT py = part_py[i];
+                        auto & AMREX_RESTRICT pz = part_pz[i];
 
                         // force gather
                         amrex::GpuArray<amrex::Real, 3> const field_interp =
@@ -211,12 +211,12 @@ namespace impactx::particles::spacecharge
                 if (space_charge == SpaceChargeAlgo::True_3D) {
                     amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
                         // access SoA Real data
-                        amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
-                        amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
-                        amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
-                        amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
-                        amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
-                        amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];
+                        auto & AMREX_RESTRICT x = part_x[i];
+                        auto & AMREX_RESTRICT y = part_y[i];
+                        auto & AMREX_RESTRICT z = part_z[i];
+                        auto & AMREX_RESTRICT px = part_px[i];
+                        auto & AMREX_RESTRICT py = part_py[i];
+                        auto & AMREX_RESTRICT pz = part_pz[i];
 
                         // force gather
                         amrex::GpuArray<amrex::Real, 3> const field_interp =

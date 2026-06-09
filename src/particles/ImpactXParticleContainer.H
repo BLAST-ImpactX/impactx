@@ -30,6 +30,16 @@
 #include <unordered_map>
 
 
+// The particle real (SoA storage) type used by the default container alias below.
+// Defaults to amrex::ParticleReal; can be overridden at compile time (e.g. to float)
+// to build a single-precision-particle ImpactX. Runtime selection of multiple
+// precisions in one binary is layered on top of the ImpactXParticleContainerT<PT>
+// template (see ImpactX_PRECISION).
+#ifndef IMPACTX_PARTICLE_REAL
+#   define IMPACTX_PARTICLE_REAL amrex::ParticleReal
+#endif
+
+
 namespace impactx
 {
     enum class CoordSystem
@@ -96,56 +106,75 @@ namespace impactx
      * We subclass here to change the default threading strategy, which is
      * `static` in AMReX, to `dynamic` in ImpactX.
      */
-    class ParIterSoA
-        : public amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
+    template <class T_PT=amrex::ParticleReal>
+    class ParIterSoAT
+        : public amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator, amrex::DefaultAssignor, T_PT>
     {
     public:
-        using amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>::ParIterSoA;
+        using base_t = amrex::ParIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator, amrex::DefaultAssignor, T_PT>;
+        using ContainerType = typename base_t::ContainerType;
 
-        ParIterSoA (ContainerType& pc, int level);
+        ParIterSoAT (ContainerType& pc, int level);
 
-        ParIterSoA (ContainerType& pc, int level, amrex::MFItInfo& info);
+        ParIterSoAT (ContainerType& pc, int level, amrex::MFItInfo& info);
 
-        ContainerType * pc () { return m_pc; }
+        ContainerType * pc () { return this->m_pc; }
     };
+    //! particle-box iterator for the default-precision container
+    using ParIterSoA = ParIterSoAT<IMPACTX_PARTICLE_REAL>;
 
     /** Const AMReX iterator for particle boxes - data is read only.
      *
      * We subclass here to change the default threading strategy, which is
      * `static` in AMReX, to `dynamic` in ImpactX.
+     *
+     * @tparam T_PT the particle real (SoA storage) type, e.g. float or double
      */
-    class ParConstIterSoA
-        : public amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
+    template <class T_PT=amrex::ParticleReal>
+    class ParConstIterSoAT
+        : public amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator, amrex::DefaultAssignor, T_PT>
     {
     public:
-        using amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>::ParConstIterSoA;
+        using base_t = amrex::ParConstIterSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator, amrex::DefaultAssignor, T_PT>;
+        using ContainerType = typename base_t::ContainerType;
 
-        ParConstIterSoA (ContainerType& pc, int level);
+        ParConstIterSoAT (ContainerType& pc, int level);
 
-        ParConstIterSoA (ContainerType& pc, int level, amrex::MFItInfo& info);
+        ParConstIterSoAT (ContainerType& pc, int level, amrex::MFItInfo& info);
 
-        ContainerType const * pc () const { return m_pc; }
+        ContainerType const * pc () const { return this->m_pc; }
     };
+    //! const particle-box iterator for the default-precision container
+    using ParConstIterSoA = ParConstIterSoAT<IMPACTX_PARTICLE_REAL>;
 
     /** Beam Particles in ImpactX
      *
      * This class stores particles, distributed over MPI ranks.
+     *
+     * @tparam T_PT the particle real (SoA storage) type, e.g. float or double
      */
-    class ImpactXParticleContainer
-        : public amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator>
+    template <class T_PT=amrex::ParticleReal>
+    class ImpactXParticleContainerT
+        : public amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator, amrex::DefaultAssignor, T_PT>
     {
     public:
+        //! the base AMReX pure-SoA particle container type
+        using base_t = amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator, amrex::DefaultAssignor, T_PT>;
+
+        //! the particle real (SoA storage) type, e.g. float or double
+        using ParticleRealType = T_PT;
+
         //! amrex iterator for particle boxes
-        using iterator = impactx::ParIterSoA;
+        using iterator = impactx::ParIterSoAT<T_PT>;
 
         //! amrex constant iterator for particle boxes (read-only)
-        using const_iterator = impactx::ParConstIterSoA;
+        using const_iterator = impactx::ParConstIterSoAT<T_PT>;
 
         //! Construct a new particle container
-        ImpactXParticleContainer (initialization::AmrCoreData* amr_core);
+        ImpactXParticleContainerT (initialization::AmrCoreData* amr_core);
 
         //! Destruct a particle container
-        virtual ~ImpactXParticleContainer() = default;
+        virtual ~ImpactXParticleContainerT() = default;
 
         /** Prepares the container for use.
          *
@@ -207,9 +236,9 @@ namespace impactx
          * @param lost_pc particle container for lost particles
          */
         void
-        SetLostParticleContainer (ImpactXParticleContainer * lost_pc);
+        SetLostParticleContainer (ImpactXParticleContainerT * lost_pc);
 
-        ImpactXParticleContainer *
+        ImpactXParticleContainerT *
         GetLostParticleContainer ();
 
         /** Set reference particle attributes
@@ -349,7 +378,7 @@ namespace impactx
         std::optional<int> m_particle_shape;
 
         //! a non-owning reference to lost particles, i.e., due to apertures
-        ImpactXParticleContainer* m_particles_lost = nullptr;
+        ImpactXParticleContainerT* m_particles_lost = nullptr;
 
         //! the current coordinate system of particles in this container
         CoordSystem m_coordsystem = CoordSystem::s;
@@ -361,7 +390,10 @@ namespace impactx
         //!   only active if algo.particle_bc is not set to "open" (default)
         amrex::ParticleReal m_bucket_length = 0.0;
 
-    }; // ImpactXParticleContainer
+    }; // ImpactXParticleContainerT
+
+    //! The beam particle container at the default precision (IMPACTX_PARTICLE_REAL).
+    using ImpactXParticleContainer = ImpactXParticleContainerT<IMPACTX_PARTICLE_REAL>;
 
 } // namespace impactx
 

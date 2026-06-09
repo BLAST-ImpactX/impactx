@@ -131,11 +131,11 @@ We run the following script to analyze correctness:
 .. _examples-expanding-fft-2d-test-particles:
 
 Expanding Beam in Free Space with 2D Space Charge, with Test Particles
-========================================================================
+======================================================================
 
 A long, coasting unbunched beam expanding freely in free space under its own 2D space charge.
 
-The problem parameters are identical to examples-expanding-fft-2d, except that a set of test particles is loaded and tracked, together with the main particle bunch.
+The problem parameters are identical to :ref:`the above example <examples-expanding-fft-2d>`, except that a set of test particles is loaded and tracked, together with the main particle bunch.
 
 The test particle data is collected once per space charge slice, using the callback hook feature, and the test particle orbits are plotted vs. distance s.
 

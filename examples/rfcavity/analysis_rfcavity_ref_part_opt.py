@@ -7,6 +7,7 @@
 
 import glob
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -37,7 +38,17 @@ def read_time_series(file_pattern):
 
 
 # read reference particle data
+def data_is_double(file_pattern):
+    """Detect float precision (single vs double) from a text diagnostic's digits."""
+    text = "".join(Path(f).read_text() for f in glob.glob(file_pattern))
+    return any(
+        len(m.replace(".", "") if e else m.replace(".", "").strip("0")) >= 12
+        for m, e in re.findall(r"(\d*\.\d+)([eE][+-]?\d+)?", text)
+    )
+
+
 rbc = read_time_series("diags/ref_particle.*")
+is_double = data_is_double("diags/ref_particle.*")
 
 s = rbc["s"]
 gamma = rbc["gamma"]
@@ -69,7 +80,7 @@ print("")
 print("Final Beam:")
 print(f"  s_ref={sf:e} gamma_ref={gammaf:e}")
 
-atol = 1.0e-4  # ignored
+atol = 1.0e-4 if is_double else 2.0e-1
 print(f"  atol={atol}")
 
 assert np.allclose(

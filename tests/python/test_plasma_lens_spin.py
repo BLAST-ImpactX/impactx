@@ -115,6 +115,7 @@ def test_tapered_pl_spin():
     """
     This tests the application of longitudinal particle boundary conditions.
     """
+    from impactx import Config
 
     # Run the ChrPlasmaLens/tracking APL test in focusing mode
     # (rigiditiy is also negative. Gradient given in [T/m])
@@ -168,6 +169,6 @@ def test_tapered_pl_spin():
     np.testing.assert_allclose(
         [meansxf, meansyf, meanszf],
         [meansxi, meansyi, meanszi],
-        atol=2.0e-9,
+        atol=2.0e-9 if Config.precision != "SINGLE" else 1.0e-6,
         rtol=0,
     )

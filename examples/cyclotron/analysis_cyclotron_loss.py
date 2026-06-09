@@ -40,6 +40,7 @@ last_step = list(series.iterations)[-1]
 initial_beam = series.iterations[1].particles["beam"]
 final_beam = series.iterations[last_step].particles["beam"]
 initial = initial_beam.to_df()
+is_double = initial["position_x"].dtype == np.float64
 final = final_beam.to_df()
 
 # compare number of particles
@@ -81,7 +82,8 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 4.0 * num_particles**-0.5  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 4.0 * num_particles**-0.5 if is_double else 8.0e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

@@ -160,6 +160,7 @@ namespace impactx::particles::spacecharge
         // Standard deviation of the particle positions (speed of light times time delay for t) (unit: meter)
         amrex::ParticleReal const sigx = rbc.at("sig_x");
         amrex::ParticleReal const sigy = rbc.at("sig_y");
+        amrex::ParticleReal const sigt = rbc.at("sig_t");
 
         // physical constants and reference quantities
         amrex::ParticleReal const c0_SI = 2.99792458e8_prt;  // TODO move out
@@ -173,9 +174,13 @@ namespace impactx::particles::spacecharge
 
         int nint = 101;
         amrex::Real delta = 0.01_rt;
+        amrex::Real long_scale = 6.0_rt * gamma * sigt;
         amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("gauss_nint", nint);
         pp_algo.queryAddWithParser("gauss_taylor_delta", delta);
+        // note: intentionall w/o add because `sigt` is dynamic!
+        //       add would ignore the new beam size in later sim steps
+        pp_algo.queryWithParser("gauss_long_scale", long_scale);
 
         int tp5d_bins = 129;
         pp_algo.queryAddWithParser("gauss_charge_z_bins", tp5d_bins);
@@ -219,7 +224,7 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const pz_push_const =
             log2n
             + 0.577216_prt
-            - 2.0_prt * std::log((sigx + sigy) / 2.0_prt);
+            - 2.0_prt * std::log((sigx + sigy)/long_scale/2.0_prt);
 
         // loop over refinement levels
         int const nLevel = pc.finestLevel();

@@ -365,7 +365,7 @@ class ImpactXParticleContainer(
 ):
     ConstIterator = ImpactXParConstIter
     Iterator = ImpactXParIter
-    def add_n_particles(
+    def _add_n_particles(
         self,
         x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         y: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
@@ -400,6 +400,47 @@ class ImpactXParticleContainer(
         :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent:param sx: spin component in x
         :param sy: spin component in y
         :param sz: spin component in z
+        """
+    def add_n_particles(
+        self,
+        x,
+        y,
+        t,
+        px,
+        py,
+        pt,
+        qm,
+        bunch_charge=None,
+        w=None,
+        sx=None,
+        sy=None,
+        sz=None,
+    ):
+        """
+        Add new particles to the container for fixed s.
+
+        The coordinate and weight arguments accept NumPy or CuPy arrays (or
+        array-likes), as well as pyAMReX ``PODVector`` objects. Inputs are copied
+        into device-compatible PODVectors as needed.
+
+        Either the total charge (``bunch_charge``) or the weight of each particle
+        (``w``) must be provided.
+
+        Note: This can only be used *after* the grids have been created, i.e. after
+        ``ImpactX.init_grids`` has been called.
+
+        Parameters
+        ----------
+        x, y, t, px, py, pt : array_like
+            Particle positions (x, y, time-of-flight c*t) and momenta.
+        qm : float
+            Charge over mass in 1/eV.
+        bunch_charge : float, optional
+            Total charge within a bunch in C.
+        w : array_like, optional
+            Weight of each particle: how many real particles to represent.
+        sx, sy, sz : array_like, optional
+            Spin components in x, y, z.
         """
     def beam_moments(self) -> dict[str, float]:
         """
@@ -690,6 +731,13 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
+    def diag_file_prefix(self) -> str:
+        """
+        Root directory for diagnostic output (default: ``diags``).
+        """
+    @diag_file_prefix.setter
+    def diag_file_prefix(self, arg1: str) -> None: ...
+    @property
     def diagnostics(self) -> bool:
         """
         Enable or disable diagnostics generally (default: enabled).
@@ -912,6 +960,15 @@ class ImpactX:
     @space_charge_gauss_charge_z_bins.setter
     def space_charge_gauss_charge_z_bins(
         self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
+    @property
+    def space_charge_gauss_long_scale(self) -> float:
+        """
+        Longitudinal space charge scale for the Gauss2p5D space charge model. Approximation affecting only the longitudinal momentum (``pt``) kick. If not set, it defaults to ``6 * gamma * sigma_z``, estimated in-situ from the current reduced beam characteristics, which is a typical value when comparing to a 3D model.
+        """
+    @space_charge_gauss_long_scale.setter
+    def space_charge_gauss_long_scale(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
     ) -> None: ...
     @property
     def space_charge_gauss_nint(self) -> int:
@@ -1231,6 +1288,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.04"
+__version__: str = "26.05"
 s: CoordSystem
 t: CoordSystem

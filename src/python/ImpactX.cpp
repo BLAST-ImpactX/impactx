@@ -1,11 +1,12 @@
 /* Copyright 2021-2023 The ImpactX Community
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 #include "pyImpactX.H"
 
 #include <ImpactX.H>
+#include <diagnostics/FilePrefix.H>
 #include <initialization/InitDistribution.H>
 #include <particles/transformation/CoordinateTransformation.H>
 #include <particles/ParticleBoundary.H>
@@ -357,6 +358,22 @@ void init_ImpactX (py::module& m)
             },
             "Initial region for computing the integrals (default: ``0.01``)."
         )
+        .def_property("space_charge_gauss_long_scale",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<amrex::Real>("algo.space_charge", "gauss_long_scale");
+            },
+            [](ImpactX & /* ix */, amrex::Real const gauss_long_scale) {
+                if (gauss_long_scale < 0) {
+                    throw std::runtime_error("space_charge_gauss_long_scale must be strictly positive");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_long_scale", gauss_long_scale);
+            },
+            "Longitudinal space charge scale for the Gauss2p5D space charge model. "
+            "Approximation affecting only the longitudinal momentum (``pt``) kick. "
+            "If not set, it defaults to ``6 * gamma * sigma_z``, estimated in-situ from the current "
+            "reduced beam characteristics, which is a typical value when comparing to a 3D model."
+        )
         .def_property("space_charge_num_longitudinal_bins",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<int>("algo.space_charge", "num_longitudinal_bins");
@@ -487,6 +504,16 @@ void init_ImpactX (py::module& m)
              "Enable or disable diagnostics every slice step in elements (default: disabled).\n\n"
              "By default, diagnostics is performed at the beginning and end of the simulation.\n"
              "Enabling this flag will write diagnostics every step and slice step."
+        )
+        .def_property("diag_file_prefix",
+             [](ImpactX & /* ix */) {
+                 return diagnostics::FilePrefix();
+             },
+             [](ImpactX & /* ix */, std::string const & file_prefix) {
+                 amrex::ParmParse pp_diag("diag");
+                 pp_diag.add("file_prefix", file_prefix);
+             },
+             "Root directory for diagnostic output (default: ``diags``)."
         )
         .def_property("diag_file_min_digits",
              [](ImpactX & /* ix */) {

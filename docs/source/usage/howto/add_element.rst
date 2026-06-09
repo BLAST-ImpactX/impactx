@@ -44,6 +44,12 @@ The Programmable element can implement a custom element in two ways:
 
 Per ImpactX convention, the reference particle is updated *before* the beam particles are pushed.
 
+.. note::
+
+   The Programmable element is for *replacing* a beamline element's particle push.
+   For in-situ **analysis** of the beam, use :py:attr:`sim.hook <impactx.ImpactX.hook>`
+   callbacks with ``sim.beam`` instead — see :ref:`usage-howto-python-extend`.
+
 Detailed examples that show usage of the programmable element are:
 
 * :ref:`FODO cell <examples-fodo-programmable>`: implements a user-defined drift

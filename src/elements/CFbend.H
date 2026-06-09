@@ -172,7 +172,7 @@ namespace impactx::elements
             m_A21 = -gyro_const1 * gx * sx;
             m_A22 = -gyro_const1 * (1_prt - cx);
             m_A26 = G*h*beta*gamma*slice_ds - h*gyro_const1*sx/(beta);
-            m_A33 = -((-gy*gyro_const1 + powi<2>(G*h)*gamma*(gamma - 1_prt))*gy*sy*sinG -gy*G*h*gyro_const2*(1_prt - cosG*cy))*factor;
+            m_A33 = (-(-gy*gyro_const1 + powi<2>(G*h)*gamma*(gamma - 1_prt))*gy*sy*sinG -gy*G*h*gyro_const2*(1_prt - cosG*cy))*factor;
             m_A34 = ((-gy*gyro_const1 + powi<2>(G*h)*gamma*(gamma - 1_prt)) * cy*sinG + G*h*gyro_const2*gy*cosG*sy)*factor;
         }
 
@@ -198,14 +198,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // initialize output values
             T_Real xout = x;
@@ -233,12 +230,6 @@ namespace impactx::elements
             px = pxout;
             py = pyout;
             pt = ptout;
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.

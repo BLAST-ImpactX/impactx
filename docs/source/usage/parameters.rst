@@ -238,7 +238,7 @@ If the same element name is used multiple times, then an output series is create
 * ``<element_name>.name`` (``string``, default value: ``<element_name>``)
 
   The output series name to use.
-  By default, output is created under ``diags/openPMD/<element_name>.<backend>``.
+  By default, output is created under ``<diag.file_prefix>/openPMD/<element_name>.<backend>``.
 
 * ``<element_name>.backend`` (``string``, default value: ``default``)
 
@@ -1068,6 +1068,14 @@ See there ``nslice`` option on lattice elements for slicing.
 
       Initial integral region to avoid divergence of integrand at 0.
 
+    * ``algo.space_charge.gauss_long_scale`` (``float``, default: in-situ :math:`6 \cdot \gamma \cdot \sigma_z`)
+
+      Longitudinal space charge scale for the Gauss2p5D space charge model.
+      This is an approximation that only influences the longitudinal momentum (``pt``) kick.
+      If not set, it defaults to :math:`6 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
+      typical value when comparing to a 3D model.
+
     * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
 
       Number of bins for longitudinal line density deposition.
@@ -1148,7 +1156,7 @@ See there ``nslice`` option on lattice elements for slicing.
 
 Multigrid-specific numerical options:
 
-* ``algo.mlmg_relative_tolerance`` (``float``, optional, default: ``1.e-7``)
+* ``algo.mlmg_relative_tolerance`` (``float``, optional, default: ``1.e-7`` (DP) / ``1.e-4`` (SP))
 
   The relative precision with which the electrostatic space-charge fields should be calculated.
   More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver.
@@ -1356,13 +1364,26 @@ Diagnostics and output
   By default, diagnostics are computed and written at the beginning and end of the simulation.
   Enabling this flag will write diagnostics at every step and slice step.
 
+* ``diag.file_prefix`` (``string``, optional, default: ``diags``)
+
+  Root directory for diagnostic output.
+  By default, diagnostics are written in the folder ``diags/``.
+
+  Set to an empty string or ``.`` to write diagnostics in the current working directory.
+
+  If a directory at ``diag.file_prefix`` already exists when a simulation starts,
+  ImpactX renames it to ``<diag.file_prefix>.old.<suffix>`` to preserve prior results.
+  This is skipped when ``diag.file_prefix`` resolves to the current working directory,
+  the root directory, or an ancestor of the current working directory; in those cases
+  new output is written alongside existing files.
+
 * ``diag.file_min_digits`` (``integer``, optional, default: ``6``)
 
   The minimum number of digits used for the step number appended to the diagnostic file names.
 
 * ``diag.backend`` (``string``, default value: ``default``)
 
-  Diagnostics for particles lost in apertures, stored as ``diags/openPMD/particles_lost.*`` at the end of the simulation.
+  Diagnostics for particles lost in apertures, stored as ``<diag.file_prefix>/openPMD/particles_lost.*`` at the end of the simulation.
   See the ``beam_monitor`` element for backend values.
 
 * ``diag.eigenemittances`` (``boolean``, optional, default: ``false``)

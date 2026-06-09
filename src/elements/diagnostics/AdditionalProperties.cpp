@@ -109,11 +109,11 @@ namespace impactx::elements::diagnostics
                 auto * part_I = soa.GetRealData(soa_idx_I).data();
 
                 amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (long i) {
-                    amrex::ParticleReal const x = part_x[i];
-                    amrex::ParticleReal const y = part_y[i];
+                    auto const x = part_x[i];
+                    auto const y = part_y[i];
 
-                    amrex::ParticleReal const px = part_px[i];
-                    amrex::ParticleReal const py = part_py[i];
+                    auto const px = part_px[i];
+                    auto const py = part_py[i];
 
                     // calculate invariants of motion
                     NonlinearLensInvariants::Data const HI_out =

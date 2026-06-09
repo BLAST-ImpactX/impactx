@@ -198,7 +198,8 @@ namespace impactx::elements
             };
 
             // determine the rotation vector for off-design particles
-            amrex::SmallVector<T_Real, 3, 1> const vectorout = m_spin_orbit_coupling * vectorin;
+            // note: vectorout is a 3-vector
+            auto const vectorout = m_spin_orbit_coupling * vectorin;
 
             // assign updated values
             lambdax = vectorout(1);

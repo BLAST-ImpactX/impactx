@@ -160,8 +160,8 @@ namespace impactx::elements
                 x, px, y, py, t, pt
             };
 
-            // TODO amrex::SmallMatrix::operator* overloads on T for SIMD*scalar / scalar*SIMD
-            amrex::SmallVector<T_Real, 6, 1> const vectorout = m_transport_map * vectorin;
+            // note: vectorout is a 6-vector
+            auto const vectorout = m_transport_map * vectorin;
 
             // assign updated values
             x = vectorout(1);

@@ -248,7 +248,9 @@ namespace detail {
         };
 
         // define data set and metadata
-        io::Datatype const dtype_fl = io::determineDatatype<amrex::ParticleReal>();
+        // the particle SoA real type (e.g. float or double) drives the openPMD record precision
+        using PRealT = typename PinnedContainer::ParticleType::RealType;
+        io::Datatype const dtype_fl = io::determineDatatype<PRealT>();
         io::Datatype const dtype_ui = io::determineDatatype<uint64_t>();
         auto d_fl = io::Dataset(dtype_fl, {np});
         auto d_ui = io::Dataset(dtype_ui, {np});
@@ -282,11 +284,11 @@ namespace detail {
         {
 
             beam["positionOffset"]["x"].resetDataset(d_fl);
-            beam["positionOffset"]["x"].makeConstant(ref_part.x);
+            beam["positionOffset"]["x"].makeConstant(static_cast<PRealT>(ref_part.x));
             beam["positionOffset"]["y"].resetDataset(d_fl);
-            beam["positionOffset"]["y"].makeConstant(ref_part.y);
+            beam["positionOffset"]["y"].makeConstant(static_cast<PRealT>(ref_part.y));
             beam["positionOffset"]["t"].resetDataset(d_fl);
-            beam["positionOffset"]["t"].makeConstant(ref_part.t);
+            beam["positionOffset"]["t"].makeConstant(static_cast<PRealT>(ref_part.t));
         }
 
         // unique, global particle index

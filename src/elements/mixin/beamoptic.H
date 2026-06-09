@@ -153,11 +153,11 @@ namespace detail
      *
      * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
      */
-    template <typename T_Element>
+    template <typename T_Element, typename T_PT = amrex::ParticleReal>
     struct PushSingleParticleSpin
     {
-        using PType = ImpactXParticleContainer::ParticleType;
-        using ParticleTileType = amrex::ParticleTile<amrex::SoAParticle<RealSoA::nattribs, IntSoA::nattribs>,RealSoA::nattribs, IntSoA::nattribs>;
+        using PType = amrex::SoAParticle<RealSoA::nattribs, IntSoA::nattribs, T_PT>;
+        using ParticleTileType = amrex::ParticleTile<amrex::SoAParticle<RealSoA::nattribs, IntSoA::nattribs, T_PT>,RealSoA::nattribs, IntSoA::nattribs>;
 
         /** Constructor taking in pointers to particle data
          *
@@ -175,15 +175,15 @@ namespace detail
          * @param ref_part the struct containing the reference particle
          */
         PushSingleParticleSpin (T_Element element,
-                            amrex::ParticleReal* AMREX_RESTRICT part_x,
-                            amrex::ParticleReal* AMREX_RESTRICT part_y,
-                            amrex::ParticleReal* AMREX_RESTRICT part_t,
-                            amrex::ParticleReal* AMREX_RESTRICT part_px,
-                            amrex::ParticleReal* AMREX_RESTRICT part_py,
-                            amrex::ParticleReal* AMREX_RESTRICT part_pt,
-                            amrex::ParticleReal* AMREX_RESTRICT part_sx,
-                            amrex::ParticleReal* AMREX_RESTRICT part_sy,
-                            amrex::ParticleReal* AMREX_RESTRICT part_sz,
+                            T_PT* AMREX_RESTRICT part_x,
+                            T_PT* AMREX_RESTRICT part_y,
+                            T_PT* AMREX_RESTRICT part_t,
+                            T_PT* AMREX_RESTRICT part_px,
+                            T_PT* AMREX_RESTRICT part_py,
+                            T_PT* AMREX_RESTRICT part_pt,
+                            T_PT* AMREX_RESTRICT part_sx,
+                            T_PT* AMREX_RESTRICT part_sy,
+                            T_PT* AMREX_RESTRICT part_sz,
                             uint64_t* AMREX_RESTRICT part_idcpu,
                             RefPart ref_part)
             : m_element(std::move(element)),
@@ -254,15 +254,15 @@ namespace detail
 
     private:
         T_Element m_element;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_x;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_y;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_t;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_px;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_py;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_pt;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_sx;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_sy;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_sz;
+        T_PT* const AMREX_RESTRICT m_part_x;
+        T_PT* const AMREX_RESTRICT m_part_y;
+        T_PT* const AMREX_RESTRICT m_part_t;
+        T_PT* const AMREX_RESTRICT m_part_px;
+        T_PT* const AMREX_RESTRICT m_part_py;
+        T_PT* const AMREX_RESTRICT m_part_pt;
+        T_PT* const AMREX_RESTRICT m_part_sx;
+        T_PT* const AMREX_RESTRICT m_part_sy;
+        T_PT* const AMREX_RESTRICT m_part_sz;
         uint64_t* const AMREX_RESTRICT m_part_idcpu;
         RefPart m_ref_part;
     };
@@ -280,11 +280,11 @@ namespace detail
      *
      * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
      */
-    template <typename T_Element>
+    template <typename T_Element, typename T_PT = amrex::ParticleReal>
     struct PushSingleParticle
     {
-        using PType = ImpactXParticleContainer::ParticleType;
-        using ParticleTileType = amrex::ParticleTile<amrex::SoAParticle<RealSoA::nattribs, IntSoA::nattribs>,RealSoA::nattribs, IntSoA::nattribs>;
+        using PType = amrex::SoAParticle<RealSoA::nattribs, IntSoA::nattribs, T_PT>;
+        using ParticleTileType = amrex::ParticleTile<amrex::SoAParticle<RealSoA::nattribs, IntSoA::nattribs, T_PT>,RealSoA::nattribs, IntSoA::nattribs>;
 
         /** Constructor taking in pointers to particle data
          *
@@ -299,12 +299,12 @@ namespace detail
          * @param ref_part the struct containing the reference particle
          */
         PushSingleParticle (T_Element element,
-                            amrex::ParticleReal* AMREX_RESTRICT part_x,
-                            amrex::ParticleReal* AMREX_RESTRICT part_y,
-                            amrex::ParticleReal* AMREX_RESTRICT part_t,
-                            amrex::ParticleReal* AMREX_RESTRICT part_px,
-                            amrex::ParticleReal* AMREX_RESTRICT part_py,
-                            amrex::ParticleReal* AMREX_RESTRICT part_pt,
+                            T_PT* AMREX_RESTRICT part_x,
+                            T_PT* AMREX_RESTRICT part_y,
+                            T_PT* AMREX_RESTRICT part_t,
+                            T_PT* AMREX_RESTRICT part_px,
+                            T_PT* AMREX_RESTRICT part_py,
+                            T_PT* AMREX_RESTRICT part_pt,
                             uint64_t* AMREX_RESTRICT part_idcpu,
                             RefPart ref_part)
             : m_element(std::move(element)),
@@ -368,21 +368,21 @@ namespace detail
 
     private:
         T_Element m_element;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_x;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_y;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_t;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_px;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_py;
-        amrex::ParticleReal* const AMREX_RESTRICT m_part_pt;
+        T_PT* const AMREX_RESTRICT m_part_x;
+        T_PT* const AMREX_RESTRICT m_part_y;
+        T_PT* const AMREX_RESTRICT m_part_t;
+        T_PT* const AMREX_RESTRICT m_part_px;
+        T_PT* const AMREX_RESTRICT m_part_py;
+        T_PT* const AMREX_RESTRICT m_part_pt;
         uint64_t* const AMREX_RESTRICT m_part_idcpu;
         RefPart m_ref_part;
     };
 
     /** This pushes all particles on a particle iterator tile/box
      */
-    template< typename T_Element >
+    template< typename T_Element, typename T_Iter >
     void push_all_particles (
-        ImpactXParticleContainer::iterator & pti,
+        T_Iter & pti,
         RefPart & AMREX_RESTRICT ref_part,
         T_Element & element,
         bool spin /* = false */
@@ -392,22 +392,24 @@ namespace detail
         // preparing access to particle data: SoA of Reals
         auto& soa = pti.GetStructOfArrays();
         auto& soa_real = soa.GetRealData();
-        amrex::ParticleReal* const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
-        amrex::ParticleReal* const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
-        amrex::ParticleReal* const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
-        amrex::ParticleReal* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
-        amrex::ParticleReal* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
-        amrex::ParticleReal* const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
+        // particle real (SoA storage) type, e.g. float or double
+        using T_PT = std::remove_pointer_t<std::decay_t<decltype(soa_real[RealSoA::x].dataPtr())>>;
+        auto* const AMREX_RESTRICT part_x = soa_real[RealSoA::x].dataPtr();
+        auto* const AMREX_RESTRICT part_y = soa_real[RealSoA::y].dataPtr();
+        auto* const AMREX_RESTRICT part_t = soa_real[RealSoA::t].dataPtr();
+        auto* const AMREX_RESTRICT part_px = soa_real[RealSoA::px].dataPtr();
+        auto* const AMREX_RESTRICT part_py = soa_real[RealSoA::py].dataPtr();
+        auto* const AMREX_RESTRICT part_pt = soa_real[RealSoA::pt].dataPtr();
 
         uint64_t* const AMREX_RESTRICT part_idcpu = soa.GetIdCPUData().dataPtr();
 
         if (spin) {
             if constexpr (std::is_base_of_v<mixin::SpinTransport, std::decay_t<T_Element>>) {
-                amrex::ParticleReal* const AMREX_RESTRICT part_sx = soa_real[RealSoA::sx].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_sy = soa_real[RealSoA::sy].dataPtr();
-                amrex::ParticleReal* const AMREX_RESTRICT part_sz = soa_real[RealSoA::sz].dataPtr();
+                auto* const AMREX_RESTRICT part_sx = soa_real[RealSoA::sx].dataPtr();
+                auto* const AMREX_RESTRICT part_sy = soa_real[RealSoA::sy].dataPtr();
+                auto* const AMREX_RESTRICT part_sz = soa_real[RealSoA::sz].dataPtr();
 
-                detail::PushSingleParticleSpin<T_Element> const pushSingleParticle(
+                detail::PushSingleParticleSpin<T_Element, T_PT> const pushSingleParticle(
                     element, part_x, part_y, part_t, part_px, part_py, part_pt, part_sx, part_sy, part_sz, part_idcpu, ref_part);
 
                 // loop over beam particles in the box
@@ -417,7 +419,7 @@ namespace detail
             }
         }
         else {
-            detail::PushSingleParticle<T_Element> const pushSingleParticle(
+            detail::PushSingleParticle<T_Element, T_PT> const pushSingleParticle(
                 element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
 
             // loop over beam particles in the box
@@ -440,8 +442,9 @@ namespace detail
          * @param[in] step global step for diagnostics
          * @param[in] period for periodic lattices, this is the current period (turn or cycle)
          */
+        template<class T_PC>
         void operator() (
-            ImpactXParticleContainer & pc,
+            T_PC & pc,
             int step,
             int period
         )
@@ -463,8 +466,9 @@ namespace detail
          * @param[in] ref_part reference particle
          * @param[in] spin whether to perform spin tracking
          */
+         template<class T_Iter>
          void operator() (
-            ImpactXParticleContainer::iterator & pti,
+            T_Iter & pti,
             RefPart & AMREX_RESTRICT ref_part,
             bool spin
          )

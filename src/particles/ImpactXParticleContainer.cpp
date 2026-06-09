@@ -61,7 +61,7 @@ namespace impactx
         : base_t(pc, level, info.SetDynamic(do_omp_dynamic())) {}
 
     template <class T_PT>
-    ImpactXParticleContainerT<T_PT>::ImpactXParticleContainerT (initialization::AmrCoreData* amr_core)
+    ImpactXParticleContainerT<T_PT>::ImpactXParticleContainerT (initialization::AmrCoreDataBase* amr_core)
         : base_t(amr_core->GetParGDB())
     {
         this->SetArena(amrex::The_Arena());
@@ -74,9 +74,10 @@ namespace impactx
 
     template <class T_PT>
     void
-    ImpactXParticleContainerT<T_PT>::SetLostParticleContainer (ImpactXParticleContainerT<T_PT> * lost_pc)
+    ImpactXParticleContainerT<T_PT>::SetLostParticleContainer (ImpactXParticleContainerBase * lost_pc)
     {
-        m_particles_lost = lost_pc;
+        // the lost-particle container has the same precision as this container
+        m_particles_lost = static_cast<ImpactXParticleContainerT<T_PT>*>(lost_pc);
     }
 
     template <class T_PT>
@@ -513,7 +514,14 @@ namespace impactx
     }
 
     // explicit template instantiations for the precisions ImpactX provides
-    template class ParIterSoAT<IMPACTX_PARTICLE_REAL>;
-    template class ParConstIterSoAT<IMPACTX_PARTICLE_REAL>;
-    template class ImpactXParticleContainerT<IMPACTX_PARTICLE_REAL>;
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template class ParIterSoAT<double>;
+    template class ParConstIterSoAT<double>;
+    template class ImpactXParticleContainerT<double>;
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template class ParIterSoAT<float>;
+    template class ParConstIterSoAT<float>;
+    template class ImpactXParticleContainerT<float>;
+#endif
 } // namespace impactx

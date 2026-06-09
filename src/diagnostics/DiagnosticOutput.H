@@ -27,8 +27,9 @@ namespace impactx::diagnostics
      * @param step the global step
      * @param append open a new file with a fresh header (false) or append data to an existing file (true)
      */
+    template <class T_PC>
     void DiagnosticOutput (
-        ImpactXParticleContainer const & pc,
+        T_PC const & pc,
         std::string const & file_name,
         int step = 0,
         bool append = false

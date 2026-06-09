@@ -24,9 +24,14 @@ namespace impactx::diagnostics
     /** Compute moments of the beam distribution from particle data
      *
      * This uses an MPI Allreduce and returns a result on all ranks.
+     * Reductions are accumulated in amrex::ParticleReal (double) regardless of
+     * the beam storage precision.
+     *
+     * @tparam T_PC the beam particle container type (any compiled precision)
      */
+    template <class T_PC>
     std::unordered_map<std::string, amrex::ParticleReal>
-    reduced_beam_characteristics (ImpactXParticleContainer const & pc);
+    reduced_beam_characteristics (T_PC const & pc);
 
     /** Compute moments of the beam distribution from covariance matrix
      */

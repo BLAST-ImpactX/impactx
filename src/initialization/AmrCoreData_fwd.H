@@ -21,8 +21,12 @@ namespace impactx::initialization
      * The primary purpose of this wrapper is to transport simulation_geometry
      * the geometry (topology) of the simulation and amr_info; contains
      * information on mesh-refinement and box/grid blocks.
+     *
+     * AmrCoreDataBase is the precision-agnostic base; AmrCoreData<T_PT> adds the
+     * beam particle container at a concrete precision T_PT.
      */
-    class AmrCoreData;
+    class AmrCoreDataBase;
+    template <class T_PT> class AmrCoreData;
 
 } // namespace impactx::initialization
 

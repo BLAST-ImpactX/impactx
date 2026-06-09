@@ -27,8 +27,9 @@ namespace impactx::particles {
         return particle_bc;
     }
 
+    template <class T_PC>
     void ParticleBoundary (
-        ImpactXParticleContainer & pc
+        T_PC & pc
     )
     {
         // check option and set default (open) if unset
@@ -56,7 +57,7 @@ namespace impactx::particles {
         for (int lev = 0; lev <= nLevel; ++lev)
         {
             // Loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
 
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -143,4 +144,12 @@ namespace impactx::particles {
             } // End loop over all particle boxes
         } // End mesh-refinement level loop
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void ParticleBoundary (ImpactXParticleContainerT<double> & pc);
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void ParticleBoundary (ImpactXParticleContainerT<float> & pc);
+#endif
 } // namespace impactx::particles

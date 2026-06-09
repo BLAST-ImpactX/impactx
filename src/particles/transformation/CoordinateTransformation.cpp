@@ -22,7 +22,8 @@
 
 namespace impactx::transformation
 {
-    void CoordinateTransformation (ImpactXParticleContainer & pc,
+    template <class T_PC>
+    void CoordinateTransformation (T_PC & pc,
                                    CoordSystem direction)
     {
         BL_PROFILE("impactx::transformation::CoordinateTransformation");
@@ -44,7 +45,7 @@ namespace impactx::transformation
         int const nLevel = pc.finestLevel();
         for (int lev = 0; lev <= nLevel; ++lev) {
             // loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -105,4 +106,14 @@ namespace impactx::transformation
         // update coordinate system meta data
         pc.SetCoordSystem(direction);
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void CoordinateTransformation (ImpactXParticleContainerT<double> & pc,
+                                            CoordSystem direction);
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void CoordinateTransformation (ImpactXParticleContainerT<float> & pc,
+                                            CoordSystem direction);
+#endif
 } // namespace impactx::transformation

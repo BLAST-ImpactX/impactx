@@ -285,7 +285,7 @@ namespace impactx
     {
         BL_PROFILE("ImpactX::add_particles");
 
-        auto const & ref = amr_data->track_particles.m_particle_container->GetRefParticle();
+        auto const & ref = amr_data->particle_container().GetRefParticle();
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(ref.charge_qe() != 0.0,
             "add_particles: Reference particle charge not yet set!");
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(ref.mass_MeV() != 0.0,
@@ -398,7 +398,7 @@ namespace impactx
             distribution.finalize();
         }, distr);
 
-        amr_data->track_particles.m_particle_container->AddNParticles(
+        amr_data->particle_container().AddNParticles(
             x, y, t,
             px, py, pt,
             ref.qm_ratio_SI(),
@@ -416,7 +416,7 @@ namespace impactx
             // redistribute particles, so they reside on the MPI rank that is
             // responsible for the respective spatial particle position.
             this->ResizeMesh();
-            amr_data->track_particles.m_particle_container->Redistribute();
+            amr_data->particle_container().Redistribute();
         }
     }
 
@@ -548,7 +548,7 @@ namespace impactx
         if (track == "particles") {
             // set charge and mass and energy of ref particle
             RefPart const ref = initialization::read_reference_particle(pp_dist);
-            amr_data->track_particles.m_particle_container->SetRefParticle(ref);
+            amr_data->particle_container().SetRefParticle(ref);
 
             amrex::ParticleReal bunch_charge = 0.0;  // Bunch charge (C) or current (A)
             if (space_charge == SpaceChargeAlgo::True_2D) {
@@ -580,7 +580,7 @@ namespace impactx
 
             amrex::ParticleReal bucket_length = 0.0;  // Bucket length (m) for longitudinal particle boundary
             pp_dist.queryWithParser("bucket_length", bucket_length);
-            amr_data->track_particles.m_particle_container->SetBucketLength(bucket_length);
+            amr_data->particle_container().SetBucketLength(bucket_length);
 
             amrex::Long npart = 0;  // Number of simulation particles
             if (distribution != "empty")
@@ -614,7 +614,7 @@ namespace impactx
             }
 
             amrex::Print() << "Initialized beam distribution parameters" << std::endl;
-            amrex::Print() << "# of particles: " << amr_data->track_particles.m_particle_container->TotalNumberOfParticles() << std::endl;
+            amrex::Print() << "# of particles: " << amr_data->particle_container().TotalNumberOfParticles() << std::endl;
         }
         else if (track == "envelope")
         {

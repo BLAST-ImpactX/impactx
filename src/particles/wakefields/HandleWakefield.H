@@ -31,9 +31,9 @@ namespace impactx::particles::wakefields
      * @param[in] slice_ds slice spacing along s
      * @param[in] print_wakefield for debugging: print the wakefield to convolved_wakefield.txt
      */
-    template <typename T_Element>
+    template <class T_PC, typename T_Element>
     void HandleWakefield (
-        impactx::ImpactXParticleContainer& particle_container,
+        T_PC& particle_container,
         T_Element const& element_variant,
         amrex::Real slice_ds,
         bool print_wakefield = false

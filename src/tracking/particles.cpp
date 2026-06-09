@@ -53,8 +53,14 @@ namespace impactx
         // check typos in inputs after step 1
         bool early_params_checked = false;
 
+        // dispatch on the runtime beam precision; the tracking loop below
+        // operates on the concrete, precision-templated particle container
+        amr_data_visit([&](auto& data)
+        {
+
         // shortcuts
-        auto & pc = amr_data->track_particles.m_particle_container;
+        auto & pc = data.track_particles.m_particle_container;
+        auto & lost_pc = data.track_particles.m_particles_lost;
 
         // diagnostics
         amrex::ParmParse pp_diag("diag");
@@ -72,12 +78,12 @@ namespace impactx
             pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
 
             // print initial reference particle to file
-            diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
+            diagnostics::DiagnosticOutput(pc->GetRefParticle(),
                                           "ref_particle",
                                           step);
 
             // print the initial values of reduced beam characteristics
-            diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
+            diagnostics::DiagnosticOutput(*pc,
                                           "reduced_beam_characteristics");
 
         }
@@ -113,7 +119,7 @@ namespace impactx
             // loop over all beamline elements
             for (auto &element_variant: m_lattice) {
                 // update element edge of the reference particle
-                amr_data->track_particles.m_particle_container->SetRefParticleEdge();
+                pc->SetRefParticleEdge();
 
                 // optional, user-defined function call
                 m_tracking_state.m_element = &element_variant;
@@ -140,22 +146,22 @@ namespace impactx
                     call_hook("before_slice");
 
                     // Wakefield calculation: call wakefield function to apply wake effects
-                    particles::wakefields::HandleWakefield(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
+                    particles::wakefields::HandleWakefield(*pc, element_variant, slice_ds);
 
                     // ISR calculation: call ISR function to apply incoherent synchrotron radiation effects
-                    particles::wakefields::HandleISR(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
+                    particles::wakefields::HandleISR(*pc, element_variant, slice_ds);
 
                     // Space-charge calculation
-                    particles::spacecharge::HandleSpacecharge(amr_data, [this](){ this->ResizeMesh(); }, slice_ds);
+                    particles::spacecharge::HandleSpacecharge(*amr_data, [this](){ this->ResizeMesh(); }, slice_ds);
 
                     // push all particles with external maps
-                    push(*amr_data->track_particles.m_particle_container, element_variant, step, period);
+                    push(*pc, element_variant, step, period);
 
                     // Apply optional particle boundary conditions
-                    particles::ParticleBoundary(*amr_data->track_particles.m_particle_container);
+                    particles::ParticleBoundary(*pc);
 
                     // move "lost" particles to another particle container
-                    collect_lost_particles(*amr_data->track_particles.m_particle_container);
+                    collect_lost_particles(*pc);
 
                     // just prints an empty newline at the end of the slice_step
                     if (verbose > 0) {
@@ -166,19 +172,19 @@ namespace impactx
                     bool slice_step_diagnostics = false;
                     pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
 
-                    if (amr_data->track_particles.m_particle_container->store_beam_moments) {
-                        amr_data->track_particles.m_particle_container->record_beam_moments();
+                    if (pc->store_beam_moments) {
+                        pc->record_beam_moments();
                     }
 
                     if (diag_enable && slice_step_diagnostics) {
                         // print slice step reference particle to file
-                        diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
+                        diagnostics::DiagnosticOutput(pc->GetRefParticle(),
                                                       "ref_particle",
                                                       step,
                                                       true);
 
                         // print slice step reduced beam characteristics to file
-                        diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
+                        diagnostics::DiagnosticOutput(*pc,
                                                       "reduced_beam_characteristics",
                                                       step,
                                                       true);
@@ -205,25 +211,27 @@ namespace impactx
         if (diag_enable)
         {
             // print final reference particle to file
-            diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
+            diagnostics::DiagnosticOutput(pc->GetRefParticle(),
                                           "ref_particle_final",
                                           step);
 
             // print the final values of the reduced beam characteristics
-            diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
+            diagnostics::DiagnosticOutput(*pc,
                                           "reduced_beam_characteristics_final",
                                           step);
 
             // output particles lost in apertures
-            if (amr_data->track_particles.m_particles_lost->TotalNumberOfParticles() > 0)
+            if (lost_pc->TotalNumberOfParticles() > 0)
             {
                 std::string openpmd_backend = "default";
                 pp_diag.queryAdd("backend", openpmd_backend);
 
                 elements::diagnostics::BeamMonitor output_lost("particles_lost", openpmd_backend, "g");
-                output_lost(*amr_data->track_particles.m_particles_lost, 0, 0);
+                output_lost(*lost_pc, 0, 0);
                 output_lost.finalize();
             }
         }
+
+        }); // amr_data_visit
     }
 } // namespace impactx

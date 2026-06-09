@@ -14,7 +14,7 @@ using namespace impactx;
 void init_transformation(py::module& m)
 {
     m.def("coordinate_transformation",
-        &transformation::CoordinateTransformation,
+        &transformation::CoordinateTransformation<ImpactXParticleContainer>,
         py::arg("pc"),
         py::arg("direction"),
         "Transform coordinates from fixed s to fixed to or vice versa."

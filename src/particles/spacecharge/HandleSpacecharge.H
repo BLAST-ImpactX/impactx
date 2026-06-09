@@ -28,7 +28,7 @@ namespace impactx::particles::spacecharge
      * @param[in] slice_ds slice spacing along s
      */
     void HandleSpacecharge (
-        std::unique_ptr<initialization::AmrCoreData> & amr_data,
+        initialization::AmrCoreDataBase & amr_data,
         std::function<void()> ResizeMesh,
         amrex::Real slice_ds
     );

@@ -24,7 +24,7 @@ void init_wakeconvolution(py::module &m)
 
     //Use a lambda to wrap the binning functions
     md.def("deposit_charge",
-        &impactx::particles::wakefields::DepositCharge1D,
+        &impactx::particles::wakefields::DepositCharge1D<ImpactXParticleContainer>,
         "Deposit Charge Distribution Function"
     );
 

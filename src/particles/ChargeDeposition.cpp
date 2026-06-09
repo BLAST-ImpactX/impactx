@@ -219,9 +219,17 @@ namespace impactx
         }
     }
 
-    // explicit template instantiation for the default precision
+    // explicit template instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
     template void
-    ImpactXParticleContainerT<IMPACTX_PARTICLE_REAL>::DepositCharge (
+    ImpactXParticleContainerT<double>::DepositCharge (
         std::unordered_map<int, amrex::MultiFab> &,
         amrex::Vector<amrex::IntVect> const &);
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void
+    ImpactXParticleContainerT<float>::DepositCharge (
+        std::unordered_map<int, amrex::MultiFab> &,
+        amrex::Vector<amrex::IntVect> const &);
+#endif
 } // namespace impactx

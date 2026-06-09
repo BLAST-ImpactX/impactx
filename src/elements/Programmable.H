@@ -68,6 +68,14 @@ namespace impactx::elements
             int period
         ) const;
 
+        /** A non-default beam precision is not yet supported for this element. */
+        template <class T_PC,
+                  std::enable_if_t<!std::is_same_v<T_PC, ImpactXParticleContainer>, int> = 0>
+        void operator() (T_PC & /* pc */, int /* step */, int /* period */) const
+        {
+            amrex::Abort("Programmable: only the default beam precision is supported.");
+        }
+
         /** Push all particles relative to the reference particle */
         void operator() (
             ImpactXParticleContainer::iterator & pti,

@@ -18,8 +18,9 @@
 
 namespace impactx::particles::wakefields
 {
+    template <class T_PC>
     void WakePush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::Gpu::DeviceVector<amrex::Real> const & convolved_wakefield,
         amrex::ParticleReal slice_ds,
         amrex::Real bin_size,
@@ -39,7 +40,7 @@ namespace impactx::particles::wakefields
         for (int lev = 0; lev <= nLevel; ++lev)
         {
             // Loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
 
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -97,4 +98,24 @@ namespace impactx::particles::wakefields
             } // End loop over all particle boxes
         } // End mesh-refinement level loop
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void WakePush (
+        ImpactXParticleContainerT<double> & pc,
+        amrex::Gpu::DeviceVector<amrex::Real> const & convolved_wakefield,
+        amrex::ParticleReal slice_ds,
+        amrex::Real bin_size,
+        amrex::Real bin_min
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void WakePush (
+        ImpactXParticleContainerT<float> & pc,
+        amrex::Gpu::DeviceVector<amrex::Real> const & convolved_wakefield,
+        amrex::ParticleReal slice_ds,
+        amrex::Real bin_size,
+        amrex::Real bin_min
+    );
+#endif
 } // namespace impactx::particles::wakefields

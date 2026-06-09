@@ -24,8 +24,9 @@ namespace impactx::particles::wakefields
      * @param[in] is_unity_particle_weight ignore the particle weighting per macro particle,
      *                                     otherwise treat each particle as one physical particle
      */
+    template <class T_PC>
     void DepositCharge1D (
-        impactx::ImpactXParticleContainer& myspc,
+        T_PC & myspc,
         amrex::Gpu::DeviceVector<amrex::Real> & charge_distribution,
         amrex::Real bin_min,
         amrex::Real bin_size,
@@ -56,8 +57,9 @@ namespace impactx::particles::wakefields
      * @param[in] is_unity_particle_weight ignore the particle weighting per macro particle,
      *                                     otherwise treat each particle as one physical particle
      */
+    template <class T_PC>
     void MeanTransversePosition (
-        impactx::ImpactXParticleContainer& myspc,
+        T_PC & myspc,
         amrex::Gpu::DeviceVector<amrex::Real> & mean_x,
         amrex::Gpu::DeviceVector<amrex::Real> & mean_y,
         amrex::Real bin_min,

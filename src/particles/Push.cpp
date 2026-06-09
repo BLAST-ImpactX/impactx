@@ -34,13 +34,23 @@ namespace impactx
         }, element_variant);
     }
 
-    // explicit instantiation for the default precision
-    template void push<ImpactXParticleContainer> (
-        ImpactXParticleContainer &,
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void push<ImpactXParticleContainerT<double>> (
+        ImpactXParticleContainerT<double> &,
         elements::KnownElements &,
         int,
         int
     );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void push<ImpactXParticleContainerT<float>> (
+        ImpactXParticleContainerT<float> &,
+        elements::KnownElements &,
+        int,
+        int
+    );
+#endif
 
     void push (
         RefPart & ref,

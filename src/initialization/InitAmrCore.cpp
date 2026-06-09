@@ -62,10 +62,35 @@ namespace details
         amrex::RealBox rb(prob_lo.data(), prob_hi.data());
         return rb;
     }
+    /** Construct AmrCoreData at the runtime-selected beam precision.
+     *
+     * Only the precisions compiled into this binary (IMPACTX_COMPILE_*) have a
+     * branch; requesting an uncompiled precision aborts with a clear message.
+     */
+    template <class... Args>
+    std::unique_ptr<AmrCoreDataBase>
+    make_amr_core_data ([[maybe_unused]] Precision prec, Args&&... args)
+    {
+#ifdef IMPACTX_COMPILE_SINGLE
+        if (prec == Precision::single)
+        {
+            return std::make_unique<AmrCoreData<float>>(std::forward<Args>(args)...);
+        }
+#endif
+#ifdef IMPACTX_COMPILE_DOUBLE
+        if (prec == Precision::double_)
+        {
+            return std::make_unique<AmrCoreData<double>>(std::forward<Args>(args)...);
+        }
+#endif
+        amrex::Abort("Requested beam precision is not compiled into this ImpactX build. "
+                     "Rebuild with the needed token in ImpactX_PRECISION (SINGLE/DOUBLE).");
+        return nullptr;
+    }
 } // namespace details
 
-    AmrCoreData
-    init_amr_core ()
+    std::unique_ptr<AmrCoreDataBase>
+    init_amr_core (Precision prec)
     {
         // note: due to global state, it would be too early to use amrex::Abort() in these functions
         if (!amrex::Initialized())
@@ -78,13 +103,13 @@ namespace details
         amrex::Vector<int> n_cell(AMREX_SPACEDIM);
         bool const has_ncell = pp_amr.queryarr("n_cell", n_cell);
         if (has_ncell)
-            return amrex_amrcore_gridding();
+            return amrex_amrcore_gridding(prec);
         else
-            return one_box_per_rank();
+            return one_box_per_rank(prec);
     }
 
-    AmrCoreData
-    amrex_amrcore_gridding ()
+    std::unique_ptr<AmrCoreDataBase>
+    amrex_amrcore_gridding (Precision prec)
     {
         amrex::ParmParse const pp_amr("amr");
         amrex::Vector<int> n_cell(AMREX_SPACEDIM);
@@ -103,11 +128,12 @@ namespace details
         //   amrex::AmrMesh::InitAmrMesh will query amr.ref_ratio or amr.ref_ratio_vect on its own
         amrex::Vector<amrex::IntVect> const & ref_ratios = amrex::Vector<amrex::IntVect>();
 
-        return {rb, max_level, n_cell, amrex::CoordSys::cartesian, ref_ratios, is_periodic};
+        return details::make_amr_core_data(prec,
+            rb, max_level, n_cell, amrex::CoordSys::cartesian, ref_ratios, is_periodic);
     }
 
-    AmrCoreData
-    one_box_per_rank ()
+    std::unique_ptr<AmrCoreDataBase>
+    one_box_per_rank (Precision prec)
     {
         amrex::AmrInfo amr_info;
 
@@ -148,6 +174,7 @@ namespace details
         //   amrex::AmrMesh::InitAmrMesh will query amr.ref_ratio or amr.ref_ratio_vect on its own
         amrex::Vector<amrex::IntVect> const & ref_ratios = amrex::Vector<amrex::IntVect>();
 
-        return {rb, max_level, n_cell_v, amrex::CoordSys::cartesian, ref_ratios, is_periodic};
+        return details::make_amr_core_data(prec,
+            rb, max_level, n_cell_v, amrex::CoordSys::cartesian, ref_ratios, is_periodic);
     }
 } // namespace impactx::initialization

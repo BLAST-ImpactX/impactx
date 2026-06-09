@@ -271,11 +271,16 @@ function(impactx_set_binary_name)
 
         set_property(TARGET ${tgt} APPEND_STRING PROPERTY OUTPUT_NAME ".${ImpactX_COMPUTE}")
 
-        if(ImpactX_PRECISION STREQUAL "DOUBLE")
-            set_property(TARGET ${tgt} APPEND_STRING PROPERTY OUTPUT_NAME ".DP")
-        else()
-            set_property(TARGET ${tgt} APPEND_STRING PROPERTY OUTPUT_NAME ".SP")
+        # one suffix per compiled beam precision (e.g. .DP, .SP, or .SPDP for a
+        # runtime-selectable multi-precision binary)
+        set(_impactx_prec_suffix "")
+        if("SINGLE" IN_LIST ImpactX_PRECISION)
+            string(APPEND _impactx_prec_suffix "SP")
         endif()
+        if("DOUBLE" IN_LIST ImpactX_PRECISION)
+            string(APPEND _impactx_prec_suffix "DP")
+        endif()
+        set_property(TARGET ${tgt} APPEND_STRING PROPERTY OUTPUT_NAME ".${_impactx_prec_suffix}")
 
         #if(ImpactX_ASCENT)
         #    set_property(TARGET ${tgt} APPEND_STRING PROPERTY OUTPUT_NAME ".ASCENT")

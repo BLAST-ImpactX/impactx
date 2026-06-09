@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 
 namespace impactx
@@ -132,8 +133,46 @@ namespace impactx
         /** The AMReX core object that contains AMR hierarchy, \see amrex::AmrCore
          *
          * Inside here, we store our particle containers and space charge fields.
+         * This is held through the precision-agnostic base; the concrete,
+         * runtime-selected beam precision lives in initialization::AmrCoreData<T_PT>.
+         * Use amr_data_visit() to reach the concrete, precision-templated data.
          */
-        std::unique_ptr<initialization::AmrCoreData> amr_data;
+        std::unique_ptr<initialization::AmrCoreDataBase> amr_data;
+
+        /** Dispatch on the runtime beam precision and invoke a callable.
+         *
+         * The callable @p f is invoked with a reference to the concrete
+         * initialization::AmrCoreData<T_PT> matching the current precision. This
+         * is the single boundary where runtime precision crosses into templated
+         * code; use a generic lambda, e.g. amr_data_visit([&](auto& data){ ... }).
+         */
+        template <class F>
+        decltype(auto) amr_data_visit (F && f)
+        {
+            return initialization::visit_amr_data(*amr_data, std::forward<F>(f));
+        }
+
+        /** The runtime-selected beam precision.
+         *
+         * Defaults to the base precision the binary was compiled with; change it
+         * with set_precision() before init_grids(). Also overridable via the
+         * ``impactx.precision`` input (``single``/``double``).
+         */
+        initialization::Precision m_precision =
+#ifdef IMPACTX_COMPILE_DOUBLE
+            initialization::Precision::double_;
+#else
+            initialization::Precision::single;
+#endif
+
+        /** Select the beam floating-point precision at runtime.
+         *
+         * Must be called before init_grids(); the requested precision must be one
+         * compiled into the binary (see the ImpactX_PRECISION build option).
+         *
+         * @param precision the beam precision to use
+         */
+        void set_precision (initialization::Precision precision);
 
         /** Resize the mesh, based on the extent of the bunch of particle
          *

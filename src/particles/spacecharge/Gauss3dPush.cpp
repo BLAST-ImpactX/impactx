@@ -106,8 +106,9 @@ namespace impactx::particles::spacecharge
         pintez = sum0ez / 3_prt;
     }
 
+    template <class T_PC>
     void Gauss3dPush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::ParticleReal const slice_ds
     )
     {
@@ -153,7 +154,7 @@ namespace impactx::particles::spacecharge
         for (int lev = 0; lev <= nLevel; ++lev)
         {
             // loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -195,5 +196,19 @@ namespace impactx::particles::spacecharge
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void Gauss3dPush (
+        ImpactXParticleContainerT<double> & pc,
+        amrex::ParticleReal const slice_ds
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void Gauss3dPush (
+        ImpactXParticleContainerT<float> & pc,
+        amrex::ParticleReal const slice_ds
+    );
+#endif
 
 }  // namespace impactx::particles::spacecharge

@@ -46,8 +46,9 @@ namespace impactx::elements
         void reverse () { }
 
         /** Push all particles - nothing to do here */
+        template <class T_PC>
         void operator() (
-            ImpactXParticleContainer & /* pc */,
+            T_PC & /* pc */,
             int /* step */,
             int /* period */
         ) {
@@ -61,8 +62,9 @@ namespace impactx::elements
         }
 
         /** Push all particles - nothing to do here */
+        template <class T_Iter>
         void operator() (
-            ImpactXParticleContainer::iterator & /* pti */,
+            T_Iter & /* pti */,
             RefPart & AMREX_RESTRICT /* ref_part */
         ) {
             // nothing to do

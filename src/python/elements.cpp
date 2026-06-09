@@ -2874,11 +2874,14 @@ void init_elements(py::module& m)
 
 
     // freestanding push function
-    m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::KnownElements &, int, int>(&push),
+    //   push() is a function template over the particle container type; take the
+    //   address of the explicit instantiation rather than using overload_cast
+    //   (which cannot deduce the return type through a templated overload set).
+    m.def("push", static_cast<void (*)(ImpactXParticleContainer &, elements::KnownElements &, int, int)>(&push<ImpactXParticleContainer>),
         py::arg("pc"), py::arg("element"), py::arg("step")=0, py::arg("period")=0,
         "Push a whole particle beam (incl. reference particle) through an element"
     );
-    m.def("push", py::overload_cast<RefPart &, elements::KnownElements &>(&push),
+    m.def("push", static_cast<void (*)(RefPart &, elements::KnownElements &)>(&push),
         py::arg("ref"), py::arg("element"),
         "Push the reference particle through an element"
     );

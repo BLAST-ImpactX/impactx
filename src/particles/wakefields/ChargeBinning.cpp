@@ -15,8 +15,9 @@
 
 namespace impactx::particles::wakefields
 {
+    template <class T_PC>
     void DepositCharge1D (
-        impactx::ImpactXParticleContainer& myspc,
+        T_PC & myspc,
         amrex::Gpu::DeviceVector<amrex::Real> & charge_distribution,
         amrex::Real bin_min,
         amrex::Real bin_size,
@@ -37,7 +38,7 @@ namespace impactx::particles::wakefields
 #endif
             {
                 // Loop over particles at the current grid level
-                for (impactx::ParIterSoA pti(myspc, lev); pti.isValid(); ++pti)
+                for (typename T_PC::iterator pti(myspc, lev); pti.isValid(); ++pti)
                 {
                     auto& soa = pti.GetStructOfArrays();  // Access data directly from StructOfArrays (soa)
 
@@ -112,8 +113,9 @@ namespace impactx::particles::wakefields
         });
     }
 
+    template <class T_PC>
     void MeanTransversePosition (
-        impactx::ImpactXParticleContainer& myspc,
+        T_PC & myspc,
         amrex::Gpu::DeviceVector<amrex::Real> & mean_x,
         amrex::Gpu::DeviceVector<amrex::Real> & mean_y,
         amrex::Real bin_min,
@@ -145,7 +147,7 @@ namespace impactx::particles::wakefields
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
             {
-                for (impactx::ParIterSoA pti(myspc, lev); pti.isValid(); ++pti)
+                for (typename T_PC::iterator pti(myspc, lev); pti.isValid(); ++pti)
                 {
                     auto& soa = pti.GetStructOfArrays();
                     long const np = pti.numParticles();
@@ -189,4 +191,40 @@ namespace impactx::particles::wakefields
             }
         });
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void DepositCharge1D (
+        ImpactXParticleContainerT<double> & myspc,
+        amrex::Gpu::DeviceVector<amrex::Real> & charge_distribution,
+        amrex::Real bin_min,
+        amrex::Real bin_size,
+        bool is_unity_particle_weight
+    );
+    template void MeanTransversePosition (
+        ImpactXParticleContainerT<double> & myspc,
+        amrex::Gpu::DeviceVector<amrex::Real> & mean_x,
+        amrex::Gpu::DeviceVector<amrex::Real> & mean_y,
+        amrex::Real bin_min,
+        amrex::Real bin_size,
+        bool is_unity_particle_weight
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void DepositCharge1D (
+        ImpactXParticleContainerT<float> & myspc,
+        amrex::Gpu::DeviceVector<amrex::Real> & charge_distribution,
+        amrex::Real bin_min,
+        amrex::Real bin_size,
+        bool is_unity_particle_weight
+    );
+    template void MeanTransversePosition (
+        ImpactXParticleContainerT<float> & myspc,
+        amrex::Gpu::DeviceVector<amrex::Real> & mean_x,
+        amrex::Gpu::DeviceVector<amrex::Real> & mean_y,
+        amrex::Real bin_min,
+        amrex::Real bin_size,
+        bool is_unity_particle_weight
+    );
+#endif
 }

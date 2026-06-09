@@ -97,7 +97,7 @@ namespace detail
         }
 
         // Extract the min and max of the particle positions
-        auto const [x_min, y_min, z_min, x_max, y_max, z_max] = amr_data->track_particles.m_particle_container->MinAndMaxPositions();
+        auto const [x_min, y_min, z_min, x_max, y_max, z_max] = amr_data->particle_container().MinAndMaxPositions();
 
         // guard for flat beams:
         //   https://github.com/BLAST-ImpactX/impactx/issues/44
@@ -160,7 +160,7 @@ namespace detail
             g.ProbDomain(rb[lev]);
             amr_data->SetGeometry(lev, g);
 
-            amr_data->track_particles.m_particle_container->SetParticleGeometry(lev, g);
+            amr_data->particle_container().SetParticleGeometry(lev, g);
         }
     }
 } // namespace impactx

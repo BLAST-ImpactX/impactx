@@ -29,9 +29,10 @@ namespace impactx::particles::spacecharge
      * @param[in] num_bins number of longitudinal bins
      * @return beam_profile deposited charge density
      */
+    template <class T_PC>
     amrex::Gpu::DeviceVector<amrex::Real>
     Deposit1D (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::Real bin_min,
         amrex::Real bin_max,
         int num_bins

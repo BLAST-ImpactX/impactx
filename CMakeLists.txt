@@ -74,10 +74,21 @@ option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
 
 set(ImpactX_PRECISION_VALUES SINGLE DOUBLE)
-set(ImpactX_PRECISION DOUBLE CACHE STRING "Floating point precision (SINGLE/DOUBLE)")
+set(ImpactX_PRECISION DOUBLE CACHE STRING "Floating point precision: a list of SINGLE and/or DOUBLE; multiple values build one runtime-selectable multi-precision binary")
 set_property(CACHE ImpactX_PRECISION PROPERTY STRINGS ${ImpactX_PRECISION_VALUES})
-if(NOT ImpactX_PRECISION IN_LIST ImpactX_PRECISION_VALUES)
-    message(FATAL_ERROR "ImpactX_PRECISION (${ImpactX_PRECISION}) must be one of ${ImpactX_PRECISION_VALUES}")
+list(REMOVE_DUPLICATES ImpactX_PRECISION)
+foreach(_prec IN LISTS ImpactX_PRECISION)
+    if(NOT _prec IN_LIST ImpactX_PRECISION_VALUES)
+        message(FATAL_ERROR "ImpactX_PRECISION (${ImpactX_PRECISION}) entries must each be one of ${ImpactX_PRECISION_VALUES}")
+    endif()
+endforeach()
+# The AMReX/WarpX base precision built underneath. If DOUBLE is requested it is the
+# base and SINGLE (if also requested) is added via explicit ImpactX template
+# instantiation in the same binary; a pure-SINGLE list builds a monomorphic float base.
+if("DOUBLE" IN_LIST ImpactX_PRECISION)
+    set(ImpactX_PRECISION_BASE DOUBLE)
+else()
+    set(ImpactX_PRECISION_BASE SINGLE)
 endif()
 
 set(ImpactX_COMPUTE_VALUES NOACC OMP CUDA SYCL HIP)
@@ -182,6 +193,15 @@ generate_export_header(lib
 )
 if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(lib PUBLIC IMPACTX_STATIC_DEFINE)
+endif()
+
+# Which beam precisions are compiled into this (possibly multi-precision) binary.
+# These drive the explicit template instantiations and the runtime precision dispatch.
+if("DOUBLE" IN_LIST ImpactX_PRECISION)
+    target_compile_definitions(lib PUBLIC IMPACTX_COMPILE_DOUBLE)
+endif()
+if("SINGLE" IN_LIST ImpactX_PRECISION)
+    target_compile_definitions(lib PUBLIC IMPACTX_COMPILE_SINGLE)
 endif()
 
 # Optional: build only a single TU

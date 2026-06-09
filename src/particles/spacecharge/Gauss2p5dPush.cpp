@@ -144,8 +144,9 @@ namespace impactx::particles::spacecharge
         pintey = 2_prt * asp * yp * sum0ey / 3_prt / sigy;
     }
 
+    template <class T_PC>
     void Gauss2p5dPush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::ParticleReal const slice_ds
     )
     {
@@ -231,7 +232,7 @@ namespace impactx::particles::spacecharge
         for (int lev = 0; lev <= nLevel; ++lev)
         {
             // loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -283,5 +284,19 @@ namespace impactx::particles::spacecharge
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void Gauss2p5dPush (
+        ImpactXParticleContainerT<double> & pc,
+        amrex::ParticleReal const slice_ds
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void Gauss2p5dPush (
+        ImpactXParticleContainerT<float> & pc,
+        amrex::ParticleReal const slice_ds
+    );
+#endif
 
 }  // namespace impactx::particles::spacecharge

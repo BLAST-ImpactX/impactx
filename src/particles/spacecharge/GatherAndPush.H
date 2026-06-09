@@ -35,8 +35,9 @@ namespace impactx::particles::spacecharge
      * @param[in] geom geometry object
      * @param[in] slice_ds segment length in meters
      */
+    template <class T_PC>
     void GatherAndPush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
         std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,

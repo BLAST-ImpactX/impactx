@@ -20,8 +20,9 @@
 namespace impactx::particles::wakefields
 {
 
+    template <class T_PC>
     void ISRPush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::ParticleReal slice_ds,
         amrex::ParticleReal rc,
         [[maybe_unused]] int isr_order,
@@ -61,7 +62,7 @@ namespace impactx::particles::wakefields
         for (int lev = 0; lev <= nLevel; ++lev)
         {
             // Loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
 
             for (ParIt pti(pc, lev); pti.isValid(); ++pti)
             {
@@ -148,4 +149,24 @@ namespace impactx::particles::wakefields
         }
 
    }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void ISRPush (
+        ImpactXParticleContainerT<double> & pc,
+        amrex::ParticleReal slice_ds,
+        amrex::ParticleReal rc,
+        int isr_order,
+        bool isr_on_ref_part
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void ISRPush (
+        ImpactXParticleContainerT<float> & pc,
+        amrex::ParticleReal slice_ds,
+        amrex::ParticleReal rc,
+        int isr_order,
+        bool isr_on_ref_part
+    );
+#endif
 } // namespace impactx::particles::wakefields

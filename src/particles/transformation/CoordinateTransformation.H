@@ -20,7 +20,8 @@ namespace impactx::transformation
      * @param pc container of the particles to push
      * @param direction the transformation (to fixed s or to fixed t)
      */
-    void CoordinateTransformation (ImpactXParticleContainer & pc,
+    template <class T_PC>
+    void CoordinateTransformation (T_PC & pc,
                                    CoordSystem direction);
 
 } // namespace impactx::transformation

@@ -28,8 +28,9 @@ namespace impactx::particles::wakefields
      * @param[in] isr_order order of quantum ISR effects
      * @param[in] isr_on_ref_part flag specifying whether ISR is applied to the reference particle
      */
+    template <class T_PC>
     void ISRPush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::ParticleReal slice_ds,
         amrex::ParticleReal rc,
         [[maybe_unused]] int isr_order,

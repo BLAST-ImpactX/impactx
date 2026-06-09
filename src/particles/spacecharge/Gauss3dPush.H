@@ -30,8 +30,9 @@ namespace impactx::particles::spacecharge
      * @param[inout] pc container of the particles that deposited rho
      * @param[in] slice_ds segment length in meters
      */
+    template <class T_PC>
     void Gauss3dPush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::ParticleReal slice_ds
     );
 

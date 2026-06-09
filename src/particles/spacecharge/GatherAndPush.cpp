@@ -23,8 +23,9 @@
 
 namespace impactx::particles::spacecharge
 {
+    template <class T_PC>
     void GatherAndPush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
         std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,
@@ -79,7 +80,7 @@ namespace impactx::particles::spacecharge
             const auto prob_lo = gm.ProbLoArray();
 
             // loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -238,4 +239,25 @@ namespace impactx::particles::spacecharge
             } // end loop over all particle boxes
         } // env mesh-refinement level loop
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void GatherAndPush (
+        ImpactXParticleContainerT<double> & pc,
+        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
+        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
+        const amrex::Vector<amrex::Geometry>& geom,
+        amrex::ParticleReal const slice_ds
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void GatherAndPush (
+        ImpactXParticleContainerT<float> & pc,
+        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
+        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
+        const amrex::Vector<amrex::Geometry>& geom,
+        amrex::ParticleReal const slice_ds
+    );
+#endif
+
 }  // namespace impactx::particles::spacecharge

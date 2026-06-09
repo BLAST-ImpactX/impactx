@@ -26,8 +26,9 @@ namespace impactx::particles::wakefields
      * @param[in] bin_size size of the beam in s divided by num_bins
      * @param[in] bin_min lower end of the beam in s
      */
+    template <class T_PC>
     void WakePush (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::Gpu::DeviceVector<amrex::Real> const & convolved_wakefield,
         amrex::ParticleReal slice_ds,
         amrex::Real bin_size,

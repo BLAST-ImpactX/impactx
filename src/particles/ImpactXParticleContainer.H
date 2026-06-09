@@ -147,6 +147,88 @@ namespace impactx
     //! const particle-box iterator for the default-precision container
     using ParConstIterSoA = ParConstIterSoAT<IMPACTX_PARTICLE_REAL>;
 
+    /** Precision-agnostic interface to the beam particle container.
+     *
+     * This abstract base exposes the parts of the ImpactX particle container API
+     * that are independent of the particle storage precision (their interface is
+     * expressed in amrex::ParticleReal, the default/reference precision). It lets
+     * non-templated code (ImpactX, diagnostics, Python bindings) hold and use the
+     * beam without knowing the concrete storage precision, while the precision is
+     * selected at runtime. Precision-dependent operations (e.g. charge deposition
+     * onto the mesh, low-level SoA access) are handled on the concrete
+     * ImpactXParticleContainerT<T_PT> from inside the precision-dispatched code.
+     */
+    class ImpactXParticleContainerBase
+    {
+    public:
+        virtual ~ImpactXParticleContainerBase () = default;
+
+        /** In situ calculate and store the beam moments for every simulation step */
+        bool store_beam_moments = false;
+
+        virtual void prepare () = 0;
+        virtual void clear (bool keep_mass=false, bool keep_charge=false) = 0;
+
+        virtual void
+        AddNParticles (
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & x,
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & y,
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & t,
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & px,
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & py,
+            amrex::Gpu::DeviceVector<amrex::ParticleReal> const & pt,
+            amrex::ParticleReal qm,
+            std::optional<amrex::ParticleReal> bunch_charge = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> w = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sx = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sy = std::nullopt,
+            std::optional<amrex::Gpu::DeviceVector<amrex::ParticleReal>> sz = std::nullopt
+        ) = 0;
+
+        virtual void SetLostParticleContainer (ImpactXParticleContainerBase * lost_pc) = 0;
+        virtual ImpactXParticleContainerBase * GetLostParticleContainer () = 0;
+
+        virtual void SetRefParticle (RefPart const & refpart) = 0;
+        virtual RefPart & GetRefParticle () = 0;
+        virtual RefPart const & GetRefParticle () const = 0;
+        virtual void SetRefParticleEdge () = 0;
+
+        virtual int GetParticleShape () const = 0;
+        virtual void SetParticleShape () = 0;
+        virtual void SetParticleShape (int order) = 0;
+
+        virtual std::tuple<
+            amrex::ParticleReal, amrex::ParticleReal,
+            amrex::ParticleReal, amrex::ParticleReal,
+            amrex::ParticleReal, amrex::ParticleReal>
+        MinAndMaxPositions () = 0;
+
+        virtual std::tuple<
+            amrex::ParticleReal, amrex::ParticleReal,
+            amrex::ParticleReal, amrex::ParticleReal,
+            amrex::ParticleReal, amrex::ParticleReal>
+        MeanAndStdPositions () = 0;
+
+        virtual CoordSystem GetCoordSystem () const = 0;
+        virtual void SetCoordSystem (CoordSystem coord_system) = 0;
+
+        virtual void SetBucketLength (amrex::ParticleReal bucket_length) = 0;
+        virtual amrex::ParticleReal GetBucketLength () = 0;
+
+        virtual void record_beam_moments () = 0;
+        virtual std::unordered_map<std::string, amrex::ParticleReal> beam_moments () = 0;
+        virtual std::list<std::unordered_map<std::string, amrex::ParticleReal> > beam_moments_history () = 0;
+        virtual void reset_beam_moments_history () = 0;
+
+        // thin precision-agnostic pass-throughs to the underlying AMReX container
+        virtual void Redistribute () = 0;
+        virtual amrex::Long NumberOfParticlesAtLevel (
+            int level, bool only_valid=true, bool only_local=false) const = 0;
+        virtual amrex::Long TotalNumberOfParticles (
+            bool only_valid=true, bool only_local=false) const = 0;
+        virtual void SetParticleGeometry (int lev, amrex::Geometry const & geom) = 0;
+    }; // ImpactXParticleContainerBase
+
     /** Beam Particles in ImpactX
      *
      * This class stores particles, distributed over MPI ranks.
@@ -155,7 +237,8 @@ namespace impactx
      */
     template <class T_PT=amrex::ParticleReal>
     class ImpactXParticleContainerT
-        : public amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator, amrex::DefaultAssignor, T_PT>
+        : public ImpactXParticleContainerBase,
+          public amrex::ParticleContainerPureSoA<RealSoA::nattribs, IntSoA::nattribs, amrex::PolymorphicArenaAllocator, amrex::DefaultAssignor, T_PT>
     {
     public:
         //! the base AMReX pure-SoA particle container type
@@ -171,7 +254,7 @@ namespace impactx
         using const_iterator = impactx::ParConstIterSoAT<T_PT>;
 
         //! Construct a new particle container
-        ImpactXParticleContainerT (initialization::AmrCoreData* amr_core);
+        ImpactXParticleContainerT (initialization::AmrCoreDataBase* amr_core);
 
         //! Destruct a particle container
         virtual ~ImpactXParticleContainerT() = default;
@@ -236,10 +319,27 @@ namespace impactx
          * @param lost_pc particle container for lost particles
          */
         void
-        SetLostParticleContainer (ImpactXParticleContainerT * lost_pc);
+        SetLostParticleContainer (ImpactXParticleContainerBase * lost_pc) override;
 
         ImpactXParticleContainerT *
-        GetLostParticleContainer ();
+        GetLostParticleContainer () override;
+
+        // thin precision-agnostic pass-throughs to the underlying AMReX container
+        void Redistribute () override { base_t::Redistribute(); }
+        amrex::Long NumberOfParticlesAtLevel (
+            int level, bool only_valid=true, bool only_local=false) const override
+        {
+            return base_t::NumberOfParticlesAtLevel(level, only_valid, only_local);
+        }
+        amrex::Long TotalNumberOfParticles (
+            bool only_valid=true, bool only_local=false) const override
+        {
+            return base_t::TotalNumberOfParticles(only_valid, only_local);
+        }
+        void SetParticleGeometry (int lev, amrex::Geometry const & geom) override
+        {
+            base_t::SetParticleGeometry(lev, geom);
+        }
 
         /** Set reference particle attributes
          *
@@ -349,9 +449,6 @@ namespace impactx
          */
         amrex::ParticleReal
         GetBucketLength ();
-
-        /** In situ calculate and store the beam moments for every simulation step */
-        bool store_beam_moments = false;
 
         /** Calculate & record the beam moments at current s */
         void

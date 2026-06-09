@@ -26,9 +26,9 @@ namespace impactx::particles::wakefields
      * @param[in] element_variant variant type of the lattice element
      * @param[in] slice_ds slice spacing along s
      */
-    template <typename T_Element>
+    template <class T_PC, typename T_Element>
     void HandleISR (
-        impactx::ImpactXParticleContainer& particle_container,
+        T_PC& particle_container,
         T_Element const& element_variant,
         amrex::Real slice_ds
     )

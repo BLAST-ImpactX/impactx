@@ -16,10 +16,10 @@ void init_flatten_rho(py::module& m) {
     m.def("flatten_charge_to_2D", [](
         ImpactX & sim
         ) {
-            auto geom_3d = sim.amr_data->track_particles.m_particle_container->GetParGDB()->Geom();
-            amrex::Box domain_3d = geom_3d[0].Domain();  // whole simulation index space (level 0)
+            // geometry and the charge-density field are precision-agnostic
+            amrex::Box const domain_3d = sim.amr_data->Geom(0).Domain();  // whole simulation index space (level 0)
             return flatten_charge_to_2D(
-                sim.amr_data->track_particles.m_rho,
+                sim.amr_data->rho(),
                 domain_3d
             );
     });

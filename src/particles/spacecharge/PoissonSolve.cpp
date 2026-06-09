@@ -25,8 +25,9 @@
 
 namespace impactx::particles::spacecharge
 {
+    template <class T_PC>
     void PoissonSolve (
-        ImpactXParticleContainer const & pc,
+        T_PC const & pc,
         std::unordered_map<int, amrex::MultiFab> & rho,
         std::unordered_map<int, amrex::MultiFab> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio
@@ -171,4 +172,22 @@ namespace impactx::particles::spacecharge
             phi_at_level.FillBoundary(pc.GetParGDB()->Geom()[lev].periodicity());
         }
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void PoissonSolve (
+        ImpactXParticleContainerT<double> const & pc,
+        std::unordered_map<int, amrex::MultiFab> & rho,
+        std::unordered_map<int, amrex::MultiFab> & phi,
+        amrex::Vector<amrex::IntVect> rel_ref_ratio
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void PoissonSolve (
+        ImpactXParticleContainerT<float> const & pc,
+        std::unordered_map<int, amrex::MultiFab> & rho,
+        std::unordered_map<int, amrex::MultiFab> & phi,
+        amrex::Vector<amrex::IntVect> rel_ref_ratio
+    );
+#endif
 }  // impactx::particles::spacecharge

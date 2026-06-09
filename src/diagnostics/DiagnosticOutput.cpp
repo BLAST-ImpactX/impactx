@@ -184,8 +184,9 @@ namespace
 
 namespace impactx::diagnostics
 {
+    template <class T_PC>
     void DiagnosticOutput (
-        ImpactXParticleContainer const & pc,
+        T_PC const & pc,
         std::string const & file_name,
         int step,
         bool append
@@ -245,5 +246,23 @@ namespace impactx::diagnostics
         prepare_header(file_handler, otype, append);
         write_ref(file_handler, ref_part, step);
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void DiagnosticOutput (
+        ImpactXParticleContainerT<double> const & pc,
+        std::string const & file_name,
+        int step,
+        bool append
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void DiagnosticOutput (
+        ImpactXParticleContainerT<float> const & pc,
+        std::string const & file_name,
+        int step,
+        bool append
+    );
+#endif
 
 } // namespace impactx::diagnostics

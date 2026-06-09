@@ -16,7 +16,7 @@
 
 namespace impactx::initialization
 {
-    AmrCoreData::AmrCoreData (
+    AmrCoreDataBase::AmrCoreDataBase (
         amrex::Geometry const& level_0_geom,
         amrex::AmrInfo const& amr_info
     )
@@ -24,7 +24,7 @@ namespace impactx::initialization
     {
     }
 
-    AmrCoreData::AmrCoreData (
+    AmrCoreDataBase::AmrCoreDataBase (
         amrex::RealBox const & rb,
         int max_level_in,
         amrex::Vector<int> const & n_cell_in,
@@ -37,7 +37,7 @@ namespace impactx::initialization
     }
 
     void
-    AmrCoreData::ErrorEst (
+    AmrCoreDataBase::ErrorEst (
         int lev,
         amrex::TagBoxArray& tags,
         [[maybe_unused]] amrex::Real time,
@@ -109,7 +109,28 @@ namespace impactx::initialization
     }
 
     void
-    AmrCoreData::MakeNewLevelFromScratch (
+    AmrCoreDataBase::MakeNewLevelFromCoarse (
+        [[maybe_unused]] int lev,
+        [[maybe_unused]] amrex::Real time,
+        [[maybe_unused]] const amrex::BoxArray& ba,
+        [[maybe_unused]] const amrex::DistributionMapping& dm)
+    {
+        amrex::Abort("MakeNewLevelFromCoarse: Not Implemented Yet");
+    }
+
+    void
+    AmrCoreDataBase::RemakeLevel (
+        [[maybe_unused]] int lev,
+        [[maybe_unused]] amrex::Real time,
+        [[maybe_unused]] const amrex::BoxArray& ba,
+        [[maybe_unused]] const amrex::DistributionMapping& dm)
+    {
+        amrex::Abort("RemakeLevel: Not Implemented Yet");
+    }
+
+    template <class T_PT>
+    void
+    AmrCoreData<T_PT>::MakeNewLevelFromScratch (
         [[maybe_unused]] int lev,
         [[maybe_unused]] amrex::Real time,
         [[maybe_unused]] const amrex::BoxArray& ba,
@@ -188,31 +209,20 @@ namespace impactx::initialization
         track_particles.m_space_charge_field.emplace(lev, std::move(f_comp));
     }
 
+    template <class T_PT>
     void
-    AmrCoreData::MakeNewLevelFromCoarse (
-        [[maybe_unused]] int lev,
-        [[maybe_unused]] amrex::Real time,
-        [[maybe_unused]] const amrex::BoxArray& ba,
-        [[maybe_unused]] const amrex::DistributionMapping& dm)
-    {
-        amrex::Abort("MakeNewLevelFromCoarse: Not Implemented Yet");
-    }
-
-    void
-    AmrCoreData::RemakeLevel (
-        [[maybe_unused]] int lev,
-        [[maybe_unused]] amrex::Real time,
-        [[maybe_unused]] const amrex::BoxArray& ba,
-        [[maybe_unused]] const amrex::DistributionMapping& dm)
-    {
-        amrex::Abort("RemakeLevel: Not Implemented Yet");
-    }
-
-    void
-    AmrCoreData::ClearLevel ([[maybe_unused]] int lev)
+    AmrCoreData<T_PT>::ClearLevel ([[maybe_unused]] int lev)
     {
         track_particles.m_rho.erase(lev);
         track_particles.m_phi.erase(lev);
         track_particles.m_space_charge_field.erase(lev);
     }
+
+    // explicit template instantiation for the precisions ImpactX provides
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template class AmrCoreData<double>;
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template class AmrCoreData<float>;
+#endif
 } // namespace impactx::initialization

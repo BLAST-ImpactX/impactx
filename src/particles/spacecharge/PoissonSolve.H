@@ -29,8 +29,9 @@ namespace impactx::particles::spacecharge
      * @param[inout] phi scalar potential per level
      * @param[in] rel_ref_ratio mesh refinement ratio between levels
      */
+    template <class T_PC>
     void PoissonSolve (
-        ImpactXParticleContainer const & pc,
+        T_PC const & pc,
         std::unordered_map<int, amrex::MultiFab> & rho,
         std::unordered_map<int, amrex::MultiFab> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio

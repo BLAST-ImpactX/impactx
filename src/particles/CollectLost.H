@@ -23,7 +23,8 @@ namespace impactx
      *
      * @param source the beam particle container that might loose particles
      */
-    void collect_lost_particles (ImpactXParticleContainer& source);
+    template <class T_PC>
+    void collect_lost_particles (T_PC& source);
 
 } // namespace impactx
 

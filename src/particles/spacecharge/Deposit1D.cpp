@@ -23,9 +23,10 @@
 namespace impactx::particles::spacecharge
 {
 
+    template <class T_PC>
     amrex::Gpu::DeviceVector<amrex::Real>
     Deposit1D (
-        ImpactXParticleContainer & pc,
+        T_PC & pc,
         amrex::Real bin_min,
         amrex::Real bin_max,
         int num_bins
@@ -54,5 +55,25 @@ namespace impactx::particles::spacecharge
 
         return charge_distribution;
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template amrex::Gpu::DeviceVector<amrex::Real>
+    Deposit1D (
+        ImpactXParticleContainerT<double> & pc,
+        amrex::Real bin_min,
+        amrex::Real bin_max,
+        int num_bins
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template amrex::Gpu::DeviceVector<amrex::Real>
+    Deposit1D (
+        ImpactXParticleContainerT<float> & pc,
+        amrex::Real bin_min,
+        amrex::Real bin_max,
+        int num_bins
+    );
+#endif
 
 }  // namespace impactx::particles::spacecharge

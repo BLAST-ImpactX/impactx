@@ -24,9 +24,7 @@ namespace impactx
         int s_index; //!< runtime index of runtime attribute in destination for position s where particle got lost
         amrex::ParticleReal s_lost; //!< position s in meters where particle got lost
 
-        using SrcData = ImpactXParticleContainer::ParticleTileType::ConstParticleTileDataType;
-        using DstData = ImpactXParticleContainer::ParticleTileType::ParticleTileDataType;
-
+        template <typename DstData, typename SrcData>
         AMREX_GPU_HOST_DEVICE
         void operator() (DstData const &dst, SrcData const &src, int src_ip, int dst_ip) const noexcept
         {
@@ -50,12 +48,13 @@ namespace impactx
         }
     };
 
-    void collect_lost_particles (ImpactXParticleContainer& source)
+    template <class T_PC>
+    void collect_lost_particles (T_PC& source)
     {
         BL_PROFILE("impactX::collect_lost_particles");
 
-        using SrcData = ImpactXParticleContainer::ParticleTileType::ConstParticleTileDataType;
-        ImpactXParticleContainer& dest = *source.GetLostParticleContainer();
+        using SrcData = typename T_PC::ParticleTileType::ConstParticleTileDataType;
+        T_PC& dest = *source.GetLostParticleContainer();
 
         // Check destination has the same attributes as source + "s_lost"
         for (auto & name : source.GetRealSoANames())
@@ -100,7 +99,7 @@ namespace impactx
         int const nLevel = source.finestLevel();
         for (int lev = 0; lev <= nLevel; ++lev) {
             // loop over all particle boxes
-            using ParIt = ImpactXParticleContainer::iterator;
+            using ParIt = typename T_PC::iterator;
             auto& plevel = source.GetParticles(lev);
 
             // TODO: is it safe to add OpenMP parallelism here?
@@ -162,4 +161,12 @@ namespace impactx
             } // particle tile loop
         } // lev
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void collect_lost_particles (ImpactXParticleContainerT<double> & source);
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void collect_lost_particles (ImpactXParticleContainerT<float> & source);
+#endif
 } // namespace impactx

@@ -35,8 +35,9 @@ namespace impactx::particles
      *
      * @param[in,out] pc the particle species container
      */
+    template <class T_PC>
     void ParticleBoundary (
-        ImpactXParticleContainer & pc
+        T_PC & pc
     );
 
 } // namespace impactx::particles

@@ -646,36 +646,49 @@ void init_ImpactX (py::module& m)
 
         .def("deposit_charge",
             [](ImpactX & ix) {
-                // transform from x',y',t to x,y,z
-                transformation::CoordinateTransformation(
-                        *(ix.amr_data)->track_particles.m_particle_container,
-                        CoordSystem::t);
+                // dispatch on the runtime beam precision
+                ix.amr_data_visit([&ix](auto& data) {
+                    auto & pc = *data.track_particles.m_particle_container;
 
-                // Note: The following operation assume that
-                // the particles are in x, y, z coordinates.
+                    // transform from x',y',t to x,y,z
+                    transformation::CoordinateTransformation(pc, CoordSystem::t);
 
-                // Resize the mesh, based on `m_particle_container` extent
-                ix.ResizeMesh();
+                    // Note: The following operation assume that
+                    // the particles are in x, y, z coordinates.
 
-                // Redistribute particles in the new mesh in x, y, z
-                ix.amr_data->track_particles.m_particle_container->Redistribute();
+                    // Resize the mesh, based on the particle container extent
+                    ix.ResizeMesh();
 
-                // charge deposition
-                ix.amr_data->track_particles.m_particle_container->DepositCharge(
-                    ix.amr_data->track_particles.m_rho,
-                    ix.amr_data->refRatio());
+                    // Redistribute particles in the new mesh in x, y, z
+                    pc.Redistribute();
 
-                // transform from x,y,z to x',y',t
-                transformation::CoordinateTransformation(
-                    *(ix.amr_data)->track_particles.m_particle_container,
-            CoordSystem::s
-                );
+                    // charge deposition
+                    pc.DepositCharge(data.track_particles.m_rho, ix.amr_data->refRatio());
+
+                    // transform from x,y,z to x',y',t
+                    transformation::CoordinateTransformation(pc, CoordSystem::s);
+                });
             },
             "Deposit charge in x,y,z."
         )
 
         .def("finalize", &ImpactX::finalize,
              "Deallocate all contexts and data."
+        )
+        .def("set_precision",
+             [](ImpactX & ix, std::string const & precision) {
+                 if (precision == "single") {
+                     ix.set_precision(initialization::Precision::single);
+                 } else if (precision == "double") {
+                     ix.set_precision(initialization::Precision::double_);
+                 } else {
+                     throw std::runtime_error("set_precision: expected 'single' or 'double'");
+                 }
+             },
+             py::arg("precision"),
+             "Select the beam floating-point precision ('single' or 'double') at runtime.\n\n"
+             "Must be called before init_grids(). The requested precision must be one\n"
+             "compiled into the binary (see the ImpactX_PRECISION build option)."
         )
         .def("init_grids", &ImpactX::init_grids,
              "Initialize AMReX blocks/grids for domain decomposition & space charge mesh.\n\n"
@@ -747,15 +760,20 @@ void init_ImpactX (py::module& m)
         )
 
         .def("particle_container",
-             [](ImpactX & ix) -> ImpactXParticleContainer & {
+             [](ImpactX & ix) -> py::object {
                 py::warnings::warn(
                     "particle_container() is deprecated. Use sim.beam instead.",
                     PyExc_DeprecationWarning,
                     2
                 );
-                return *ix.amr_data->track_particles.m_particle_container;
+                // dispatch on the runtime beam precision; the returned Python
+                // object is the concrete (float/double) beam container
+                return ix.amr_data_visit([&ix](auto& data) -> py::object {
+                    return py::cast(data.track_particles.m_particle_container.get(),
+                                    py::return_value_policy::reference_internal,
+                                    py::cast(ix));
+                });
              },
-             py::return_value_policy::reference_internal,
              "Access the beam particle container.\n\n"
              "Deprecated: use ``sim.beam``."
         )
@@ -764,21 +782,25 @@ void init_ImpactX (py::module& m)
         // A writable property (with assignment) would be ambiguous:
         // alias (Pythonic) or copy-in (safe) for the simulation-owned particle container.
         .def_property_readonly("beam",
-            [](ImpactX & ix) -> ImpactXParticleContainer & {
-                return *ix.amr_data->track_particles.m_particle_container;
+            [](ImpactX & ix) -> py::object {
+                return ix.amr_data_visit([&ix](auto& data) -> py::object {
+                    return py::cast(data.track_particles.m_particle_container.get(),
+                                    py::return_value_policy::reference_internal,
+                                    py::cast(ix));
+                });
             },
             "Access the beam particle container."
         )
         .def(
             "rho",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_rho.at(lev); },
+            [](ImpactX & ix, int const lev) { return &ix.amr_data->rho().at(lev); },
             py::arg("lev"),
             py::return_value_policy::reference_internal,
             "charge density per level"
         )
         .def(
             "phi",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_phi.at(lev); },
+            [](ImpactX & ix, int const lev) { return &ix.amr_data->phi().at(lev); },
             py::arg("lev"),
             py::return_value_policy::reference_internal,
             "scalar potential per level"
@@ -786,7 +808,7 @@ void init_ImpactX (py::module& m)
         .def(
             "space_charge_field",
             [](ImpactX & ix, int lev, std::string const & comp) {
-                return &ix.amr_data->track_particles.m_space_charge_field.at(lev).at(comp);
+                return &ix.amr_data->space_charge_field().at(lev).at(comp);
             },
             py::arg("lev"), py::arg("comp"),
             py::return_value_policy::reference_internal,

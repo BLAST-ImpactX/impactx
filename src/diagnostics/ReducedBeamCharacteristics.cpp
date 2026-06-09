@@ -29,8 +29,9 @@
 
 namespace impactx::diagnostics
 {
+    template <class T_PC>
     std::unordered_map<std::string, amrex::ParticleReal>
-    reduced_beam_characteristics (ImpactXParticleContainer const & pc)
+    reduced_beam_characteristics (T_PC const & pc)
     {
         BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(pc)");
 
@@ -45,7 +46,7 @@ namespace impactx::diagnostics
         amrex::ParticleReal const bg2 = bg*bg;
 
         // preparing access to particle data: SoA
-        using PType = typename ImpactXParticleContainer::SuperParticleType;
+        using PType = typename T_PC::SuperParticleType;
 
         /* The variables below need to be static to work around an MSVC bug
          * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
@@ -700,5 +701,15 @@ namespace impactx::diagnostics
 
         return data;
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template std::unordered_map<std::string, amrex::ParticleReal>
+    reduced_beam_characteristics (ImpactXParticleContainerT<double> const &);
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template std::unordered_map<std::string, amrex::ParticleReal>
+    reduced_beam_characteristics (ImpactXParticleContainerT<float> const &);
+#endif
 
 } // namespace impactx::diagnostics

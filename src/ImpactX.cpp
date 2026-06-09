@@ -26,6 +26,9 @@
 
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
 
 
 namespace impactx {
@@ -72,13 +75,47 @@ namespace impactx {
         }
     }
 
+    void ImpactX::set_precision (initialization::Precision precision)
+    {
+        if (initialized())
+        {
+            throw std::runtime_error("set_precision() must be called before init_grids().");
+        }
+        m_precision = precision;
+    }
+
     void ImpactX::init_grids ()
     {
         BL_PROFILE("ImpactX::init_grids");
 
-        amr_data = std::make_unique<initialization::AmrCoreData>(initialization::init_amr_core());
-        amr_data->track_particles.m_particle_container = std::make_unique<ImpactXParticleContainer>(amr_data.get());
-        amr_data->track_particles.m_particles_lost = std::make_unique<ImpactXParticleContainer>(amr_data.get());
+        // runtime beam precision: an inputs value overrides set_precision()/the default
+        {
+            amrex::ParmParse const pp_impactx("impactx");
+            std::string precision_str;
+            if (pp_impactx.query("precision", precision_str))
+            {
+                if (precision_str == "single")
+                {
+                    m_precision = initialization::Precision::single;
+                }
+                else if (precision_str == "double")
+                {
+                    m_precision = initialization::Precision::double_;
+                }
+                else
+                {
+                    amrex::Abort("impactx.precision must be 'single' or 'double'");
+                }
+            }
+        }
+
+        amr_data = initialization::init_amr_core(m_precision);
+        amr_data_visit([this](auto& data){
+            // the concrete beam particle container at the runtime-selected precision
+            using PC_t = std::remove_reference_t<decltype(*data.track_particles.m_particle_container)>;
+            data.track_particles.m_particle_container = std::make_unique<PC_t>(amr_data.get());
+            data.track_particles.m_particles_lost = std::make_unique<PC_t>(amr_data.get());
+        });
 
         // query input for warning logger variables and set up warning logger accordingly
         init_warning_logger();
@@ -94,7 +131,7 @@ namespace impactx {
 
         // this is the earliest point that we need to know the particle shape,
         // so that we can initialize the guard size of our MultiFabs
-        amr_data->track_particles.m_particle_container->SetParticleShape();
+        amr_data->particle_container().SetParticleShape();
 
         // init blocks / grids & MultiFabs
         amr_data->InitFromScratch(0.0);
@@ -102,11 +139,11 @@ namespace impactx {
         // prepare particle containers
         //   have to do this here, not in the constructor because grids have not
         //   been built when constructor was called.
-        amr_data->track_particles.m_particle_container->prepare();
-        amr_data->track_particles.m_particles_lost->prepare();
+        amr_data->particle_container().prepare();
+        amr_data->lost_particle_container().prepare();
 
         // register shortcut
-        amr_data->track_particles.m_particle_container->SetLostParticleContainer(amr_data->track_particles.m_particles_lost.get());
+        amr_data->particle_container().SetLostParticleContainer(&amr_data->lost_particle_container());
 
         // print AMReX grid summary
         if (amrex::ParallelDescriptor::IOProcessor()) {

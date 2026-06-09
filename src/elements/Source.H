@@ -74,6 +74,14 @@ namespace impactx::elements
             int period
         );
 
+        /** A non-default beam precision is not yet supported for this element. */
+        template <class T_PC,
+                  std::enable_if_t<!std::is_same_v<T_PC, ImpactXParticleContainer>, int> = 0>
+        void operator() (T_PC & /* pc */, int /* step */, int /* period */)
+        {
+            amrex::Abort("Source: only the default beam precision is supported.");
+        }
+
         /** This function returns the linear transport map.
          *
          * @param[in] refpart reference particle

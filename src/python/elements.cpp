@@ -2056,6 +2056,14 @@ void init_elements(py::module& m)
             [](RFCavity & rfc, int mapsteps) { rfc.m_mapsteps = mapsteps; },
             "number of integration steps per slice used for map and reference particle push in applied fields"
         )
+        .def_property_readonly("map",
+            [](RFCavity const & rfc) { return rfc.m_map; },
+            "linearized transport map around the reference particle (valid after a reference-particle push)"
+        )
+        .def_property_readonly("spin_coupling",
+            [](RFCavity const & rfc) { return rfc.m_spin_coupling; },
+            "linearized spin-orbit coupling matrix (valid after a reference-particle push)"
+        )
     ;
     register_push(py_RFCavity);
     register_reverse(py_RFCavity);
@@ -2372,6 +2380,18 @@ void init_elements(py::module& m)
             [](SoftSolenoid & soft_sol, int mapsteps) { soft_sol.m_mapsteps = mapsteps; },
             "number of integration steps per slice used for map and reference particle push in applied fields"
         )
+        .def_property_readonly("map",
+            [](SoftSolenoid const & soft_sol) { return soft_sol.m_map; },
+            "linearized transport map around the reference particle (valid after a reference-particle push)"
+        )
+        .def_property_readonly("spin_coupling",
+            [](SoftSolenoid const & soft_sol) { return soft_sol.m_spin_coupling; },
+            "linearized spin-orbit coupling matrix (valid after a reference-particle push)"
+        )
+        .def_property_readonly("spin_rotation_vector",
+            [](SoftSolenoid const & soft_sol) { return soft_sol.m_spin_rotation_vector; },
+            "reference spin rotation vector (valid after a reference-particle push)"
+        )
     ;
     register_push(py_SoftSolenoid);
     register_reverse(py_SoftSolenoid);
@@ -2612,6 +2632,14 @@ void init_elements(py::module& m)
             [](SoftQuadrupole & soft_quad) { return soft_quad.m_mapsteps; },
             [](SoftQuadrupole & soft_quad, int mapsteps) { soft_quad.m_mapsteps = mapsteps; },
             "number of integration steps per slice used for map and reference particle push in applied fields"
+        )
+        .def_property_readonly("map",
+            [](SoftQuadrupole const & soft_quad) { return soft_quad.m_map; },
+            "linearized transport map around the reference particle (valid after a reference-particle push)"
+        )
+        .def_property_readonly("spin_coupling",
+            [](SoftQuadrupole const & soft_quad) { return soft_quad.m_spin_coupling; },
+            "linearized spin-orbit coupling matrix (valid after a reference-particle push)"
         )
     ;
     register_push(py_SoftQuadrupole);

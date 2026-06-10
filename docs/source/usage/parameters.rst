@@ -1286,6 +1286,8 @@ Currently, the implementation of spin tracking is a work in progress, and this f
 
   Whether to track particle spin.
 
+  Spin tracking uses the gyromagnetic anomaly of the reference particle, which is set together with the particle species (see ``<beam>.particle``).
+
 
 .. _running-cpp-parameters-parser:
 

@@ -242,6 +242,9 @@ Collective Effects & Overall Simulation Parameters
       Whether to track particle spin.
       Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
 
+      Spin tracking uses the gyromagnetic anomaly of the reference particle.
+      Set it via ``RefPart.set_species()`` or ``RefPart.set_gyromagnetic_anomaly()``.
+
    .. py:property:: diagnostics
 
       Enable (``True``) or disable (``False``) diagnostics generally (default: ``True``).

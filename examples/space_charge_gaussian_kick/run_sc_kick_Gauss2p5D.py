@@ -16,6 +16,7 @@ sim.space_charge = "Gauss2p5D"
 sim.space_charge_gauss_nint = 101
 sim.space_charge_gauss_charge_z_bins = 129
 sim.space_charge_gauss_taylor_delta = 0.01
+sim.space_charge_gauss_long_scale = 6.0
 sim.slice_step_diagnostics = True
 
 # domain decomposition & space charge mesh

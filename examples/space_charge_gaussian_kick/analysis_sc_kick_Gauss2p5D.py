@@ -45,6 +45,9 @@ sigmaz = beta * sigmact
 # Simulation slice length
 L = 1.0
 
+# Longitudinal kick scale parameter
+gauss_long_scale = 6.0
+
 # Initial particle data
 
 xi = initial["position_x"]
@@ -66,10 +69,10 @@ py_predicted = L * Kscale * gauss_pdf_z * yi * gauss_xy_factor
 
 potential_xy_factor = (
     expi(-ri_2 / (2.0 * sigmax**2))
-    + 0.5 * np.log(4.0 * sigmax / ri_2**2)
-    - np.log(2.0 * sigmax**2)
+    + np.log(gauss_long_scale**2 / ri_2)
 )
 d_gauss_pdf_z = -zi / sigmaz**2 * gauss_pdf_z
+
 pz_predicted = -L * Kscale * potential_xy_factor * d_gauss_pdf_z
 pt_predicted = -beta * pz_predicted
 
@@ -120,8 +123,8 @@ atol = 5.1e-2
 print(f"  tol={atol}")
 
 assert np.allclose(
-    [dpx_rms / px_max, dpy_rms / py_max],
-    [0.0, 0.0],
+    [dpx_rms / px_max, dpy_rms / py_max, dpt_rms / pt_max],
+    [0.0, 0.0, 0.0],
     atol=atol,
 )
 
@@ -136,7 +139,7 @@ atol = 5.1e-2
 print(f"  tol={atol}")
 
 assert np.allclose(
-    [dpx_max / px_max, dpy_max / py_max],
-    [0.0, 0.0],
+    [dpx_max / px_max, dpy_max / py_max, dpt_max / pt_max],
+    [0.0, 0.0, 0.0],
     atol=atol,
 )

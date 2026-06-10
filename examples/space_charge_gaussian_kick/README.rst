@@ -50,4 +50,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_sc_kick_Gauss2p5D.py
       :language: python3
       :caption: You can copy this file from ``examples/space_charge_gaussian_kick/analysis_sc_kick_Gauss2p5D.py``.
-

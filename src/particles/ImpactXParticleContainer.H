@@ -14,7 +14,9 @@
 #include "initialization/AmrCoreData_fwd.H"
 
 #include <AMReX_AmrCoreFwd.H>
+#include <AMReX_BaseFab.H>
 #include <AMReX_BaseFwd.H>
+#include <AMReX_FabArray.H>
 #include <AMReX_MultiFab.H>
 #include <AMReX_ParIter.H>
 #include <AMReX_Particles.H>
@@ -27,6 +29,7 @@
 #include <list>
 #include <optional>
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 
 
@@ -42,6 +45,30 @@
 
 namespace impactx
 {
+    /** The canonical AMReX field-mesh array type for a given field/beam precision.
+     *
+     * The space-charge mesh fields (rho, phi, space-charge force) are stored at the
+     * beam precision. AMReX (and its nodal solver / MLMG / ABLASTR computePhi) are only
+     * instantiated for the canonical FabArray types amrex::MultiFab
+     * (== amrex::FabArray<amrex::FArrayBox>) and amrex::fMultiFab
+     * (== amrex::FabArray<amrex::BaseFab<float>>).
+     *
+     * Note that amrex::FArrayBox derives from amrex::BaseFab<double> but is a DISTINCT
+     * type, so amrex::FabArray<amrex::BaseFab<double>> is NOT amrex::MultiFab and would
+     * not resolve to AMReX's existing instantiations. This alias therefore maps
+     * double -> amrex::MultiFab and float -> amrex::FabArray<amrex::BaseFab<float>>
+     * (== amrex::fMultiFab), so that for T_FieldReal == double the field type is exactly
+     * amrex::MultiFab and the double build is behavior-identical.
+     *
+     * @tparam T_FieldReal the field/beam real precision, e.g. float or double
+     */
+    template <class T_FieldReal>
+    using FieldMeshMF = std::conditional_t<
+        std::is_same_v<T_FieldReal, double>,
+        amrex::MultiFab,
+        amrex::FabArray<amrex::BaseFab<T_FieldReal>>
+    >;
+
     enum class CoordSystem
     {
         s,  ///< fixed s as the independent variable
@@ -420,7 +447,7 @@ namespace impactx
          * @param[in] ref_ratio mesh refinement ratios between levels
          */
         void
-        DepositCharge (std::unordered_map<int, amrex::MultiFab> & rho,
+        DepositCharge (std::unordered_map<int, FieldMeshMF<T_PT>> & rho,
                        amrex::Vector<amrex::IntVect> const & ref_ratio);
 
         /** Get the current coordinate system of particles in this container */

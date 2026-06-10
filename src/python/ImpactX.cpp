@@ -793,25 +793,37 @@ void init_ImpactX (py::module& m)
         )
         .def(
             "rho",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->rho().at(lev); },
+            [](ImpactX & ix, int const lev) -> py::object {
+                // dispatch on the runtime beam precision; the returned field is
+                // the concrete (float/double) mesh field array
+                return ix.amr_data_visit([lev](auto& data) -> py::object {
+                    return py::cast(&data.track_particles.m_rho.at(lev),
+                                    py::return_value_policy::reference);
+                });
+            },
             py::arg("lev"),
-            py::return_value_policy::reference_internal,
             "charge density per level"
         )
         .def(
             "phi",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->phi().at(lev); },
+            [](ImpactX & ix, int const lev) -> py::object {
+                return ix.amr_data_visit([lev](auto& data) -> py::object {
+                    return py::cast(&data.track_particles.m_phi.at(lev),
+                                    py::return_value_policy::reference);
+                });
+            },
             py::arg("lev"),
-            py::return_value_policy::reference_internal,
             "scalar potential per level"
         )
         .def(
             "space_charge_field",
-            [](ImpactX & ix, int lev, std::string const & comp) {
-                return &ix.amr_data->space_charge_field().at(lev).at(comp);
+            [](ImpactX & ix, int lev, std::string const & comp) -> py::object {
+                return ix.amr_data_visit([lev, &comp](auto& data) -> py::object {
+                    return py::cast(&data.track_particles.m_space_charge_field.at(lev).at(comp),
+                                    py::return_value_policy::reference);
+                });
             },
             py::arg("lev"), py::arg("comp"),
-            py::return_value_policy::reference_internal,
             "space charge force (vector: x,y,z) per level"
         )
         .def_readwrite("lattice",

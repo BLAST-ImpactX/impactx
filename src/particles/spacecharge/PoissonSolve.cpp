@@ -7,6 +7,7 @@
  * Authors: Axel Huebl
  * License: BSD-3-Clause-LBNL
  */
+#include <type_traits>
 #include "PoissonSolve.H"
 
 #include "initialization/Algorithms.H"
@@ -28,8 +29,8 @@ namespace impactx::particles::spacecharge
     template <class T_PC>
     void PoissonSolve (
         T_PC const & pc,
-        std::unordered_map<int, amrex::MultiFab> & rho,
-        std::unordered_map<int, amrex::MultiFab> & phi,
+        std::unordered_map<int, FieldMeshMF<typename T_PC::ParticleRealType>> & rho,
+        std::unordered_map<int, FieldMeshMF<typename T_PC::ParticleRealType>> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     )
     {
@@ -38,13 +39,16 @@ namespace impactx::particles::spacecharge
         using namespace amrex::literals;
         using amrex::Math::powi;
 
+        // mesh field array type at the beam precision (== amrex::MultiFab for double)
+        using FieldMF = FieldMeshMF<typename T_PC::ParticleRealType>;
+
         auto space_charge = get_space_charge_algo();
 
         // set space charge field to zero
         //   loop over refinement levels
         int const finest_level = phi.size() - 1u;
         for (int lev = 0; lev <= finest_level; ++lev) {
-            amrex::MultiFab &phi_at_level = phi.at(lev);
+            FieldMF &phi_at_level = phi.at(lev);
             // reset the values in phi to zero
             phi_at_level.setVal(0.);
         }
@@ -75,13 +79,15 @@ namespace impactx::particles::spacecharge
         }
 
         // MLMG options
-        //   Single precision: achievable relative residual is limited by float32
-        //   round-off (machine epsilon ~1.2e-7).
-#ifdef AMREX_USE_FLOAT
-        amrex::Real mlmg_relative_tolerance = 1.e-4_rt; // relative (single precision)
-#else
-        amrex::Real mlmg_relative_tolerance = 1.e-7_rt; // relative (double precision)
-#endif
+        //   The achievable relative residual is limited by the field's floating
+        //   point round-off. Single precision (float32, machine epsilon ~1.2e-7)
+        //   cannot reach the double-precision tolerance, so pick the tolerance
+        //   from the runtime-selected field precision (the beam/field storage
+        //   type T_PC::ParticleRealType), per template instantiation.
+        amrex::Real mlmg_relative_tolerance =
+            std::is_same_v<typename T_PC::ParticleRealType, float>
+                ? 1.e-4_rt   // relative (single precision)
+                : 1.e-7_rt;  // relative (double precision)
         amrex::Real mlmg_absolute_tolerance = 0.0;   // ignored
         pp_algo.queryAddWithParser("mlmg_relative_tolerance", mlmg_relative_tolerance);
         pp_algo.queryAddWithParser("mlmg_absolute_tolerance", mlmg_absolute_tolerance);
@@ -92,7 +98,7 @@ namespace impactx::particles::spacecharge
         pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
 
         // flatten rho to 2D
-        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
+        std::unordered_map<int, std::pair<FieldMF, FieldMF>> rho_2d;  // pair: local & unique boxes
         if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
             auto geom_3d = pc.GetParGDB()->Geom();
             amrex::Box domain_3d = geom_3d[0].Domain();  // whole simulation index space (level 0)
@@ -100,10 +106,10 @@ namespace impactx::particles::spacecharge
         }
 
         // create a vector to our fields, sorted by level
-        amrex::Vector<amrex::MultiFab*> sorted_rho;
-        amrex::Vector<amrex::MultiFab*> sorted_phi;
+        amrex::Vector<FieldMF*> sorted_rho;
+        amrex::Vector<FieldMF*> sorted_phi;
 
-        amrex::Vector<amrex::MultiFab> phi_2d(finest_level+1);
+        amrex::Vector<FieldMF> phi_2d(finest_level+1);
 
         // create phi_2d and sort rho/phi pointers
         for (int lev = 0; lev <= finest_level; ++lev) {
@@ -168,7 +174,7 @@ namespace impactx::particles::spacecharge
         // fill boundary
         for (int lev=0; lev<=finest_level; lev++)
         {
-            amrex::MultiFab & phi_at_level = phi.at(lev);
+            FieldMF & phi_at_level = phi.at(lev);
             phi_at_level.FillBoundary(pc.GetParGDB()->Geom()[lev].periodicity());
         }
     }
@@ -177,16 +183,16 @@ namespace impactx::particles::spacecharge
 #ifdef IMPACTX_COMPILE_DOUBLE
     template void PoissonSolve (
         ImpactXParticleContainerT<double> const & pc,
-        std::unordered_map<int, amrex::MultiFab> & rho,
-        std::unordered_map<int, amrex::MultiFab> & phi,
+        std::unordered_map<int, impactx::FieldMeshMF<double>> & rho,
+        std::unordered_map<int, impactx::FieldMeshMF<double>> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     );
 #endif
 #ifdef IMPACTX_COMPILE_SINGLE
     template void PoissonSolve (
         ImpactXParticleContainerT<float> const & pc,
-        std::unordered_map<int, amrex::MultiFab> & rho,
-        std::unordered_map<int, amrex::MultiFab> & phi,
+        std::unordered_map<int, impactx::FieldMeshMF<float>> & rho,
+        std::unordered_map<int, impactx::FieldMeshMF<float>> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     );
 #endif

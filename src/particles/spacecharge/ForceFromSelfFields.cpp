@@ -18,9 +18,10 @@
 
 namespace impactx::particles::spacecharge
 {
+    template <class T_FieldMF>
     void ForceFromSelfFields (
-        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > & space_charge_field,
-        std::unordered_map<int, amrex::MultiFab> const & phi,
+        std::unordered_map<int, std::unordered_map<std::string, T_FieldMF> > & space_charge_field,
+        std::unordered_map<int, T_FieldMF> const & phi,
         amrex::Vector<amrex::Geometry> const & geom
     )
     {
@@ -75,4 +76,20 @@ namespace impactx::particles::spacecharge
             }
         }
     }
+
+    // explicit instantiations for the compiled beam precisions
+#ifdef IMPACTX_COMPILE_DOUBLE
+    template void ForceFromSelfFields (
+        std::unordered_map<int, std::unordered_map<std::string, impactx::FieldMeshMF<double>> > & space_charge_field,
+        std::unordered_map<int, impactx::FieldMeshMF<double>> const & phi,
+        amrex::Vector<amrex::Geometry> const & geom
+    );
+#endif
+#ifdef IMPACTX_COMPILE_SINGLE
+    template void ForceFromSelfFields<impactx::FieldMeshMF<float>> (
+        std::unordered_map<int, std::unordered_map<std::string, impactx::FieldMeshMF<float>> > & space_charge_field,
+        std::unordered_map<int, impactx::FieldMeshMF<float>> const & phi,
+        amrex::Vector<amrex::Geometry> const & geom
+    );
+#endif
 }  // namespace impactx::particles::spacecharge

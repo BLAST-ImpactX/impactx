@@ -12,6 +12,8 @@
 
 #include "particles/ImpactXParticleContainer.H"
 
+#include <AMReX_BaseFab.H>
+#include <AMReX_FabArray.H>
 #include <AMReX_MultiFab.H>
 
 #include <unordered_map>
@@ -24,6 +26,9 @@ namespace impactx::particles::spacecharge
      * This resets the values in phi to zero and then calculates the space
      * charge potential phi.
      *
+     * The mesh field arrays (rho, phi) are stored at the beam precision
+     * T_PC::ParticleRealType (amrex::MultiFab for double).
+     *
      * @param[in] pc container of the particles that deposited rho
      * @param[in] rho charge per level
      * @param[inout] phi scalar potential per level
@@ -32,8 +37,8 @@ namespace impactx::particles::spacecharge
     template <class T_PC>
     void PoissonSolve (
         T_PC const & pc,
-        std::unordered_map<int, amrex::MultiFab> & rho,
-        std::unordered_map<int, amrex::MultiFab> & phi,
+        std::unordered_map<int, FieldMeshMF<typename T_PC::ParticleRealType>> & rho,
+        std::unordered_map<int, FieldMeshMF<typename T_PC::ParticleRealType>> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     );
 

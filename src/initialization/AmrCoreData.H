@@ -16,8 +16,10 @@
 
 #include <AMReX_AmrCore.H>
 #include <AMReX_AmrMesh.H>
+#include <AMReX_BaseFab.H>
 #include <AMReX_BoxArray.H>
 #include <AMReX_DistributionMapping.H>
+#include <AMReX_FabArray.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_MultiFab.H>
 #include <AMReX_REAL.H>
@@ -85,15 +87,6 @@ namespace impactx::initialization
         [[nodiscard]] virtual ImpactXParticleContainerBase & lost_particle_container () = 0;
         [[nodiscard]] virtual ImpactXParticleContainerBase const & lost_particle_container () const = 0;
 
-        /** Precision-agnostic access to the space-charge mesh fields.
-         *
-         * These arrays are always double precision, independent of the beam
-         * storage precision, so they are exposed on the agnostic base.
-         */
-        [[nodiscard]] virtual std::unordered_map<int, amrex::MultiFab> & rho () = 0;
-        [[nodiscard]] virtual std::unordered_map<int, amrex::MultiFab> & phi () = 0;
-        [[nodiscard]] virtual std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > & space_charge_field () = 0;
-
         /** Data needed for the beam envelop (covariance matrix) tracking mode */
         struct TrackModeEnvelope
         {
@@ -139,9 +132,12 @@ namespace impactx::initialization
     /** Data in AmrCore at a concrete beam precision T_PT.
      *
      * Adds the precision-dependent beam particle container (and lost particles)
-     * to AmrCoreDataBase. The space-charge mesh fields are kept in double
-     * precision for now (the particle<->mesh deposit/gather bridges the
-     * precisions); making the field arrays single precision is a follow-up.
+     * to AmrCoreDataBase. The space-charge mesh fields (rho, phi, space-charge
+     * force) are stored at the same beam precision T_PT, so that single-precision
+     * runs flow through the float-capable AMReX nodal solver / ABLASTR computePhi.
+     * Note that amrex::MultiFab is amrex::FabArray<amrex::BaseFab<double>>, so for
+     * T_PT == double the field type FieldMF is exactly amrex::MultiFab and the
+     * double build is behavior-identical.
      *
      * @tparam T_PT the beam particle (SoA storage) precision, e.g. float or double
      */
@@ -153,6 +149,12 @@ namespace impactx::initialization
         using AmrCoreDataBase::AmrCoreDataBase;
 
         ~AmrCoreData() override = default;
+
+        /** The mesh field array type at the beam precision T_PT.
+         *
+         * For T_PT == double this is exactly amrex::MultiFab.
+         */
+        using FieldMF = FieldMeshMF<T_PT>;
 
         [[nodiscard]] Precision precision () const noexcept override
         {
@@ -177,19 +179,6 @@ namespace impactx::initialization
             return *track_particles.m_particles_lost;
         }
 
-        [[nodiscard]] std::unordered_map<int, amrex::MultiFab> & rho () override
-        {
-            return track_particles.m_rho;
-        }
-        [[nodiscard]] std::unordered_map<int, amrex::MultiFab> & phi () override
-        {
-            return track_particles.m_phi;
-        }
-        [[nodiscard]] std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > & space_charge_field () override
-        {
-            return track_particles.m_space_charge_field;
-        }
-
         /** Data needed for the symplectic particle tracking mode */
         struct TrackModeParticles
         {
@@ -200,11 +189,11 @@ namespace impactx::initialization
             std::unique_ptr<impactx::ImpactXParticleContainerT<T_PT>> m_particles_lost;
 
             /** charge density per level */
-            std::unordered_map<int, amrex::MultiFab> m_rho;
+            std::unordered_map<int, FieldMF> m_rho;
             /** scalar potential per level */
-            std::unordered_map<int, amrex::MultiFab> m_phi;
+            std::unordered_map<int, FieldMF> m_phi;
             /** space charge field (vector) per level */
-            std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > m_space_charge_field;
+            std::unordered_map<int, std::unordered_map<std::string, FieldMF> > m_space_charge_field;
 
         } track_particles;
 

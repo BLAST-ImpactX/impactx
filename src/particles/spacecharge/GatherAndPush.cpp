@@ -26,8 +26,8 @@ namespace impactx::particles::spacecharge
     template <class T_PC>
     void GatherAndPush (
         T_PC & pc,
-        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
-        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
+        std::unordered_map<int, std::unordered_map<std::string, FieldMeshMF<typename T_PC::ParticleRealType>> > const & space_charge_field,
+        std::unordered_map<int, FieldMeshMF<typename T_PC::ParticleRealType>> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,
         amrex::ParticleReal const slice_ds
     )
@@ -244,8 +244,8 @@ namespace impactx::particles::spacecharge
 #ifdef IMPACTX_COMPILE_DOUBLE
     template void GatherAndPush (
         ImpactXParticleContainerT<double> & pc,
-        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
-        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
+        std::unordered_map<int, std::unordered_map<std::string, impactx::FieldMeshMF<double>> > const & space_charge_field,
+        std::unordered_map<int, impactx::FieldMeshMF<double>> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,
         amrex::ParticleReal const slice_ds
     );
@@ -253,8 +253,8 @@ namespace impactx::particles::spacecharge
 #ifdef IMPACTX_COMPILE_SINGLE
     template void GatherAndPush (
         ImpactXParticleContainerT<float> & pc,
-        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
-        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
+        std::unordered_map<int, std::unordered_map<std::string, impactx::FieldMeshMF<float>> > const & space_charge_field,
+        std::unordered_map<int, impactx::FieldMeshMF<float>> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,
         amrex::ParticleReal const slice_ds
     );

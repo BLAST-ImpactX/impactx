@@ -21,48 +21,23 @@
 #include <AMReX_ParticleTile.H>
 
 #include <array>
+#include <type_traits>
 
 
 namespace impactx
 {
-    std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>>
-    flatten_charge_to_2D (
-        std::unordered_map<int, amrex::MultiFab> const & rho,
-        amrex::Box domain_3d
-    )
-    {
-        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;
-
-        int const finest_level = rho.size() - 1;
-        for (int lev = 0; lev <= finest_level; ++lev) {
-            auto omask = rho.at(lev).OwnerMask();
-            auto const& oma = omask->const_arrays();
-            // flattened rho
-            auto const& ma = rho.at(lev).const_arrays();
-            amrex::Box domain_lev = lev == 0 ? domain_3d : rho.at(lev).boxArray().minimalBox();
-            rho_2d.erase(lev);
-            rho_2d.emplace(
-                lev,
-                amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>
-                (2, domain_lev, rho.at(lev), [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
-                {
-                    return oma[b](i,j,k) ? ma[b](i,j,k) : amrex::Real(0);
-                })
-            );
-        }
-
-        return rho_2d;
-    }
-
     template <class T_PT>
     void
     ImpactXParticleContainerT<T_PT>::DepositCharge (
-        std::unordered_map<int, amrex::MultiFab> & rho,
+        std::unordered_map<int, FieldMeshMF<T_PT>> & rho,
         amrex::Vector<amrex::IntVect> const & ref_ratio)
     {
         BL_PROFILE("ImpactXParticleContainer::DepositCharge");
 
         using namespace amrex::literals; // for _rt and _prt
+
+        // mesh field array type at the beam precision (== amrex::MultiFab for double)
+        using FieldMF = FieldMeshMF<T_PT>;
 
         if (m_particle_shape.value() < 1)
             throw std::runtime_error("DepositCharge: Particle shape must be >=1");
@@ -75,7 +50,7 @@ namespace impactx
 
         // loop fine-to-coarse over refinement levels
         for (int lev = nLevel; lev >= 0; --lev) {
-            amrex::MultiFab & rho_at_level = rho.at(lev);
+            FieldMF & rho_at_level = rho.at(lev);
 
             // get simulation geometry information
             amrex::Geometry const & gm = this->Geom(lev);
@@ -85,7 +60,7 @@ namespace impactx
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
             {
-                amrex::FArrayBox local_rho_fab;
+                typename FieldMF::fab_type local_rho_fab;
 
                 using ParIt = typename ImpactXParticleContainerT<T_PT>::iterator;
                 for (ParIt pti(*this, lev); pti.isValid(); ++pti) {
@@ -139,60 +114,70 @@ namespace impactx
             // (This provides both the boundary conditions and initial guess for phi[lev+1])
 
             if (lev > 0) {
-                // Allocate rho_cp with the same distribution map as lev
-                amrex::BoxArray ba = rho[lev].boxArray();
-                const amrex::IntVect &refratio = ref_ratio[lev - 1];
-                ba.coarsen(refratio);  // index space is now coarsened
+                // The fine-to-coarse charge sync below relies on
+                // ablastr::coarsen::average::Coarsen, which is only available for
+                // double-precision amrex::MultiFab. Single-precision mesh fields
+                // (and thus mesh refinement at single precision) are not supported
+                // here yet.
+                if constexpr (std::is_same_v<FieldMF, amrex::MultiFab>) {
+                    // Allocate rho_cp with the same distribution map as lev
+                    amrex::BoxArray ba = rho[lev].boxArray();
+                    const amrex::IntVect &refratio = ref_ratio[lev - 1];
+                    ba.coarsen(refratio);  // index space is now coarsened
 
-                // Number of guard cells to fill on coarse patch and number of components
-                const amrex::IntVect ngrow = (rho[lev].nGrowVect() + refratio - 1) / refratio;  // round up int division
-                const int ncomp = 1;  // rho is a scalar
-                amrex::MultiFab rho_cp(ba, rho[lev].DistributionMap(), ncomp, ngrow);
+                    // Number of guard cells to fill on coarse patch and number of components
+                    const amrex::IntVect ngrow = (rho[lev].nGrowVect() + refratio - 1) / refratio;  // round up int division
+                    const int ncomp = 1;  // rho is a scalar
+                    FieldMF rho_cp(ba, rho[lev].DistributionMap(), ncomp, ngrow);
 
-                // coarsen the data
-                ablastr::coarsen::average::Coarsen(
-                    rho_cp,
-                    rho[lev],
-                    refratio
-                );
+                    // coarsen the data
+                    ablastr::coarsen::average::Coarsen(
+                        rho_cp,
+                        rho[lev],
+                        refratio
+                    );
 
-                // add to the lower level
-                const amrex::Periodicity& crse_period = this->Geom(lev - 1).periodicity();
+                    // add to the lower level
+                    const amrex::Periodicity& crse_period = this->Geom(lev - 1).periodicity();
 
-                // On a coarse level, the data in mf_comm comes from the
-                // coarse patch of the fine level. They are unfiltered and uncommunicated.
-                // We need to add it to the fine patch of the current level.
-                amrex::MultiFab fine_lev_cp(
-                    rho[lev-1].boxArray(),
-                    rho[lev-1].DistributionMap(),
-                    1,
-                    0);
-                fine_lev_cp.setVal(0.0);
-                fine_lev_cp.ParallelAdd(
-                    rho_cp,
-                    0,
-                    0,
-                    1,
-                    rho_cp.nGrowVect(),
-                    amrex::IntVect(0),
-                    crse_period
-                );
-                // We now need to create a mask to fix the double counting.
-                auto owner_mask = amrex::OwnerMask(fine_lev_cp, crse_period);
-                auto const& mma = owner_mask->const_arrays();
-                auto const& sma = fine_lev_cp.const_arrays();
-                auto const& dma = rho[lev-1].arrays();
-                amrex::ParallelFor(
-                    fine_lev_cp,
-                    amrex::IntVect(0),
-                    ncomp,
-                    [=] AMREX_GPU_DEVICE (int bno, int i, int j, int k, int n)
-                    {
-                        if (mma[bno](i,j,k) && sma[bno](i,j,k,n) != 0.0_rt) {
-                            dma[bno](i,j,k,n) += sma[bno](i,j,k,n);
+                    // On a coarse level, the data in mf_comm comes from the
+                    // coarse patch of the fine level. They are unfiltered and uncommunicated.
+                    // We need to add it to the fine patch of the current level.
+                    FieldMF fine_lev_cp(
+                        rho[lev-1].boxArray(),
+                        rho[lev-1].DistributionMap(),
+                        1,
+                        0);
+                    fine_lev_cp.setVal(0.0);
+                    fine_lev_cp.ParallelAdd(
+                        rho_cp,
+                        0,
+                        0,
+                        1,
+                        rho_cp.nGrowVect(),
+                        amrex::IntVect(0),
+                        crse_period
+                    );
+                    // We now need to create a mask to fix the double counting.
+                    auto owner_mask = amrex::OwnerMask(fine_lev_cp, crse_period);
+                    auto const& mma = owner_mask->const_arrays();
+                    auto const& sma = fine_lev_cp.const_arrays();
+                    auto const& dma = rho[lev-1].arrays();
+                    amrex::ParallelFor(
+                        fine_lev_cp,
+                        amrex::IntVect(0),
+                        ncomp,
+                        [=] AMREX_GPU_DEVICE (int bno, int i, int j, int k, int n)
+                        {
+                            if (mma[bno](i,j,k) && sma[bno](i,j,k,n) != 0.0_rt) {
+                                dma[bno](i,j,k,n) += sma[bno](i,j,k,n);
+                            }
                         }
-                    }
-                );
+                    );
+                } else {
+                    amrex::Abort("DepositCharge: mesh refinement (lev>0) charge sync "
+                                 "is only supported for double-precision mesh fields.");
+                }
             } // if (lev > 0)
 
             // charge filters
@@ -214,7 +199,7 @@ namespace impactx
         // finalize communication
         for (int lev = 0; lev <= nLevel; ++lev)
         {
-            amrex::MultiFab & rho_at_level = rho.at(lev);
+            FieldMF & rho_at_level = rho.at(lev);
             rho_at_level.SumBoundary_finish();
         }
     }
@@ -223,13 +208,13 @@ namespace impactx
 #ifdef IMPACTX_COMPILE_DOUBLE
     template void
     ImpactXParticleContainerT<double>::DepositCharge (
-        std::unordered_map<int, amrex::MultiFab> &,
+        std::unordered_map<int, impactx::FieldMeshMF<double>> &,
         amrex::Vector<amrex::IntVect> const &);
 #endif
 #ifdef IMPACTX_COMPILE_SINGLE
     template void
     ImpactXParticleContainerT<float>::DepositCharge (
-        std::unordered_map<int, amrex::MultiFab> &,
+        std::unordered_map<int, impactx::FieldMeshMF<float>> &,
         amrex::Vector<amrex::IntVect> const &);
 #endif
 } // namespace impactx

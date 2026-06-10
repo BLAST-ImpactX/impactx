@@ -165,7 +165,7 @@ namespace impactx::initialization
 
         track_particles.m_rho.emplace(
                 lev,
-                amrex::MultiFab{amrex::convert(cba, rho_nodal_flag), dm, num_components_rho, num_guards_rho, tag("rho")});
+                FieldMF{amrex::convert(cba, rho_nodal_flag), dm, num_components_rho, num_guards_rho, tag("rho")});
 
         // scalar potential
         int const num_components_phi = 1;
@@ -186,18 +186,18 @@ namespace impactx::initialization
         }
         track_particles.m_phi.emplace(
                 lev,
-                amrex::MultiFab{phi_ba, dm, num_components_phi, num_guards_phi, tag("phi")});
+                FieldMF{phi_ba, dm, num_components_phi, num_guards_phi, tag("phi")});
 
         // space charge force
         amrex::IntVect num_guards_force(num_guards_rho);
         if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) { num_guards_force[2] = 0; }
-        std::unordered_map<std::string, amrex::MultiFab> f_comp;
+        std::unordered_map<std::string, FieldMF> f_comp;
         for (std::string const comp : {"x", "y", "z"})
         {
             std::string const str_tag = "space_charge_field_" + comp;
             f_comp.emplace(
                     comp,
-                    amrex::MultiFab{
+                    FieldMF{
                             phi_ba,
                             dm,
                             num_components_rho,

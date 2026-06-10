@@ -12,6 +12,8 @@
 
 #include "particles/ImpactXParticleContainer.H"
 
+#include <AMReX_BaseFab.H>
+#include <AMReX_FabArray.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_MultiFab.H>
 #include <AMReX_Vector.H>
@@ -29,6 +31,9 @@ namespace impactx::particles::spacecharge
      * time step given by the reference particle speed and ds slice. The
      * position push is done in the lattice elements and not here.
      *
+     * The mesh field arrays (space-charge force, potential) are stored at the
+     * beam precision T_PC::ParticleRealType (amrex::MultiFab for double).
+     *
      * @param[inout] pc container of the particles that deposited rho
      * @param[in] space_charge_field space charge force component in x,y,z per level
      * @param[in] space_charge_potential space charge potential in x,y,z per level
@@ -38,8 +43,8 @@ namespace impactx::particles::spacecharge
     template <class T_PC>
     void GatherAndPush (
         T_PC & pc,
-        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > const & space_charge_field,
-        std::unordered_map<int, amrex::MultiFab> const & space_charge_potential,
+        std::unordered_map<int, std::unordered_map<std::string, FieldMeshMF<typename T_PC::ParticleRealType>> > const & space_charge_field,
+        std::unordered_map<int, FieldMeshMF<typename T_PC::ParticleRealType>> const & space_charge_potential,
         const amrex::Vector<amrex::Geometry>& geom,
         amrex::ParticleReal slice_ds
     );

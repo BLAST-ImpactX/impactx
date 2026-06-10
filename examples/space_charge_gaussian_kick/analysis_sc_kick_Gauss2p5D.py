@@ -67,9 +67,8 @@ gauss_pdf_z = np.exp(-(zi**2) / (2.0 * sigmaz**2)) / (np.sqrt(2.0 * np.pi) * sig
 px_predicted = L * Kscale * gauss_pdf_z * xi * gauss_xy_factor
 py_predicted = L * Kscale * gauss_pdf_z * yi * gauss_xy_factor
 
-potential_xy_factor = (
-    expi(-ri_2 / (2.0 * sigmax**2))
-    + np.log(gauss_long_scale**2 / ri_2)
+potential_xy_factor = expi(-ri_2 / (2.0 * sigmax**2)) + np.log(
+    gauss_long_scale**2 / ri_2
 )
 d_gauss_pdf_z = -zi / sigmaz**2 * gauss_pdf_z
 

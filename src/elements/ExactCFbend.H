@@ -164,11 +164,6 @@ namespace impactx::elements
 
             // arc length and angle of the current slice
             m_slice_ds = m_ds / nslice();
-
-            // additional constants needed for spin push
-            m_gamma_ref = refpart.gamma();
-            m_gyro_anomaly = refpart.gyromagnetic_anomaly;
-
         }
 
         /** This is an ExactCFbend functor, so that a variable of this type can be used like an ExactCFbend function.
@@ -182,7 +177,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -193,7 +188,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
             [[maybe_unused]] uint64_t const & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -210,11 +205,11 @@ namespace impactx::elements
 
             // call integrator to advance through slice (int_order = 2 or 4, otherwise default 2)
             if (m_int_order == 2) {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else if (m_int_order == 4) {
-                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else if (m_int_order == 6) {
-                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             }
 
             // assign updated values
@@ -233,11 +228,13 @@ namespace impactx::elements
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map1 (amrex::ParticleReal const tau,
                    amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace amrex::Math;  // for powi
@@ -334,11 +331,13 @@ namespace impactx::elements
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map2 (amrex::ParticleReal const tau,
                    amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace amrex::Math;  // for powi
@@ -441,17 +440,23 @@ namespace impactx::elements
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] particle_spin particle spin 3-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map3 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
                    amrex::SmallVector<T_Real, 3, 1> & particle_spin,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
+
+            // reference particle relativistic factors
+            amrex::ParticleReal const gamma_ref = refpart.gamma();
+            amrex::ParticleReal const gyro_anomaly = refpart.gyromagnetic_anomaly;
 
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
@@ -538,8 +543,8 @@ namespace impactx::elements
 
             // Scaling magnetic field to units used in the T-BMT representation (e.g. q*B/mc).
 
-            Bx = Bx * m_beta * m_gamma_ref / rho;
-            By = By * m_beta * m_gamma_ref / rho;
+            Bx = Bx * m_beta * gamma_ref / rho;
+            By = By * m_beta * gamma_ref / rho;
 
             // Electric field normalized by q/mc^2:
             T_Real const Ex = 0.0_prt;
@@ -550,7 +555,7 @@ namespace impactx::elements
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
             T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
+            T_Real const gamma = gamma_ref * (1_prt - pt*m_beta);
             T_Real const ux = px * iPnorm;
             T_Real const uy = py * iPnorm;
             T_Real const uz = Ps * iPnorm;
@@ -559,7 +564,7 @@ namespace impactx::elements
             amrex::ParticleReal const h = 1_prt/m_rc;
 
             // Evaluation of the full Thomas-BMT precession vector.
-            tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+            tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
 
             // Generator of the spin rotation for a single step
             lambdax *= tau;
@@ -731,7 +736,7 @@ namespace impactx::elements
          * @param[in,out] sy particle spin y-component
          * @param[in,out] sz particle spin z-component
          * @param[in,out] idcpu particle global index (unused)
-         * @param[in] refpart reference particle (unused)
+         * @param[in] refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -746,7 +751,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
             [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -767,7 +772,7 @@ namespace impactx::elements
             };
 
             // call integrator to advance through slice
-            integrators::symp_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,m_int_order,*this);
+            integrators::symp_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,m_int_order,refpart,*this);
 
             // assign updated values
             x = particle(1);
@@ -806,8 +811,6 @@ namespace impactx::elements
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m
         amrex::ParticleReal m_rc;             //! magnet radius of curvature
-        amrex::ParticleReal m_gamma_ref;      //! relativistic gamma
-        amrex::ParticleReal m_gyro_anomaly;   //! gyromagnetic anomaly
     };
 
 } // namespace impactx

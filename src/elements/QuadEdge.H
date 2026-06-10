@@ -110,9 +110,8 @@ namespace impactx::elements
 
             Alignment::compute_constants(refpart);
 
-            // access reference particle values to find beta and gamma
+            // access reference particle values to find beta
             m_beta = refpart.beta();
-            m_gamma = refpart.gamma();
 
             // normalize quad units to MAD-X convention if needed
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
@@ -222,7 +221,6 @@ namespace impactx::elements
         amrex::ParticleReal m_g;
         amrex::ParticleReal m_a;
         amrex::ParticleReal m_beta;
-        amrex::ParticleReal m_gamma;
     };
 
 } // namespace impactx

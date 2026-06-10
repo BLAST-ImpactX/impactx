@@ -241,9 +241,7 @@ namespace detail
             constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element>;
             constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
 
-            // runtime short-cut: only this element instance actually has a
-            // translation/rotation error. The flag is uniform across the warp/SIMD
-            // batch (it is an element property), so the branch is divergence-free.
+            // skip alignment shifts & rotations if the element is perfectly aligned
             bool misaligned = false;
             if constexpr (has_alignment) { misaligned = m_element.misaligned(); }
 
@@ -396,9 +394,7 @@ namespace detail
             constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element>;
             constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
 
-            // runtime short-cut: only this element instance actually has a
-            // translation/rotation error. The flag is uniform across the warp/SIMD
-            // batch (it is an element property), so the branch is divergence-free.
+            // skip alignment shifts & rotations if the element is perfectly aligned
             bool misaligned = false;
             if constexpr (has_alignment) { misaligned = m_element.misaligned(); }
 

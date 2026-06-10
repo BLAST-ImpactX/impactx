@@ -241,10 +241,18 @@ namespace detail
             constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element>;
             constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
 
+            // runtime short-cut: only this element instance actually has a
+            // translation/rotation error. The flag is uniform across the warp/SIMD
+            // batch (it is an element property), so the branch is divergence-free.
+            bool misaligned = false;
+            if constexpr (has_alignment) { misaligned = m_element.misaligned(); }
+
             // shift into the alignment-error frame (compile-time gated)
             if constexpr (has_alignment) {
-                m_element.shift_in(x, y, px, py);
-                m_element.rotate_in(sx, sy);
+                if (misaligned) {
+                    m_element.shift_in(x, y, px, py);
+                    m_element.rotate_in(sx, sy);
+                }
             }
 
             // push spin & phase space through element
@@ -257,8 +265,10 @@ namespace detail
 
             // shift back to the lab frame (compile-time gated)
             if constexpr (has_alignment) {
-                m_element.shift_out(x, y, px, py);
-                m_element.rotate_out(sx, sy);
+                if (misaligned) {
+                    m_element.shift_out(x, y, px, py);
+                    m_element.rotate_out(sx, sy);
+                }
             }
 
             // SIMD: write back to memory
@@ -386,9 +396,17 @@ namespace detail
             constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element>;
             constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
 
+            // runtime short-cut: only this element instance actually has a
+            // translation/rotation error. The flag is uniform across the warp/SIMD
+            // batch (it is an element property), so the branch is divergence-free.
+            bool misaligned = false;
+            if constexpr (has_alignment) { misaligned = m_element.misaligned(); }
+
             // shift into the alignment-error frame (compile-time gated)
             if constexpr (has_alignment) {
-                m_element.shift_in(x, y, px, py);
+                if (misaligned) {
+                    m_element.shift_in(x, y, px, py);
+                }
             }
 
             // push through element
@@ -401,7 +419,9 @@ namespace detail
 
             // shift back to the lab frame (compile-time gated)
             if constexpr (has_alignment) {
-                m_element.shift_out(x, y, px, py);
+                if (misaligned) {
+                    m_element.shift_out(x, y, px, py);
+                }
             }
 
             // write back to memory

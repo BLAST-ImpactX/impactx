@@ -60,9 +60,16 @@ namespace impactx::elements::mixin
          */
         void compute_constants ([[maybe_unused]] RefPart const & refpart)
         {
+            using namespace amrex::literals; // for _prt
+
             auto const [sin_rotation, cos_rotation] = amrex::Math::sincos(m_rotation);
             m_sin_rotation = sin_rotation;
             m_cos_rotation = cos_rotation;
+
+            // cache whether this element has any translation/rotation error, so the
+            // per-particle push can skip the (identity) shift/rotate when aligned.
+            // Exact compare to zero on purpose: any nonzero error takes the full path.
+            m_misaligned = (m_dx != 0.0_prt) || (m_dy != 0.0_prt) || (m_rotation != 0.0_prt);
         }
 
         /** Shift the particle into the alignment error frame
@@ -199,6 +206,19 @@ namespace impactx::elements::mixin
             return m_rotation / degree2rad;
         }
 
+        /** Whether the element has any (nonzero) translation or rotation error.
+         *
+         * Cached in @see compute_constants. Used to skip the otherwise-identity
+         * shift/rotate transforms in the per-particle push when aligned.
+         *
+         * @return true if dx, dy, or rotation is nonzero
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        bool misaligned () const
+        {
+            return m_misaligned;
+        }
+
         amrex::ParticleReal m_dx = 0; //! horizontal translation error [m]
         amrex::ParticleReal m_dy = 0; //! vertical translation error [m]
         amrex::ParticleReal m_rotation = 0; //! rotation error in the transverse plane [rad]
@@ -208,6 +228,7 @@ namespace impactx::elements::mixin
         // see: compute_constants() to refresh
         amrex::ParticleReal m_sin_rotation;  //! std::sin(m_rotation)
         amrex::ParticleReal m_cos_rotation;  //! std::cos(m_rotation)
+        bool m_misaligned = false;           //! any nonzero translation/rotation error
     };
 
 } // namespace impactx::elements::mixin

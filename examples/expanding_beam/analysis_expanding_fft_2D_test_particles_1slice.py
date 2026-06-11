@@ -59,7 +59,6 @@ pyi = initial_sort["momentum_y"]
 
 px_predicted = doubling_distance * Kpv * xi / R0**2
 py_predicted = doubling_distance * Kpv * yi / R0**2
-pr_max = doubling_distance * Kpv / R0
 
 # Maximum predicted momentum kick
 pr_max = doubling_distance * Kpv / R0

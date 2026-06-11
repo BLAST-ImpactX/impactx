@@ -54,8 +54,7 @@ We run the following script to analyze correctness:
          :caption: You can copy this file from ``examples/space_charge_gaussian_kick/analysis_sc_kick_Gauss2p5D.py``.
 
    .. tab-item:: 2p5D (PIC) space charge solver
-   
+
       .. literalinclude:: run_sc_kick_PIC2p5D.py
          :language: python3
          :caption: You can copy this file from ``examples/space_charge_gaussian_kick/analysis_sc_kick_PIC2p5D.py``.
-

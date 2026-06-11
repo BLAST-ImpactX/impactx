@@ -162,8 +162,9 @@ namespace detail
      * Minimal demonstrator: https://cuda.godbolt.org/z/39e4q53Ye
      *
      * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
+     * @tparam T_DoAlignment whether to apply or ignore element misalignment
      */
-    template <typename T_Element>
+    template <typename T_Element, bool T_DoAlignment>
     struct PushSingleParticleSpin
     {
         using PType = ImpactXParticleContainer::ParticleType;
@@ -238,19 +239,13 @@ namespace detail
             decltype(auto) idcpu = load_pdata(m_part_idcpu, i);
 
             // pre/post-push functionality declared by mixin classes
-            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element>;
+            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
             constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
-
-            // skip alignment shifts & rotations if the element is perfectly aligned
-            bool misaligned = false;
-            if constexpr (has_alignment) { misaligned = m_element.misaligned(); }
 
             // shift into the alignment-error frame (compile-time gated)
             if constexpr (has_alignment) {
-                if (misaligned) {
-                    m_element.shift_in(x, y, px, py);
-                    m_element.rotate_in(sx, sy);
-                }
+                m_element.shift_in(x, y, px, py);
+                m_element.rotate_in(sx, sy);
             }
 
             // push spin & phase space through element
@@ -263,10 +258,8 @@ namespace detail
 
             // shift back to the lab frame (compile-time gated)
             if constexpr (has_alignment) {
-                if (misaligned) {
-                    m_element.shift_out(x, y, px, py);
-                    m_element.rotate_out(sx, sy);
-                }
+                m_element.shift_out(x, y, px, py);
+                m_element.rotate_out(sx, sy);
             }
 
             // SIMD: write back to memory
@@ -325,8 +318,9 @@ namespace detail
      * Minimal demonstrator: https://cuda.godbolt.org/z/39e4q53Ye
      *
      * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
+     * @tparam T_DoAlignment whether to apply or ignore element misalignment
      */
-    template <typename T_Element>
+    template <typename T_Element, bool T_DoAlignment>
     struct PushSingleParticle
     {
         using PType = ImpactXParticleContainer::ParticleType;
@@ -391,18 +385,12 @@ namespace detail
             decltype(auto) idcpu = load_pdata(m_part_idcpu, i);
 
             // pre/post-push functionality declared by mixin classes
-            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element>;
+            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
             constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
-
-            // skip alignment shifts & rotations if the element is perfectly aligned
-            bool misaligned = false;
-            if constexpr (has_alignment) { misaligned = m_element.misaligned(); }
 
             // shift into the alignment-error frame (compile-time gated)
             if constexpr (has_alignment) {
-                if (misaligned) {
-                    m_element.shift_in(x, y, px, py);
-                }
+                m_element.shift_in(x, y, px, py);
             }
 
             // push through element
@@ -415,9 +403,7 @@ namespace detail
 
             // shift back to the lab frame (compile-time gated)
             if constexpr (has_alignment) {
-                if (misaligned) {
-                    m_element.shift_out(x, y, px, py);
-                }
+                m_element.shift_out(x, y, px, py);
             }
 
             // write back to memory
@@ -457,6 +443,20 @@ namespace detail
         RefPart m_ref_part;
     };
 
+    /** Run a callable with the element's runtime misalignment lifted to a compile-time
+     *  bool, selecting specialized (branch-free) push paths for with and without alignment.
+     */
+    template< typename T_Element, typename F >
+    void dispatch_misalignment (T_Element & element, F && f)
+    {
+        if constexpr (std::is_base_of_v<mixin::Alignment, std::decay_t<T_Element>>) {
+            if (element.misaligned()) { f(std::true_type{}); }
+            else                      { f(std::false_type{}); }
+        } else {
+            f(std::false_type{});
+        }
+    }
+
     /** This pushes all particles on a particle iterator tile/box
      */
     template< typename T_Element >
@@ -486,21 +486,23 @@ namespace detail
                 amrex::ParticleReal* const AMREX_RESTRICT part_sy = soa_real[RealSoA::sy].dataPtr();
                 amrex::ParticleReal* const AMREX_RESTRICT part_sz = soa_real[RealSoA::sz].dataPtr();
 
-                detail::PushSingleParticleSpin<T_Element> const pushSingleParticle(
-                    element, part_x, part_y, part_t, part_px, part_py, part_pt, part_sx, part_sy, part_sz, part_idcpu, ref_part);
-
                 // loop over beam particles in the box
-                impactx::ParallelFor<T_Element>(np, pushSingleParticle);
+                dispatch_misalignment(element, [&](auto do_alignment) {
+                    detail::PushSingleParticleSpin<T_Element, decltype(do_alignment)::value> const pushSingleParticle(
+                        element, part_x, part_y, part_t, part_px, part_py, part_pt, part_sx, part_sy, part_sz, part_idcpu, ref_part);
+                    impactx::ParallelFor<T_Element>(np, pushSingleParticle);
+                });
             } else {
                 throw std::runtime_error("Spin transport requested but element does not implement the `SpinTransport` interface class!");
             }
         }
         else {
-            detail::PushSingleParticle<T_Element> const pushSingleParticle(
-                element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
-
             // loop over beam particles in the box
-            impactx::ParallelFor<T_Element>(np, pushSingleParticle);
+            dispatch_misalignment(element, [&](auto do_alignment) {
+                detail::PushSingleParticle<T_Element, decltype(do_alignment)::value> const pushSingleParticle(
+                    element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
+                impactx::ParallelFor<T_Element>(np, pushSingleParticle);
+            });
         }
     }
 } // namespace detail

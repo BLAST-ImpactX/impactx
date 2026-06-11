@@ -40,7 +40,7 @@ sim.init_grids()
 # beam energy ad bunch charge
 kin_energy_MeV = 100  # reference energy
 bunch_charge_C = 1.0e-9  # used with space charge
-npart = 100000  # number of macro particles
+npart = 1000000  # number of macro particles
 
 # intialize reference particle
 ref = sim.beam.ref

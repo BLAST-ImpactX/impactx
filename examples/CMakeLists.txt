@@ -2073,7 +2073,7 @@ add_impactx_test(kick-Gauss2p5D.py
 add_impactx_test(kick-PIC2p5D.py
     examples/space_charge_gaussian_kick/run_sc_kick_PIC2p5D.py
     ON    # ImpactX MPI-parallel
-    examples/space_charge_gaussian_kick/analysis_sc_kick_Gauss2p5D.py
+    examples/space_charge_gaussian_kick/analysis_sc_kick_PIC2p5D.py
     OFF  # no plot script yet
 )
 

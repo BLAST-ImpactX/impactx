@@ -8,7 +8,6 @@
 import numpy as np
 import openpmd_api as io
 import scipy.constants as sc
-from scipy.special import expi
 
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -61,7 +60,7 @@ zi = beta * ti
 
 # Predicted momentum kick, from J. Qiang, Phys. Rev. Accel. Beams 28, 114602 (2025), eqs. (31-32)
 
-ri_2 = xi**2 + yi**2   
+ri_2 = xi**2 + yi**2
 gauss_exp = np.exp(-ri_2 / (2.0 * sigmax**2))
 gauss_xy_factor = 2.0 * (1.0 - gauss_exp) / ri_2
 gauss_pdf_z = np.exp(-(zi**2) / (2.0 * sigmaz**2)) / (np.sqrt(2.0 * np.pi) * sigmaz)

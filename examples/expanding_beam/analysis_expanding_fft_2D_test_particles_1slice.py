@@ -30,7 +30,7 @@ R0 = 1.0e-3  # initial beam radius (m)
 Ib = 0.15  # beam current (A)
 kin_energy_MeV = 250  # reference energy
 gamma = 1.0e6 * kin_energy_MeV / mp_eV + 1.0
-beta_gamma_3 = (np.sqrt(gamma**2 - 1.0))**3
+beta_gamma_3 = (np.sqrt(gamma**2 - 1.0)) ** 3
 
 # Alfven current
 IA = (4.0 * np.pi * eps0 * mp * clite**3) / qe

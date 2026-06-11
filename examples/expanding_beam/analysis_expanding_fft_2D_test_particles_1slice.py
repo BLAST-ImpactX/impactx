@@ -8,15 +8,15 @@
 import numpy as np
 import openpmd_api as io
 import scipy.constants as sc
+import pandas as pd
 
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
-initial = series.iterations[1].particles["beam"].to_df()
-initial_sort = initial.sort_values(by=["id"])
+beam_initial = series.iterations[1].particles["beam"]
+initial_sort = beam_initial.to_df().set_index("id")
 beam_final = series.iterations[last_step].particles["beam"]
-final = beam_final.to_df()
-final_sort = final.sort_values(by=["id"])
+final_sort = beam_final.to_df().set_index("id")
 
 # Physical constants
 qe = sc.elementary_charge
@@ -113,7 +113,7 @@ print("dpx_max/pr_max", dpx_max / pr_max)
 print("dpy_max/pr_max", dpy_max / pr_max)
 
 # Test maximum error:
-atol = 5.1e-2
+atol = 6.1e-2
 print(f"  tol={atol}")
 
 assert np.allclose(

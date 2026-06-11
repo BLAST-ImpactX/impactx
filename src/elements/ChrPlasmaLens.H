@@ -110,13 +110,13 @@ namespace impactx::elements
 
             // access reference particle values to find beta and gamma
             m_beta = refpart.beta();
-            m_gamma = refpart.gamma();
+            amrex::ParticleReal const gamma = refpart.gamma();
 
             // normalize focusing strength units to MAD-X convention if needed
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
 
             //For m_g=0 time propagation
-            m_const1 = 1_prt / (2_prt * powi<3>(m_beta) * powi<2>(m_gamma));
+            m_const1 = 1_prt / (2_prt * powi<3>(m_beta) * powi<2>(gamma));
         }
 
         /** This is a chrplasmalens functor, so that a variable of this type can be used like a chrplasmalens function.
@@ -128,7 +128,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -140,7 +140,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
             [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -236,7 +236,7 @@ namespace impactx::elements
                 // avoiding division by 0
                 T_Real term = 2_prt * powi<2>(pt) + powi<2>(px) + powi<2>(py);
                 term = 2_prt - 4_prt * m_beta * pt + powi<2>(m_beta) * term;
-                term = -2_prt + powi<2>(m_gamma)*term;
+                term = -2_prt + powi<2>(refpart.gamma())*term;
                 term = (-1_prt + m_beta * pt) * term;
                 term = term * m_const1;
                 tout = t - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
@@ -303,7 +303,7 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -335,7 +335,7 @@ namespace impactx::elements
             T_Real const inv_delta1 = 1_prt / delta1;
 
             // compute particle relativistic gamma
-            T_Real const gamma = m_gamma * (1_prt - m_beta*pt);
+            T_Real const gamma = refpart.gamma() * (1_prt - m_beta*pt);
             T_Real const gyro_const = 1_prt + refpart.gyromagnetic_anomaly * gamma;
 
             // compute phase advance per unit length in s (in rad/m)
@@ -439,7 +439,6 @@ namespace impactx::elements
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;  //! m_ds / nslice();
         amrex::ParticleReal m_beta;
-        amrex::ParticleReal m_gamma;
         amrex::ParticleReal m_g;
         amrex::ParticleReal m_const1;
     };

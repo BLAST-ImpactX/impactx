@@ -111,11 +111,8 @@ namespace impactx::elements
             m_inv_factorial = 1.0_prt / static_cast<amrex::ParticleReal>(m_mfactorial);
 
             // additional constants needed for spin push
-            m_gamma_ref = refpart.gamma();
-            m_gyro_anomaly = refpart.gyromagnetic_anomaly;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
-
         }
 
         /** This is a multipole functor, so that a variable of this type can be used like a
@@ -206,7 +203,7 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -221,12 +218,16 @@ namespace impactx::elements
             [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
             [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
             [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
             using namespace std; // for cmath(float)
+
+            // reference particle relativistic factors
+            amrex::ParticleReal const gamma_ref = refpart.gamma();
+            amrex::ParticleReal const gyro_anomaly = refpart.gyromagnetic_anomaly;
 
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
@@ -242,8 +243,8 @@ namespace impactx::elements
             // compute multipole magnetic field normalized by q/mc:
             int const m = m_multipole - 1;
             Complex const kick = amrex::pow(zeta, m) * m_alpha;
-            T_Real const Bx = kick.m_imag * m_inv_factorial * m_beta * m_gamma_ref;
-            T_Real const By = kick.m_real * m_inv_factorial * m_beta * m_gamma_ref;
+            T_Real const Bx = kick.m_imag * m_inv_factorial * m_beta * gamma_ref;
+            T_Real const By = kick.m_real * m_inv_factorial * m_beta * gamma_ref;
             T_Real const Bz = 0_prt;
 
             // Electric field normalized by q/mc^2:
@@ -255,7 +256,7 @@ namespace impactx::elements
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
             T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
+            T_Real const gamma = gamma_ref * (1_prt - pt*m_beta);
             T_Real const ux = px * iPnorm;
             T_Real const uy = py * iPnorm;
             T_Real const uz = Ps * iPnorm;
@@ -264,7 +265,7 @@ namespace impactx::elements
             amrex::ParticleReal const h = 0.0_prt;
 
             // Evaluation of the full Thomas-BMT precession vector.
-            tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+            tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
@@ -345,8 +346,6 @@ namespace impactx::elements
         // see: compute_constants() to refresh
         amrex::GpuComplex<amrex::ParticleReal> m_alpha;
         amrex::ParticleReal m_inv_factorial;
-        amrex::ParticleReal m_gamma_ref;      //! relativistic gamma
-        amrex::ParticleReal m_gyro_anomaly;   //! particle gyromagnetic anomaly
         amrex::ParticleReal m_beta;           //! relativistic beta
         amrex::ParticleReal m_ibeta;          //! inverse of beta
     };

@@ -57,18 +57,6 @@ distr = distribution.KVdist(
 )
 sim.add_particles(beam_current_A, distr, npart)
 
-pc = sim.particle_container()
-
-#  add test particles
-df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
-dx = df_initial["x"].to_numpy()
-dpx = df_initial["px"].to_numpy()
-dy = df_initial["y"].to_numpy()
-dpy = df_initial["py"].to_numpy()
-dt = df_initial["t"].to_numpy()
-dpt = df_initial["pt"].to_numpy()
-pc.add_n_particles(dx, dy, dt, dpx, dpy, dpt, qm_eev, bunch_charge=0.0)
-
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
@@ -91,36 +79,8 @@ sarr = []
 test_data = []
 mm_scale = 1.0e3
 
-
-def hook_before_slice(sim):
-    s = sim.beam.ref.s
-    sarr.append(s)
-    beam = sim.beam.to_df()
-    # Filter on particle weight (collect test particles only)
-    for row in beam[beam["weighting"] == 0.0].itertuples():
-        # collect test particle data
-        test_data.append(
-            [s, row.idcpu, row.position_x * mm_scale, row.position_y * mm_scale]
-        )
-
-
-sim.hook["before_slice"] = hook_before_slice
-
 # run simulation
 sim.track_particles()
 
 # clean shutdown
 sim.finalize()
-
-df = pd.DataFrame(test_data, columns=["s", "id", "x", "y"])
-sorted_df = df.sort_values(by="id")
-
-n = len(sarr)
-for i in range(0, len(df), n):
-    subset = sorted_df.iloc[i : i + n]
-    plt.scatter(subset["s"], subset["x"], s=5)
-
-plt.xlabel("s [m]", fontsize=12)
-plt.ylabel("x [mm]", fontsize=12)
-plt.title("Test Particles: Horizontal Coordinates")
-plt.show()

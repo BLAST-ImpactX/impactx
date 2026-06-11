@@ -199,6 +199,23 @@ namespace impactx::elements::mixin
             return m_rotation / degree2rad;
         }
 
+        /** Whether the element has any (nonzero) translation or rotation error.
+         *
+         * Used to unswitch the alignment shift/rotate out of the per-particle push:
+         * a perfectly aligned element skips the (otherwise identity) transforms.
+         * Cheap to evaluate and called once per push launch (not per particle), so
+         * it reads the current alignment errors directly instead of caching.
+         *
+         * @return true if dx, dy, or rotation is nonzero
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        bool misaligned () const
+        {
+            return (m_dx != amrex::ParticleReal(0)) ||
+                   (m_dy != amrex::ParticleReal(0)) ||
+                   (m_rotation != amrex::ParticleReal(0));
+        }
+
         amrex::ParticleReal m_dx = 0; //! horizontal translation error [m]
         amrex::ParticleReal m_dy = 0; //! vertical translation error [m]
         amrex::ParticleReal m_rotation = 0; //! rotation error in the transverse plane [rad]

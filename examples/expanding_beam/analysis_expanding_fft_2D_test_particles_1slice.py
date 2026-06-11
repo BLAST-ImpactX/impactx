@@ -8,7 +8,6 @@
 import numpy as np
 import openpmd_api as io
 import scipy.constants as sc
-import pandas as pd
 
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)

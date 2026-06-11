@@ -445,13 +445,25 @@ namespace detail
 
     /** Run a callable with the element's runtime misalignment lifted to a compile-time
      *  bool, selecting specialized (branch-free) push paths for with and without alignment.
+     *
+     * With ImpactX_OPTIMIZE_ALIGNMENT (default), alignment-capable elements compile two
+     * push variants (with/without the shift/rotate transforms) and pick the matching one
+     * at runtime, so a perfectly aligned element skips the otherwise-identity transforms.
+     * Without it, only the always-on (always shift/rotate) variant is compiled, which
+     * halves the element-push compile time at the cost of running the transforms on every
+     * particle even when the element is perfectly aligned.
      */
     template< typename T_Element, typename F >
-    void dispatch_misalignment (T_Element & element, F && f)
+    void dispatch_misalignment ([[maybe_unused]] T_Element & element, F && f)
     {
         if constexpr (std::is_base_of_v<mixin::Alignment, std::decay_t<T_Element>>) {
+#ifdef ImpactX_OPTIMIZE_ALIGNMENT
             if (element.misaligned()) { f(std::true_type{}); }
             else                      { f(std::false_type{}); }
+#else
+            // always apply the alignment transforms (single instantiation)
+            f(std::true_type{});
+#endif
         } else {
             f(std::false_type{});
         }

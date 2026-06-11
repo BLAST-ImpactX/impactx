@@ -73,6 +73,12 @@ option(ImpactX_SIMD          "CPU SIMD Acceleration"                        OFF)
 option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
 
+# Specialize the particle push into branch-free paths for aligned vs. misaligned
+# elements (selected at runtime). This doubles the compile time of the element
+# pushes. Set to OFF to compile a single, always-on shift/rotate path instead.
+option(ImpactX_OPTIMIZE_ALIGNMENT "Branch-free push paths for aligned/misaligned elements (OFF halves element-push compile time)" ON)
+mark_as_advanced(ImpactX_OPTIMIZE_ALIGNMENT)
+
 set(ImpactX_PRECISION_VALUES SINGLE DOUBLE)
 set(ImpactX_PRECISION DOUBLE CACHE STRING "Floating point precision (SINGLE/DOUBLE)")
 set_property(CACHE ImpactX_PRECISION PROPERTY STRINGS ${ImpactX_PRECISION_VALUES})
@@ -344,6 +350,9 @@ if(ImpactX_FFT)
 endif()
 if(ImpactX_OPENPMD)
     target_compile_definitions(lib PUBLIC ImpactX_USE_OPENPMD)
+endif()
+if(ImpactX_OPTIMIZE_ALIGNMENT)
+    target_compile_definitions(lib PUBLIC ImpactX_OPTIMIZE_ALIGNMENT)
 endif()
 if(ImpactX_PYTHON)
     # for module __version__

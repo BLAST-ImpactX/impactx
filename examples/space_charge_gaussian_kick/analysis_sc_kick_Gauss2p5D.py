@@ -13,9 +13,10 @@ from scipy.special import expi
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
-initial = series.iterations[1].particles["beam"].to_df()
+beam_initial = series.iterations[1].particles["beam"]
+initial_sort = beam_initial.to_df().set_index("id")
 beam_final = series.iterations[last_step].particles["beam"]
-final = beam_final.to_df()
+final_sort = beam_final.to_df().set_index("id")
 
 # Physical constants
 qe = sc.elementary_charge
@@ -50,12 +51,12 @@ gauss_long_scale = 6.0
 
 # Initial particle data
 
-xi = initial["position_x"]
-pxi = initial["momentum_x"]
-yi = initial["position_y"]
-pyi = initial["momentum_y"]
-ti = initial["position_t"]
-pti = initial["momentum_t"]
+xi = initial_sort["position_x"]
+pxi = initial_sort["momentum_x"]
+yi = initial_sort["position_y"]
+pyi = initial_sort["momentum_y"]
+ti = initial_sort["position_t"]
+pti = initial_sort["momentum_t"]
 zi = beta * ti
 
 # Predicted momentum kick, from J. Qiang, Phys. Rev. Accel. Beams 28, 114602 (2025), eqs. (31-32)
@@ -82,12 +83,12 @@ pt_max = pt_predicted.abs().max()
 
 # Final particle data
 
-xf = final["position_x"]
-pxf = final["momentum_x"]
-yf = final["position_y"]
-pyf = final["momentum_y"]
-tf = final["position_t"]
-ptf = final["momentum_t"]
+xf = final_sort["position_x"]
+pxf = final_sort["momentum_x"]
+yf = final_sort["position_y"]
+pyf = final_sort["momentum_y"]
+tf = final_sort["position_t"]
+ptf = final_sort["momentum_t"]
 
 # Difference between value and prediction
 

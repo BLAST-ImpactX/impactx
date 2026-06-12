@@ -139,10 +139,10 @@ namespace impactx::elements
         void operator() (
             T_Real & AMREX_RESTRICT x,
             T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT pt,
             [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
@@ -154,7 +154,7 @@ namespace impactx::elements
 
             // compute particle momentum deviation delta + 1
             T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
-            T_Real a = m_a / delta1;
+            T_Real const a = m_a / delta1;
 
             // initialize output values
             T_Real xout = x;
@@ -164,9 +164,9 @@ namespace impactx::elements
             T_Real pyout = py;
 
             // intermediate quantities to be used below
-            T_Real x2my2 = x*x - y*y;
-            T_Real x2py2 = x*x + y*y;
-            T_Real denominator = 1_prt - 9_prt*powi<2>(a)*powi<2>(x2my2);
+            T_Real const x2my2 = x*x - y*y;
+            T_Real const x2py2 = x*x + y*y;
+            T_Real const denominator = 1_prt - 9_prt*powi<2>(a)*powi<2>(x2my2);
 
             // apply edge focusing (transverse phase space)
             xout = x - a * (powi<3>(x) + 3_prt * x * powi<2>(y));
@@ -176,7 +176,7 @@ namespace impactx::elements
             pyout = (py - 3_prt*a*py*x2py2 + 6_prt*a*px*x*y) / denominator;
 
             // apply edge focusing (longitudinal phase space)
-            T_Real f4 = a * ( pxout * (powi<3>(x) + 3_prt*x*powi<2>(y))
+            T_Real const f4 = a * ( pxout * (powi<3>(x) + 3_prt*x*powi<2>(y))
                                          - pyout * (powi<3>(y) + 3_prt*y*powi<2>(x)) );
             tout = t + f4 * (pt - 1_prt/m_beta) / powi<2>(delta1);
 

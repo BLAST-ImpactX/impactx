@@ -138,7 +138,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT pt,
             [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
@@ -163,13 +163,13 @@ namespace impactx::elements
             // initialize output values of momenta
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real const ptout = pt;
+            // T_Real const ptout = pt;
 
             // placeholder variables -- canonical position and momentum
-            T_Real q1 = x;
-            T_Real q2 = y;
-            T_Real p1 = px;
-            T_Real p2 = py;
+            T_Real const q1 = x;
+            T_Real const q2 = y;
+            T_Real const p1 = px;
+            T_Real const p2 = py;
 
             if (m_g > 0_prt)
             {
@@ -250,7 +250,7 @@ namespace impactx::elements
             t = tout;
             px = pxout;
             py = pyout;
-            pt = ptout;
+            // pt = ptout;
         }
 
         /** This pushes the reference particle.
@@ -313,11 +313,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT pt,
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {

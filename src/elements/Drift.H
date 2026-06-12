@@ -122,9 +122,9 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT x,
             T_Real & AMREX_RESTRICT y,
             T_Real & AMREX_RESTRICT t,
-            T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT px,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
             [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
@@ -135,9 +135,9 @@ namespace impactx::elements
             T_Real xout = x;
             T_Real yout = y;
             T_Real tout = t;
-            T_Real pxout = px;
-            T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real pxout = px;
+            // T_Real pyout = py;
+            // T_Real ptout = pt;
 
             // advance position and momentum (drift)
             xout = x + m_slice_ds * px;
@@ -151,9 +151,9 @@ namespace impactx::elements
             x = xout;
             y = yout;
             t = tout;
-            px = pxout;
-            py = pyout;
-            pt = ptout;
+            // px = pxout;
+            // py = pyout;
+            // pt = ptout;
         }
 
         /** This pushes the reference particle.
@@ -204,24 +204,24 @@ namespace impactx::elements
          * @param pt particle momentum in t
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
-         * @param sx particle spin x-component
-         * @param sy particle spin y-component
-         * @param sz particle spin z-component
+         * @param sx particle spin x-component (unused)
+         * @param sy particle spin y-component (unused)
+         * @param sz particle spin z-component (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real const & AMREX_RESTRICT px,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sz,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
              // spin is unaffected

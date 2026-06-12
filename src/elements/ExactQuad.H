@@ -504,7 +504,7 @@ namespace impactx::elements
          * @param[in,out] sx particle spin x-component
          * @param[in,out] sy particle spin y-component
          * @param[in,out] sz particle spin z-component
-         * @param[in,out] idcpu particle global index
+         * @param[in,out] idcpu particle global index (unused)
          * @param[in] refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
@@ -519,7 +519,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {

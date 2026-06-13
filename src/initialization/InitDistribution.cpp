@@ -278,6 +278,7 @@ namespace impactx
                 dmat(2,6) = -disppx;
                 dmat(3,3) = 1_prt;
                 dmat(3,6) = -dispy;
+                dmat(4,4) = 1_prt;
                 dmat(4,6) = -disppy;
                 dmat(5,5) = 1_prt;
                 dmat(6,6) = 1_prt;

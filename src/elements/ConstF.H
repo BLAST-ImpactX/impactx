@@ -385,7 +385,8 @@ namespace impactx::elements
             R(6,5) = const_t;
             R(6,6) = cos_ktds;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_kx; //! focusing x strength in 1/m

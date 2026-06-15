@@ -257,7 +257,8 @@ namespace impactx::elements
             R(6,5) = k*m_V*std::sin(phi)/bgf;
             R(6,6) = bgi/bgf;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_V; //! normalized (max) RF voltage drop.

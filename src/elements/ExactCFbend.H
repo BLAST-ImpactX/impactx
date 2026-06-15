@@ -720,7 +720,8 @@ namespace impactx::elements
                 slice_ds * ibetgam2 + (sinx  - omega_x * slice_ds) * igobr :
                 slice_ds * ibetgam2 + (sinhx - omega_x * slice_ds) * igobr;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
 

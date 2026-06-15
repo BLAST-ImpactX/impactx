@@ -416,7 +416,8 @@ namespace impactx::elements
             Map6x6 R = Map6x6::Identity();
             R = refpart.map;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         /** This evaluates the on-axis magnetic field Bz at a fixed location

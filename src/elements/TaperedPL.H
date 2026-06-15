@@ -304,7 +304,8 @@ for beam-quality preservation between plasma-accelerator stages",
             R(2,1) = -g;
             R(4,3) = -g;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_k; //! linear focusing strength (field gradient)

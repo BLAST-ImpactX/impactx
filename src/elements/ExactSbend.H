@@ -357,7 +357,8 @@ namespace impactx::elements
                R(5,6) = m_rc * (-theta + sin_theta / (bet * bet));
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
 

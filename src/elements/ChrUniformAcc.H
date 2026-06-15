@@ -399,7 +399,8 @@ namespace impactx::elements
                 R(4,3) = -alpha * cs / bgf;  R(4,4) =  rbg * c2;
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_ez; //! electric field strength in 1/m

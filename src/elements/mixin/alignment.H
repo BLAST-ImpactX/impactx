@@ -10,6 +10,7 @@
 #ifndef IMPACTX_ELEMENTS_MIXIN_ALIGNMENT_H
 #define IMPACTX_ELEMENTS_MIXIN_ALIGNMENT_H
 
+#include "particles/CovarianceMatrix.H"
 #include "particles/ImpactXParticleContainer.H"
 
 #include <ablastr/constant.H>
@@ -17,6 +18,7 @@
 #include <AMReX_Math.H>
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SmallMatrix.H>
 
 
 namespace impactx::elements::mixin
@@ -214,6 +216,55 @@ namespace impactx::elements::mixin
             return (m_dx != amrex::ParticleReal(0)) ||
                    (m_dy != amrex::ParticleReal(0)) ||
                    (m_rotation != amrex::ParticleReal(0));
+        }
+
+        /** 6x6 linear map of the transverse rotation (roll) alignment error.
+         *
+         * Returns the lab-from-element rotation @c A = Rot(theta) acting on
+         * the (x, y) and (px, py) sub-blocks and the identity on (t, pt). It is
+         * the linear-map analogue of @see shift_in / @see shift_out: the
+         * aligned (lab-frame) map of an element is @c A * R * A^T .
+         *
+         * sin/cos are evaluated from @c m_rotation directly rather than the
+         * @see compute_constants cache, because the linear-optics path
+         * (transfer_map, map_trace, envelope tracking) does not call
+         * compute_constants().
+         *
+         * @return the 6x6 transverse-rotation map in (x, px, y, py, t, pt) order
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        rotation_map () const
+        {
+            auto const [sin_rotation, cos_rotation] = amrex::Math::sincos(m_rotation);
+
+            Map6x6 A = Map6x6::Identity();
+            A(1, 1) =  cos_rotation;  A(1, 3) = -sin_rotation;
+            A(3, 1) =  sin_rotation;  A(3, 3) =  cos_rotation;
+            A(2, 2) =  cos_rotation;  A(2, 4) = -sin_rotation;
+            A(4, 2) =  sin_rotation;  A(4, 4) =  cos_rotation;
+            return A;
+        }
+
+        /** Apply the transverse rotation (roll) alignment error to an element's
+         *  intrinsic linear transport map.
+         *
+         * Elements call this on their own @c transport_map result just before
+         * returning, so that linear-optics consumers (transfer_map, map_trace,
+         * envelope tracking) see the same roll that the particle push applies
+         * via @see shift_in / @see shift_out. A perfectly roll-aligned element
+         * returns @c R unchanged.
+         *
+         * @param R the element's intrinsic (zero-rotation) 6x6 transport map
+         * @return the lab-frame map @c A * R * A^T (see @see rotation_map)
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        rotate_aligned_map (Map6x6 const & R) const
+        {
+            if (m_rotation == amrex::ParticleReal(0)) { return R; }
+            Map6x6 const A = rotation_map();
+            return A * R * A.transpose();
         }
 
         amrex::ParticleReal m_dx = 0; //! horizontal translation error [m]

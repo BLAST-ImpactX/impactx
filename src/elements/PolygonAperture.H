@@ -321,7 +321,8 @@ namespace impactx::elements
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            return Map6x6::Identity();
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(Map6x6::Identity());
         }
 
         Action m_action; //! action type (transmit, absorb)

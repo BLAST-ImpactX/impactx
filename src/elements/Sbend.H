@@ -337,7 +337,8 @@ namespace impactx::elements
 
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         /** This operator pushes the particle spin.

@@ -332,7 +332,8 @@ namespace impactx::elements
                 R(4,3) = +m_Kn;
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         int m_multipole; //! multipole index

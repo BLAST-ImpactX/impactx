@@ -229,7 +229,8 @@ namespace impactx::elements
             R(2,1) = -k_lin;
             R(4,3) = +k_lin;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_knll; //! integrated strength of the nonlinear lens (m)

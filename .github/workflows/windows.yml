@@ -48,6 +48,7 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF            `
               -DBUILD_TESTS=OFF                  `
               -DCMAKE_BUILD_TYPE=RelWithDebInfo  `
+              -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
               -DDISABLE_FORTRAN=ON
         if(!$?) { Exit $LASTEXITCODE }
         cmake --build build_fftw --config RelWithDebInfo --target install --parallel 4
@@ -57,6 +58,7 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF            `
               -DBUILD_TESTS=OFF                  `
               -DCMAKE_BUILD_TYPE=RelWithDebInfo  `
+              -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
               -DDISABLE_FORTRAN=ON               `
               -DENABLE_FLOAT=ON
         if(!$?) { Exit $LASTEXITCODE }
@@ -161,25 +163,27 @@ jobs:
       run: |
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
-        cmake -S fftw-3.3.10                    ^
-              -B build_fftw                     ^
-              -G "Ninja"                        ^
-              -DBUILD_TESTS=OFF                 ^
-              -DBUILD_SHARED_LIBS=OFF           ^
-              -DCMAKE_BUILD_TYPE=Debug          ^
-              -DDISABLE_FORTRAN=ON              ^
+        cmake -S fftw-3.3.10                     ^
+              -B build_fftw                      ^
+              -G "Ninja"                         ^
+              -DBUILD_TESTS=OFF                  ^
+              -DBUILD_SHARED_LIBS=OFF            ^
+              -DCMAKE_BUILD_TYPE=Debug           ^
+              -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ^
+              -DDISABLE_FORTRAN=ON               ^
               -DENABLE_OPENMP=ON
         if errorlevel 1 exit 1
         cmake --build build_fftw --config Debug --target install --parallel 4
         if errorlevel 1 exit 1
-        cmake -S fftw-3.3.10                    ^
-              -B build_fftwf                    ^
-              -G "Ninja"                        ^
-              -DBUILD_TESTS=OFF                 ^
-              -DBUILD_SHARED_LIBS=OFF           ^
-              -DCMAKE_BUILD_TYPE=Debug          ^
-              -DDISABLE_FORTRAN=ON              ^
-              -DENABLE_FLOAT=ON                 ^
+        cmake -S fftw-3.3.10                     ^
+              -B build_fftwf                     ^
+              -G "Ninja"                         ^
+              -DBUILD_TESTS=OFF                  ^
+              -DBUILD_SHARED_LIBS=OFF            ^
+              -DCMAKE_BUILD_TYPE=Debug           ^
+              -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ^
+              -DDISABLE_FORTRAN=ON               ^
+              -DENABLE_FLOAT=ON                  ^
               -DENABLE_OPENMP=ON
         if errorlevel 1 exit 1
         cmake --build build_fftwf --config Debug --target install --parallel 4

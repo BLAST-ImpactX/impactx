@@ -136,7 +136,9 @@ assert np.allclose(
 
 print("")
 print("Initial Twiss functions:")
-print(f"  alpha_x={alpha_xi:e} beta_x={beta_xi:e} alpha_y={alpha_yi:e} beta_y={beta_yi:e}")
+print(
+    f"  alpha_x={alpha_xi:e} beta_x={beta_xi:e} alpha_y={alpha_yi:e} beta_y={beta_yi:e}"
+)
 print(f"  dispersion_x={dispersion_xi:e} dispersion_px={dispersion_pxi:e}")
 
 atol = 0.0  # ignored
@@ -158,7 +160,9 @@ assert np.allclose(
 
 print("")
 print("Final Twiss functions:")
-print(f"  alpha_x={alpha_xf:e} beta_x={beta_xf:e} alpha_y={alpha_yf:e} beta_y={beta_yf:e}")
+print(
+    f"  alpha_x={alpha_xf:e} beta_x={beta_xf:e} alpha_y={alpha_yf:e} beta_y={beta_yf:e}"
+)
 print(f"  dispersion_x={dispersion_xf:e} dispersion_px={dispersion_pxf:e}")
 
 atol = 0.0  # ignored
@@ -192,4 +196,3 @@ assert np.allclose(
     ],
     atol=4.0e-5,
 )
-

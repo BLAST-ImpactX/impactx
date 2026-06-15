@@ -52,6 +52,8 @@ alpha_y = rbc["alpha_y"]
 beta_y = rbc["beta_y"]
 dispersion_x = rbc["dispersion_x"]
 dispersion_px = rbc["dispersion_px"]
+dispersion_y = rbc["dispersion_y"] 
+dispersion_py = rbc["dispersion_py"]
 
 sigma_xi = sigma_x.iloc[0]
 sigma_yi = sigma_y.iloc[0]
@@ -65,6 +67,8 @@ alpha_yi = alpha_y.iloc[0]
 beta_yi = beta_y.iloc[0]
 dispersion_xi = dispersion_x.iloc[0]
 dispersion_pxi = dispersion_px.iloc[0]
+dispersion_yi = dispersion_y.iloc[0]
+dispersion_pyi = dispersion_py.iloc[0]
 
 length = len(s) - 1
 
@@ -81,6 +85,8 @@ alpha_yf = alpha_y.iloc[length]
 beta_yf = beta_y.iloc[length]
 dispersion_xf = dispersion_x.iloc[length]
 dispersion_pxf = dispersion_px.iloc[length]
+dispersion_yf = dispersion_y.iloc[length]
+dispersion_pyf = dispersion_py.iloc[length]
 
 
 print("Initial Beam:")
@@ -140,6 +146,7 @@ print(
     f"  alpha_x={alpha_xi:e} beta_x={beta_xi:e} alpha_y={alpha_yi:e} beta_y={beta_yi:e}"
 )
 print(f"  dispersion_x={dispersion_xi:e} dispersion_px={dispersion_pxi:e}")
+print(f"  dispersion_y={dispersion_yi:e} dispersion_py={dispersion_pyi:e}")
 
 atol = 0.0  # ignored
 rtol = 2.5e-2
@@ -157,6 +164,15 @@ assert np.allclose(
     rtol=rtol,
     atol=atol,
 )
+assert np.allclose(
+    [dispersion_pxi, dispersion_yi, dispersion_pyi],
+    [
+        0.0,
+        0.0,
+        0.0,
+    ],
+    atol=4.0e-5,
+)
 
 print("")
 print("Final Twiss functions:")
@@ -164,6 +180,7 @@ print(
     f"  alpha_x={alpha_xf:e} beta_x={beta_xf:e} alpha_y={alpha_yf:e} beta_y={beta_yf:e}"
 )
 print(f"  dispersion_x={dispersion_xf:e} dispersion_px={dispersion_pxf:e}")
+print(f"  dispersion_y={dispersion_yf:e} dispersion_py={dispersion_pyf:e}")
 
 atol = 0.0  # ignored
 rtol = 2.0e-2

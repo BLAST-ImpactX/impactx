@@ -117,7 +117,7 @@ We run the following script to analyze correctness:
 .. _examples-dogleg-reverse-env:
 
 Dogleg in Reverse Using Envelope Solver
-========================================
+=======================================
 
 This is identical to :ref:`reverse dogleg example <examples-dogleg-reverse>`, except that envelope tracking is used instead of particle tracking.
 

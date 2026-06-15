@@ -52,7 +52,7 @@ alpha_y = rbc["alpha_y"]
 beta_y = rbc["beta_y"]
 dispersion_x = rbc["dispersion_x"]
 dispersion_px = rbc["dispersion_px"]
-dispersion_y = rbc["dispersion_y"] 
+dispersion_y = rbc["dispersion_y"]
 dispersion_py = rbc["dispersion_py"]
 
 sigma_xi = sigma_x.iloc[0]

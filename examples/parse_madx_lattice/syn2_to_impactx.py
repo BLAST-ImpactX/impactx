@@ -17,7 +17,7 @@ from enum import Enum
 import numpy as np
 
 import impactx
-import impactx.synmadx
+from impactx import synmadx
 
 
 class Order(Enum):
@@ -549,6 +549,10 @@ def cnv_monitor(elem):
     ix_elem = impactx.elements.BeamMonitor(name=fname, backend="h5")
     return ix_elem
 
+def cnv_marker(elem):
+    ix_elem = impactx.elements.Drift(ds=0.0, name=elem.get_name())
+    return ix_elem
+
 def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.exact):
     # lattice must have a reference particle
     try:
@@ -622,6 +626,9 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
                 impactx_lattice.append(mpelem)
         elif etype == ET.monitor:
             ix_elem = cnv_monitor(elem)
+            impactx_lattice.append(ix_elem)
+        elif etype == ET.marker:
+            ix_elem = cnv_marker(elem)
             impactx_lattice.append(ix_elem)
         else:
             print("warning: unsupported element: ", etype)
@@ -700,8 +707,11 @@ __misc_txt = """
     q1: quadrupole, l=0.5, k1=1.0/(0.5*7.0);
     sx1: sextupole, l=0.2, k2=0.05;
     bb: rbend, l=1.5, angle=(2*pi)/96, k1=0.004, k2=0.0005;
+    m1: marker;
+    m2: marker;
+    mon1: monitor;
 
-    misc: line=(d, b, rfc, q1, sx1, bb);
+    misc: line=(d, m1, mon1, b, rfc, q1, sx1, m2, bb);
 """
 
 __simple_booster_txt = """

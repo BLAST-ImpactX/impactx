@@ -560,8 +560,21 @@ namespace impactx::elements
             // normalize quad units to MAD-X convention if needed
             amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] / refpart.rigidity_Tm() : k_normal[1];
             amrex::ParticleReal const ks = m_unit == 1 ? k_skew[1] / refpart.rigidity_Tm() : k_skew[1];
-
             amrex::ParticleReal const kabs = std::sqrt(powi<2>(kn) + powi<2>(ks));
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            // No quadrupole component (e.g. a pure sextupole or higher
+            // multipole, or a pure dipole): the first-order map about the
+            // reference orbit reduces to a drift.
+            if (kabs == 0.0_prt) {
+                R(1,2) = slice_ds;
+                R(3,4) = slice_ds;
+                R(5,6) = slice_ds / betgam2;
+                return R;
+            }
+
             amrex::ParticleReal const kplus = kn + kabs;
             amrex::ParticleReal const kminus = kn - kabs;
 
@@ -571,9 +584,6 @@ namespace impactx::elements
             amrex::ParticleReal const cos_omega_ds = std::cos(omega*slice_ds);
             amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
             amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
-
-            // initialize linear map matrix elements
-            Map6x6 R = Map6x6::Identity();
 
             // linear matrix for a quadrupole with both normal and skew coefficients
             R(1,1) = (kplus * cos_omega_ds - kminus * cosh_omega_ds) / (2_prt * kabs);

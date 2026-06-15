@@ -48,7 +48,7 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF            `
               -DBUILD_TESTS=OFF                  `
               -DCMAKE_BUILD_TYPE=RelWithDebInfo  `
-              -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
+              -DCMAKE_POLICY_VERSION_MINIMUM="3.5" `
               -DDISABLE_FORTRAN=ON
         if(!$?) { Exit $LASTEXITCODE }
         cmake --build build_fftw --config RelWithDebInfo --target install --parallel 4
@@ -58,7 +58,7 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF            `
               -DBUILD_TESTS=OFF                  `
               -DCMAKE_BUILD_TYPE=RelWithDebInfo  `
-              -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
+              -DCMAKE_POLICY_VERSION_MINIMUM="3.5" `
               -DDISABLE_FORTRAN=ON               `
               -DENABLE_FLOAT=ON
         if(!$?) { Exit $LASTEXITCODE }

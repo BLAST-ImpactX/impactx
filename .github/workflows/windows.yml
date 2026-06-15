@@ -161,7 +161,7 @@ jobs:
     - name: Install Dependencies
       shell: cmd
       run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
         cmake -S fftw-3.3.11                     ^
               -B build_fftw                      ^
@@ -221,7 +221,7 @@ jobs:
         FFTW3f_DIR: "C:/Program Files (x86)/fftw/"
         HDF5_DIR: "C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
       run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 
         cmake -S . -B build                  ^
               -T "ClangCl"                   ^
@@ -249,7 +249,7 @@ jobs:
     - name: Test Simple
       shell: cmd
       run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
         set "PATH=C:/Program Files (x86)/ImpactX/bin/;%PATH%"
         python3 examples/fodo/run_fodo.py
         if errorlevel 1 exit 1
@@ -257,14 +257,14 @@ jobs:
     - name: Test
       shell: cmd
       run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+        call "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
         ctest --test-dir build -C Debug --output-on-failure -E AMReX --label-exclude "dashboard"
         if errorlevel 1 exit 1
 
 #    - name: Install
 #      shell: cmd
 #      run: |
-#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
+#        call "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\vc\Auxiliary\build\vcvarsall.bat" x64
 #        set "HDF5_DIR=C:/Program Files/HDF_Group/HDF5/1.12.2/cmake/"
 #
 #        cmake --build build --target install

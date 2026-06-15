@@ -1,10 +1,7 @@
 ###############################################################################
 # Particle Beam(s)
 ###############################################################################
-beam.npart = 10000
-beam.units = static
 beam.kin_energy = 5.0e3
-beam.charge = 1.0e-9
 beam.particle = electron
 beam.distribution = waterbag_from_twiss
 beam.alphaX = 1.33858302795180

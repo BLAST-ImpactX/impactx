@@ -242,13 +242,9 @@ namespace impactx
                     distribution.m_meant  != 0.0_prt ||
                     distribution.m_meanpx != 0.0_prt ||
                     distribution.m_meanpy != 0.0_prt ||
-                    distribution.m_meanpt != 0.0_prt ||
-                    distribution.m_dispx  != 0.0_prt ||
-                    distribution.m_disppx != 0.0_prt ||
-                    distribution.m_dispy  != 0.0_prt ||
-                    distribution.m_disppy != 0.0_prt
+                    distribution.m_meanpt != 0.0_prt
                 ) {
-                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means or dispersion! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
+                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
                 }
 
                 // use distribution inputs to populate a 6x6 covariance matrix

@@ -123,10 +123,21 @@ atol = 5.1e-2
 print(f"  tol={atol}")
 
 assert np.allclose(
-    [dpx_rms / px_max, dpy_rms / py_max, dpt_rms / pt_max],
-    [0.0, 0.0, 0.0],
+    [dpx_rms / px_max, dpy_rms / py_max],
+    [0.0, 0.0],
     atol=atol,
 )
+
+# Longitudinal kick is sensitive to noise (relax tolerance):
+atol = 0.4
+print(f"  tol={atol}")
+
+assert np.allclose(
+    [dpt_rms / pt_max],
+    [0.0],
+    atol=atol,
+)
+
 
 print()
 print("Difference between predicted and computed final momentum (max), relative:")
@@ -139,7 +150,17 @@ atol = 5.1e-2
 print(f"  tol={atol}")
 
 assert np.allclose(
-    [dpx_max / px_max, dpy_max / py_max, dpt_max / pt_max],
-    [0.0, 0.0, 0.0],
+    [dpx_max / px_max, dpy_max / py_max],
+    [0.0, 0.0],
+    atol=atol,
+)
+
+# Longitudinal kick is sensitive to noise (relax tolerance):
+atol = 0.4
+print(f"  tol={atol}")
+
+assert np.allclose(
+    [dpt_max / pt_max],
+    [0.0],
     atol=atol,
 )

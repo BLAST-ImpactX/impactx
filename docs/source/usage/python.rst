@@ -437,9 +437,10 @@ Collective Effects & Overall Simulation Parameters
 
       .. note::
 
-         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
-         Support for misalignments and feed-down effects in envelope tracking is in development.
-         Until then, misalignment options set on elements are silently ignored.
+         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments for translations.
+         Element rotations are handled.
+         Support for translations errors, non-zero envelope means, and feed-down effects in envelope tracking is in development.
+         Until then, translations errors set on elements are silently ignored.
 
    .. py:method:: track_reference(ref)
 

@@ -868,6 +868,15 @@ void init_ImpactX (py::module& m)
 #endif
         })
         .def_property_readonly_static(
+            "have_fft",
+            [](py::object const &){
+#ifdef ImpactX_USE_FFT
+                return true;
+#else
+                return false;
+#endif
+        })
+        .def_property_readonly_static(
             "simd_size",
             [](py::object const &){
                 return amrex::simd::native_simd_size_particlereal;

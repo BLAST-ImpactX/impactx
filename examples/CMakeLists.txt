@@ -2074,6 +2074,15 @@ add_impactx_test(expanding-fft-2d-test-particles.py
 )
 label_impactx_test(expanding-fft-2d-test-particles.py slow)
 
+# Expanding Beam in Free Space with 2D Space Charge, Test Space Charge Kick ###################
+add_impactx_test(expanding-fft-2d-test-particles.py
+    examples/expanding_beam/run_expanding_fft_2d_test_particles_1slice.py
+    ON  # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_fft_2d_test_particles_1slice.py
+    OFF
+)
+label_impactx_test(expanding-fft-2d-test-particles.py slow)
+
 # Scaling Test of Spin in an Exact Bend ###################
 file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
      DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-sbend-spin-scaling.py)

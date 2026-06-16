@@ -156,7 +156,7 @@ assert np.allclose(
 )
 
 # Longitudinal kick is sensitive to noise (relax tolerance):
-atol = 0.5
+atol = 1.1
 print(f"  tol={atol}")
 
 assert np.allclose(

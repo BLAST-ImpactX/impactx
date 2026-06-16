@@ -221,7 +221,8 @@ namespace impactx::elements
             R(2,6) = -kx * ds / beta;        // chromatic dispersion kick
             R(5,1) = +kx * ds / beta;        // path-length coupling to x
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_theta;  //! dipole bending angle (rad)

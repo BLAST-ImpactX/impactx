@@ -284,7 +284,8 @@ namespace impactx::elements
             Map6x6 R = Map6x6::Identity();
             R = m_transport_map;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         Map6x6 m_transport_map;  // 6x6 transport map

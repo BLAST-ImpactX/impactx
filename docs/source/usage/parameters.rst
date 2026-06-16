@@ -30,9 +30,10 @@ Tracking Modes
 
   .. note::
 
-     Our current ``envelope`` tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
-     Support for misalignments and feed-down effects in envelope tracking is in development.
-     Until then, misalignment options set on elements are silently ignored.
+     Our current ``envelope`` tracking implements ideal transfer maps, assuming always zero misalignments (translations).
+     Element rotations are handled.
+     Support for translations errors, non-zero envelope means, and feed-down effects in envelope tracking is in development.
+     Until then, translations errors set on elements are silently ignored.
 
 .. _running-cpp-parameters-particle:
 

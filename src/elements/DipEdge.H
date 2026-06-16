@@ -365,7 +365,8 @@ namespace impactx::elements
             R(2,1) = R21;
             R(4,3) = R43;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_psi; //! pole face angle in rad

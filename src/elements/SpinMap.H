@@ -262,7 +262,8 @@ namespace impactx::elements
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             Map6x6 R = Map6x6::Identity();
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         Vector3 m_spin_rotation_vector;  // 3x1 axis-angle vector for design spin rotation

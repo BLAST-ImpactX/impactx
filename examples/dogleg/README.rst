@@ -171,6 +171,29 @@ We run the following script to analyze correctness:
 
 
 
+.. _examples-dogleg-vertical:
+
+Vertical Dogleg
+===============
+
+This is identical to the :ref:`dogleg example <examples-dogleg>`, except that every bend (and its dip-edge focusing) is rotated by 90 degrees, so the lattice bends in the vertical (:math:`y`) plane. The dogleg therefore generates dispersion in :math:`y` instead of :math:`x`.
+
+To obtain the exact :math:`x \leftrightarrow y` mirror image of the horizontal dogleg, the initial Twiss functions are exchanged :math:`x \leftrightarrow y` as well.
+
+The same lattice is tracked first with the **envelope** (covariance) solver and then with **particle** tracking, in the same script.
+
+The script asserts in-situ that the final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, :math:`\epsilon_t`, :math:`\alpha_x`, :math:`\alpha_y`, :math:`\beta_x`, :math:`\beta_y`, and :math:`D_y` agree with nominal values -- for both the envelope and the particle beam (the dispersion now appears in :math:`y`).
+
+Run
+---
+
+This example runs both envelope and particle tracking and is provided as a Python script: ``python3 run_dogleg_vertical.py``.
+
+.. literalinclude:: run_dogleg_vertical.py
+   :language: python3
+   :caption: You can copy this file from ``examples/dogleg/run_dogleg_vertical.py``.
+
+
 
 .. _examples-dogleg-jitter:
 

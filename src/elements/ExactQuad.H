@@ -489,7 +489,8 @@ namespace impactx::elements
                 R(5,6) = m_slice_ds / betgam2;
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
 

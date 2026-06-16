@@ -170,7 +170,8 @@ namespace impactx::elements
             R(4,3) = kV_r2bg2;
             R(6,5) = neg_kV;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_V; //! normalized (max) RF voltage drop.

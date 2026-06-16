@@ -272,7 +272,8 @@ namespace impactx::elements
             R(3,4) = slice_ds;
             R(5,6) = slice_ds / betgam2;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
       private:

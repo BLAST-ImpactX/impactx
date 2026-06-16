@@ -358,7 +358,8 @@ namespace impactx::elements
 
             R = Rrotation * Rfocusing;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_ks; //! solenoid strength in 1/m

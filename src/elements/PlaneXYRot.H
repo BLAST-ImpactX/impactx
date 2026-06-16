@@ -174,7 +174,8 @@ namespace impactx::elements
             R(4,2) = sin_phi;
             R(4,4) = cos_phi;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_phi; //! angle of rotation (rad)

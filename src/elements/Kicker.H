@@ -174,7 +174,8 @@ namespace impactx::elements
             // an ideal kick does not affect the linear map
             Map6x6 R = Map6x6::Identity();
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_xkick; //! horizontal kick strength

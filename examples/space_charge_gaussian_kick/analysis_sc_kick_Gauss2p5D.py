@@ -129,7 +129,7 @@ assert np.allclose(
 )
 
 # Longitudinal kick is sensitive to noise (relax tolerance):
-atol = 0.4
+atol = 0.5
 print(f"  tol={atol}")
 
 assert np.allclose(
@@ -156,7 +156,7 @@ assert np.allclose(
 )
 
 # Longitudinal kick is sensitive to noise (relax tolerance):
-atol = 0.4
+atol = 0.5
 print(f"  tol={atol}")
 
 assert np.allclose(

@@ -325,6 +325,12 @@ Collective Effects & Overall Simulation Parameters
       For example, ``sim.beam.to_df(local=True)`` returns the local particles as a pandas DataFrame.
       See :ref:`usage-howto-python-particle-data` for further data-access recipes.
 
+   .. py:property:: envelope
+
+      Access the beam envelope (:py:class:`impactx.Envelope`: a 6x6 covariance matrix
+      and beam intensity) used for envelope tracking.
+      Only available after :py:meth:`init_envelope`.
+
    .. py:method:: rho(lev)
 
       Return the charge density :math:`\rho` on mesh-refinement level ``lev`` as a pyAMReX ``MultiFab``.
@@ -493,6 +499,34 @@ Collective Effects & Overall Simulation Parameters
    .. py:method:: resize_mesh()
 
       Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.
+
+
+.. py:class:: impactx.Envelope
+
+   The beam envelope used for envelope (covariance) tracking: a 6x6 covariance
+   matrix relative to a reference particle, plus an optional beam intensity.
+   Created from a distribution by :py:meth:`impactx.ImpactX.init_envelope` and
+   accessed (during or after :py:meth:`impactx.ImpactX.track_envelope`) via
+   :py:attr:`impactx.ImpactX.envelope`.
+
+   .. py:property:: envelope
+
+      The 6x6 beam covariance matrix (a ``Map6x6``).
+
+   .. py:property:: beam_intensity
+
+      The beam intensity: bunch charge (C) for 3D or beam current (A) for 2D space charge.
+
+   .. py:method:: beam_moments(ref)
+
+      Calculate beam moments (position and momentum moments, emittances, Twiss
+      functions, dispersion, ...) from this envelope's covariance matrix and a
+      reference particle. The envelope counterpart of
+      :py:meth:`impactx.ParticleContainer.beam_moments`.
+
+      :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+      :return: a dictionary of beam moments
+      :rtype: dict[str, float]
 
 
 .. py:class:: impactx.Config

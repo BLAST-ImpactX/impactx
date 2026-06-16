@@ -5,6 +5,7 @@
  */
 #include "pyImpactX.H"
 
+#include <diagnostics/ReducedBeamCharacteristics.H>
 #include <particles/distribution/All.H>
 #include <initialization/InitDistribution.H>
 
@@ -209,6 +210,16 @@ void init_distribution(py::module& m)
         .def(py::init<CovarianceMatrix, amrex::ParticleReal>())
         .def_property("envelope", &Envelope::covariance_matrix, &Envelope::set_covariance_matrix)
         .def_property("beam_intensity", &Envelope::beam_intensity, &Envelope::set_beam_intensity)
+        .def("beam_moments",
+            [](Envelope const & env, RefPart const & ref) {
+                return diagnostics::reduced_beam_characteristics(env.covariance_matrix(), ref);
+            },
+            py::arg("ref"),
+            "Calculate beam moments (position and momentum moments, emittances,\n"
+            "Twiss functions, dispersion, ...) from this envelope's covariance\n"
+            "matrix and a reference particle. The envelope counterpart of\n"
+            "ImpactXParticleContainer.beam_moments()."
+        )
     ;
 
     m.def("create_envelope", &initialization::create_envelope);

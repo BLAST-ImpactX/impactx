@@ -8,6 +8,7 @@
 #include <ImpactX.H>
 #include <diagnostics/FilePrefix.H>
 #include <initialization/InitDistribution.H>
+#include <particles/CovarianceMatrix.H>
 #include <particles/transformation/CoordinateTransformation.H>
 #include <particles/ParticleBoundary.H>
 
@@ -768,6 +769,18 @@ void init_ImpactX (py::module& m)
                 return *ix.amr_data->track_particles.m_particle_container;
             },
             "Access the beam particle container."
+        )
+        .def_property_readonly("envelope",
+            [](ImpactX & ix) -> Envelope & {
+                if (!ix.amr_data->track_envelope.m_env.has_value()) {
+                    throw std::runtime_error(
+                        "sim.envelope is only available after init_envelope()."
+                    );
+                }
+                return ix.amr_data->track_envelope.m_env.value();
+            },
+            "Access the beam envelope (6x6 covariance matrix and beam intensity)\n"
+            "used for envelope tracking. Only available after init_envelope()."
         )
         .def(
             "rho",

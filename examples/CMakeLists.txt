@@ -1627,6 +1627,15 @@ add_impactx_test(dogleg-reverse-envelope.py
     OFF  # no plot script yet
 )
 
+# Dogleg, Vertical (bends rolled 90 deg) ######################################
+#
+add_impactx_test(dogleg-vertical.py
+    examples/dogleg/run_dogleg_vertical.py
+    OFF  # ImpactX MPI-parallel (script runs two sims: envelope then particles)
+    OFF  # no analysis script (the run script self-validates in-situ)
+    OFF  # no plot script
+)
+
 # Dogleg with Energy Jitter ###################################################
 #
 add_impactx_test(dogleg-jitter

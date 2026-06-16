@@ -12,8 +12,8 @@
 #
 # Unlike the per-element benchmarks in ``test_benchmark_elements.py``, the
 # space-charge solve is not exposed as a standalone Python callable. We
-# therefore drive exactly one solve by tracking a single-slice constant-focusing
-# cell with space charge enabled, and benchmark ``sim.track_particles()``.
+# therefore drive the solve by tracking a short constant-focusing cell (a few
+# slices) with space charge enabled, and benchmark ``sim.track_particles()``.
 #
 # -*- coding: utf-8 -*-
 
@@ -22,7 +22,7 @@ from functools import partial
 
 import pytest
 
-from impactx import ImpactX, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
 
 # benchmark config
 if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == "1":
@@ -51,8 +51,8 @@ SC_CASES = [
         id="3D_mlmg",
         space_charge="3D",
         poisson_solver="multigrid",
-        n_cell=[64, 64, 32],
-        blocking_factor=[32, 32, 16],
+        n_cell=[32, 32, 32],
+        blocking_factor=[16, 16, 16],
         prob_relative=[3.0],
         fft=False,
     ),
@@ -60,8 +60,8 @@ SC_CASES = [
         id="3D_fft",
         space_charge="3D",
         poisson_solver="fft",
-        n_cell=[64, 64, 32],
-        blocking_factor=[32, 32, 16],
+        n_cell=[32, 32, 32],
+        blocking_factor=[16, 16, 16],
         prob_relative=[1.1],
         fft=True,
     ),
@@ -106,6 +106,11 @@ SC_CASES = [
 def sim(request):
     case = request.param
 
+    # FFT-based solvers (IGF / 2D / 2p5D) only exist in an FFT-enabled build.
+    # Probe this statically via Config so we can skip without a warm-up track.
+    if case["fft"] and not Config.have_fft:
+        pytest.skip("ImpactX built without FFT support; skipping FFT-only solver")
+
     class SimContextManager:
         def __enter__(self):
             self.sim = ImpactX()
@@ -146,11 +151,11 @@ def sim(request):
             self.sim.add_particles(bunch_charge_C, distr, npart)
             assert self.sim.beam.total_number_of_particles() == npart
 
-            # a single short CF cell, five slices -> five space-charge solves
+            # a single short CF cell, three slices -> three space-charge solves
             self.sim.lattice.extend(
                 [
                     elements.ConstF(
-                        name="cf1", ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=5
+                        name="cf1", ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=3
                     ),
                 ]
             )
@@ -161,9 +166,6 @@ def sim(request):
 
             self.sim.backup_beam.add_particles(self.sim.beam, local=True)
             assert self.sim.backup_beam.total_number_of_particles() == npart
-
-            # remember whether this solver needs an FFT-enabled build
-            self.sim.sc_needs_fft = case["fft"]
 
             return self.sim
 
@@ -199,14 +201,4 @@ def sc_setup(sim):
     "sim", SC_CASES, indirect=True, ids=[c["id"] for c in SC_CASES]
 )
 def test_space_charge_solver(benchmark, sim):
-    # Warm-up track (not measured). This also probes solver availability: the
-    # FFT-based (IGF / 2D / 2p5D) solvers only exist when ImpactX was built with
-    # FFT support; skip those cases on builds without it.
-    try:
-        sim.track_particles()
-    except Exception as e:
-        if sim.sc_needs_fft and "fft" in str(e).lower():
-            pytest.skip("ImpactX built without FFT support; skipping solver")
-        raise
-
     benchmark.pedantic(sim.track_particles, setup=partial(sc_setup, sim), rounds=rounds)

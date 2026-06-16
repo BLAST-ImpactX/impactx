@@ -103,10 +103,10 @@ namespace impactx::elements
          * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param x particle position in x
-         * @param y particle position in y
+         * @param y particle position in y (unused)
          * @param t particle position in t
          * @param px particle momentum in x
-         * @param py particle momentum in y
+         * @param py particle momentum in y (unused)
          * @param pt particle momentum in t
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
@@ -114,12 +114,12 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
+            T_Real const & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT y,
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
             [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
@@ -130,32 +130,32 @@ namespace impactx::elements
 
             // access position data
             T_Real const xout = x;
-            T_Real const yout = y;
+            // T_Real const yout = y;
             T_Real const tout = t;
 
             // initialize output values of momenta
             T_Real pxout = px;
-            T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real pyout = py;
+            // T_Real ptout = pt;
 
             // compute the function expressing dp/p in terms of pt (labeled f in Ripken etc.)
             T_Real const f = -1.0_prt + sqrt(1.0_prt - 2.0_prt * pt / m_beta + powi<2>(pt));
             T_Real const fprime = (1.0_prt - m_beta*pt) / (m_beta * (1.0_prt + f));
 
             // advance position and momentum
-            x = xout;
+            // x = xout;
             pxout = px - powi<2>(m_kx) * m_ds * xout + m_kx * m_ds * f; //eq (3.2b)
 
-            y = yout;
-            pyout = py;
+            // y = yout;
+            // pyout = py;
 
             t = tout + m_kx * xout * m_ds * fprime; //eq (3.2e)
-            ptout = pt;
+            // ptout = pt;
 
             // assign updated momenta
             px = pxout;
-            py = pyout;
-            pt = ptout;
+            // py = pyout;
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */

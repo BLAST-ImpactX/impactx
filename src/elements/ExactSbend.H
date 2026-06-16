@@ -160,8 +160,8 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT y,
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
             T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
@@ -178,8 +178,8 @@ namespace impactx::elements
 
             // initialize output values of momenta
             T_Real pxout = px;
-            T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real pyout = py;
+            // T_Real ptout = pt;
 
             // treat the special case of zero field
             if (m_phi==0_prt && m_B==0_prt) {
@@ -200,9 +200,9 @@ namespace impactx::elements
                // ptout = pt;
 
                // assign updated momenta
-               px = pxout;
-               py = pyout;
-               pt = ptout;
+               // px = pxout;
+               // py = pyout;
+               // pt = ptout;
 
             } else {
 
@@ -219,8 +219,8 @@ namespace impactx::elements
 
                    // update momenta
                    pxout = px * m_cos_phi + (pzi - rho / m_rc) * m_sin_phi;
-                   pyout = py;
-                   ptout = pt;
+                   // pyout = py;
+                   // ptout = pt;
 
                    // angle of momentum rotation
                    T_Real const px2f = powi<2>(pxout);
@@ -238,8 +238,8 @@ namespace impactx::elements
 
                        // assign updated momenta
                        px = pxout;
-                       py = pyout;
-                       pt = ptout;
+                       // py = pyout;
+                       // pt = ptout;
                    }
                }
             }
@@ -374,22 +374,22 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -407,12 +407,12 @@ namespace impactx::elements
             T_Real lambdaz = 0_prt;
 
             // store initial variables needed for spin push
-            T_Real ti = t;
-            T_Real Pnorm = sqrt(1_prt + pt*pt - 2_prt*pt*m_ibeta);
-            T_Real gamma = (1_prt - pt*m_beta)*refpart.gamma();
-            T_Real ux = px/Pnorm;
-            T_Real uy = py/Pnorm;
-            T_Real uz = sqrt(1_prt - ux*ux - uy*uy);
+            T_Real const ti = t;
+            T_Real const Pnorm = sqrt(1_prt + pt*pt - 2_prt*pt*m_ibeta);
+            T_Real const gamma = (1_prt - pt*m_beta)*refpart.gamma();
+            T_Real const ux = px/Pnorm;
+            T_Real const uy = py/Pnorm;
+            T_Real const uz = sqrt(1_prt - ux*ux - uy*uy);
 
             // For this element, note that the time-of-flight from entry to
             // exit is needed for evaluation of the spin map, so the phase
@@ -422,10 +422,10 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
             // particle transit time through the slice
-            T_Real dt = t - ti + m_slice_phi * m_rc * m_ibeta;
+            T_Real const dt = t - ti + m_slice_phi * m_rc * m_ibeta;
 
             // advance in cyclotron phase
-            T_Real theta = dt / m_rc * m_beta_gamma / gamma;
+            T_Real const theta = dt / m_rc * m_beta_gamma / gamma;
 
             lambdax = m_gyro * theta * (gamma - 1_prt) * uy * ux;
             lambday = m_gyro * theta * ( -gamma + (gamma - 1_prt) * uy * uy );

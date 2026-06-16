@@ -102,24 +102,24 @@ namespace impactx::elements
          *
          * The @see compute_constants method must be called before pushing particles through this operator.
          *
-         * @param x particle position in x
-         * @param y particle position in y
-         * @param t particle position in t
+         * @param x particle position in x (unused)
+         * @param y particle position in y (unused)
+         * @param t particle position in t (unused)
          * @param px particle momentum in x
          * @param py particle momentum in y
-         * @param pt particle momentum in t
+         * @param pt particle momentum in t (unused)
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
             [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
@@ -127,9 +127,9 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
 
             // access position data
-            T_Real const xout = x;
-            T_Real const yout = y;
-            T_Real const tout = t;
+            // T_Real const xout = x;
+            // T_Real const yout = y;
+            // T_Real const tout = t;
 
             // normalize quad units to MAD-X convention if needed
             amrex::ParticleReal const dpx = m_xkick * m_p_scale;
@@ -138,22 +138,22 @@ namespace impactx::elements
             // initialize output values of momenta
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real ptout = pt;
 
             // advance position and momentum
-            x = xout;
+            // x = xout;
             pxout = px + dpx;
 
-            y = yout;
+            // y = yout;
             pyout = py + dpy;
 
-            t = tout;
-            ptout = pt;
+            // t = tout;
+            // ptout = pt;
 
             // assign updated momenta
             px = pxout;
             py = pyout;
-            pt = ptout;
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */

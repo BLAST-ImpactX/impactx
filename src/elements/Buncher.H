@@ -110,9 +110,9 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
@@ -128,8 +128,11 @@ namespace impactx::elements
             T_Real ptout = pt;
 
             // advance position and momentum
+            // xout = x;
             pxout = px + m_kV_r2bg2 * x;
+            // yout = y;
             pyout = py + m_kV_r2bg2 * y;
+            // tout = t;
             ptout = pt + m_neg_kV   * t;
 
             // assign updated momenta

@@ -1448,6 +1448,12 @@ comparison methods. They derive directly from each element's ``to_dict()`` outpu
 Lattice Elements
 ----------------
 
+Lattice elements expose multiple methods, including: (i) ``push(pc)`` to advance particles ``pc`` (e.g., ``sim.beam``),
+(ii) ``push(cm, ref)`` to advance a covariance matrix ``cm``, (iii) ``transfer_map(ref)`` that returns the
+element's analytic 6x6 linear transport map (phase-space ordering ``(x, px, y, py, t, pt)``) for the reference
+particle ``ref``, (iv) ``reverse()`` to reverse the element in place, and (v) ``to_dict()`` to serialize it.
+For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/nslice`` slice.
+
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.

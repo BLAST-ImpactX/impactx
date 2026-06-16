@@ -3869,6 +3869,11 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     @freq.setter
     def freq(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized transport map around the reference particle (valid after a reference-particle push)
+        """
+    @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
@@ -3882,6 +3887,13 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     @phase.setter
     def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def spin_coupling(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        linearized spin-orbit coupling matrix (valid after a reference-particle push)
+        """
 
 class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -4609,12 +4621,31 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
     @bscale.setter
     def bscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized transport map around the reference particle (valid after a reference-particle push)
+        """
+    @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
         """
     @mapsteps.setter
     def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def spin_coupling(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        linearized spin-orbit coupling matrix (valid after a reference-particle push)
+        """
+    @property
+    def spin_rotation_vector(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
+        """
+        reference spin rotation vector (valid after a reference-particle push)
+        """
     @property
     def unit(self) -> int:
         """
@@ -5198,12 +5229,24 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     @gscale.setter
     def gscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized transport map around the reference particle (valid after a reference-particle push)
+        """
+    @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
         """
     @mapsteps.setter
     def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def spin_coupling(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        linearized spin-orbit coupling matrix (valid after a reference-particle push)
+        """
 
 class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
     def __eq__(self, other):

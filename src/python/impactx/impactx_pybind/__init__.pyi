@@ -1110,6 +1110,7 @@ class UnorderedMap:
 
 class Config:
     gpu_backend = None
+    have_fft: typing.ClassVar[bool] = True
     have_gpu: typing.ClassVar[bool] = False
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True

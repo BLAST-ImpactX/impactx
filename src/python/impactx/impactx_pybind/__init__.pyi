@@ -50,23 +50,6 @@ __all__: list[str] = [
     "wakeconvolution",
 ]
 
-class Envelope:
-    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    @typing.overload
-    def __init__(self) -> None: ...
-    @typing.overload
-    def __init__(
-        self,
-        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        arg1: typing.SupportsFloat | typing.SupportsIndex,
-    ) -> None: ...
-    @property
-    def beam_intensity(self) -> float: ...
-    @beam_intensity.setter
-    def beam_intensity(
-        self, arg1: typing.SupportsFloat | typing.SupportsIndex
-    ) -> Envelope: ...
-
 class RefPart:
     @staticmethod
     def load_file(ref: RefPart, madx_file):
@@ -292,6 +275,30 @@ class RefPart:
         """
     @z.setter
     def z(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class Envelope:
+    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        arg1: typing.SupportsFloat | typing.SupportsIndex,
+    ) -> None: ...
+    def beam_moments(self, ref: RefPart) -> dict[str, float]:
+        """
+        Calculate beam moments (position and momentum moments, emittances,
+        Twiss functions, dispersion, ...) from this envelope's covariance
+        matrix and a reference particle. The envelope counterpart of
+        ImpactXParticleContainer.beam_moments().
+        """
+    @property
+    def beam_intensity(self) -> float: ...
+    @beam_intensity.setter
+    def beam_intensity(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> Envelope: ...
 
 class CoordSystem:
     """
@@ -766,6 +773,12 @@ class ImpactX:
         """
     @eigenemittances.setter
     def eigenemittances(self, arg1: bool) -> None: ...
+    @property
+    def envelope(self) -> Envelope:
+        """
+        Access the beam envelope (6x6 covariance matrix and beam intensity)
+        used for envelope tracking. Only available after init_envelope().
+        """
     @property
     def finest_level(self) -> int:
         """

@@ -170,6 +170,21 @@ class BeamMonitor(mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def alpha(self) -> float:
         """
@@ -348,6 +363,21 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def action(self) -> str:
         """
@@ -513,6 +543,21 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -631,6 +676,21 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -763,6 +823,21 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -895,6 +970,21 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def bz(self) -> float:
         """
@@ -1028,6 +1118,21 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def kt(self) -> float:
         """
@@ -1175,6 +1280,21 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def K0(self) -> float:
         """
@@ -1388,6 +1508,21 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -1518,6 +1653,21 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -1634,6 +1784,21 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -1755,6 +1920,21 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def int_order(self) -> int:
         """
@@ -1897,6 +2077,21 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def int_order(self) -> int:
         """
@@ -2038,6 +2233,21 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def int_order(self) -> int:
         """
@@ -2188,6 +2398,21 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def B(self) -> float:
         """
@@ -2317,6 +2542,21 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def xkick(self) -> float:
         """
@@ -2446,6 +2686,21 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def K_normal(self) -> float:
         """
@@ -2573,6 +2828,21 @@ class Empty(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class Marker(mixin.Named, mixin.Thin):
     def __eq__(self, other):
@@ -2679,6 +2949,21 @@ class Marker(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
     def __eq__(self, other):
@@ -2793,6 +3078,21 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def cnll(self) -> float:
         """
@@ -2920,6 +3220,21 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def angle(self) -> float:
         """
@@ -3050,6 +3365,21 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def action(self) -> str:
         """
@@ -3359,6 +3689,21 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -3494,6 +3839,21 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def escale(self) -> float:
         """
@@ -3643,6 +4003,21 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -3761,6 +4136,21 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -3889,6 +4279,21 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def V(self) -> float:
         """
@@ -4018,6 +4423,21 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def V(self) -> float:
         """
@@ -4166,6 +4586,21 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def bscale(self) -> float:
         """
@@ -4299,6 +4734,21 @@ class Source(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def active_once(self) -> bool:
         """
@@ -4437,6 +4887,21 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def ks(self) -> float:
         """
@@ -4555,6 +5020,21 @@ class PRot(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def phi_in(self) -> float:
         """
@@ -4695,6 +5175,21 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def gscale(self) -> float:
         """
@@ -4823,6 +5318,21 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def theta(self) -> float:
         """
@@ -4951,6 +5461,21 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -5086,6 +5611,21 @@ class LinearMap(mixin.Named, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def R(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
         """
@@ -5230,6 +5770,21 @@ class SpinMap(mixin.Named, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def A(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
         """

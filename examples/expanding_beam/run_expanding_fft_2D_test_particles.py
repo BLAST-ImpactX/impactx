@@ -81,7 +81,7 @@ doubling_distance = R0 * double_constant / np.sqrt(Kpv)
 print("Doubling distance: ")
 print(doubling_distance)
 
-ns = 50  #recommended: for outside tests, using 100-200.
+ns = 50  # recommended: for outside tests, using 100-200.
 
 sim.lattice.extend(
     [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=ns), monitor]

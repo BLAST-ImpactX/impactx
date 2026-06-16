@@ -37,7 +37,7 @@ R0 = 1.0e-3  # initial beam radius (m)
 Ib = 0.15  # beam current (A)
 kin_energy_MeV = 250  # reference energy
 beam_current_A = Ib  # beam current
-npart = 100000  # number of macro particles (outside tests, use 1e5 or more)
+npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 
 #   reference particle
 ref = sim.beam.ref

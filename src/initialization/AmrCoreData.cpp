@@ -12,6 +12,7 @@
 #include "initialization/InitMeshRefinement.H"
 
 #include <AMReX.H>
+#include <AMReX_ParmParse.H>
 
 
 namespace impactx::initialization
@@ -148,7 +149,15 @@ namespace impactx::initialization
 
         // scalar potential
         int const num_components_phi = 1;
-        amrex::IntVect num_guards_phi{num_guards_rho + 1}; // todo: I think this just depends on max(MLMG, force calc)
+        // Guard cells for phi.
+        //   The space-charge force calculation (ForceFromSelfFields) uses a
+        //   centered difference stencil phi(i+-1), thus requiring one guard cell.
+        std::string poisson_solver = "multigrid";
+        {
+            amrex::ParmParse pp_algo("algo");
+            pp_algo.queryAdd("poisson_solver", poisson_solver);
+        }
+        amrex::IntVect num_guards_phi{poisson_solver == "fft" ? 1 : num_guards_rho + 1};
         amrex::BoxArray phi_ba = cba;
         if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
             num_guards_phi[2] = 0;

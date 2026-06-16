@@ -1612,6 +1612,21 @@ add_impactx_test(dogleg-reverse.py
     OFF  # no plot script yet
 )
 
+# Dogleg in Reverse with Envelope Tracking #############################################
+#
+add_impactx_test(dogleg-reverse-envelope
+    examples/dogleg/input_dogleg_reverse_envelope.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(dogleg-reverse-envelope.py
+    examples/dogleg/run_dogleg_reverse_envelope.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+
 # Dogleg with Energy Jitter ###################################################
 #
 add_impactx_test(dogleg-jitter

@@ -67,9 +67,10 @@ def test_solenoid_softedge_solvable_spin():
     vpred = Vector3()
     Apred = Map3x6()
 
-    Rmat = ref.map  # not used - included for illustration
-    vmat = ref.spin_rotation_vector
-    Amat = ref.spin_coupling
+    sol_tracked = sim.lattice[0]
+    Rmat = sol_tracked.map  # not used - included for illustration
+    vmat = sol_tracked.spin_rotation_vector
+    Amat = sol_tracked.spin_coupling
 
     print()
     print("Linear map:")

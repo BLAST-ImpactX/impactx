@@ -1612,6 +1612,30 @@ add_impactx_test(dogleg-reverse.py
     OFF  # no plot script yet
 )
 
+# Dogleg in Reverse with Envelope Tracking #############################################
+#
+add_impactx_test(dogleg-reverse-envelope
+    examples/dogleg/input_dogleg_reverse_envelope.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(dogleg-reverse-envelope.py
+    examples/dogleg/run_dogleg_reverse_envelope.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+
+# Dogleg, Vertical (bends rolled 90 deg) ######################################
+#
+add_impactx_test(dogleg-vertical.py
+    examples/dogleg/run_dogleg_vertical.py
+    OFF  # ImpactX MPI-parallel (script runs two sims: envelope then particles)
+    OFF  # no analysis script (the run script self-validates in-situ)
+    OFF  # no plot script
+)
+
 # Dogleg with Energy Jitter ###################################################
 #
 add_impactx_test(dogleg-jitter
@@ -2082,6 +2106,20 @@ add_impactx_test(expanding-fft-2d-test-particles-1slice.py
     OFF
 )
 label_impactx_test(expanding-fft-2d-test-particles.py slow)
+
+# Momentum Kick in the 2.5D Gaussian Space Charge Model ###################
+add_impactx_test(kick-Gauss2p5D.py
+    examples/space_charge_gaussian_kick/run_sc_kick_Gauss2p5D.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_Gauss2p5D.py
+    OFF  # no plot script yet
+)
+add_impactx_test(kick-PIC2p5D.py
+    examples/space_charge_gaussian_kick/run_sc_kick_PIC2p5D.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_PIC2p5D.py
+    OFF  # no plot script yet
+)
 
 # Scaling Test of Spin in an Exact Bend ###################
 file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv

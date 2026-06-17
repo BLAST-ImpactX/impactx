@@ -102,23 +102,23 @@ namespace impactx::elements
          *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t
+         * @param t particle position in t (unused)
          * @param px particle momentum in x
          * @param py particle momentum in y
-         * @param pt particle momentum in t
+         * @param pt particle momentum in t (unused)
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -128,20 +128,17 @@ namespace impactx::elements
             // a complex type with two T_Real
             using Complex = amrex::GpuComplex<T_Real>;
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // access reference particle values to find (beta*gamma)^2
             //amrex::ParticleReal const pt_ref = refpart.pt;
             //amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
             // initialize output values
-            T_Real xout = x;
-            T_Real yout = y;
-            T_Real tout = t;
+            // T_Real xout = x;
+            // T_Real yout = y;
+            // T_Real tout = t;
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real ptout = pt;
 
             // assign complex position zeta = (x + iy)/cnll
             Complex zeta(x, y);
@@ -174,18 +171,15 @@ namespace impactx::elements
             pyout = py + dpy;
 
             // tout = t;
-            ptout = pt;
+            // ptout = pt;
 
             // assign updated values
-            x = xout;
-            y = yout;
-            t = tout;
+            // x = xout;
+            // y = yout;
+            // t = tout;
             px = pxout;
             py = pyout;
-            pt = ptout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */
@@ -235,7 +229,8 @@ namespace impactx::elements
             R(2,1) = -k_lin;
             R(4,3) = +k_lin;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_knll; //! integrated strength of the nonlinear lens (m)

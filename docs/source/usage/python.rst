@@ -101,9 +101,13 @@ Collective Effects & Overall Simulation Parameters
 
       Number of bins for longitudinal charge density deposition (default: ``129``).  Used by the Gauss2p5D space charge model.
 
-   .. py:property:: space_charge_gauss_pipe_radius
+   .. py:property:: space_charge_gauss_long_scale
 
-      Pipe radius parameter for the Gauss2p5D space charge model (default: ``1.0`` m).
+      Longitudinal space charge scale for the Gauss2p5D space charge model.
+      This is an approximation that only influences the longitudinal momentum (``pt``) kick.
+      If not set, it defaults to :math:`6 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
+      typical value when comparing to a 3D model.
 
    .. py:property:: space_charge_num_longitudinal_bins
 
@@ -238,6 +242,9 @@ Collective Effects & Overall Simulation Parameters
       Whether to track particle spin.
       Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
 
+      Spin tracking uses the gyromagnetic anomaly of the reference particle.
+      Set it via ``RefPart.set_species()`` or ``RefPart.set_gyromagnetic_anomaly()``.
+
    .. py:property:: diagnostics
 
       Enable (``True``) or disable (``False``) diagnostics generally (default: ``True``).
@@ -317,6 +324,12 @@ Collective Effects & Overall Simulation Parameters
 
       For example, ``sim.beam.to_df(local=True)`` returns the local particles as a pandas DataFrame.
       See :ref:`usage-howto-python-particle-data` for further data-access recipes.
+
+   .. py:property:: envelope
+
+      Access the beam envelope (:py:class:`impactx.Envelope`: a 6x6 covariance matrix
+      and beam intensity) used for envelope tracking.
+      Only available after :py:meth:`init_envelope`.
 
    .. py:method:: rho(lev)
 
@@ -430,9 +443,10 @@ Collective Effects & Overall Simulation Parameters
 
       .. note::
 
-         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
-         Support for misalignments and feed-down effects in envelope tracking is in development.
-         Until then, misalignment options set on elements are silently ignored.
+         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments for translations.
+         Element rotations are handled.
+         Support for translations errors, non-zero envelope means, and feed-down effects in envelope tracking is in development.
+         Until then, translations errors set on elements are silently ignored.
 
    .. py:method:: track_reference(ref)
 
@@ -485,6 +499,34 @@ Collective Effects & Overall Simulation Parameters
    .. py:method:: resize_mesh()
 
       Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.
+
+
+.. py:class:: impactx.Envelope
+
+   The beam envelope used for envelope (covariance) tracking: a 6x6 covariance
+   matrix relative to a reference particle, plus an optional beam intensity.
+   Created from a distribution by :py:meth:`impactx.ImpactX.init_envelope` and
+   accessed (during or after :py:meth:`impactx.ImpactX.track_envelope`) via
+   :py:attr:`impactx.ImpactX.envelope`.
+
+   .. py:property:: envelope
+
+      The 6x6 beam covariance matrix (a ``Map6x6``).
+
+   .. py:property:: beam_intensity
+
+      The beam intensity: bunch charge (C) for 3D or beam current (A) for 2D space charge.
+
+   .. py:method:: beam_moments(ref)
+
+      Calculate beam moments (position and momentum moments, emittances, Twiss
+      functions, dispersion, ...) from this envelope's covariance matrix and a
+      reference particle. The envelope counterpart of
+      :py:meth:`impactx.ParticleContainer.beam_moments`.
+
+      :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+      :return: a dictionary of beam moments
+      :rtype: dict[str, float]
 
 
 .. py:class:: impactx.Config
@@ -1405,6 +1447,12 @@ comparison methods. They derive directly from each element's ``to_dict()`` outpu
 
 Lattice Elements
 ----------------
+
+Lattice elements expose multiple methods, including: (i) ``push(pc)`` to advance particles ``pc`` (e.g., ``sim.beam``),
+(ii) ``push(cm, ref)`` to advance a covariance matrix ``cm``, (iii) ``transfer_map(ref)`` that returns the
+element's analytic 6x6 linear transport map (phase-space ordering ``(x, px, y, py, t, pt)``) for the reference
+particle ``ref``, (iv) ``reverse()`` to reverse the element in place, and (v) ``to_dict()`` to serialize it.
+For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/nslice`` slice.
 
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 

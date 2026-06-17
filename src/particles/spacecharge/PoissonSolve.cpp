@@ -12,7 +12,6 @@
 #include "initialization/Algorithms.H"
 #include "particles/ChargeDeposition.H"
 
-#include <ablastr/constant.H>
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
@@ -155,12 +154,6 @@ namespace impactx::particles::spacecharge
             eb_farray_box_factory
             */
         );
-
-        // fix side effect on rho from previous call
-        for (int lev=0; lev<=finest_level; lev++) {
-            using namespace ablastr::constant::SI;
-            rho[lev].mult(-1._rt * epsilon_0);
-        }
 
         // We may need to copy phi from phi_2d
         if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {

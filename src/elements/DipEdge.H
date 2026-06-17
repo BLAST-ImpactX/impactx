@@ -191,7 +191,7 @@ namespace impactx::elements
          *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t (unchanged)
+         * @param t particle position in t (unchanged by the linear model)
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t (unchanged)
@@ -203,11 +203,11 @@ namespace impactx::elements
         void operator() (
             T_Real & AMREX_RESTRICT x,
             T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -215,9 +215,6 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             if (m_model == dipedge::Model::linear) {
                // apply linear model
@@ -230,7 +227,7 @@ namespace impactx::elements
                T_Real yout = y;
                T_Real pyout = py;
                T_Real tout = t;
-               T_Real ptout = pt;
+               // T_Real ptout = pt;
 
                // compute particle momentum deviation delta + 1 (reciprocal)
                T_Real const inv_delta1 = 1_prt / sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
@@ -283,11 +280,8 @@ namespace impactx::elements
                y = yout;
                py = pyout;
                t = tout;
-               pt = ptout;
+               // pt = ptout;
             }
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
 
@@ -302,12 +296,12 @@ namespace impactx::elements
             using amrex::Math::powi;
 
             // assign input reference particle values
-            [[maybe_unused]] amrex::ParticleReal const x = refpart.x;
-            [[maybe_unused]] amrex::ParticleReal const z = refpart.z;
-            [[maybe_unused]] amrex::ParticleReal const t = refpart.t;
-            [[maybe_unused]] amrex::ParticleReal const px = refpart.px;
-            [[maybe_unused]] amrex::ParticleReal const pz = refpart.pz;
-            [[maybe_unused]] amrex::ParticleReal const pt = refpart.pt;
+            amrex::ParticleReal const x = refpart.x;
+            amrex::ParticleReal const z = refpart.z;
+            amrex::ParticleReal const t = refpart.t;
+            amrex::ParticleReal const px = refpart.px;
+            amrex::ParticleReal const pz = refpart.pz;
+            amrex::ParticleReal const pt = refpart.pt;
 
             if (m_modify_ref_part && m_model == dipedge::Model::nonlinear) {
                 // calculate expensive terms
@@ -371,7 +365,8 @@ namespace impactx::elements
             R(2,1) = R21;
             R(4,3) = R43;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_psi; //! pole face angle in rad

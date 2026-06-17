@@ -204,7 +204,7 @@ jobs:
         GLIBC_TUNABLES: glibc.cpu.hwcaps=-AVX2,-AVX_Fast_Unaligned_Load,-ERMS,-Prefer_FSRM
       with:
         mode: simulation
-        run: pytest tests/python/test_benchmark_elements.py --codspeed
+        run: pytest tests/python/test_benchmark_elements.py tests/python/test_benchmark_space_charge.py --codspeed
 
     - name: validate created openPMD files
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}

@@ -26,6 +26,7 @@
 #include <AMReX_Print.H>
 
 #include <memory>
+#include <stdexcept>
 
 
 namespace impactx
@@ -94,6 +95,15 @@ namespace impactx
         pp_algo.query("isr", isr);
         bool spin = false;
         pp_algo.query("spin", spin);
+
+        if (spin && pc->GetRefParticle().gyromagnetic_anomaly == 0.0) {
+            throw std::runtime_error(
+                "algo.spin: Spin tracking is enabled, but the gyromagnetic "
+                "anomaly of the reference particle is zero. Either disable spin "
+                "tracking, set the reference particle species or "
+                "set the value of the gyromagnetic anomaly on it."
+            );
+        }
 
         if (verbose > 0) {
             amrex::Print() << " CSR effects: " << csr << "\n";

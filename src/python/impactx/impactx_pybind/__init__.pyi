@@ -50,23 +50,6 @@ __all__: list[str] = [
     "wakeconvolution",
 ]
 
-class Envelope:
-    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    @typing.overload
-    def __init__(self) -> None: ...
-    @typing.overload
-    def __init__(
-        self,
-        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        arg1: typing.SupportsFloat | typing.SupportsIndex,
-    ) -> None: ...
-    @property
-    def beam_intensity(self) -> float: ...
-    @beam_intensity.setter
-    def beam_intensity(
-        self, arg1: typing.SupportsFloat | typing.SupportsIndex
-    ) -> Envelope: ...
-
 class RefPart:
     @staticmethod
     def load_file(ref: RefPart, madx_file):
@@ -170,15 +153,6 @@ class RefPart:
         Get reference particle energy [MeV]
         """
     @property
-    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
-        """
-        linearized map
-        """
-    @map.setter
-    def map(
-        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    ) -> None: ...
-    @property
     def mass(self) -> float:
         """
         reference rest mass [kg]
@@ -243,28 +217,6 @@ class RefPart:
     @sedge.setter
     def sedge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
-    def spin_coupling(
-        self,
-    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
-        """
-        linearized spin-orbit coupling matrix
-        """
-    @spin_coupling.setter
-    def spin_coupling(
-        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-    ) -> None: ...
-    @property
-    def spin_rotation_vector(
-        self,
-    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
-        """
-        reference spin rotation vector
-        """
-    @spin_rotation_vector.setter
-    def spin_rotation_vector(
-        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-    ) -> None: ...
-    @property
     def t(self) -> float:
         """
         clock time * c [m]
@@ -292,6 +244,30 @@ class RefPart:
         """
     @z.setter
     def z(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class Envelope:
+    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        arg1: typing.SupportsFloat | typing.SupportsIndex,
+    ) -> None: ...
+    def beam_moments(self, ref: RefPart) -> dict[str, float]:
+        """
+        Calculate beam moments (position and momentum moments, emittances,
+        Twiss functions, dispersion, ...) from this envelope's covariance
+        matrix and a reference particle. The envelope counterpart of
+        ImpactXParticleContainer.beam_moments().
+        """
+    @property
+    def beam_intensity(self) -> float: ...
+    @beam_intensity.setter
+    def beam_intensity(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> Envelope: ...
 
 class CoordSystem:
     """
@@ -767,6 +743,12 @@ class ImpactX:
     @eigenemittances.setter
     def eigenemittances(self, arg1: bool) -> None: ...
     @property
+    def envelope(self) -> Envelope:
+        """
+        Access the beam envelope (6x6 covariance matrix and beam intensity)
+        used for envelope tracking. Only available after init_envelope().
+        """
+    @property
     def finest_level(self) -> int:
         """
         The currently finest level of mesh-refinement used. This is always less or equal to max_level.
@@ -962,6 +944,15 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
+    def space_charge_gauss_long_scale(self) -> float:
+        """
+        Longitudinal space charge scale for the Gauss2p5D space charge model. Approximation affecting only the longitudinal momentum (``pt``) kick. If not set, it defaults to ``6 * gamma * sigma_z``, estimated in-situ from the current reduced beam characteristics, which is a typical value when comparing to a 3D model.
+        """
+    @space_charge_gauss_long_scale.setter
+    def space_charge_gauss_long_scale(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
+    @property
     def space_charge_gauss_nint(self) -> int:
         """
         Number of steps for computing the integrals (default: ``101``).
@@ -969,15 +960,6 @@ class ImpactX:
     @space_charge_gauss_nint.setter
     def space_charge_gauss_nint(
         self, arg1: typing.SupportsInt | typing.SupportsIndex
-    ) -> None: ...
-    @property
-    def space_charge_gauss_pipe_radius(self) -> int:
-        """
-        Pipe radius parameter for the Gauss2p5D space charge model (default: ``1.0 m``).
-        """
-    @space_charge_gauss_pipe_radius.setter
-    def space_charge_gauss_pipe_radius(
-        self, arg1: typing.SupportsFloat | typing.SupportsIndex
     ) -> None: ...
     @property
     def space_charge_gauss_taylor_delta(self) -> int:
@@ -1110,6 +1092,7 @@ class UnorderedMap:
 
 class Config:
     gpu_backend = None
+    have_fft: typing.ClassVar[bool] = True
     have_gpu: typing.ClassVar[bool] = False
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True

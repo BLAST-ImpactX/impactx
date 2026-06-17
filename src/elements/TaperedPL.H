@@ -37,10 +37,12 @@ namespace impactx::elements
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::SpinTransport,
-      public mixin::NoFinalize
-      // At least on Intel AVX512, there is a small overhead to vectorize this element, see
-      // https://github.com/BLAST-ImpactX/impactx/pull/1002
-      // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+      public mixin::NoFinalize,
+      // At least on Intel AVX512, there is a small overhead to vectorize this element
+      // for pure phase-space pushes. But a win for spin-tracking. See:
+      //   https://github.com/BLAST-ImpactX/impactx/pull/1002
+      //   https://github.com/BLAST-ImpactX/impactx/pull/1499
+      public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "TaperedPL";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -108,23 +110,23 @@ namespace impactx::elements
          *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t
+         * @param t particle position in t (unused)
          * @param px particle momentum in x
          * @param py particle momentum in y
-         * @param pt particle momentum in t
+         * @param pt particle momentum in t (unused)
          * @param idcpu particle global index (unused)
-         * @param refpart reference particle
+         * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -132,37 +134,31 @@ namespace impactx::elements
             using amrex::Math::powi;
             using namespace std; // for cmath(float)
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // initialize output values
-            T_Real xout = x;
-            T_Real yout = y;
-            T_Real tout = t;
+            // T_Real xout = x;
+            // T_Real yout = y;
+            // T_Real tout = t;
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real ptout = pt;
 
             // advance position and momentum
-            xout = x;
+            // xout = x;
             pxout = px - m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) );
 
-            yout = y;
+            // yout = y;
             pyout = py - m_g * ( y + m_taper * x * y );
 
-            tout = t;
-            ptout = pt;
+            // tout = t;
+            // ptout = pt;
 
             // assign updated values
-            x = xout;
-            y = yout;
-            t = tout;
+            // x = xout;
+            // y = yout;
+            // t = tout;
             px = pxout;
             py = pyout;
-            pt = ptout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */
@@ -186,16 +182,16 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT pt,
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -222,7 +218,7 @@ namespace impactx::elements
             T_Real lambdaz = 0_prt;
 
             // compute multipole magnetic field normalized by q/mc:
-            amrex::ParticleReal gamma_ref = refpart.gamma();
+            amrex::ParticleReal const gamma_ref = refpart.gamma();
             T_Real const Bx = -m_g * ( y + m_taper * x * y ) * gamma_ref * m_beta;
             T_Real const By = m_g * ( x + m_taper*0.5_prt * (powi<2>(x) + powi<2>(y)) ) * gamma_ref * m_beta;
             T_Real const Bz = 0_prt;
@@ -246,7 +242,7 @@ namespace impactx::elements
             amrex::ParticleReal const h = 0.0_prt;
 
             // Evaluation of the full Thomas-BMT precession vector.
-            amrex::ParticleReal gyro_anomaly = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal const gyro_anomaly = refpart.gyromagnetic_anomaly;
             tbmt_precession_vector(x, ux, uy, uz, gamma, h, gyro_anomaly, Bx, By, Bz, Ex, Ey, Ez, lambdax, lambday, lambdaz);
 
             // push the spin vector using the generator just determined
@@ -308,7 +304,8 @@ for beam-quality preservation between plasma-accelerator stages",
             R(2,1) = -g;
             R(4,3) = -g;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_k; //! linear focusing strength (field gradient)

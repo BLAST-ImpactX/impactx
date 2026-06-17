@@ -33,7 +33,7 @@ namespace impactx::elements
     struct ChrAcc
     : public mixin::Named,
       public mixin::BeamOptic<ChrAcc>,
-      public mixin::LinearTransport<ChrAcc, false>,
+      public mixin::LinearTransport<ChrAcc>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
@@ -146,9 +146,6 @@ namespace impactx::elements
             using namespace std; // for cmath(float)
             namespace stdx = amrex::simd::stdx;
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // initial conversion from static to dynamic units:
             px = px * m_bgi;
             py = py * m_bgi;
@@ -225,12 +222,6 @@ namespace impactx::elements
             px = px / m_bgf;
             py = py / m_bgf;
             pt = pt / m_bgf;
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.
@@ -289,15 +280,127 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * Jacobian at the reference trajectory of the ChrAcc push (see
+         * @see operator()). The nonlinear push composes, in order:
+         *   (1) static->dynamic unit conversion: diag(1, bgi, 1, bgi, 1, bgi)
+         *       acting on (x, px, y, py, t, pt);
+         *   (2) solenoid-like focusing by phase advance theta (cf. Sol);
+         *   (3) rotation by the same theta in the (x, y) plane;
+         *   (4) dynamic->static unit conversion: diag(1, 1/bgf, 1, 1/bgf,
+         *       1, 1/bgf) on the output;
+         * plus a symplectic correction to t. Here
+         *   theta = (alpha/ez) * log((pzf_ref - ptf_ref)/(pzi_ref - pti_ref))
+         * with alpha = Bz/2, ez the normalized longitudinal electric field,
+         * pzi_ref = sqrt(pti_ref^2 - 1), pzf_ref = sqrt(ptf_ref^2 - 1), and
+         * (pti_ref, ptf_ref) = (initial, final) reference pt on this slice.
+         *
+         * This routine is called after the reference particle has been
+         * advanced by one slice (see diagnostics/LinearMap.cpp), so
+         * refpart.pt holds ptf_ref and pti_ref = ptf_ref + ez * slice_ds.
+         *
+         * The closed-form linear map was derived with SymPy by Jacobian
+         * of the exact push at (x, px, y, py, t, pt) = 0. Writing
+         * c = cos(theta0), s = sin(theta0) with theta0 the reference
+         * phase advance above, the nonzero entries are
+         *   R(1,1) = c^2,                R(1,2) = bgi * c*s / alpha,
+         *   R(1,3) = c*s,                R(1,4) = bgi * s^2 / alpha,
+         *   R(2,1) = -alpha * c*s / bgf, R(2,2) = (bgi/bgf) * c^2,
+         *   R(2,3) = -alpha * s^2 / bgf, R(2,4) = (bgi/bgf) * c*s,
+         *   R(3,1) = -c*s,               R(3,2) = -bgi * s^2 / alpha,
+         *   R(3,3) = c^2,                R(3,4) = bgi * c*s / alpha,
+         *   R(4,1) =  alpha * s^2 / bgf, R(4,2) = -(bgi/bgf) * c*s,
+         *   R(4,3) = -alpha * c*s / bgf, R(4,4) = (bgi/bgf) * c^2,
+         *   R(5,5) = 1,
+         *   R(5,6) = (bgi/ez) * (ptf_ref/pzf_ref - pti_ref/pzi_ref),
+         *   R(6,6) = bgi/bgf.
+         * All other entries are zero. The quadratic-in-(px, py, x, y)
+         * part of the t correction vanishes at linear order.
+         *
+         * References:
+         *   - A. J. Dragt, Lie Methods for Nonlinear Dynamics with
+         *     Applications to Accelerator Physics, Univ. of Maryland,
+         *     2020 (MaryLie documentation), chapter on uniform-Ez
+         *     acceleration with solenoidal focusing;
+         *   - H. Wiedemann, Particle Accelerator Physics, 4th ed.,
+         *     Springer 2015, chapters on electrostatic acceleration and
+         *     solenoid focusing;
+         *   - The Hamiltonian and nonlinear push follow Chad Mitchell's
+         *     formulation already implemented in @see operator().
+         *
+         * Ideal behavior only: alignment and rotation errors and
+         * feed-down from an off-axis reference orbit are ignored.
+         *
+         * @param[in] refpart reference particle after this slice's
+         *                    reference advance (pt = ptf_ref)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // slice length and initial/final reference pt:
+            // transport_map is called after the reference advance, so
+            // refpart.pt holds the post-slice (final) pt.
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+            amrex::ParticleReal const ptf_ref = refpart.pt;
+            amrex::ParticleReal const pti_ref = ptf_ref + m_ez * slice_ds;
+
+            amrex::ParticleReal const pzf_ref = std::sqrt(powi<2>(ptf_ref) - 1.0_prt);
+            amrex::ParticleReal const pzi_ref = std::sqrt(powi<2>(pti_ref) - 1.0_prt);
+            amrex::ParticleReal const bgf = pzf_ref;  // |beta*gamma|_final
+            amrex::ParticleReal const bgi = pzi_ref;  // |beta*gamma|_initial
+
+            // Solenoid focusing constant alpha = Bz / 2. The "log"
+            // factor is the integrated drift length in dynamic units and
+            // is well-defined even when alpha = 0 (no solenoid).
+            amrex::ParticleReal const alpha = 0.5_prt * m_bz;
+            amrex::ParticleReal const drift_log =
+                std::log((pzf_ref - ptf_ref) / (pzi_ref - pti_ref)) / m_ez;
+            amrex::ParticleReal const rbg = bgi / bgf;
+
+            Map6x6 R = Map6x6::Identity();
+
+            // t couples to pt only: symplectic correction to the
+            // time-of-flight, linearized at pt = 0.
+            R(5,6) = bgi * (ptf_ref / pzf_ref - pti_ref / pzi_ref) / m_ez;
+            // pt scales by the static<->dynamic unit change bgi/bgf.
+            R(6,6) = rbg;
+
+            if (alpha == 0.0_prt)
+            {
+                // No solenoid: pure accelerating "drift" with adiabatic
+                // damping on the transverse momenta.
+                R(1,2) = bgi * drift_log;
+                R(2,2) = rbg;
+                R(3,4) = bgi * drift_log;
+                R(4,4) = rbg;
+            }
+            else
+            {
+                // Solenoid + acceleration: rotation * focusing, bracketed
+                // by static<->dynamic unit conversions on (px, py).
+                amrex::ParticleReal const theta0 = alpha * drift_log;
+                auto const [s, c] = amrex::Math::sincos(theta0);
+
+                amrex::ParticleReal const c2 = c * c;
+                amrex::ParticleReal const s2 = s * s;
+                amrex::ParticleReal const cs = c * s;
+
+                R(1,1) =  c2;                R(1,2) =  bgi * cs / alpha;
+                R(1,3) =  cs;                R(1,4) =  bgi * s2 / alpha;
+                R(2,1) = -alpha * cs / bgf;  R(2,2) =  rbg * c2;
+                R(2,3) = -alpha * s2 / bgf;  R(2,4) =  rbg * cs;
+                R(3,1) = -cs;                R(3,2) = -bgi * s2 / alpha;
+                R(3,3) =  c2;                R(3,4) =  bgi * cs / alpha;
+                R(4,1) =  alpha * s2 / bgf;  R(4,2) = -rbg * cs;
+                R(4,3) = -alpha * cs / bgf;  R(4,4) =  rbg * c2;
+            }
+
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_ez; //! electric field strength in 1/m

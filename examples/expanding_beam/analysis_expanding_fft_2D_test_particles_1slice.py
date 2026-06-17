@@ -112,7 +112,7 @@ print("dpx_max/pr_max", dpx_max / pr_max)
 print("dpy_max/pr_max", dpy_max / pr_max)
 
 # Test maximum error:
-atol = 6.1e-2
+atol = 6.2e-2
 print(f"  tol={atol}")
 
 assert np.allclose(

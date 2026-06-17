@@ -14,10 +14,11 @@ import re as re
 import weakref as weakref
 
 import impactx.impactx_pybind.elements
-from impactx.impactx_pybind import elements
+from impactx.impactx_pybind import Config, elements
 from impactx.impactx_pybind.elements import FilteredElementsList
 
 __all__: list[str] = [
+    "Config",
     "FILTERED_ELEMENTS_LIST_INVALID_MSG",
     "FilteredElementsList",
     "count_by_kind",
@@ -114,6 +115,43 @@ def _invalidate_all_registered_views(lattice) -> None:
 def _is_regex_pattern(pattern: str) -> bool:
     """
     Check if a string looks like a regex pattern by testing if it contains regex metacharacters.
+    """
+
+def _lattice_eq(self, other):
+    """
+    Element-wise equality with any iterable of elements.
+
+    Duck-typed across container types: a ``KnownElementsList`` compares
+    equal to a plain Python ``list`` of elements or to a
+    ``FilteredElementsList`` as long as their lengths match and every
+    pair of elements compares equal under ``==``. Returns
+    ``NotImplemented`` for non-iterable operands so Python's
+    reflected-equality fallback applies. Mutable containers are
+    deliberately unhashable (``__hash__ = None``), matching the Python
+    ``list`` convention.
+    """
+
+def _lattice_isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+    """
+    Tolerant element-wise comparison with any iterable of elements.
+
+    For each pair of elements at the same index, calls the element's own
+    ``isclose(rtol=..., atol=..., ignore_attributes=...)``. Lengths must
+    match; foreign or non-iterable operands return ``False``. Defaults
+    match the per-element ``isclose`` (``rtol=1e-12``, ``atol=0.0``).
+
+    Parameters
+    ----------
+    other : iterable of elements
+        Any container (``KnownElementsList``, ``FilteredElementsList``,
+        or plain ``list``) whose elements expose ``isclose``.
+    rtol, atol : float
+        Forwarded to each element's ``isclose``.
+    ignore_attributes : str or iterable of str, optional
+        ``to_dict()`` keys to skip when comparing each pair of elements.
+        Includes the special key ``"type"`` to compare across element
+        variants (e.g., ``Drift`` vs ``ExactDrift``). Forwarded to each
+        element's ``isclose``.
     """
 
 def _make_drift_from_old(
@@ -230,7 +268,7 @@ def from_dicts(self, dicts: list[dict]):
 
 def from_pals(self, pals_beamline, nslice=1):
     """
-    Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
+    Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) object.
 
     https://github.com/campa-consortium/pals-python
     """

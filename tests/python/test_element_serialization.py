@@ -17,7 +17,10 @@ import numpy as np
 import pytest
 
 import amrex.space3d as amr
-from impactx import elements
+from impactx import Config, elements
+
+# amrex Real SmallMatrix precision suffix matching the build
+_REAL = "float" if Config.precision == "SINGLE" else "double"
 
 
 def get_constructor_params(element_class):
@@ -359,7 +362,7 @@ def all_elements():
         )
     )
 
-    R = amr.SmallMatrix_6x6_F_SI1_double.identity()
+    R = getattr(amr, f"SmallMatrix_6x6_F_SI1_{_REAL}").identity()
     lattice.append(
         elements.LinearMap(
             R=R, ds=0.5, dx=0.001, dy=0.002, rotation=0.05, name="test_linearmap"
@@ -538,9 +541,9 @@ def all_elements():
         )
     )
 
-    v = amr.SmallMatrix_3x1_F_SI1_double()
+    v = getattr(amr, f"SmallMatrix_3x1_F_SI1_{_REAL}")()
     v.set_val(0.1)
-    A = amr.SmallMatrix_3x6_F_SI1_double()
+    A = getattr(amr, f"SmallMatrix_3x6_F_SI1_{_REAL}")()
     A.set_val(0.01)
     lattice.append(
         elements.SpinMap(

@@ -10,7 +10,7 @@ import os
 import re
 import weakref
 
-from impactx import elements
+from impactx import Config, elements
 
 # All live FilteredElementsList views for a lattice (WeakKeyDictionary: key is KnownElementsList).
 _filtered_views_by_lattice: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
@@ -181,27 +181,9 @@ def load_file(self, filename, nslice=1):
         return
 
     elif extension_inner == ".pals":
-        from pals.BeamLine import BeamLine
+        from pals import load as load_pals_file
 
-        # examples: fodo.pals.yaml, fodo.pals.json
-        with open(filename, "r") as file:
-            if extension == ".json":
-                import json
-
-                pals_data = json.loads(file.read())
-            elif extension == ".yaml":
-                import yaml
-
-                pals_data = yaml.safe_load(file)
-            # TODO: toml, xml
-            else:
-                raise RuntimeError(
-                    f"load_file: No support for PALS file {filename} with extension {extension} yet."
-                )
-
-        # Parse the data dictionary back into a PALS `BeamLine` object.
-        # The automatically PALS data validation happens here.
-        self.from_pals(BeamLine(**pals_data), nslice)
+        self.from_pals(load_pals_file(filename), nslice)
         return
 
     raise RuntimeError(
@@ -210,39 +192,13 @@ def load_file(self, filename, nslice=1):
 
 
 def from_pals(self, pals_beamline, nslice=1):
-    """Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
+    """Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) object.
 
     https://github.com/campa-consortium/pals-python
     """
-    from pals.Drift import Drift
-    from pals.Quadrupole import Quadrupole
+    from ..pals_to_impactx import read_lattice
 
-    # Loop over the pals_beamline and create a new ImpactX KnownElementsList from it.
-    #       Use self.extend(...) on the latter.
-    ix_beamline = []
-    for pals_element in pals_beamline.line:
-        if isinstance(pals_element, Drift):
-            ix_beamline.append(
-                elements.Drift(
-                    name=pals_element.name, ds=pals_element.length, nslice=nslice
-                )
-            )
-        elif isinstance(pals_element, Quadrupole):
-            ix_beamline.append(
-                elements.ChrQuad(
-                    name=pals_element.name,
-                    ds=pals_element.length,
-                    k=pals_element.MagneticMultipoleP.Bn1,
-                    unit=0,
-                    nslice=nslice,
-                )
-            )
-        else:
-            raise RuntimeError(
-                f"from_pals: No support for elements of kind {type(pals_element)} yet."
-            )
-
-    self.extend(ix_beamline)
+    self.extend(read_lattice(pals_beamline, nslice))
 
 
 class FilteredElementsList:
@@ -960,6 +916,9 @@ def to_py(self) -> str:
         ]
     )
 
+    # match the SmallMatrix element type to the build's precision
+    real_t = "float" if Config.precision == "SINGLE" else "double"
+
     for d in self.to_dicts():
         element_type = d["type"]
         kwargs = _filter_kwargs(d)
@@ -969,7 +928,7 @@ def to_py(self) -> str:
             formatted_v, matrix_dims = _format_value(v)
             if matrix_dims:
                 rows, cols = matrix_dims
-                matrix_cls = f"amr.SmallMatrix_{rows}x{cols}_F_SI1_double"
+                matrix_cls = f"amr.SmallMatrix_{rows}x{cols}_F_SI1_{real_t}"
                 formatted_parts.append(f"{k}={matrix_cls}({repr(formatted_v)})")
             else:
                 formatted_parts.append(f"{k}={repr(formatted_v)}")
@@ -1015,6 +974,92 @@ def from_dicts(self, dicts: list[dict]):
     self.extend([_element_from_dict(d) for d in dicts])
 
 
+# ---------------------------------------------------------------------------
+# Element-wise value comparison (== and isclose) for lattice containers.
+#
+# Duck-typed across container types: a KnownElementsList compares equal to a
+# plain Python list of elements or to a FilteredElementsList as long as the
+# element sequences match. This mirrors the typical select() workflow where
+# users compare a filtered view against a hand-built reference list.
+#
+# No value-based __hash__ is defined: containers are mutable, and elements
+# inside are mutable. The default identity-based hash inherited from ``object``
+# is preserved (KnownElementsList from pybind11; FilteredElementsList from
+# Python) so the existing weak-reference tracking of selections keeps working.
+# ---------------------------------------------------------------------------
+
+
+def _lattice_eq(self, other):
+    """Element-wise equality with any iterable of elements.
+
+    Duck-typed across container types: a ``KnownElementsList`` compares
+    equal to a plain Python ``list`` of elements or to a
+    ``FilteredElementsList`` as long as their lengths match and every
+    pair of elements compares equal under ``==``. Returns
+    ``NotImplemented`` for non-iterable operands so Python's
+    reflected-equality fallback applies. Mutable containers are
+    deliberately unhashable (``__hash__ = None``), matching the Python
+    ``list`` convention.
+    """
+    if not hasattr(other, "__len__") or not hasattr(other, "__iter__"):
+        raise ValueError(f"{other} does not implement __len__ or __iter__")
+    if len(self) != len(other):
+        return False
+    for a, b in zip(self, other):
+        if not (a == b):
+            return False
+    return True
+
+
+def _lattice_isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
+    """Tolerant element-wise comparison with any iterable of elements.
+
+    For each pair of elements at the same index, calls the element's own
+    ``isclose(rtol=..., atol=..., ignore_attributes=...)``. Lengths must
+    match; foreign or non-iterable operands return ``False``. Defaults
+    match the per-element ``isclose`` (``rtol=1e-12``, ``atol=0.0``).
+
+    Parameters
+    ----------
+    other : iterable of elements
+        Any container (``KnownElementsList``, ``FilteredElementsList``,
+        or plain ``list``) whose elements expose ``isclose``.
+    rtol, atol : float
+        Forwarded to each element's ``isclose``.
+    ignore_attributes : str or iterable of str, optional
+        ``to_dict()`` keys to skip when comparing each pair of elements.
+        Includes the special key ``"type"`` to compare across element
+        variants (e.g., ``Drift`` vs ``ExactDrift``). Forwarded to each
+        element's ``isclose``.
+    """
+    if not hasattr(other, "__len__") or not hasattr(other, "__iter__"):
+        raise ValueError(f"{other} does not implement __len__ or __iter__")
+    if len(self) != len(other):
+        return False
+    for a, b in zip(self, other):
+        if hasattr(a, "isclose"):
+            if not a.isclose(
+                b, rtol=rtol, atol=atol, ignore_attributes=ignore_attributes
+            ):
+                return False
+        elif a != b:
+            return False
+    return True
+
+
+# Apply to FilteredElementsList immediately. The pybind11 KnownElementsList is
+# patched inside register_KnownElementsList_extension() below, since that is
+# the sole entry point that receives the bound class.
+#
+# We deliberately do NOT touch __hash__: FilteredElementsList instances are
+# tracked in a WeakSet (see ``_registry_for``) and need to remain hashable.
+# Keeping the inherited identity-based hash means two value-equal containers
+# may hash differently, but containers are not intended as dict/set keys for
+# value-based deduplication.
+FilteredElementsList.__eq__ = _lattice_eq
+FilteredElementsList.isclose = _lattice_isclose
+
+
 def register_KnownElementsList_extension(kel):
     """KnownElementsList helper methods"""
     from ..plot.Survey import plot_survey
@@ -1034,3 +1079,10 @@ def register_KnownElementsList_extension(kel):
     kel.get_kinds = get_kinds
     kel.count_by_kind = count_by_kind
     kel.has_kind = has_kind
+
+    # Element-wise == and isclose() (duck-typed across container types).
+    # No custom __hash__: the inherited identity-based hash is kept so that
+    # KnownElementsList and FilteredElementsList behave the same as Python
+    # lists for the user-visible ``==``/``isclose`` API.
+    kel.__eq__ = _lattice_eq
+    kel.isclose = _lattice_isclose

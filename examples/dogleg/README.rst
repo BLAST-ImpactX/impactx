@@ -113,6 +113,88 @@ We run the following script to analyze correctness:
       :caption: You can copy this file from ``examples/dogleg/analysis_dogleg_reverse.py``.
 
 
+
+.. _examples-dogleg-reverse-env:
+
+Dogleg in Reverse Using Envelope Solver
+=======================================
+
+This is identical to :ref:`reverse dogleg example <examples-dogleg-reverse>`, except that envelope tracking is used instead of particle tracking.
+
+The primary purpose is to demonstrate the initialization of a beam with a nonzero x-pt correlation in a lattice region with nonzero dispersion.
+
+In this example, the x-pt correlation of the beam is removed at the dogleg exit, and the dispersion goes to zero.
+
+The initial dispersion is taken to be -267 mm.
+
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must
+agree with nominal values.
+
+In addition, the initial and final values of :math:`\alpha_x`, :math:`\alpha_y`, :math:`\beta_x`, :math:`\beta_y`, :math:`D_x`, and :math:`D_{px}` must
+agree with nominal values.
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_dogleg_reverse_envelope.py`` or
+* ImpactX **executable** using an input file: ``impactx input_dogleg_reverse_envelope.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_dogleg_reverse_envelope.py
+          :language: python3
+          :caption: You can copy this file from ``examples/dogleg/run_dogleg_reverse_envelope.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_dogleg_reverse_envelope.in
+          :language: ini
+          :caption: You can copy this file from ``examples/dogleg/input_dogleg_reverse_envelope.in``.
+
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_dogleg_reverse_envelope.py``
+
+   .. literalinclude:: analysis_dogleg_reverse_envelope.py
+      :language: python3
+      :caption: You can copy this file from ``examples/dogleg/analysis_dogleg_reverse_envelope.py``.
+
+
+
+.. _examples-dogleg-vertical:
+
+Vertical Dogleg
+===============
+
+This is identical to the :ref:`dogleg example <examples-dogleg>`, except that every bend (and its dip-edge focusing) is rotated by 90 degrees, so the lattice bends in the vertical (:math:`y`) plane. The dogleg therefore generates dispersion in :math:`y` instead of :math:`x`.
+
+To obtain the exact :math:`x \leftrightarrow y` mirror image of the horizontal dogleg, the initial Twiss functions are exchanged :math:`x \leftrightarrow y` as well.
+
+The same lattice is tracked first with the **envelope** (covariance) solver and then with **particle** tracking, in the same script.
+
+The script asserts in-situ that the final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, :math:`\epsilon_t`, :math:`\alpha_x`, :math:`\alpha_y`, :math:`\beta_x`, :math:`\beta_y`, and :math:`D_y` agree with nominal values -- for both the envelope and the particle beam (the dispersion now appears in :math:`y`).
+
+Run
+---
+
+This example runs both envelope and particle tracking and is provided as a Python script: ``python3 run_dogleg_vertical.py``.
+
+.. literalinclude:: run_dogleg_vertical.py
+   :language: python3
+   :caption: You can copy this file from ``examples/dogleg/run_dogleg_vertical.py``.
+
+
+
 .. _examples-dogleg-jitter:
 
 Dogleg with Energy Jitter

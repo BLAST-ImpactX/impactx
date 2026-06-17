@@ -220,17 +220,14 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            RefPart const & AMREX_RESTRICT refpart
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // get the linear map
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
 
             // symplectic linear map for the RF cavity is computed using the
             // Hamiltonian formalism as described in:
@@ -249,12 +246,6 @@ namespace impactx::elements
             py = out[4];
             t  = out[5];
             pt = out[6];
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.
@@ -279,10 +270,10 @@ namespace impactx::elements
             amrex::ParticleReal const sedge = refpart.sedge;
 
             // initialize linear map (deviation) values
-            refpart.map = decltype(refpart.map)::Identity();
+            m_map = decltype(m_map)::Identity();
 
             // initialize the spin-orbit coupling matrix
-            refpart.spin_coupling = {};
+            m_spin_coupling = {};
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
@@ -325,14 +316,14 @@ namespace impactx::elements
                       scale_in = bgi;
                    else
                       scale_in = 1.0_prt;
-                   refpart.map(i, j) = refpart.map(i, j) * scale_in / scale_fin;
+                   m_map(i, j) = m_map(i, j) * scale_in / scale_fin;
                }
             }
 
             // convert spin-orbit coupling map from dynamic to static units
             for (int i=1; i<4; i++) {
                 for (int j=2; j<7; j+=2) {
-                    refpart.spin_coupling(i, j) *= bgi;
+                    m_spin_coupling(i, j) *= bgi;
                 }
             }
 
@@ -352,7 +343,7 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -366,7 +357,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -381,7 +372,7 @@ namespace impactx::elements
             amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
 
             // get the spin-orbit coupling matrix
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = m_spin_coupling;
 
             // use phase space variables to obtain the angle-axis generator of spin rotation
             auto const out = A * v;
@@ -411,9 +402,10 @@ namespace impactx::elements
         {
 
             Map6x6 R = Map6x6::Identity();
-            R = refpart.map;
+            R = m_map;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         /** This evaluates the on-axis RF electric field at a fixed location
@@ -508,13 +500,13 @@ namespace impactx::elements
             }
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = m_spin_coupling;
             amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> dA = {};
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
+            m_map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
+            m_map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
 
             // BELOW: if spin is needed only:
             // Define parameters and intermediate constants
@@ -536,7 +528,7 @@ namespace impactx::elements
             dA(2,2) = -dA(1,4);
 
             // update the spin-orbit coupling matrix here
-            refpart.spin_coupling = A + dA*R;
+            m_spin_coupling = A + dA*R;
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -573,19 +565,19 @@ namespace impactx::elements
             refpart.pt = pt;
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
             amrex::ParticleReal const s = tau/refpart.beta_gamma();
             amrex::ParticleReal const L = E0*ezp * std::sin(k*t+phi)/(2_prt*k);
 
-            refpart.map(1,1) = (1_prt-s*L)*R(1,1) + s*R(2,1);
-            refpart.map(1,2) = (1_prt-s*L)*R(1,2) + s*R(2,2);
-            refpart.map(2,1) = -s * powi<2>(L)*R(1,1) + (1_prt+s*L)*R(2,1);
-            refpart.map(2,2) = -s * powi<2>(L)*R(1,2) + (1_prt+s*L)*R(2,2);
+            m_map(1,1) = (1_prt-s*L)*R(1,1) + s*R(2,1);
+            m_map(1,2) = (1_prt-s*L)*R(1,2) + s*R(2,2);
+            m_map(2,1) = -s * powi<2>(L)*R(1,1) + (1_prt+s*L)*R(2,1);
+            m_map(2,2) = -s * powi<2>(L)*R(1,2) + (1_prt+s*L)*R(2,2);
 
-            refpart.map(3,3) = (1_prt-s*L)*R(3,3) + s*R(4,3);
-            refpart.map(3,4) = (1_prt-s*L)*R(3,4) + s*R(4,4);
-            refpart.map(4,3) = -s * powi<2>(L)*R(3,3) + (1_prt+s*L)*R(4,3);
-            refpart.map(4,4) = -s * powi<2>(L)*R(3,4) + (1_prt+s*L)*R(4,4);
+            m_map(3,3) = (1_prt-s*L)*R(3,3) + s*R(4,3);
+            m_map(3,4) = (1_prt-s*L)*R(3,4) + s*R(4,4);
+            m_map(4,3) = -s * powi<2>(L)*R(3,3) + (1_prt+s*L)*R(4,3);
+            m_map(4,4) = -s * powi<2>(L)*R(3,4) + (1_prt+s*L)*R(4,4);
 
         }
 
@@ -626,18 +618,18 @@ namespace impactx::elements
             refpart.pt = pt - E0*(ezintf-ezint) * std::cos(k*t+phi);
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
             amrex::ParticleReal const M = E0*(ezintf-ezint)*k * std::sin(k*t+phi);
             amrex::ParticleReal const L = E0*(ezpf-ezp) * std::sin(k*t+phi)/(2_prt*k)+M*0.5_prt;
 
-            refpart.map(2,1) = L*R(1,1) + R(2,1);
-            refpart.map(2,2) = L*R(1,2) + R(2,2);
+            m_map(2,1) = L*R(1,1) + R(2,1);
+            m_map(2,2) = L*R(1,2) + R(2,2);
 
-            refpart.map(4,3) = L*R(3,3) + R(4,3);
-            refpart.map(4,4) = L*R(3,4) + R(4,4);
+            m_map(4,3) = L*R(3,3) + R(4,3);
+            m_map(4,4) = L*R(3,4) + R(4,4);
 
-            refpart.map(6,5) = M*R(5,5) + R(6,5);
-            refpart.map(6,6) = M*R(5,6) + R(6,6);
+            m_map(6,5) = M*R(5,5) + R(6,5);
+            m_map(6,6) = M*R(5,6) + R(6,6);
 
         }
 
@@ -652,6 +644,14 @@ namespace impactx::elements
         amrex::ParticleReal const * m_sin_h_data = nullptr; //! non-owning pointer to host sine coefficients
         amrex::ParticleReal const * m_cos_d_data = nullptr; //! non-owning pointer to device cosine coefficients
         amrex::ParticleReal const * m_sin_d_data = nullptr; //! non-owning pointer to device sine coefficients
+
+        // Reference-trajectory linearization around the reference particle.
+        // Computed during the reference-particle push and consumed during the
+        // particle push.
+        // mutable: written by the const reference push before the element is copied
+        // into the particle-push functor.
+        mutable amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> m_map{}; //! linearized map
+        mutable amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> m_spin_coupling{}; //! linearized spin-orbit coupling matrix
     };
 
 } // namespace impactx

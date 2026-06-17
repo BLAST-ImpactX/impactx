@@ -112,9 +112,8 @@ namespace impactx::elements
 
             Alignment::compute_constants(refpart);
 
-            // access reference particle values to find beta and gamma
+            // access reference particle values to find beta
             m_beta = refpart.beta();
-            m_gamma = refpart.gamma();
 
             // normalize quad units to MAD-X convention if needed
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
@@ -142,11 +141,11 @@ namespace impactx::elements
         void operator() (
             T_Real & AMREX_RESTRICT x,
             T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -155,12 +154,9 @@ namespace impactx::elements
             using amrex::Math::powi;
             using namespace std; // for cmath(float)
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // compute particle momentum deviation delta + 1
             T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
-            T_Real a = m_a / delta1;
+            T_Real const a = m_a / delta1;
 
             // initialize output values
             T_Real xout = x;
@@ -170,9 +166,9 @@ namespace impactx::elements
             T_Real pyout = py;
 
             // intermediate quantities to be used below
-            T_Real x2my2 = x*x - y*y;
-            T_Real x2py2 = x*x + y*y;
-            T_Real denominator = 1_prt - 9_prt*powi<2>(a)*powi<2>(x2my2);
+            T_Real const x2my2 = x*x - y*y;
+            T_Real const x2py2 = x*x + y*y;
+            T_Real const denominator = 1_prt - 9_prt*powi<2>(a)*powi<2>(x2my2);
 
             // apply edge focusing (transverse phase space)
             xout = x - a * (powi<3>(x) + 3_prt * x * powi<2>(y));
@@ -182,7 +178,7 @@ namespace impactx::elements
             pyout = (py - 3_prt*a*py*x2py2 + 6_prt*a*px*x*y) / denominator;
 
             // apply edge focusing (longitudinal phase space)
-            T_Real f4 = a * ( pxout * (powi<3>(x) + 3_prt*x*powi<2>(y))
+            T_Real const f4 = a * ( pxout * (powi<3>(x) + 3_prt*x*powi<2>(y))
                                          - pyout * (powi<3>(y) + 3_prt*y*powi<2>(x)) );
             tout = t + f4 * (pt - 1_prt/m_beta) / powi<2>(delta1);
 
@@ -192,9 +188,6 @@ namespace impactx::elements
             t = tout;
             px = pxout;
             py = pyout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle. */
@@ -217,7 +210,8 @@ namespace impactx::elements
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_k;  //! quadrupole focusing strength
@@ -230,7 +224,6 @@ namespace impactx::elements
         amrex::ParticleReal m_g;
         amrex::ParticleReal m_a;
         amrex::ParticleReal m_beta;
-        amrex::ParticleReal m_gamma;
     };
 
 } // namespace impactx

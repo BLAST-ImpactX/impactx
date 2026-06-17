@@ -398,9 +398,23 @@ We also support adding `additional compiler flags via environment variables <htt
    # example: treat all compiler warnings as errors
    export CXXFLAGS="-Werror"
 
+.. tip::
+
+   To get the most performance out of your CPU, compile for the
+   instruction set of the machine you run on:
+
+   .. code-block:: bash
+
+      export CXXFLAGS="-march=native -mtune=native"
+
+   Use ``-march=native`` only for builds that run on the same CPU generation they were
+   compiled on. For portable binaries, pick a specific baseline architecture instead
+   (e.g. ``-march=x86-64-v3 -mtune=generic`` for AMD/Intel CPUs build since the year 2021, our :ref:`HPC configurations <install-hpc>` set the right match in their profile files for you).
+   Also enable our vectorization option in the table below: ``-DImpactX_SIMD=ON``
+
 .. note::
 
-   Please clean your build directory with ``rm -rf build/`` after changing the compiler.
+   Please clean your build directory with ``rm -rf build/`` after changing the compiler or environment variables like ``CXXFLAGS``.
    Now call ``cmake -S . -B build`` (+ further options) again to re-initialize the build configuration.
 
 
@@ -422,6 +436,7 @@ CMake Option                    Default & Values                             Des
 ``ImpactX_MPI``                 **ON**/OFF                                   Multi-node support (message-passing)
 ``ImpactX_MPI_THREAD_MULTIPLE`` **ON**/OFF                                   MPI thread-multiple support, i.e. for ``async_io``
 ``ImpactX_OPENPMD``             **ON**/OFF                                   openPMD I/O (HDF5, ADIOS)
+``ImpactX_OPTIMIZE_ALIGNMENT``  **ON**/OFF                                   Branch-free push paths for aligned/misaligned elements (OFF halves element-push compile time)
 ``ImpactX_PRECISION``           SINGLE/**DOUBLE**                            Floating point precision (single/double)
 ``ImpactX_PYTHON``              ON/**OFF**                                   Python bindings
 ``ImpactX_SIMD``                ON/**OFF**                                   CPU SIMD acceleration (requires ``vir-simd``)

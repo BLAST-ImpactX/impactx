@@ -108,8 +108,8 @@ namespace impactx::elements
          *
          * The @see compute_constants method must be called before pushing particles through this operator.
          *
-         * @param x particle position in x
-         * @param y particle position in y
+         * @param x particle position in x (unused)
+         * @param y particle position in y (unused)
          * @param t particle position in t
          * @param px particle momentum in x
          * @param py particle momentum in y
@@ -120,13 +120,13 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT y,
+            T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -134,47 +134,41 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // initial conversion from static to dynamic units:
             px = px * m_bgi;
             py = py * m_bgi;
             pt = pt * m_bgi;
 
             // initialize output values
-            T_Real xout = x;
-            T_Real yout = y;
-            T_Real tout = t;
-            T_Real pxout = px;
-            T_Real pyout = py;
+            // T_Real xout = x;
+            // T_Real yout = y;
+            // T_Real tout = t;
+            // T_Real pxout = px;
+            // T_Real pyout = py;
             T_Real ptout = pt;
 
             // advance position and momentum in dynamic units
             // xout = x;
-            pxout = px;
+            // pxout = px;
 
             // yout = y;
-            pyout = py;
+            // pyout = py;
 
             // tout = t;
             ptout = pt - m_V * cos(m_k * t + m_phi) + m_V_cos_phi;
 
             // assign updated values
-            x = xout;
-            y = yout;
-            t = tout;
-            px = pxout;
-            py = pyout;
+            // x = xout;
+            // y = yout;
+            // t = tout;
+            // px = pxout;
+            // py = pyout;
             pt = ptout;
 
             // final conversion from dynamic to static units:
             px = px / m_bgf;
             py = py / m_bgf;
             pt = pt / m_bgf;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle. */
@@ -264,7 +258,8 @@ namespace impactx::elements
             R(6,5) = k*m_V*std::sin(phi)/bgf;
             R(6,6) = bgi/bgf;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_V; //! normalized (max) RF voltage drop.

@@ -95,12 +95,52 @@ namespace
         );
     }
 
+    /** Register the transfer_map() method
+     *
+     * Exposes the element's own analytic linear transport map (see the
+     * @c mixin::LinearTransport CRTP mixin). An element that implements a linear map
+     * (@c has_linear_transport) returns it, one that does not throws a uniform,
+     * self-documenting error.
+     *
+     * This is the element's per-slice map (for @c ds/nslice), i.e. the building
+     * block that @c KnownElementsList.transfer_map composes over @c nslice and
+     * over the whole lattice.
+     */
+    template<typename T_PyClass>
+    void register_transfer_map (T_PyClass & cl)
+    {
+        using Element = typename T_PyClass::type;  // py::class<T, options...>
+
+        cl.def("transfer_map",
+            [](Element const & el, RefPart const & ref) -> Map6x6 {
+                if constexpr (Element::has_linear_transport) {
+                    return el.transport_map(ref);
+                } else {
+                    throw std::runtime_error(
+                        std::string(Element::type)
+                        + ": Linear transport map is not yet implemented for this element."
+                    );
+                }
+            },
+            py::arg("ref"),
+            "Return this element's 6x6 linear transport map for the given\n"
+            "reference particle.\n\n"
+            "Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).\n"
+            "For an element with ``nslice`` > 1 this is the map of a single\n"
+            "``ds/nslice`` slice (the building block that the lattice transfer\n"
+            "map composes). Raises for an element whose linear transport map is\n"
+            "not implemented.\n\n"
+            ":param ref: reference particle at the element entrance\n"
+        );
+    }
+
     /** Register push() method overloads */
     template<typename T_PyClass>
     void register_push (T_PyClass & cl)
     {
         register_beamoptics_push(cl);
         register_envelope_push(cl);
+        register_transfer_map(cl);
     }
 
     /** Register reverse() method */
@@ -1555,7 +1595,7 @@ void init_elements(py::module& m)
         )
         .def_property("multipole",
             [](Multipole & multipole) { return multipole.m_multipole; },
-            [](Multipole & multipole, amrex::ParticleReal multipole_index) {
+            [](Multipole & multipole, int multipole_index) {
                 multipole.m_multipole = multipole_index;
                 multipole.compute_factorial();
             },
@@ -2014,6 +2054,14 @@ void init_elements(py::module& m)
             [](RFCavity & rfc, int mapsteps) { rfc.m_mapsteps = mapsteps; },
             "number of integration steps per slice used for map and reference particle push in applied fields"
         )
+        .def_property_readonly("map",
+            [](RFCavity const & rfc) { return rfc.m_map; },
+            "linearized transport map around the reference particle (valid after a reference-particle push)"
+        )
+        .def_property_readonly("spin_coupling",
+            [](RFCavity const & rfc) { return rfc.m_spin_coupling; },
+            "linearized spin-orbit coupling matrix (valid after a reference-particle push)"
+        )
     ;
     register_push(py_RFCavity);
     register_reverse(py_RFCavity);
@@ -2322,13 +2370,25 @@ void init_elements(py::module& m)
         */
         .def_property("unit",
             [](SoftSolenoid & soft_sol) { return soft_sol.m_unit; },
-            [](SoftSolenoid & soft_sol, amrex::ParticleReal unit) { soft_sol.m_unit = unit; },
+            [](SoftSolenoid & soft_sol, int unit) { soft_sol.m_unit = unit; },
             "specification of units for scaling of the on-axis longitudinal magnetic field"
         )
         .def_property("mapsteps",
             [](SoftSolenoid & soft_sol) { return soft_sol.m_mapsteps; },
             [](SoftSolenoid & soft_sol, int mapsteps) { soft_sol.m_mapsteps = mapsteps; },
             "number of integration steps per slice used for map and reference particle push in applied fields"
+        )
+        .def_property_readonly("map",
+            [](SoftSolenoid const & soft_sol) { return soft_sol.m_map; },
+            "linearized transport map around the reference particle (valid after a reference-particle push)"
+        )
+        .def_property_readonly("spin_coupling",
+            [](SoftSolenoid const & soft_sol) { return soft_sol.m_spin_coupling; },
+            "linearized spin-orbit coupling matrix (valid after a reference-particle push)"
+        )
+        .def_property_readonly("spin_rotation_vector",
+            [](SoftSolenoid const & soft_sol) { return soft_sol.m_spin_rotation_vector; },
+            "reference spin rotation vector (valid after a reference-particle push)"
         )
     ;
     register_push(py_SoftSolenoid);
@@ -2442,8 +2502,8 @@ void init_elements(py::module& m)
              [](PRot const & prot) {
                  return element_name(
                      prot,
-                     std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
-                     std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
+                     std::make_pair("phi_in", prot.m_phi_in / elements::mixin::Alignment::degree2rad),
+                     std::make_pair("phi_out", prot.m_phi_out / elements::mixin::Alignment::degree2rad)
                  );
              }
         )
@@ -2452,9 +2512,9 @@ void init_elements(py::module& m)
                 if (in_degrees) {
                     return element_dict(
                         prot,
-                        std::make_pair("phi_in", prot.m_phi_in / PRot::degree2rad),
+                        std::make_pair("phi_in", prot.m_phi_in / elements::mixin::Alignment::degree2rad),
                                                                      // once fixed, update src/python/impactx/extensions/KnownElementsList.py
-                        std::make_pair("phi_out", prot.m_phi_out / PRot::degree2rad)
+                        std::make_pair("phi_out", prot.m_phi_out / elements::mixin::Alignment::degree2rad)
                     );
                 } else {
                     // legacy: buggy radians instead of degrees
@@ -2496,13 +2556,13 @@ void init_elements(py::module& m)
         )
         /* BUG: this should be in degree
         .def_property("phi_in",
-            [](PRot & prot) { return prot.m_phi_in / PRot::degree2rad; },
-            [](PRot & prot, amrex::ParticleReal phi_in_deg) { prot.m_phi_in = phi_in_deg * PRot::degree2rad; },
+            [](PRot & prot) { return prot.m_phi_in / elements::mixin::Alignment::degree2rad; },
+            [](PRot & prot, amrex::ParticleReal phi_in_deg) { prot.m_phi_in = phi_in_deg * elements::mixin::Alignment::degree2rad; },
             "angle of the reference particle with respect to the longitudinal (z) axis in the original frame in degrees"
         )
         .def_property("phi_out",
-            [](PRot & prot) { return prot.m_phi_out / PRot::degree2rad; },
-            [](PRot & prot, amrex::ParticleReal phi_out_deg) { prot.m_phi_out = phi_out_deg * PRot::degree2rad; },
+            [](PRot & prot) { return prot.m_phi_out / elements::mixin::Alignment::degree2rad; },
+            [](PRot & prot, amrex::ParticleReal phi_out_deg) { prot.m_phi_out = phi_out_deg * elements::mixin::Alignment::degree2rad; },
             "angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees"
         )
         */
@@ -2570,6 +2630,14 @@ void init_elements(py::module& m)
             [](SoftQuadrupole & soft_quad) { return soft_quad.m_mapsteps; },
             [](SoftQuadrupole & soft_quad, int mapsteps) { soft_quad.m_mapsteps = mapsteps; },
             "number of integration steps per slice used for map and reference particle push in applied fields"
+        )
+        .def_property_readonly("map",
+            [](SoftQuadrupole const & soft_quad) { return soft_quad.m_map; },
+            "linearized transport map around the reference particle (valid after a reference-particle push)"
+        )
+        .def_property_readonly("spin_coupling",
+            [](SoftQuadrupole const & soft_quad) { return soft_quad.m_spin_coupling; },
+            "linearized spin-orbit coupling matrix (valid after a reference-particle push)"
         )
     ;
     register_push(py_SoftQuadrupole);

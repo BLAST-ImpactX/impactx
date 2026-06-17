@@ -5,7 +5,12 @@
 # License: BSD-3-Clause-LBNL
 #
 
+import glob
+import re
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 
 
 # Load data from envelope simulation
@@ -17,11 +22,6 @@ def read_time_series(file_pattern):
     -------
     pandas.DataFrame
     """
-
-    import glob
-    import re
-
-    import pandas as pd
 
     def read_file(file_pattern):
         for filename in glob.glob(file_pattern):
@@ -38,7 +38,17 @@ def read_time_series(file_pattern):
     )  # .set_index('id')
 
 
+def data_is_double(file_pattern):
+    """Detect float precision (single vs double) from a text diagnostic's digits."""
+    text = "".join(Path(f).read_text() for f in glob.glob(file_pattern))
+    return any(
+        len(m.replace(".", "") if e else m.replace(".", "").strip("0")) >= 12
+        for m, e in re.findall(r"(\d*\.\d+)([eE][+-]?\d+)?", text)
+    )
+
+
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
+is_double = data_is_double("diags/reduced_beam_characteristics.*")
 
 # numerical parameters based on input file
 gryo_anomaly = 0.001159652181644  # for electrons
@@ -116,7 +126,7 @@ condition = sigma_sx**2 + sigma_sy**2 + sigma_sz**2 + polarization**2
 print("")
 print(f"Spin moment consistency condition = {condition:e}")
 
-atol = 1.0e-12  # machine precision
+atol = 1.0e-12 if is_double else 1.0e-3
 print(f"  atol={atol}")
 
 assert np.allclose(

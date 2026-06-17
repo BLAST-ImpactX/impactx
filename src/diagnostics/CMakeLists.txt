@@ -3,5 +3,6 @@ target_sources(lib
     ReducedBeamCharacteristics.cpp
     DiagnosticOutput.cpp
     EmittanceInvariants.cpp
+    FilePrefix.cpp
     LinearMap.cpp
 )

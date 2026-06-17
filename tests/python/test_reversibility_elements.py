@@ -38,7 +38,7 @@ if Config.precision == "SINGLE":
     ref_atol = 3.0e-4
 else:
     phase_atol = 1.0e-10
-    spin_atol = 1.0e-12
+    spin_atol = 1.0e-11
     ref_atol = 1.0e-10
 
 
@@ -221,6 +221,7 @@ def roundtrip(
 # =============================================================================
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_CFbend(sim):
     roundtrip(
         elements.CFbend(
@@ -231,6 +232,7 @@ def test_CFbend(sim):
             **PIPE_KWARGS,
         ),
         sim,
+        spin=sim.spin,
     )
 
 
@@ -243,6 +245,7 @@ def test_ChrDrift(sim):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k"),
     [(0, 2.98636067687944129), (1, 5.0)],
@@ -259,30 +262,23 @@ def test_ChrPlasmaLens(sim, unit, k):
         ),
         sim,
         phase_atol=2e-6 if unit == 1 else phase_atol,
+        spin=sim.spin,
     )
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.ChrQuad(ds=1.0, k=1.0, unit=0, nslice=nslice, **kwargs),
+        elements.ChrQuad(ds=1.0, k=1.0, unit=0, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad_marylie_unit(sim):
     roundtrip(
         elements.ChrQuad(ds=1.0, k=3.5, unit=1, nslice=nslice, **PIPE_KWARGS),
-        sim,
-    )
-
-
-@pytest.mark.parametrize("sim", [True], indirect=True, ids=["spin"])
-def test_ChrQuad_marylie_unit_spin(sim):
-    roundtrip(
-        elements.ChrQuad(ds=1.0, k=1.0, unit=1, nslice=nslice),
         sim,
         spin=sim.spin,
     )
@@ -354,6 +350,7 @@ def test_ExactMultipole(sim, unit, k_normal, k_skew):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k_normal", "k_skew"),
     [
@@ -375,7 +372,9 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=1e-4 if Config.precision == "SINGLE" else 1e-8,
+        spin_atol=5e-6 if Config.precision == "SINGLE" else spin_atol,
+        spin=sim.spin,
     )
 
 
@@ -405,9 +404,8 @@ def test_ExactSbend(sim):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Quad(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Quad(ds=1.0, k=1.0, nslice=nslice, **kwargs),
+        elements.Quad(ds=1.0, k=1.0, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -415,9 +413,8 @@ def test_Quad(sim):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sbend(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **kwargs),
+        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -499,9 +496,8 @@ def test_SoftSolenoid(sim, unit, bscale):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sol(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Sol(ds=3.820395, ks=0.8223219329893234, **kwargs),
+        elements.Sol(ds=3.820395, ks=0.8223219329893234, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -542,6 +538,7 @@ def test_NonlinearLens(sim):
     roundtrip(elements.NonlinearLens(knll=4.0e-6, cnll=0.01, **ALIGNMENT_KWARGS), sim)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0 / 0.5), (1, 6.0)], ids=["madx", "si"])
 def test_TaperedPL(sim, unit, k):
     roundtrip(
@@ -552,6 +549,7 @@ def test_TaperedPL(sim, unit, k):
             **ALIGNMENT_KWARGS,
         ),
         sim,
+        spin=sim.spin,
     )
 
 

@@ -7,7 +7,7 @@
 # -*- coding: utf-8 -*-
 
 
-from impactx import ImpactX, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
 
 sim = ImpactX()
 
@@ -61,7 +61,8 @@ aperture = elements.PolygonAperture(vertices_x, vertices_y, action="transmit")
 print(aperture.to_dict())
 assert aperture.min_radius2 == 0.0
 aperture.min_radius2 = mr2
-assert abs(aperture.min_radius2 / mr2 - 1.0) < 1.0e-15
+rtol = 1.0e-15 if Config.precision == "DOUBLE" else 1.0e-6
+assert abs(aperture.min_radius2 / mr2 - 1.0) < rtol
 
 # design the accelerator lattice)
 ns = 1  # number of slices per ds in the element

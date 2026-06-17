@@ -46,8 +46,8 @@ PYBIND11_MODULE(impactx_pybind, m) {
     )pbdoc";
 
     // note: order from parent to child classes
-    init_distribution(m);
     init_refparticle(m);
+    init_distribution(m);
     init_impactxparticlecontainer(m);
     init_elements(m);
     init_transformation(m);

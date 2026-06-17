@@ -33,10 +33,6 @@ sim.slice_step_diagnostics = True
 # domain decomposition & space charge mesh
 sim.init_grids()
 
-
-# domain decomposition & space charge mesh
-sim.init_grids()
-
 # beam energy ad bunch charge
 kin_energy_MeV = 100  # reference energy
 bunch_charge_C = 1.0e-9  # used with space charge

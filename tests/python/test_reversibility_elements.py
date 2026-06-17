@@ -325,6 +325,7 @@ def test_ExactDrift(sim):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k_normal", "k_skew"),
     [
@@ -347,6 +348,7 @@ def test_ExactMultipole(sim, unit, k_normal, k_skew):
         ),
         sim,
         phase_atol=1e-8,
+        spin=sim.spin,
     )
 
 
@@ -398,10 +400,12 @@ def test_ExactQuad(sim, unit, k):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactSbend(sim):
     roundtrip(
         elements.ExactSbend(ds=1.0, phi=10.0, B=0.45, nslice=nslice, **PIPE_KWARGS),
         sim,
+        spin=sim.spin,
     )
 
 
@@ -423,6 +427,7 @@ def test_Sbend(sim):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_SoftQuadrupole(sim):
     roundtrip(
         elements.SoftQuadrupole(
@@ -436,9 +441,15 @@ def test_SoftQuadrupole(sim):
         ),
         sim,
         phase_atol=1e-8,
+        spin=sim.spin,
     )
 
 
+# Spin reversibility is not validated here: the soft-edge split leaves an
+# O(1e-3) residual in the spin components on forward+reverse+forward even though
+# phase space round-trips at 1e-8 (same class as the symmetric-split spin fix
+# for TaperedPL in #1474). Keep nospin-only (the benchmark covers the forward
+# spin push).
 @pytest.mark.parametrize(
     ("unit", "bscale"),
     [(0, 1.233482899483985), (1, 2.0)],
@@ -530,10 +541,12 @@ def test_Kicker(sim, unit, xkick, ykick):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Multipole(sim):
     roundtrip(
         elements.Multipole(multipole=4, K_normal=65.0, K_skew=6.0, **ALIGNMENT_KWARGS),
         sim,
+        spin=sim.spin,
     )
 
 
@@ -584,6 +597,9 @@ def test_ShortRF(sim):
     )
 
 
+# Spin reversibility is not validated here: with finite mapsteps the spin
+# precession reverse is not the exact inverse of the forward push, leaving an
+# O(1e-3) residual. Keep nospin-only (the benchmark covers the forward spin push).
 def test_RFCavity(sim):
     roundtrip(
         elements.RFCavity(

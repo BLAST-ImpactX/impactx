@@ -217,6 +217,7 @@ def test_ExactDrift(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactMultipole(benchmark, sim):
     el = elements.ExactMultipole(
         name="quad1",
@@ -243,6 +244,7 @@ def test_ExactQuad(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactSbend(benchmark, sim):
     el = elements.ExactSbend(name="bend", ds=1.0, phi=10.0, B=0.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -270,6 +272,7 @@ def test_LinearMap(benchmark, sim):
 #    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Multipole(benchmark, sim):
     el = elements.Multipole(
         name="thin_octupole", multipole=4, K_normal=65.0, K_skew=6.0
@@ -334,6 +337,7 @@ def test_Quad(benchmark, sim):
 #     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_RFCavity(benchmark, sim):
     el = elements.RFCavity(
         name="rf",
@@ -412,6 +416,7 @@ def test_ShortRF(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_SoftQuadrupole(benchmark, sim):
     el = elements.SoftQuadrupole(
         name="quad1",
@@ -425,6 +430,7 @@ def test_SoftQuadrupole(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_SoftSolenoid(benchmark, sim):
     el = elements.SoftSolenoid(
         name="sol1",

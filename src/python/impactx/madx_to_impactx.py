@@ -1014,13 +1014,16 @@ def lattice(
             elif d["type"] == "dipedge":
                 h = d.get("h", 0.0)
                 he = d.get("he", 0.0)
-                # MAD-X stores an ENTRANCE logical on DIPEDGE (e.g., from MAKETHIN).
-                # Map directly to ImpactX DipEdge location.
-                # Note: MAD-X's ENTRANCE default is false (mad_dict.c:2957), so a
-                # hand-written DIPEDGE without an explicit ENTRANCE=true is translated
-                # as an exit edge -- this matches MAD-X's stored default but may be
-                # surprising to users who treat standalone DIPEDGE as an entry edge.
-                location = "entry" if bool(d.get("entrance", False)) else "exit"
+                # MAD-X stores an ENTRANCE logical on DIPEDGE, written only by
+                # MAKETHIN (entrance=true for the entry slice, false for the exit
+                # slice). MAD-X's own DIPEDGE map ignores it -- tmdpdg/ttdpdg call
+                # tmfrng with sig=0 and fsec=false, i.e. only the entry/exit-symmetric
+                # linear edge map (the entry/exit sign sig=+/-1 affects 2nd-order
+                # terms only). The dictionary default is false (mad_dict.c:2957), but
+                # a hand-written standalone DIPEDGE omits the flag; we label that
+                # absent case "entry" (the ImpactX DipEdge default) -- a free choice,
+                # since the linear model we emit is location-independent anyway.
+                location = "entry" if bool(d.get("entrance", True)) else "exit"
                 if abs(h) == 0.0:
                     impactx_beamline.append(elements.Marker(name=d["name"]))
                     if any(

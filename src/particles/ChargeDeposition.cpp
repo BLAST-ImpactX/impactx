@@ -9,6 +9,7 @@
  */
 #include "ImpactXParticleContainer.H"
 #include "ChargeDeposition.H"
+#include "initialization/Algorithms.H"
 
 #include <ablastr/coarsen/average.H>
 #include <ablastr/utils/Communication.H>
@@ -35,19 +36,44 @@ namespace impactx
 
         int const finest_level = rho.size() - 1;
         for (int lev = 0; lev <= finest_level; ++lev) {
-            auto omask = rho.at(lev).OwnerMask();
-            auto const& oma = omask->const_arrays();
-            // flattened rho
-            auto const& ma = rho.at(lev).const_arrays();
-            amrex::Box domain_lev = lev == 0 ? domain_3d : rho.at(lev).boxArray().minimalBox();
+            auto const & rho_at_level = rho.at(lev);
+            amrex::Box const domain_lev = amrex::convert(
+                lev == 0 ? domain_3d : rho_at_level.boxArray().minimalBox(),
+                rho_at_level.ixType()
+            );
+
+            int const z_dir = 2;
+
+            // Project the deposited 3D charge density to x-y for the 2D
+            // space-charge solve. We must include *all* guard cells to conserve
+            // charge:
+            //  - z guards: with a single longitudinal cell and higher-order
+            //    particle shapes, part of each particle's charge is deposited
+            //    outside the valid z nodes: summed into the plane.
+            //  - transverse (x/y) guards at internal box seams: that charge
+            //    belongs to a neighbouring box's valid node and is folded back
+            //    in across the seam.
+            //
+            // The open transverse boundary is non-periodic, so charge deposited
+            // outside the domain is dropped (open BC).
+            //
+            // NOTE: this requires the *raw* deposited rho, i.e. DepositCharge
+            // must NOT SumBoundary it for the 2D path, otherwise the valid nodes
+            // are folded twice and the charge is double counted.
+            auto const & ma = rho_at_level.const_arrays();
+
             rho_2d.erase(lev);
             rho_2d.emplace(
                 lev,
-                amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>
-                (2, domain_lev, rho.at(lev), [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
-                {
-                    return oma[b](i,j,k) ? ma[b](i,j,k) : amrex::Real(0);
-                })
+                amrex::ReduceToPlaneMF2<amrex::ReduceOpSum>(
+                    z_dir, domain_lev, rho_at_level,
+                    [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
+                    {
+                        return ma[b](i,j,k);
+                    },
+                    rho_at_level.nGrowVect(),            // include z + transverse guards
+                    amrex::Periodicity::NonPeriodic()    // open transverse boundary
+                )
             );
         }
 
@@ -65,6 +91,17 @@ namespace impactx
 
         if (m_particle_shape.value() < 1)
             throw std::runtime_error("DepositCharge: Particle shape must be >=1");
+
+        // The 2D space-charge model projects rho to x-y in flatten_charge_to_2D,
+        // which folds the (transverse and longitudinal) guard-cell charge into
+        // the valid nodes itself. We must therefore leave rho *un-summed* here:
+        // a SumBoundary would fold the transverse guards a first time and the
+        // 2D projection of ReduceToPlaneMF2 a second time, double counting the
+        // charge at box seams.
+        auto const space_charge = get_space_charge_algo();
+        bool const skip_sum_boundary =
+            (space_charge == SpaceChargeAlgo::True_2D ||
+             space_charge == SpaceChargeAlgo::True_2p5D);
 
         // reset the values in rho to zero
         int const nLevel = this->finestLevel();
@@ -204,17 +241,22 @@ namespace impactx
             //ApplyFilterandSumBoundaryRho(lev, lev, rho[lev-1], 0, 1);
 
             // start async charge communication for this level
-            rho_at_level.SumBoundary_nowait(gm.periodicity());
+            //   (skipped for the 2D model: the 2D projection sums the guards)
+            if (!skip_sum_boundary) {
+                rho_at_level.SumBoundary_nowait(gm.periodicity());
+            }
             //int const comp = 0;
             //rho_at_level.SumBoundary_nowait(comp, comp, rho_at_level.nGrowVect(), gm.periodicity());
 
         } // lev
 
         // finalize communication
-        for (int lev = 0; lev <= nLevel; ++lev)
-        {
-            amrex::MultiFab & rho_at_level = rho.at(lev);
-            rho_at_level.SumBoundary_finish();
+        if (!skip_sum_boundary) {
+            for (int lev = 0; lev <= nLevel; ++lev)
+            {
+                amrex::MultiFab & rho_at_level = rho.at(lev);
+                rho_at_level.SumBoundary_finish();
+            }
         }
     }
 } // namespace impactx

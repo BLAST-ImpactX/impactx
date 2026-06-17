@@ -16,8 +16,8 @@ sim = ImpactX()
 # set numerical parameters and IO control
 sim.max_level = 0
 sim.n_cell = [32, 32, 1]
-sim.blocking_factor_x = [4]
-sim.blocking_factor_y = [4]
+sim.blocking_factor_x = [16]
+sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [1]
 
 sim.particle_shape = 2  # B-spline order
@@ -43,7 +43,7 @@ npart = 10000  # number of macro particles (outside tests, use 1e5 or more)
 #   reference particle
 ref = sim.beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
-qm_eev = 1.0 / 938.27208816 / 1e6  # electron charge/mass in e / eV
+qm_eev = ref.charge_qe / (ref.mass_MeV * 1.0e6)  # electron charge/mass in e / eV
 
 #   particle bunch
 distr = distribution.KVdist(

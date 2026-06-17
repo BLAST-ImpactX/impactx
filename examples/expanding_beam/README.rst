@@ -144,7 +144,7 @@ Run
 
 This example can be run as:
 
-* **Python** script: ``python3 run_expanding_fft_2D.py`` or
+* **Python** script: ``python3 run_expanding_fft_2D_test_particles.py`` or
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 

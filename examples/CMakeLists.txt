@@ -2105,7 +2105,7 @@ add_impactx_test(expanding-fft-2d-test-particles-1slice.py
     examples/expanding_beam/analysis_expanding_fft_2D_test_particles_1slice.py
     OFF
 )
-label_impactx_test(expanding-fft-2d-test-particles.py slow)
+label_impactx_test(expanding-fft-2d-test-particles-1slice.py slow)
 
 # Momentum Kick in the 2.5D Gaussian Space Charge Model ###################
 add_impactx_test(kick-Gauss2p5D.py

@@ -42,7 +42,7 @@ npart = 100000  # number of macro particles (outside tests, use 1e5 or more)
 #   reference particle
 ref = sim.beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
-qm_eev = 1.0 / 938.27208816 / 1e6  # electron charge/mass in e / eV
+qm_eev = ref.charge_qe / (ref.mass_MeV * 1.0e6)  # electron charge/mass in e / eV
 
 #   particle bunch
 distr = distribution.KVdist(

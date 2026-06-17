@@ -4,6 +4,10 @@
 
 ImpactX is a high-performance beam dynamics code for particle accelerators with collective effects, the next generation of the IMPACT-Z code. It is built on top of AMReX (adaptive mesh refinement framework) and shares the ABLASTR abstraction layer with WarpX. Particle tracking uses the reference trajectory path length `s` as the independent variable, with symplectic integrators and self-fields (space charge, CSR, wakefields). It runs on CPU/OpenMP, CUDA, HIP, and SYCL backends.
 
+## Domain Context
+
+Reference `docs/source/glossary.rst` as context for WarpX terminology, acronyms, and physics concepts.
+
 ## Development Environment
 
 If you cannot find the `cmake` or `ctest` command, activate the conda environment named `impactx-cpu-mpich-dev` before running shell commands that compile or test ImpactX.

@@ -78,7 +78,8 @@ namespace impactx::elements
          * @param K5 Fringe field integral (unitless).
          * @param K6 Fringe field integral (unitless).
          * @param model Fringe field model (linear or nonlinear).
-         * @param location Fringe field location (entry or exit)
+         * @param location Fringe field location (entry or exit).
+         * @param modify_ref_part Apply fringe field to the reference particle (boolean).
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -98,6 +99,7 @@ namespace impactx::elements
             amrex::ParticleReal K6,
             dipedge::Model model,
             dipedge::Location location,
+            bool modify_ref_part = false,
             amrex::ParticleReal dx = 0,
             amrex::ParticleReal dy = 0,
             amrex::ParticleReal rotation_degree = 0,
@@ -105,11 +107,15 @@ namespace impactx::elements
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
-          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_location(location)
+          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_location(location), m_modify_ref_part(modify_ref_part)
         {
         }
 
-        /** Reverse the element (negate psi and K2, swap entry/exit) */
+        /** Reverse the element (negate psi and K2, swap entry/exit)
+         *
+         * @todo the m_modify_ref_part=true parameter is not yet handled
+         *       see https://github.com/BLAST-ImpactX/impactx/pull/1431
+         */
         void reverse ()
         {
             m_psi = -m_psi;
@@ -185,7 +191,7 @@ namespace impactx::elements
          *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t (unchanged)
+         * @param t particle position in t (unchanged by the linear model)
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t (unchanged)
@@ -197,11 +203,11 @@ namespace impactx::elements
         void operator() (
             T_Real & AMREX_RESTRICT x,
             T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -209,9 +215,6 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             if (m_model == dipedge::Model::linear) {
                // apply linear model
@@ -224,7 +227,7 @@ namespace impactx::elements
                T_Real yout = y;
                T_Real pyout = py;
                T_Real tout = t;
-               T_Real ptout = pt;
+               // T_Real ptout = pt;
 
                // compute particle momentum deviation delta + 1 (reciprocal)
                T_Real const inv_delta1 = 1_prt / sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
@@ -262,20 +265,72 @@ namespace impactx::elements
                tout = t - dDelta_dpt * inv_delta1 * ((c2 + c3*m_c5)*x + (c10*m_c5 + c8)*powi<3>(x) - c7*powi<2>(y) - c12*powi<4>(y)
                       + (c10*m_c5 - c11*m_c5 - c9)*x*powi<2>(y) + pxout*(-c3 + (c11 + c10)*powi<2>(y) - c10*powi<2>(x)) + 2_prt*pyout*c10*x*y);
 
+               // optional removal of reference particle shift
+               amrex::ParticleReal const c2_ref = m_c2_times_1plusdelta;
+               amrex::ParticleReal const c3_ref = m_c3_times_1plusdelta;
+               T_Real const dx_ref = (m_modify_ref_part) ? -c3_ref : 0_prt;
+               T_Real const dpx_ref = (m_modify_ref_part) ? m_c13 - c2_ref - c3_ref*m_c5 : 0_prt;
+               T_Real const dt_ref = -c3_ref * dpx_ref / m_beta;
+               xout -= dx_ref;
+               pxout -= dpx_ref;
+               tout -= dt_ref;
+
                x = xout;
                px = pxout;
                y = yout;
                py = pyout;
                t = tout;
-               pt = ptout;
+               // pt = ptout;
             }
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
-        /** This pushes the reference particle. */
-        using Thin::operator();
+
+        /** This pushes the reference particle.
+         *
+         * @param[in,out] refpart reference particle
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // assign input reference particle values
+            amrex::ParticleReal const x = refpart.x;
+            amrex::ParticleReal const z = refpart.z;
+            amrex::ParticleReal const t = refpart.t;
+            amrex::ParticleReal const px = refpart.px;
+            amrex::ParticleReal const pz = refpart.pz;
+            amrex::ParticleReal const pt = refpart.pt;
+
+            if (m_modify_ref_part && m_model == dipedge::Model::nonlinear) {
+                // calculate expensive terms
+                amrex::ParticleReal const loc = m_location == dipedge::Location::entry ? 1_prt : -1_prt;
+                auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
+                amrex::ParticleReal const tan_psi = sin_psi/cos_psi;
+                amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
+                amrex::ParticleReal const c2_ref = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
+                amrex::ParticleReal const c3_ref = loc * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
+                amrex::ParticleReal const c5_ref = tan_psi / (2_prt * m_rc);
+                amrex::ParticleReal const c13_ref = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
+
+                amrex::ParticleReal const pnorm = std::sqrt(pt*pt-1_prt);
+                amrex::ParticleReal const dx_ref = -c3_ref;
+                amrex::ParticleReal const dpx_ref = c13_ref - c2_ref - c3_ref*c5_ref;
+                amrex::ParticleReal const dpz_ref = pnorm*(-1_prt + std::sqrt(1_prt - powi<2>(dpx_ref/pnorm)));
+                amrex::ParticleReal const dt_ref = -c3_ref * dpx_ref / refpart.beta();
+
+                // advance position and momentum
+                refpart.x = x + (pz/pnorm)*dx_ref;
+                refpart.z = z - (px/pnorm)*dx_ref;
+                refpart.t = t + dt_ref;
+                refpart.px = px + (pz/pnorm)*dpx_ref + (px/pnorm)*dpz_ref;
+                refpart.pz = pz - (px/pnorm)*dpx_ref + (pz/pnorm)*dpz_ref;
+                // refpart.pt = pt;  // Unchanged
+            }
+
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -310,7 +365,8 @@ namespace impactx::elements
             R(2,1) = R21;
             R(4,3) = R43;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_psi; //! pole face angle in rad
@@ -326,6 +382,7 @@ namespace impactx::elements
         amrex::ParticleReal m_K6; //! fringe field integral
         dipedge::Model m_model; //! fringe field model: linear or nonlinear
         dipedge::Location m_location; //! fringe field location: entry, or exit
+        bool m_modify_ref_part; //! apply fringe field to reference particle (true/false)
 
       private:
         // constants that are independent of the individually tracked particle,

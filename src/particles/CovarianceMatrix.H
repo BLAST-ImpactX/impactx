@@ -54,6 +54,16 @@ namespace impactx
         CovarianceMatrix m_env; ///< the 6x6 beam covariance matrix
         amrex::ParticleReal m_beam_intensity = 0.0; ///< optional: charge in A (for 3D space charge) or current in A (for 2D space charge)
 
+        Envelope () = default;
+
+        Envelope (
+            CovarianceMatrix const & env,
+            amrex::ParticleReal const beam_intensity
+        )
+          : m_env(env), m_beam_intensity(beam_intensity)
+        {
+        }
+
         /** Set envelope beam charge/current for 3D/2D space charge
          *
          * @param intensity beam charge (C) in 3D or beam current (A) in 2D

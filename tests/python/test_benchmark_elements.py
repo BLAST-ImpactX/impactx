@@ -20,7 +20,7 @@ import pytest
 from impactx import ImpactX, Map6x6, distribution, elements, twiss
 
 # benchmark config
-if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == 1:
+if os.environ.get("IS_CODESPEED_CPU_SIMULATION") == "1":
     # https://codspeed.io/docs/instruments/cpu/index
     rounds = 1
     npart = 10_000
@@ -126,6 +126,7 @@ def pc_setup(sim):
     return (beam,), {}
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Aperture(benchmark, sim):
     el = elements.Aperture(
         name="collimator", aperture_x=4.0e-5, aperture_y=4.0e-5, shape="rectangular"
@@ -150,6 +151,7 @@ def test_ChrDrift(benchmark, sim):
     benchmark.pedantic(chrdrift.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrPlasmaLens(benchmark, sim):
     el = elements.ChrPlasmaLens(
         name="q1", ds=0.331817852986604588, k=2.98636067687944129, unit=0, nslice=nslice
@@ -170,6 +172,7 @@ def test_ChrAcc(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+# Spin is not affected by this element, no need to test variant
 def test_ConstF(benchmark, sim):
     el = elements.ConstF(name="constf1", ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -194,22 +197,23 @@ def test_Drift(benchmark, sim):
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
-def test_ExactDrift(benchmark, sim):
-    el = elements.ExactDrift(name="drift1", ds=0.25, nslice=nslice)
-    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
-
-
 def test_ExactCFbend(benchmark, sim):
     el = elements.ExactCFbend(
         name="cfbend1",
         ds=1.0,
-        k_normal=[0.1, 0.0],
-        k_skew=[0.0, 0.0],
+        k_normal=[0.1, 1.0, -2.0],
+        k_skew=[0.0, -0.5, 1.4],
         unit=0,
         int_order=2,
         mapsteps=mapsteps,
         nslice=nslice,
     )
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_ExactDrift(benchmark, sim):
+    el = elements.ExactDrift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
@@ -283,20 +287,24 @@ def test_PlaneXYRot(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_PolygonAperture(benchmark, sim):
+    # cross-shaped polygon, scaled from examples/polygon_aperture to the
+    # ~3.2e-5 m rms beam size of the sim fixture; min_radius2=0 so that
+    # every particle exercises the full polygon winding computation
     vertices_x = [
         float(u)
-        for u in "0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3 1.5e-3 1.5e-3 0.5e-3".split()
+        for u in "2e-5 2e-5 -2e-5 -2e-5 -6e-5 -6e-5 -2e-5 -2e-5 2e-5 2e-5 6e-5 6e-5 2e-5".split()
     ]
     vertices_y = [
         float(u)
-        for u in "0.5e-3 1.5e-3 1.5e-3 0.5e-3 0.5e-3 -0.5e-3 -0.5e-3 -1.5e-3 -1.5e-3 -0.5e-3 -0.5e-3 0.5e-3 0.5e-3".split()
+        for u in "2e-5 6e-5 6e-5 2e-5 2e-5 -2e-5 -2e-5 -6e-5 -6e-5 -2e-5 -2e-5 2e-5 2e-5".split()
     ]
     el = elements.PolygonAperture(
-        name="polyap",
+        name="collimator2",
         vertices_x=vertices_x,
         vertices_y=vertices_y,
-        min_radius2=2 * 0.5e-3**2,
+        min_radius2=0.0,
         action="transmit",
     )
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -515,6 +523,7 @@ def test_Sol(benchmark, sim):
 #     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_TaperedPL(benchmark, sim):
     focal_length = 0.5  # focal length in m
     dtaper = 11.488289081903567  # 1/(horizontal dispersion in m)

@@ -16,6 +16,7 @@
 #include "mixin/beamoptic.H"
 #include "mixin/dynamicdata.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
@@ -54,7 +55,8 @@ namespace impactx::elements
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::NoFinalize,
-      public mixin::PipeAperture
+      public mixin::PipeAperture,
+      public mixin::SpinTransport
     {
         static constexpr auto type = "ExactCFbend";
         using PType = ImpactXParticleContainer::ParticleType;
@@ -162,7 +164,6 @@ namespace impactx::elements
 
             // arc length and angle of the current slice
             m_slice_ds = m_ds / nslice();
-
         }
 
         /** This is an ExactCFbend functor, so that a variable of this type can be used like an ExactCFbend function.
@@ -176,7 +177,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
@@ -186,14 +187,11 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT px,
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            [[maybe_unused]] uint64_t const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
@@ -207,11 +205,11 @@ namespace impactx::elements
 
             // call integrator to advance through slice (int_order = 2 or 4, otherwise default 2)
             if (m_int_order == 2) {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else if (m_int_order == 4) {
-                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else if (m_int_order == 6) {
-                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             }
 
             // assign updated values
@@ -221,12 +219,6 @@ namespace impactx::elements
             py = particle(4);
             t = particle(5);
             pt = particle(6);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes a particle in an ExactMultipole element through
@@ -236,11 +228,13 @@ namespace impactx::elements
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map1 (amrex::ParticleReal const tau,
                    amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace amrex::Math;  // for powi
@@ -337,11 +331,13 @@ namespace impactx::elements
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map2 (amrex::ParticleReal const tau,
                    amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace amrex::Math;  // for powi
@@ -381,11 +377,9 @@ namespace impactx::elements
 
                int n = m+1;  // multipole order
 
-               //amrex::Print() << "n, kn, ks before scaling: " << n << ", " << kn << ", " << ks << "\n";
-
                // define dimensionless multipole coefficients (scaled by radius of curvature)
-               kn = std::pow(m_rc, m) * kn;
-               ks = std::pow(m_rc, m) * ks;
+               kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
+               ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
 
                switch (n) {
 
@@ -406,7 +400,6 @@ namespace impactx::elements
                             -1_prt/12_prt*y_scl*rho*(3_prt + 2_prt*y_scl*y_scl - 3_prt*rho*rho + 6_prt*ln_rho)*ks;
                      dpy += -1_prt/12_prt*y_scl*(-3_prt + 2_prt*y_scl*y_scl + 3_prt*rho*rho - 6_prt*rho*rho*ln_rho)*kn
                             -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
-                     //amrex::Print() << "x, y, dpx, dpy = " << x << ", " << y << ", " << dpx << ", " << dpy << "\n";
                      break;
                   case 5:  // decapole-like contribution
                      dpx += -1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
@@ -437,6 +430,158 @@ namespace impactx::elements
             particle(6) = ptout;
 
             zeval += tau;
+        }
+
+
+        /** This pushes particle spin in an ExactCFbend element over a
+         *  single step of size tau, based on the Thomas-BMT equation.
+         *
+         * @param tau Map step size in m
+         * @param[in,out] particle particle phase space 6-vector
+         * @param[in,out] particle_spin particle spin 3-vector
+         * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
+         */
+        template<typename T_Real>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void map3 (amrex::ParticleReal const tau,
+                   amrex::SmallVector<T_Real, 6, 1> & particle,
+                   amrex::SmallVector<T_Real, 3, 1> & particle_spin,
+                   amrex::ParticleReal & zeval,
+                   RefPart const & AMREX_RESTRICT refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
+            using amrex::Math::powi;
+
+            // reference particle relativistic factors
+            amrex::ParticleReal const gamma_ref = refpart.gamma();
+            amrex::ParticleReal const gyro_anomaly = refpart.gyromagnetic_anomaly;
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            T_Real const x = particle(1);
+            T_Real const px = particle(2);
+            T_Real const y = particle(3);
+            T_Real const py = particle(4);
+            //T_Real const t = particle(5); // not used
+            T_Real const pt = particle(6);
+            T_Real sx = particle_spin(1);
+            T_Real sy = particle_spin(2);
+            T_Real sz = particle_spin(3);
+
+#if AMREX_DEVICE_COMPILE
+            const amrex::ParticleReal *const k_normal = m_k_normal_d_data;
+            const amrex::ParticleReal *const k_skew = m_k_skew_d_data;
+#else
+            const amrex::ParticleReal *const k_normal = m_k_normal_h_data;
+            const amrex::ParticleReal *const k_skew = m_k_skew_h_data;
+#endif
+
+            // defined dimensionless variables scaled by radius of curvature
+            amrex::ParticleReal rho = 1_prt + x / m_rc;
+            amrex::ParticleReal y_scl = y / m_rc;
+            amrex::ParticleReal ln_rho = std::log(rho);
+
+            // Initialization of magnetic field variables:
+            T_Real Bx = 0_prt;
+            T_Real By = 0_prt;
+            T_Real Bz = 0_prt;
+
+            // loop over array of multipole coefficients
+            // NOTE:  Here we start at m = 0 in order to include the dipole contribution to the spin
+            for (int m = 0; m < m_ncoef; m++) {
+
+               // normalize units to MAD-X convention if needed
+               amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
+               amrex::ParticleReal ks = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
+
+               int n = m+1;  // multipole order
+
+               // define dimensionless multipole coefficients (scaled by radius of curvature)
+               kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
+               ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
+
+               // Below, we use the consistency relationships Bx = dpy/rho and By = -dpx/rho.  See T. Zolkin, PRAB 20, 043501 (2017).
+
+               switch (n) {
+
+                  case 1:   // dipole-like contribution (not used - contributing to map 1)
+                     Bx += ks;
+                     By += rho * kn;
+                     break;
+                  case 2:   // quadrupole-like contribution
+                     Bx += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks;
+                     By += -(-rho*ln_rho*kn + y_scl*rho*ks);
+                     break;
+                  case 3:  // sextupole-like contribution
+                     Bx += 0.5_prt*y_scl*(rho*rho - 1_prt)*kn + 0.25_prt*(1_prt - 2_prt*y_scl*y_scl - rho*rho + 2_prt*rho*rho*ln_rho)*ks;
+                     By += -(0.25_prt*rho*(1_prt + 2_prt*y_scl*y_scl - rho*rho + 2_prt*ln_rho)*kn + y_scl*rho*ln_rho*ks);
+                     break;
+                  case 4:  // octupole-like contribution
+                     Bx += -1_prt/12_prt*y_scl*(-3_prt + 2_prt*y_scl*y_scl + 3_prt*rho*rho - 6_prt*rho*rho*ln_rho)*kn
+                            -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
+                     By += -(-0.25_prt*(rho - powi<3>(rho) + (rho - 2_prt*y_scl*y_scl*rho + powi<3>(rho))*ln_rho)*kn
+                            -1_prt/12_prt*y_scl*rho*(3_prt + 2_prt*y_scl*y_scl - 3_prt*rho*rho + 6_prt*ln_rho)*ks);
+                     break;
+                  case 5:  // decapole-like contribution
+                     Bx += -1_prt/48_prt*y_scl*((-1_prt + rho*rho)*(4_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho)) + 12_prt*rho*rho*ln_rho)*kn
+                            + 1_prt/192_prt*(3_prt + 8_prt*powi<4>(y_scl) + 12_prt*rho*rho
+                            - 15_prt*powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
+                            +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
+                     By += -(-1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
+                            + 3_prt*(-5_prt + 4_prt*powi<2>(rho) + powi<4>(rho))
+                            +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
+                            +1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks);
+                     break;
+               }
+
+            }
+
+            // Scaling magnetic field to units used in the T-BMT representation (e.g. q*B/mc).
+
+            Bx = Bx * m_beta * gamma_ref / rho;
+            By = By * m_beta * gamma_ref / rho;
+
+            // Electric field normalized by q/mc^2:
+            T_Real const Ex = 0.0_prt;
+            T_Real const Ey = 0.0_prt;
+            T_Real const Ez = 0.0_prt;
+
+            // Quantities required to evaluate the full Thomas-BMT precession vector.
+            T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
+            T_Real const iPnorm = 1_prt/Pnorm;
+            T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
+            T_Real const gamma = gamma_ref * (1_prt - pt*m_beta);
+            T_Real const ux = px * iPnorm;
+            T_Real const uy = py * iPnorm;
+            T_Real const uz = Ps * iPnorm;
+
+            // Design-orbit curvature
+            amrex::ParticleReal const h = 1_prt/m_rc;
+
+            // Evaluation of the full Thomas-BMT precession vector.
+            tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+
+            // Generator of the spin rotation for a single step
+            lambdax *= tau;
+            lambday *= tau;
+            lambdaz *= tau;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // update the spin variables
+            particle_spin(1) = sx;
+            particle_spin(2) = sy;
+            particle_spin(3) = sz;
+
+            // The coordinates and momenta are not affected.
+
+            zeval += 0_prt;
         }
 
 
@@ -575,8 +720,73 @@ namespace impactx::elements
                 slice_ds * ibetgam2 + (sinx  - omega_x * slice_ds) * igobr :
                 slice_ds * ibetgam2 + (sinhx - omega_x * slice_ds) * igobr;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
+
+
+        /** This operator pushes the particle spin.
+         *
+         * @param[in,out] x particle position in x
+         * @param[in,out] y particle position in y
+         * @param[in,out] t particle position in t
+         * @param[in,out] px particle momentum in x
+         * @param[in,out] py particle momentum in y
+         * @param[in,out] pt particle momentum in t
+         * @param[in,out] sx particle spin x-component
+         * @param[in,out] sy particle spin y-component
+         * @param[in,out] sz particle spin z-component
+         * @param[in,out] idcpu particle global index (unused)
+         * @param[in] refpart reference particle
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // numerical integration parameters
+            amrex::ParticleReal const zin = 0_prt;
+            amrex::ParticleReal const zout = m_slice_ds;
+            int const nsteps = m_mapsteps;
+
+            // initialize phase space 6-vector
+            amrex::SmallVector<T_Real, 6, 1> particle{
+                x, px, y, py, t, pt
+            };
+
+            // initialize spin 3-vector
+            amrex::SmallVector<T_Real, 3, 1> particle_spin{
+                sx, sy, sz
+            };
+
+            // call integrator to advance through slice
+            integrators::symp_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,m_int_order,refpart,*this);
+
+            // assign updated values
+            x = particle(1);
+            px = particle(2);
+            y = particle(3);
+            py = particle(4);
+            t = particle(5);
+            pt = particle(6);
+            sx = particle_spin(1);
+            sy = particle_spin(2);
+            sz = particle_spin(3);
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

@@ -401,3 +401,150 @@ The analysis can be run using the following script:
    .. literalinclude:: analysis_exact_quad_spin_scaling.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_exact_quad_spin_scaling.py``.
+
+
+.. _examples-multipole-spin:
+
+Spin Tracking in a Multipole
+============================
+
+The example illustrates particle tracking with spin in both a thin multipole (Multipole) and a thick multipole (ExactMultipole).
+
+This example tests general multipole spin tracking in two ways.  First, tracking through an ExactQuad is compared against tracking through an ExactMultipole, with the same
+quadrupole strength.  To achieve this, forward tracking through the ExactMultipole is followed by reverse tracking through an ExactQuad of the same length.
+
+Second, tracking through an ExactMultipole with a short value of length is compared against tracking through a thin Multipole element, using the same method.
+
+In this test, the initial and final values of the beam moments :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must coincide.
+
+At the same time, the initial and final spin components :math:`s_x`, :math:`s_y`, and :math:`s_z` are compared for all particles.
+The norm of the change in the spin vector must be zero to, within a small tolerance.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_multipole_spin.py`` or
+* ImpactX **executable** using an input file: ``impactx input_multipole_spin.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_multipole_spin.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_multipole_spin.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_multipole_spin.in
+          :language: ini
+          :caption: You can copy this file from ``examples/spin_tracking/input_multipole_spin.in``.
+
+
+Analyze
+-------
+
+The analysis can be run using the following script:
+
+
+.. dropdown:: Script ``analysis_multipole_spin.py``
+
+   .. literalinclude:: analysis_multipole_spin.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_multipole_spin.py``.
+
+
+.. _examples-exact-sbend-spin-scaling:
+
+Scaling Test of Spin in an Exact Sector Bend
+============================================
+
+This example tests the propagation of spin through the :py:class:`~impactx.elements.ExactSbend` element.
+
+The :py:class:`~impactx.elements.ExactSbend` element incorporates the full nonlinear phase space dependence appearing in both the Hamiltonian and the Thomas-BMT equations for tracking.
+
+A small number of initial conditions are tracked, with increasing distance from the phase space design point.
+
+The final spin variables are compared against those obtained by tracking using the Sbend element, which treats both orbit and spin variables to first order in the phase space variables.
+
+In this test, a scaling exponent is extracted when comparing the vector-norm of difference in final spin with the vector-norm of the initial phase space vector.  This exponent should be 2 (in the limit of small deviation).
+
+
+Run
+---
+
+This example can be run as:
+
+* **Python** script: ``python3 run_exact_sbend_spin_scaling.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_exact_sbend_spin_scaling.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_exact_sbend_spin_scaling.py``.
+
+Analyze
+-------
+
+The analysis can be run using the following script:
+
+.. dropdown:: Script ``analysis_exact_sbend_spin_scaling.py``
+
+   .. literalinclude:: analysis_exact_sbend_spin_scaling.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_exact_sbend_spin_scaling.py``.
+
+
+.. _examples-exact-cfbend-spin-scaling:
+
+Scaling Test of Spin in an Exact Combined Function Bend
+=======================================================
+
+This example tests the propagation of spin through the :py:class:`~impactx.elements.ExactCFbend` element.
+
+The :py:class:`~impactx.elements.ExactCFbend` element incorporates the full nonlinear phase space dependence appearing in both the Hamiltonian and the Thomas-BMT equations for tracking.
+
+A small number of initial conditions are tracked, with increasing distance from the phase space design point.
+
+The final spin variables are compared against those obtained by tracking using the Sbend element, which treats both orbit and spin variables to first order in the phase space variables.
+
+In this test, a scaling exponent is extracted when comparing the vector-norm of difference in final spin with the vector-norm of the initial phase space vector.  This exponent should be 2 (in the limit of small deviation).
+
+
+
+Run
+---
+
+This example can be run as:
+
+* **Python** script: ``python3 run_cfbend_spin_scaling.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_cfbend_spin_scaling.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_cfbend_spin_scaling.py``.
+
+Analyze
+-------
+
+The analysis can be run using the following script:
+
+.. dropdown:: Script ``analysis_cfbend_spin_scaling.py``
+
+   .. literalinclude:: analysis_cfbend_spin_scaling.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_cfbend_spin_scaling.py``.

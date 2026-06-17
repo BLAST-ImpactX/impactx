@@ -134,6 +134,7 @@ namespace detail
                        int nslice_default,
                        [[maybe_unused]] int mapsteps_default)
     {
+        using namespace amrex::literals; // for _prt
         using namespace elements;
 ;
         // Check the element type
@@ -188,13 +189,14 @@ namespace detail
             amrex::ParticleReal R = 1;
             std::string model_str = "linear";    // default
             std::string location_str = "entry";  // default
+            bool modify_ref_part = false;        // default
 
             // The default values below are from eq (52) of K. Hwang and S. Y. Lee (2015)
             amrex::ParticleReal pi = ablastr::constant::math::pi;
-            amrex::ParticleReal K0 = pi*pi / 6.0;
+            amrex::ParticleReal K0 = pi*pi / 6.0_prt;
             amrex::ParticleReal K1 = 0;
             amrex::ParticleReal K2 = 1;
-            amrex::ParticleReal K3 = 1.0/6.0;
+            amrex::ParticleReal K3 = 1.0_prt/6.0_prt;
             amrex::ParticleReal K4 = 0;
             amrex::ParticleReal K5 = 0;
             amrex::ParticleReal K6 = 0;
@@ -214,12 +216,13 @@ namespace detail
             dipedge::Model const model = amrex::getEnum<dipedge::Model>(model_str);
             pp_element.queryAdd("location", location_str);
             dipedge::Location const location = amrex::getEnum<dipedge::Location>(location_str);
+            pp_element.queryAdd("modify_ref_part", modify_ref_part);
 
             if (R <= 0) {
                 throw std::runtime_error(element_name + ".R must be >0 but is: " + std::to_string(R));
             }
 
-            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, modify_ref_part, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "quadedge")
         {
             auto a = detail::query_alignment(pp_element);
@@ -597,9 +600,9 @@ element_name) );
                 pp_element.queryAddWithParser("alpha", alpha);
                 amrex::ParticleReal beta = 1.0;
                 pp_element.queryAddWithParser("beta", beta);
-                amrex::ParticleReal tn = 0.4;
+                amrex::ParticleReal tn = 0.4_prt;
                 pp_element.queryAddWithParser("tn", tn);
-                amrex::ParticleReal cn = 0.01;
+                amrex::ParticleReal cn = 0.01_prt;
                 pp_element.queryAddWithParser("cn", cn);
             }
 

@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 26.04)
+project(ImpactX VERSION 26.05)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -32,9 +32,9 @@ endif()
 
 # C++ Standard in Superbuilds #################################################
 #
-# This is the easiest way to push up a C++17 requirement for AMReX and
+# This is the easiest way to push up a C++20 requirement for AMReX and
 # openPMD-api until they increase their requirement.
-set_cxx17_superbuild()
+set_cxx20_superbuild()
 
 
 # CCache Support ##############################################################
@@ -72,6 +72,12 @@ option(ImpactX_MPI           "Multi-node support (message-passing)"         ON)
 option(ImpactX_SIMD          "CPU SIMD Acceleration"                        OFF)
 option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
+
+# Specialize the particle push into branch-free paths for aligned vs. misaligned
+# elements (selected at runtime). This doubles the compile time of the element
+# pushes. Set to OFF to compile a single, always-on shift/rotate path instead.
+option(ImpactX_OPTIMIZE_ALIGNMENT "Branch-free push paths for aligned/misaligned elements (OFF halves element-push compile time)" ON)
+mark_as_advanced(ImpactX_OPTIMIZE_ALIGNMENT)
 
 set(ImpactX_PRECISION_VALUES SINGLE DOUBLE)
 set(ImpactX_PRECISION DOUBLE CACHE STRING "Floating point precision (SINGLE/DOUBLE)")
@@ -276,15 +282,9 @@ unset(_BUILDINFO_SRC)
 # add sources
 add_subdirectory(src)
 
-# C++ properties: at least a C++17 capable compiler is needed
+# C++ properties: at least a C++20 capable compiler is needed
 foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-    if(ImpactX_SIMD)
-        # vir::cvt
-        # https://github.com/mattkretz/vir-simd/issues/45
-        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
-    else()
-        target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
-    endif()
+    target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
 endforeach()
 set_target_properties(${_ALL_TARGETS} PROPERTIES
     CXX_EXTENSIONS OFF
@@ -330,7 +330,7 @@ if(ImpactX_COMPUTE STREQUAL CUDA)
     endforeach()
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
         foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-            target_compile_features(${ImpactX_tgt} PUBLIC cuda_std_17)
+            target_compile_features(${ImpactX_tgt} PUBLIC cuda_std_20)
         endforeach()
         set_target_properties(${_ALL_TARGETS} PROPERTIES
             CUDA_EXTENSIONS OFF
@@ -350,6 +350,9 @@ if(ImpactX_FFT)
 endif()
 if(ImpactX_OPENPMD)
     target_compile_definitions(lib PUBLIC ImpactX_USE_OPENPMD)
+endif()
+if(ImpactX_OPTIMIZE_ALIGNMENT)
+    target_compile_definitions(lib PUBLIC ImpactX_OPTIMIZE_ALIGNMENT)
 endif()
 if(ImpactX_PYTHON)
     # for module __version__

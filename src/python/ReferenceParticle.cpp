@@ -33,7 +33,6 @@ void init_refparticle(py::module& m)
         .def_readwrite("gyromagnetic_anomaly", &RefPart::gyromagnetic_anomaly, "reference particle gyromagnetic anomaly [unitless]")
 
         .def_readwrite("sedge", &RefPart::sedge, "value of s at entrance of the current beamline element")
-        .def_readwrite("map", &RefPart::map, "linearized map")
 
         .def_property_readonly("charge_qe", &RefPart::charge_qe, "Get reference particle charge (positive elementary charge)")
         .def_property_readonly("gamma", &RefPart::gamma, "Get reference particle relativistic gamma")

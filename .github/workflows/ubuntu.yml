@@ -115,9 +115,14 @@ jobs:
     if: github.event.pull_request.draft == false
     env:
       CMAKE_GENERATOR: Ninja
-      CXXFLAGS: "-Werror"
+      CXXFLAGS: "-Werror -march=x86-64-v3 -mtune=generic"
       OMP_NUM_THREADS: 2
     steps:
+    - name: system info
+      run: |
+        cat /proc/cpuinfo
+        lscpu
+
     - name: Free More Disk Space
       uses: ax3l/free-disk-space@main
       with:
@@ -156,7 +161,7 @@ jobs:
       run: |
         cmake -S . -B build            \
           -DBUILD_SHARED_LIBS=ON       \
-          -DCMAKE_BUILD_TYPE=Debug     \
+          -DCMAKE_BUILD_TYPE=Release   \
           -DCMAKE_INSTALL_PREFIX=$HOME/.local  \
           -DCMAKE_VERBOSE_MAKEFILE=ON  \
           -DImpactX_FFT=ON             \
@@ -176,11 +181,11 @@ jobs:
         export PATH=$HOME/.local/bin:$PATH
         export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 
-        impactx.NOMPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 1 || \
+        impactx.NOMPI.OMP.DP.OPMD examples/fodo/input_fodo.in algo.particle_shape = 1 || \
         { cat Backtrace.0.0; exit 1; }
-        impactx.NOMPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 2 || \
+        impactx.NOMPI.OMP.DP.OPMD examples/fodo/input_fodo.in algo.particle_shape = 2 || \
         { cat Backtrace.0.0; exit 1; }
-        impactx.NOMPI.OMP.DP.OPMD.DEBUG examples/fodo/input_fodo.in algo.particle_shape = 3 || \
+        impactx.NOMPI.OMP.DP.OPMD examples/fodo/input_fodo.in algo.particle_shape = 3 || \
         { cat Backtrace.0.0; exit 1; }
 
     - name: run installed python module
@@ -194,9 +199,12 @@ jobs:
       env:
         OMP_NUM_THREADS: 1
         IS_CODESPEED_CPU_SIMULATION: 1
+        # Force uniform glibc CPU dispatch so malloc/memcpy behave identically across Intel/AMD runner CPUs
+        # Ref: https://codspeed.io/blog/why-glibc-faster-github-actions
+        GLIBC_TUNABLES: glibc.cpu.hwcaps=-AVX2,-AVX_Fast_Unaligned_Load,-ERMS,-Prefer_FSRM
       with:
         mode: simulation
-        run: pytest tests/python/test_benchmark_elements.py --codspeed
+        run: pytest tests/python/test_benchmark_elements.py tests/python/test_benchmark_space_charge.py --codspeed
 
     - name: validate created openPMD files
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}

@@ -31,6 +31,8 @@ namespace impactx::elements::diagnostics
         ImpactXParticleContainer & pc
     )
     {
+        using namespace amrex::literals; // for _prt
+
         // Parse the diagnostic parameters
         amrex::ParmParse pp_element(element_name);
 
@@ -45,10 +47,10 @@ namespace impactx::elements::diagnostics
         amrex::ParticleReal beta = 1.0;
         pp_element.queryAddWithParser("beta", beta);
 
-        amrex::ParticleReal tn = 0.4;
+        amrex::ParticleReal tn = 0.4_prt;
         pp_element.queryAddWithParser("tn", tn);
 
-        amrex::ParticleReal cn = 0.01;
+        amrex::ParticleReal cn = 0.01_prt;
         pp_element.queryAddWithParser("cn", cn);
 
         using impactx::diagnostics::NonlinearLensInvariants;

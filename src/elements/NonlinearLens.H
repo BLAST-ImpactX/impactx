@@ -35,7 +35,7 @@ namespace impactx::elements
     struct NonlinearLens
     : public mixin::Named,
       public mixin::BeamOptic<NonlinearLens>,
-      public mixin::LinearTransport<NonlinearLens, false>,
+      public mixin::LinearTransport<NonlinearLens>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::NoFinalize
@@ -102,23 +102,23 @@ namespace impactx::elements
          *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t
+         * @param t particle position in t (unused)
          * @param px particle momentum in x
          * @param py particle momentum in y
-         * @param pt particle momentum in t
+         * @param pt particle momentum in t (unused)
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -128,20 +128,17 @@ namespace impactx::elements
             // a complex type with two T_Real
             using Complex = amrex::GpuComplex<T_Real>;
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // access reference particle values to find (beta*gamma)^2
             //amrex::ParticleReal const pt_ref = refpart.pt;
             //amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
             // initialize output values
-            T_Real xout = x;
-            T_Real yout = y;
-            T_Real tout = t;
+            // T_Real xout = x;
+            // T_Real yout = y;
+            // T_Real tout = t;
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real ptout = pt;
 
             // assign complex position zeta = (x + iy)/cnll
             Complex zeta(x, y);
@@ -174,18 +171,15 @@ namespace impactx::elements
             pyout = py + dpy;
 
             // tout = t;
-            ptout = pt;
+            // ptout = pt;
 
             // assign updated values
-            x = xout;
-            y = yout;
-            t = tout;
+            // x = xout;
+            // y = yout;
+            // t = tout;
             px = pxout;
             py = pyout;
-            pt = ptout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */
@@ -196,15 +190,47 @@ namespace impactx::elements
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * The Danilov-Nagaitsev kick implemented by @see operator() is
+         *   dpx - i*dpy = -(knll / cnll) * F'(zeta),
+         * with zeta = (x + i*y) / cnll and
+         *   F'(zeta) = zeta / (1 - zeta^2) + arcsin(zeta) / (1 - zeta^2)^(3/2).
+         * The Taylor series around zeta = 0 starts at
+         *   F'(zeta) = 2*zeta + (8/3)*zeta^3 + O(zeta^5),
+         * so the linearized map at the reference trajectory is a thin
+         * quadrupole with equal and opposite focusing strengths in the
+         * two transverse planes:
+         *   R(2,1) = -2 * knll / cnll^2,
+         *   R(4,3) = +2 * knll / cnll^2.
+         *
+         * Ideal behavior only: alignment and rotation errors, as well as
+         * feed-down from an off-axis reference orbit, are ignored; the
+         * map is evaluated at (x, y) = (0, 0).
+         *
+         * This element appears in MAD-X as type NLLENS. The linear limit
+         * above is the MAD-X linear quadrupole equivalent of the NLLENS
+         * thin kick (cf. MAD-X Physical Methods Manual, nonlinear lens).
+         *
+         * Reference: V. Danilov and S. Nagaitsev, Phys. Rev. ST Accel.
+         * Beams 13, 084002 (2010), Sect. V.A
+         *
+         * @param[in] refpart reference particle (unused)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            Map6x6 R = Map6x6::Identity();
+            // Leading 2*zeta term of F'(zeta); higher orders vanish at zero.
+            amrex::ParticleReal const k_lin = 2.0_prt * m_knll / powi<2>(m_cnll);
+            R(2,1) = -k_lin;
+            R(4,3) = +k_lin;
+
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_knll; //! integrated strength of the nonlinear lens (m)

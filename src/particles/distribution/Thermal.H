@@ -32,10 +32,12 @@ namespace impactx
 {
 namespace distribution
 {
+    using namespace amrex::literals; // for _rt and _prt at class scope
+
     struct ThermalData
     {
-        static constexpr amrex::ParticleReal tolerance = 1.0e-3; ///< tolerance for matching condition
-        static constexpr amrex::ParticleReal rin = 1.0e-10;  ///< initial r value for numerical integration
+        static constexpr amrex::ParticleReal tolerance = 1.0e-3_prt; ///< tolerance for matching condition
+        static constexpr amrex::ParticleReal rin = 1.0e-10_prt;  ///< initial r value for numerical integration
         static constexpr amrex::ParticleReal rout = 10.0;  ///< final r value for numerical integration
         static constexpr int nsteps = 2000;  ///< number of radial steps for numerical integration
 
@@ -255,7 +257,7 @@ namespace distribution
 
             // Define intermediate quantities
             amrex::ParticleReal potential = 0_prt;
-            potential = std::pow(k*r,2)*0.5_prt + c1*phi1 + c2*phi2;
+            potential = amrex::Math::powi<2>(k*r)*0.5_prt + c1*phi1 + c2*phi2;
             amrex::ParticleReal Pdensity1 = m_p1 * std::exp(-potential/T1);
             amrex::ParticleReal Pdensity2 = m_p2 * std::exp(-potential/T2);
             // amrex::ParticleReal Pdensity_tot = (1.0_prt-w)*Pdensity1 + w*Pdensity2;
@@ -264,8 +266,8 @@ namespace distribution
             // Apply map to update f1 and f2:
             m_phi1 = phi1;
             m_phi2 = phi2;
-            m_f1 = f1 + tau*4_prt*pi * std::pow(r,2)*Pdensity1;
-            m_f2 = f2 + tau*4_prt*pi * std::pow(r,2)*Pdensity2;
+            m_f1 = f1 + tau*4_prt*pi * amrex::Math::powi<2>(r)*Pdensity1;
+            m_f2 = f2 + tau*4_prt*pi * amrex::Math::powi<2>(r)*Pdensity2;
             reval = r;
         }
     };

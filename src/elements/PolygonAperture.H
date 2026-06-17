@@ -18,6 +18,7 @@
 #include "mixin/lineartransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
+#include "mixin/spintransport.H"
 #include "mixin/thin.H"
 #include "mixin/TrackedVector.H"
 
@@ -52,9 +53,10 @@ namespace impactx::elements
     struct PolygonAperture
     : public mixin::Named,
       public mixin::BeamOptic<PolygonAperture>,
-      public mixin::LinearTransport<PolygonAperture, false>,
+      public mixin::LinearTransport<PolygonAperture>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::SpinTransport,
       public mixin::NoFinalize
       // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -170,12 +172,12 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
             T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
@@ -190,9 +192,6 @@ namespace impactx::elements
             using std::abs;
             using amrex::arg;
             using VBool = decltype(x>0_prt);
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // define intermediate variables
             amrex::ParticleReal const dx = m_repeat_x * 0.5_prt;
@@ -209,14 +208,14 @@ namespace impactx::elements
 #endif
 
             // if the aperture is periodic, shift sx,sy coordinates to the fundamental domain
-            T_Real u = (m_repeat_x == 0_prt) ? sx : (fmod(abs(sx)+dx, m_repeat_x)-dx);
-            T_Real v = (m_repeat_y == 0_prt) ? sy : (fmod(abs(sy)+dy, m_repeat_y)-dy);
+            T_Real const u = (m_repeat_x == 0_prt) ? sx : (fmod(abs(sx)+dx, m_repeat_x)-dx);
+            T_Real const v = (m_repeat_y == 0_prt) ? sy : (fmod(abs(sy)+dy, m_repeat_y)-dy);
 
             // compare against the aperture boundary
             VBool inside_aperture;
 
             // calculate whether point is inside polygon or not
-            T_Real r2 = powi<2>(u) + powi<2>(v);
+            T_Real const r2 = powi<2>(u) + powi<2>(v);
             // are we inside the minimum radius?
             if (r2 < m_min_radius2) {
                 inside_aperture = VBool(true); // yes!
@@ -263,28 +262,67 @@ namespace impactx::elements
             // For absorb: invalidate if inside aperture
             auto const invalid_mask = m_action == Action::transmit ? !inside_aperture : inside_aperture;
             amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(invalid_mask);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle. */
         using Thin::operator();
+
+        /** This operator pushes the particle spin.
+         *
+         * An aperture is field-free, so the spin is unaffected.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component (unused)
+         * @param sy particle spin y-component (unused)
+         * @param sz particle spin z-component (unused)
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            T_Real const & AMREX_RESTRICT t,
+            T_Real const & AMREX_RESTRICT px,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            // spin is unaffected
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
 
         /** This function returns the linear transport map.
          *
-         * @param[in] refpart reference particle
+         * A polygon aperture (potentially) removes particles; it does not
+         * deflect or drift the beam, so the linear transport map is the
+         * identity.
+         *
+         * @param[in] refpart reference particle (unused)
          * @returns 6x6 transport matrix
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
         transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(Map6x6::Identity());
         }
 
         Action m_action; //! action type (transmit, absorb)

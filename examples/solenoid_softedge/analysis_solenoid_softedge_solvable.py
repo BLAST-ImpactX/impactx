@@ -12,6 +12,7 @@ import openpmd_api as io
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
+is_double = initial["position_x"].dtype == np.float64
 beam_final = series.iterations[last_step].particles["beam"]
 final = beam_final.to_df()
 
@@ -139,7 +140,7 @@ print(error_pyf / pyf_max)
 print(error_tf / tf_max)
 print(error_ptf / ptf_max)
 
-atol = 1.0e-7
+atol = 1.0e-7 if is_double else 1.0e-5
 print(f"  tol={atol}")
 
 assert np.allclose(

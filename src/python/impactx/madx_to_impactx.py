@@ -396,15 +396,6 @@ def lattice(
             return volt_MV
         return volt_MV / ref_mass_MeV
 
-    def normalized_rf_escale(volt_MV, ds):
-        """Convert MAD-X VOLT/L [MV/m] to ImpactX RFCavity escale [1/m]."""
-        if ref_mass_MeV is None or ref_mass_MeV <= 0.0:
-            _warn(
-                "RFCAVITY reference particle mass is unavailable; using unnormalized MAD-X VOLT/L value as a fallback."
-            )
-            return volt_MV / ds
-        return volt_MV / (ds * ref_mass_MeV)
-
     def make_bend_body_element(
         *,
         name,
@@ -1023,13 +1014,16 @@ def lattice(
             elif d["type"] == "dipedge":
                 h = d.get("h", 0.0)
                 he = d.get("he", 0.0)
-                # MAD-X stores an ENTRANCE logical on DIPEDGE (e.g., from MAKETHIN).
-                # Map directly to ImpactX DipEdge location.
-                # Note: MAD-X's ENTRANCE default is false (mad_dict.c:2957), so a
-                # hand-written DIPEDGE without an explicit ENTRANCE=true is translated
-                # as an exit edge -- this matches MAD-X's stored default but may be
-                # surprising to users who treat standalone DIPEDGE as an entry edge.
-                location = "entry" if bool(d.get("entrance", False)) else "exit"
+                # MAD-X stores an ENTRANCE logical on DIPEDGE, written only by
+                # MAKETHIN (entrance=true for the entry slice, false for the exit
+                # slice). MAD-X's own DIPEDGE map ignores it -- tmdpdg/ttdpdg call
+                # tmfrng with sig=0 and fsec=false, i.e. only the entry/exit-symmetric
+                # linear edge map (the entry/exit sign sig=+/-1 affects 2nd-order
+                # terms only). The dictionary default is false (mad_dict.c:2957), but
+                # a hand-written standalone DIPEDGE omits the flag; we label that
+                # absent case "entry" (the ImpactX DipEdge default) -- a free choice,
+                # since the linear model we emit is location-independent anyway.
+                location = "entry" if bool(d.get("entrance", True)) else "exit"
                 if abs(h) == 0.0:
                     impactx_beamline.append(elements.Marker(name=d["name"]))
                     if any(
@@ -1309,9 +1303,24 @@ def lattice(
                     )
                 )
             elif d["type"] == "rfcavity":
-                # MAD-X: volt [MV], lag [2pi], harmon [1]
-                # ImpactX ShortRF: V [1], freq [Hz], phase [deg]
-                # ImpactX RFCavity: escale [1/m], freq [Hz], phase [deg]
+                # MAD-X RFCAVITY is a *thin* RF energy kick sandwiched between two
+                # half-length drifts; its energy gain does NOT depend on L. Both
+                # MAD-X code paths agree on this drift-kick-drift model:
+                #   - TWISS map tmrf (twiss.f90:7638) is literally commented
+                #     "Sandwich cavity between two drifts": tmdrf(L/2) + thin kick
+                #     (orbit(6) += vrf*sin(phirf), plus re(6,5) longitudinal
+                #     focusing) + tmdrf(L/2).
+                #   - tracking ttrf (trrun.f90:1642-1666) applies a single kick
+                #     d(PT) = VOLT[MV]*1e-3/pc0 * sin(2*pi*LAG - omega*T)
+                #     at the element center, bracketed by ttdrf(L/2) on each side.
+                # In both, vrf has no 1/L factor, so L only enters via the two
+                # drifts. The distributed-field thick cavity is MAD-X TWCAVITY
+                # (element 27), not this. We therefore always translate to a thin
+                # ImpactX ShortRF, wrapped in Drift(L/2) ... Drift(L/2) when L>0
+                # (see append_thin_with_length). See ImpactX ShortRF.H:43-50,157.
+                #
+                # MAD-X: volt [MV], lag [2pi], freq [MHz], harmon [1]
+                # ImpactX ShortRF: V = max energy gain/(m*c^2) [1], freq [Hz], phase [deg]
                 # MAD-X applies bvk to RFCAVITY VOLT (trrun.f90:1610, 1613:
                 # rfv = bvk * node_value('volt ')).
                 volt = bv * d.get("volt", 0.0)  # MV
@@ -1367,38 +1376,23 @@ def lattice(
                             f"RFCAVITY '{d['name']}' attribute '{attr}' is not translated; using simplified model."
                         )
 
-                if ds > 0:
-                    # Thick cavity: use RFCavity with a flat (pillbox) field profile.
-                    # ImpactX evaluates the profile as 0.5*cos_coefficients[0] + ...
-                    # (standard Fourier half-a0 convention, see RFCavity.H:385), so a
-                    # uniform profile of 1 requires cos_coefficients=[2.0]. With that
-                    # choice, the on-crest integrated energy gain is escale * ds, and
-                    # escale = VOLT_norm / ds reproduces MAD-X's VOLT exactly.
-                    escale = normalized_rf_escale(volt, ds)
-                    impactx_beamline.append(
-                        elements.RFCavity(
-                            name=d["name"],
-                            ds=ds,
-                            escale=escale,
-                            freq=freq,
-                            phase=phase,
-                            cos_coefficients=[2.0],
-                            sin_coefficients=[0.0],
-                            rotation=tilt_degree,
-                            nslice=nslice,
-                        )
-                    )
-                else:
-                    # Thin cavity: use ShortRF
-                    impactx_beamline.append(
-                        elements.ShortRF(
-                            name=d["name"],
-                            V=normalized_rf_voltage(volt),
-                            freq=freq,
-                            phase=phase,
-                            rotation=tilt_degree,
-                        )
-                    )
+                # MAD-X RFCAVITY = Drift(L/2) + thin energy kick + Drift(L/2).
+                # append_thin_with_length emits exactly that split for L>0 and a
+                # bare ShortRF for L=0, reproducing MAD-X tmrf/ttrf. The energy
+                # kick is length-independent, so the integrated gain is the same
+                # for any L (including the L=1e-12 epsilon lengths common in
+                # exported decks), unlike the previous thick-RFCavity mapping.
+                append_thin_with_length(
+                    elements.ShortRF(
+                        name=d["name"],
+                        V=normalized_rf_voltage(volt),
+                        freq=freq,
+                        phase=phase,
+                        rotation=tilt_degree,
+                    ),
+                    ds,
+                    d["name"],
+                )
             warn_unread_element_attributes(d)
         else:
             raise NotImplementedError(

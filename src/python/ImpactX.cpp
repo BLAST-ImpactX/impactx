@@ -372,7 +372,7 @@ void init_ImpactX (py::module& m)
             },
             "Longitudinal space charge scale for the Gauss2p5D space charge model. "
             "Approximation affecting only the longitudinal momentum (``pt``) kick. "
-            "If not set, it defaults to ``6 * gamma * sigma_z``, estimated in-situ from the current "
+            "If not set, it defaults to ``1.103 * gamma * sigma_z``, estimated in-situ from the current "
             "reduced beam characteristics, which is a typical value when comparing to a 3D model."
         )
         .def_property("space_charge_num_longitudinal_bins",

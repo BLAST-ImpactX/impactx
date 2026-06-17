@@ -1073,9 +1073,10 @@ See there ``nslice`` option on lattice elements for slicing.
 
       Longitudinal space charge scale for the Gauss2p5D space charge model.
       This is an approximation that only influences the longitudinal momentum (``pt``) kick.
-      If not set, it defaults to :math:`6 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      If not set, it defaults to :math:`1.103 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
       current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
-      typical value when comparing to a 3D model.
+      typical value when comparing to a 3D model.  This value minimizes the L2-norm of the error in
+      the on-axis field Ez in the case of a long 3D Gaussian bunch.
 
     * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
 

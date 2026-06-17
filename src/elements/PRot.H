@@ -113,9 +113,9 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT y,
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -128,8 +128,8 @@ namespace impactx::elements
             T_Real yout = y;
             T_Real tout = t;
             T_Real pxout = px;
-            T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real pyout = py;
+            // T_Real ptout = pt;
 
             T_Real const pz = sqrt(
                 1.0_prt -
@@ -145,18 +145,18 @@ namespace impactx::elements
             pxout = px * m_cos_theta + (pz - m_cos_phi_in) * m_sin_theta;
 
             yout = y + py * x * m_sin_theta / pzf;
-            pyout = py;
+            // pyout = py;
 
             tout = t - (pt - m_inv_beta) * x * m_sin_theta / pzf;
-            ptout = pt;
+            // ptout = pt;
 
             // assign updated values
             x = xout;
             y = yout;
             t = tout;
             px = pxout;
-            py = pyout;
-            pt = ptout;
+            // py = pyout;
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */

@@ -1612,6 +1612,30 @@ add_impactx_test(dogleg-reverse.py
     OFF  # no plot script yet
 )
 
+# Dogleg in Reverse with Envelope Tracking #############################################
+#
+add_impactx_test(dogleg-reverse-envelope
+    examples/dogleg/input_dogleg_reverse_envelope.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(dogleg-reverse-envelope.py
+    examples/dogleg/run_dogleg_reverse_envelope.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+
+# Dogleg, Vertical (bends rolled 90 deg) ######################################
+#
+add_impactx_test(dogleg-vertical.py
+    examples/dogleg/run_dogleg_vertical.py
+    OFF  # ImpactX MPI-parallel (script runs two sims: envelope then particles)
+    OFF  # no analysis script (the run script self-validates in-situ)
+    OFF  # no plot script
+)
+
 # Dogleg with Energy Jitter ###################################################
 #
 add_impactx_test(dogleg-jitter
@@ -2060,5 +2084,25 @@ add_impactx_test(fodo-softedge.py
     examples/quadrupole_softedge/run_fodo_softedge_tanh.py
     ON    # ImpactX MPI-parallel
     examples/quadrupole_softedge/analysis_fodo_softedge.py
+    OFF  # no plot script yet
+)
+
+# Scaling Test of Spin in an Exact Bend ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-sbend-spin-scaling.py)
+add_impactx_test(exact-sbend-spin-scaling.py
+    examples/spin_tracking/run_exact_sbend_spin_scaling.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_exact_sbend_spin_scaling.py
+    OFF  # no plot script yet
+)
+
+# Scaling Test of Spin in an Exact Combined Function Bend ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-cfbend-spin-scaling.py)
+add_impactx_test(exact-cfbend-spin-scaling.py
+    examples/spin_tracking/run_cfbend_spin_scaling.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_cfbend_spin_scaling.py
     OFF  # no plot script yet
 )

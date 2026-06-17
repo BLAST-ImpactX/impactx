@@ -101,6 +101,14 @@ Collective Effects & Overall Simulation Parameters
 
       Number of bins for longitudinal charge density deposition (default: ``129``).  Used by the Gauss2p5D space charge model.
 
+   .. py:property:: space_charge_gauss_long_scale
+
+      Longitudinal space charge scale for the Gauss2p5D space charge model.
+      This is an approximation that only influences the longitudinal momentum (``pt``) kick.
+      If not set, it defaults to :math:`6 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
+      typical value when comparing to a 3D model.
+
    .. py:property:: space_charge_num_longitudinal_bins
 
       Number of bins for longitudinal charge density deposition (default: ``100``).  Used by the 2p5D space charge model.
@@ -127,7 +135,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: mlmg_relative_tolerance
 
-      Default: ``1.e-7``
+      Default: ``1.e-7`` (DP) / ``1.e-4`` (SP)
 
       The relative precision with which the electrostatic space-charge fields should be calculated.
       More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver.
@@ -234,6 +242,9 @@ Collective Effects & Overall Simulation Parameters
       Whether to track particle spin.
       Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
 
+      Spin tracking uses the gyromagnetic anomaly of the reference particle.
+      Set it via ``RefPart.set_species()`` or ``RefPart.set_gyromagnetic_anomaly()``.
+
    .. py:property:: diagnostics
 
       Enable (``True``) or disable (``False``) diagnostics generally (default: ``True``).
@@ -245,6 +256,18 @@ Collective Effects & Overall Simulation Parameters
 
       By default, diagnostics is performed at the beginning and end of the simulation.
       Enabling this flag will write diagnostics every step and slice step.
+
+   .. py:property:: diag_file_prefix
+
+      Root directory for diagnostic output (default: folder named ``"diags"``).
+
+      Set to ``""`` or ``"."`` to write diagnostics in the current working directory.
+
+      If a directory at ``diag_file_prefix`` already exists when a simulation starts,
+      ImpactX renames it to ``<diag_file_prefix>.old.<suffix>`` to preserve prior results.
+      This is skipped when ``diag_file_prefix`` resolves to the current working directory,
+      the root directory, or an ancestor of the current working directory; in those cases
+      new output is written alongside existing files.
 
    .. py:property:: diag_file_min_digits
 
@@ -298,6 +321,61 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: beam
 
       Access the beam particle container (:py:class:`impactx.ParticleContainer`).
+
+      For example, ``sim.beam.to_df(local=True)`` returns the local particles as a pandas DataFrame.
+      See :ref:`usage-howto-python-particle-data` for further data-access recipes.
+
+   .. py:property:: envelope
+
+      Access the beam envelope (:py:class:`impactx.Envelope`: a 6x6 covariance matrix
+      and beam intensity) used for envelope tracking.
+      Only available after :py:meth:`init_envelope`.
+
+   .. py:method:: rho(lev)
+
+      Return the charge density :math:`\rho` on mesh-refinement level ``lev`` as a pyAMReX ``MultiFab``.
+      Populated when space-charge is enabled (see :py:attr:`space_charge`).
+
+      :param int lev: mesh-refinement level.
+
+      .. note::
+
+         Field data are populated by the space-charge solve at each slice step.
+         They are most reliably read from inside a :py:attr:`hook` ``"after_element"`` callback
+         (the element's last slice has just solved) or right after :py:meth:`track_particles` returns.
+         See :ref:`usage-howto-python-field-data` and the
+         `pyAMReX MultiFab guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#fields>`__
+         for indexing details.
+
+   .. py:method:: phi(lev)
+
+      Return the scalar potential :math:`\phi` on mesh-refinement level ``lev`` as a pyAMReX ``MultiFab``.
+      Populated when space-charge is enabled.
+      See lifetime caveats and indexing in :ref:`usage-howto-python-field-data`.
+
+      :param int lev: mesh-refinement level.
+
+   .. py:method:: space_charge_field(lev, comp)
+
+      Return one Cartesian component of the space-charge force as a pyAMReX ``MultiFab``.
+
+      :param int lev: mesh-refinement level.
+      :param str comp: field component to access (``"x"``, ``"y"``, or ``"z"``).
+
+      See lifetime caveats and indexing in :ref:`usage-howto-python-field-data`.
+
+   .. py:method:: Geom(lev)
+
+      Return the AMReX ``Geometry`` object for mesh-refinement level ``lev``.
+      Useful to query the physical domain extent and cell sizes for field data.
+
+   .. py:method:: boxArray(lev)
+
+      Return the AMReX ``BoxArray`` for mesh-refinement level ``lev``.
+
+   .. py:method:: DistributionMap(lev)
+
+      Return the AMReX ``DistributionMapping`` for mesh-refinement level ``lev``.
 
    .. py:property:: lattice
 
@@ -365,9 +443,10 @@ Collective Effects & Overall Simulation Parameters
 
       .. note::
 
-         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
-         Support for misalignments and feed-down effects in envelope tracking is in development.
-         Until then, misalignment options set on elements are silently ignored.
+         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments for translations.
+         Element rotations are handled.
+         Support for translations errors, non-zero envelope means, and feed-down effects in envelope tracking is in development.
+         Until then, translations errors set on elements are silently ignored.
 
    .. py:method:: track_reference(ref)
 
@@ -398,6 +477,10 @@ Collective Effects & Overall Simulation Parameters
 
          sim.hook["before_period"] = hook_before_period
 
+      Full example: :ref:`Acceleration by RF Cavities <examples-rfcavity-ref-part-hook>`.
+
+      See :ref:`usage-howto-python-extend` for more callback recipes.
+
    .. py:property:: tracking_step
 
       For tracking hooks/callbacks, a global step of the simulation.
@@ -416,6 +499,34 @@ Collective Effects & Overall Simulation Parameters
    .. py:method:: resize_mesh()
 
       Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.
+
+
+.. py:class:: impactx.Envelope
+
+   The beam envelope used for envelope (covariance) tracking: a 6x6 covariance
+   matrix relative to a reference particle, plus an optional beam intensity.
+   Created from a distribution by :py:meth:`impactx.ImpactX.init_envelope` and
+   accessed (during or after :py:meth:`impactx.ImpactX.track_envelope`) via
+   :py:attr:`impactx.ImpactX.envelope`.
+
+   .. py:property:: envelope
+
+      The 6x6 beam covariance matrix (a ``Map6x6``).
+
+   .. py:property:: beam_intensity
+
+      The beam intensity: bunch charge (C) for 3D or beam current (A) for 2D space charge.
+
+   .. py:method:: beam_moments(ref)
+
+      Calculate beam moments (position and momentum moments, emittances, Twiss
+      functions, dispersion, ...) from this envelope's covariance matrix and a
+      reference particle. The envelope counterpart of
+      :py:meth:`impactx.ParticleContainer.beam_moments`.
+
+      :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+      :return: a dictionary of beam moments
+      :rtype: dict[str, float]
 
 
 .. py:class:: impactx.Config
@@ -461,6 +572,12 @@ Collective Effects & Overall Simulation Parameters
 
 Particles
 ---------
+
+:py:class:`impactx.ParticleContainer` derives from a pyAMReX particle container.
+Many bulk-access methods used to read or modify the beam in-memory (such as :py:meth:`~impactx.ParticleContainer.to_df` for a pandas DataFrame, or iterating over particle tiles) come from there.
+For a full reference of the inherited compute API, see the `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__.
+
+For step-by-step recipes on how to access particle data live during a simulation, see :ref:`usage-howto-python-particle-data`.
 
 .. py:class:: impactx.ParticleContainer
 
@@ -562,6 +679,45 @@ Particles
    .. py:method:: redistribute()
 
       Redistribute particles in the current mesh in x, y, z.
+
+   .. py:method:: to_df(local=True)
+
+      Return all beam particles as a `pandas DataFrame <https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe>`__.
+
+      Columns correspond to the particle attributes
+      (``position_x``, ``position_y``, ``position_t``,
+      ``momentum_x``, ``momentum_y``, ``momentum_t``,
+      optional ``spin_x``, ``spin_y``, ``spin_z``,
+      plus ``qm``, ``w``, and the AMReX-internal ``cpu`` and ``id``).
+      Phase-space coordinates are relative to the reference particle (see :py:attr:`ref`).
+
+      :param bool local: if ``True`` (default), only particles on the current MPI rank are returned.
+                         If ``False``, particles are gathered to the root rank.
+      :return: particle data as a ``pandas.DataFrame``, or ``None`` on ranks without particles.
+
+      .. note::
+
+         The returned DataFrame is a *copy* of the particle data; modifying it does not write back to the simulation.
+         For in-place modification, iterate over particle tiles instead. See :ref:`usage-howto-python-particle-data` and
+         the `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__.
+
+   .. py:attribute:: iterator
+
+      Alias for :py:class:`impactx.ImpactXParIter`, the per-tile iterator used to access
+      particle data on a mesh-refinement level without copying.
+      The canonical usage is to import the iterator directly:
+
+      .. code-block:: python
+
+         from impactx import ImpactXParIter
+
+         for pti in ImpactXParIter(sim.beam, level=0):
+             soa = pti.soa().to_xp()  # NumPy (CPU) or CuPy (GPU)
+             x = soa.real["position_x"]
+             px = soa.real["momentum_x"]
+
+      See :ref:`usage-howto-python-particle-data` for full usage examples and
+      `pyAMReX particles <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__ for the underlying API.
 
 
 .. py:class:: impactx.RefPart
@@ -682,6 +838,24 @@ Particles
       :param madx_file: file name to MAD-X file with a ``BEAM`` entry
 
 
+.. py:class:: impactx.ImpactXParIter(particle_container, level)
+
+   Per-tile iterator over the beam particle data on a mesh-refinement level.
+   Yields direct (zero-copy) access to the particle Struct-of-Arrays on CPU or GPU and is the
+   recommended way to access particles in performance-critical paths.
+
+   :param impactx.ParticleContainer particle_container: the beam particle container (e.g. ``sim.beam``).
+   :param int level: mesh-refinement level (typically ``0``).
+
+   See :ref:`usage-howto-python-particle-data` for full usage examples and the
+   `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__
+   for the underlying API.
+
+.. py:class:: impactx.ImpactXParConstIter(particle_container, level)
+
+   Read-only variant of :py:class:`impactx.ImpactXParIter`.
+
+
 Initial Beam Phase Space Distributions
 --------------------------------------
 
@@ -794,8 +968,8 @@ Initial Beam Spin Distribution
    :param muz: z component of the unit vector specifying the mean direction
 
 
-Lattice Elements
-----------------
+Lattice
+-------
 
 This module provides elements and methods for the accelerator lattice.
 
@@ -1059,6 +1233,28 @@ This module provides elements and methods for the accelerator lattice.
          # from my_lattice import get_lattice
          # lattice = get_lattice()
 
+   .. py:method:: __eq__(other)
+
+      Element-wise equality.
+      Number of elements and every pair of elements must compare equal under ``==``.
+
+   .. py:method:: isclose(other, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+      Tolerant element-wise comparison. Number of elements must match.
+      For each pair of elements at the same index, calls the element's own ``isclose``.
+
+      :param other: Any iterable of elements
+         (:py:class:`~impactx.elements.KnownElementsList`,
+         :py:class:`~impactx.elements.FilteredElementsList`, or plain ``list``).
+      :param rtol: Relative tolerance (default ``1e-12``).
+      :param atol: Absolute tolerance (default ``0.0``).
+      :param ignore_attributes: ``to_dict()`` keys to skip when comparing each
+         pair of elements. Accepts a single string or any iterable of strings.
+         Forwarded to each element's ``isclose``; see
+         :ref:`element-comparison-methods` for the full semantics, including
+         the special ``"type"`` key for cross-variant comparisons.
+      :rtype: bool
+
    .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
 
       Plot over s of all elements in the KnownElementsList.
@@ -1157,6 +1353,106 @@ This module provides elements and methods for the accelerator lattice.
 
          # Clear alignment errors and apertures
          sim.lattice.select(kind=r".*Quad").replace_with_drifts(keep_alignment=False)
+
+   .. py:method:: __eq__(other)
+
+      Element-wise equality, with the same semantics as
+      :py:meth:`impactx.elements.KnownElementsList.__eq__`. A filtered view
+      compares equal to any iterable of elements (plain Python ``list``,
+      :py:class:`~impactx.elements.KnownElementsList`, or another
+      :py:class:`~impactx.elements.FilteredElementsList`) as long as the
+      lengths and pairwise element comparisons match.
+
+   .. py:method:: isclose(other, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+      Tolerant element-wise comparison, with the same semantics as
+      :py:meth:`impactx.elements.KnownElementsList.isclose`.
+      ``ignore_attributes`` is forwarded to each element's ``isclose``.
+
+.. _element-comparison-methods:
+
+Common comparison methods on lattice elements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Every lattice element class in :py:mod:`impactx.elements` supports the following value-based
+comparison methods. They derive directly from each element's ``to_dict()`` output.
+
+.. py:method:: impactx.elements.Element.__eq__(other)
+
+   Value-based equality. Two elements are equal if they are instances of the
+   same class and their ``to_dict()`` outputs match key-for-key. Float-valued
+   fields are compared via ``==`` (so ``NaN != NaN``); list/matrix values are
+   compared element-wise.
+
+.. py:method:: impactx.elements.Element.isclose(other, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+   Tolerant equality.
+   Float-valued fields are compared via
+   ``math.isclose(rel_tol=rtol, abs_tol=atol)``; lists/matrices of floats are compared
+   element-wise. All other value types (ints, strings, ``None``) fall back to strict ``==``.
+   Mismatched element types and foreign operands return ``False`` (unless ``"type"`` is
+   listed in ``ignore_attributes``).
+
+   :param other: Element to compare against.
+   :param rtol: Relative tolerance forwarded to ``math.isclose`` / ``numpy.allclose``.
+   :param atol: Absolute tolerance. Default ``0.0``.
+   :param ignore_attributes: ``to_dict()`` keys to skip during the comparison.
+      Accepts a single string or any iterable of strings. Useful when comparing
+      loaded files where bookkeeping fields such as ``"name"`` should not
+      affect the verdict. Including the special key ``"type"`` disables the
+      same-class check, so e.g. :py:class:`~impactx.elements.Drift` and
+      :py:class:`~impactx.elements.ExactDrift` can be compared on their common
+      parameters; remaining keys must still match.
+   :rtype: bool
+
+   **Examples:**
+
+   .. code-block:: python
+
+      from impactx import elements
+
+      a = elements.Drift(ds=1.0, name="d1")
+      b = elements.Drift(ds=1.0 + 1e-15, name="d2")
+
+      a == b      # False — name differs and ds differs by float noise
+      a.isclose(b)                              # False — name still differs
+      a.isclose(b, ignore_attributes="name")    # True
+
+      # Compare a Drift to its exact-physics counterpart on common fields.
+      lin = elements.Drift(ds=1.0)
+      ex = elements.ExactDrift(ds=1.0)
+      lin.isclose(ex, ignore_attributes=["type"])  # True
+
+      # Lattice-wide comparison forwards ignore_attributes to each element.
+      lattice_a.isclose(lattice_b, ignore_attributes=["name"])
+
+.. py:function:: impactx.elements.isclose(a, b, *, rtol=1e-12, atol=0.0, ignore_attributes=None)
+
+   Free-function form of :py:meth:`isclose`, equivalent to ``a.isclose(b, ...)``.
+   Accepts either two elements or two iterables of elements
+   (``KnownElementsList``, ``FilteredElementsList``, plain ``list``).
+
+   .. code-block:: python
+
+      from impactx import elements
+
+      # two elements
+      d1 = elements.Drift(ds=1.0, name="d1")
+      d2 = elements.Drift(ds=1.0 + 1e-15, name="d2")
+      elements.isclose(d1, d2, ignore_attributes="name")
+
+      # two lattices (KnownElementsList, FilteredElementsList, or plain list)
+      elements.isclose(lattice_a, lattice_b, ignore_attributes=["name"])
+
+
+Lattice Elements
+----------------
+
+Lattice elements expose multiple methods, including: (i) ``push(pc)`` to advance particles ``pc`` (e.g., ``sim.beam``),
+(ii) ``push(cm, ref)`` to advance a covariance matrix ``cm``, (iii) ``transfer_map(ref)`` that returns the
+element's analytic 6x6 linear transport map (phase-space ordering ``(x, px, y, py, t, pt)``) for the reference
+particle ``ref``, (iv) ``reverse()`` to reverse the element in place, and (v) ``to_dict()`` to serialize it.
+For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/nslice`` slice.
 
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
@@ -1510,10 +1806,24 @@ This module provides elements and methods for the accelerator lattice.
    A programmable beam optics element.
 
    This element can be programmed to receive callback hooks into Python functions.
+   See :ref:`usage-howto-python-extend` for a worked example.
 
    :param ds: Segment length in m.
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
+
+   .. note::
+
+      The ``Programmable`` element is intended for *replacing* a beamline element's
+      particle push with custom Python code (e.g. a non-linear kick, tabulated map,
+      or ML surrogate). The ``beam_particles`` callback is invoked per particle
+      tile for performance, so the beam is presented in chunks, not as a single
+      global container, which is a poor fit for observation/analysis.
+
+      For **in-situ analysis** of the beam, prefer a :py:attr:`~impactx.ImpactX.hook`
+      callback instead: ``sim.beam`` and methods like
+      :py:meth:`~impactx.ParticleContainer.to_df` give you the full beam in one place.
+      See :ref:`usage-howto-python-particle-data`.
 
    .. py:property:: push
 

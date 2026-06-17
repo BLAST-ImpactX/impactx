@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 26.03)
+project(ImpactX VERSION 26.05)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -73,6 +73,12 @@ option(ImpactX_SIMD          "CPU SIMD Acceleration"                        OFF)
 option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
 option(ImpactX_SYNMADX       "Standalone MAD-X lattice parser (synmadx)"    OFF)
+
+# Specialize the particle push into branch-free paths for aligned vs. misaligned
+# elements (selected at runtime). This doubles the compile time of the element
+# pushes. Set to OFF to compile a single, always-on shift/rotate path instead.
+option(ImpactX_OPTIMIZE_ALIGNMENT "Branch-free push paths for aligned/misaligned elements (OFF halves element-push compile time)" ON)
+mark_as_advanced(ImpactX_OPTIMIZE_ALIGNMENT)
 
 set(ImpactX_PRECISION_VALUES SINGLE DOUBLE)
 set(ImpactX_PRECISION DOUBLE CACHE STRING "Floating point precision (SINGLE/DOUBLE)")
@@ -300,7 +306,7 @@ if(ImpactX_PYTHON)
             impactx_enable_IPO(pyImpactX)
         else()
             # conditionally defined target in pybind11
-            # https://github.com/pybind/pybind11/blob/v3.0.0/tools/pybind11Common.cmake#L420-L426
+            # https://github.com/pybind/pybind11/blob/v3.0.3/tools/pybind11Common.cmake#L436-L442
             target_link_libraries(pyImpactX PRIVATE pybind11::lto)
         endif()
     endif()
@@ -345,6 +351,9 @@ if(ImpactX_FFT)
 endif()
 if(ImpactX_OPENPMD)
     target_compile_definitions(lib PUBLIC ImpactX_USE_OPENPMD)
+endif()
+if(ImpactX_OPTIMIZE_ALIGNMENT)
+    target_compile_definitions(lib PUBLIC ImpactX_OPTIMIZE_ALIGNMENT)
 endif()
 if(ImpactX_PYTHON)
     # for module __version__
@@ -448,6 +457,7 @@ if(ImpactX_PYTHON)
             ${ImpactX_BINARY_DIR}
         DEPENDS
             pyImpactX $<$<BOOL:${ImpactX_SYNMADX}>:pysynmadx>
+            pyImpactX_python_sources
     )
 
     # this will also upgrade/downgrade dependencies, e.g., when the version of numpy changes

@@ -61,7 +61,7 @@ namespace impactx::elements
             ablastr::constant::math::pi / 6.0;
         static constexpr amrex::ParticleReal DEFAULT_K1 = 0;
         static constexpr amrex::ParticleReal DEFAULT_K2 = 1;
-        static constexpr amrex::ParticleReal DEFAULT_K3 = 1.0 / 6.0;
+        static constexpr amrex::ParticleReal DEFAULT_K3 = amrex::ParticleReal(1.0 / 6.0);
         static constexpr amrex::ParticleReal DEFAULT_K4 = 0;
         static constexpr amrex::ParticleReal DEFAULT_K5 = 0;
         static constexpr amrex::ParticleReal DEFAULT_K6 = 0;

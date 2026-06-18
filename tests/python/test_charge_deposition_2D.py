@@ -8,11 +8,13 @@
 # -*- coding: utf-8 -*-
 
 
+import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 from conftest import basepath
 
-from impactx import ImpactX, amr, flatten_charge_to_2D
+from impactx import Config, ImpactX, amr
 
 
 def test_charge_deposition_2D(save_png=True):
@@ -34,12 +36,20 @@ def test_charge_deposition_2D(save_png=True):
     sim.init_lattice_elements_from_inputs()
 
     sim.deposit_charge()
-    rho_2d = flatten_charge_to_2D(sim)
-    rho_2d_lvl0 = rho_2d[0][1]  # level 0 and unique boxes only
+    # for the 2D space-charge model, sim.rho() is the x-y projected charge
+    rho_2d_lvl0 = sim.rho(lev=0)
 
     gm = sim.Geom(lev=0)
     dr = gm.data().CellSize()
     dV = np.prod(dr)
+
+    # the projected charge must be conserved: it equals the beam current
+    # (0.15, static units) and must be independent of grid resolution,
+    # padding (prob_relative) and domain decomposition
+    rs = rho_2d_lvl0.sum_unique(comp=0, local=False)
+    beam_charge = dV * rs  # in static units
+    rel_tol = 1.0e-5 if Config.precision == "SINGLE" else 1.0e-9
+    assert math.isclose(beam_charge, 0.15, rel_tol=rel_tol, abs_tol=0.0)
 
     # plot charge density
     f = plt.figure()
@@ -67,22 +77,19 @@ def test_charge_deposition_2D(save_png=True):
     sim.track_particles()
 
     sim.deposit_charge()
-    # rho = sim.rho(lev=0)
-    # rs = rho.sum_unique(comp=0, local=False)
 
-    rho_2d = flatten_charge_to_2D(sim)
-    rho_2d_lvl0 = rho_2d[0][1]  # level 0 and unique boxes only
-    # rs = rho_2d_lvl0.sum_unique(comp=0, local=False)
+    rho_2d_lvl0 = sim.rho(lev=0)
+    rs = rho_2d_lvl0.sum_unique(comp=0, local=False)
 
     gm = sim.Geom(lev=0)
     dr = gm.data().CellSize()
     dV = np.prod(dr)
 
-    # beam_charge = dV * rs  # in C
-    # if Config.precision == "SINGLE":
-    #    assert math.isclose(beam_charge, -1.0e-9, rel_tol=1e-6)
-    # else:
-    #    assert math.isclose(beam_charge, -1.0e-9, rel_tol=1e-8)
+    # charge is conserved under tracking: the projected charge still equals
+    # the beam current (0.15, static units)
+    beam_charge = dV * rs  # in static units
+    rel_tol = 1.0e-5 if Config.precision == "SINGLE" else 1.0e-9
+    assert math.isclose(beam_charge, 0.15, rel_tol=rel_tol, abs_tol=0.0)
 
     # plot charge density
     f = plt.figure()

@@ -2087,6 +2087,26 @@ add_impactx_test(fodo-softedge.py
     OFF  # no plot script yet
 )
 
+# Expanding Beam in Free Space with 2D Space Charge, with Test Particles ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/expanding_beam/initial_coords.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/expanding-fft-2d-test-particles.py)
+add_impactx_test(expanding-fft-2d-test-particles.py
+    examples/expanding_beam/run_expanding_fft_2D_test_particles.py
+    ON  # ImpactX MPI-parallel
+    OFF
+    OFF
+)
+label_impactx_test(expanding-fft-2d-test-particles.py slow)
+
+# Expanding Beam in Free Space with 2D Space Charge, Test Space Charge Kick ###################
+add_impactx_test(expanding-fft-2d-test-particles-1slice.py
+    examples/expanding_beam/run_expanding_fft_2D_test_particles_1slice.py
+    ON  # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_fft_2D_test_particles_1slice.py
+    OFF
+)
+label_impactx_test(expanding-fft-2d-test-particles-1slice.py slow)
+
 # Momentum Kick in the 2.5D Gaussian Space Charge Model ###################
 add_impactx_test(kick-Gauss2p5D.py
     examples/space_charge_gaussian_kick/run_sc_kick_Gauss2p5D.py

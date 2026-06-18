@@ -80,6 +80,20 @@ namespace impactx
         return rho_2d;
     }
 
+    std::unordered_map<int, amrex::MultiFab>
+    project_charge_to_2D (
+        std::unordered_map<int, amrex::MultiFab> const & rho,
+        amrex::Box domain_3d
+    )
+    {
+        std::unordered_map<int, amrex::MultiFab> rho_2d;
+        auto rho_2d_pairs = flatten_charge_to_2D(rho, domain_3d);
+        for (auto & [lev, rho_2d_pair] : rho_2d_pairs) {
+            rho_2d.emplace(lev, std::move(rho_2d_pair.second));
+        }
+        return rho_2d;
+    }
+
     void
     ImpactXParticleContainer::DepositCharge (
         std::unordered_map<int, amrex::MultiFab> & rho,

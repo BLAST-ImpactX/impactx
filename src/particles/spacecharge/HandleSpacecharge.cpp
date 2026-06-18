@@ -83,6 +83,7 @@ namespace impactx::particles::spacecharge
             spacecharge::PoissonSolve(
                 *amr_data->track_particles.m_particle_container,
                 amr_data->track_particles.m_rho,
+                amr_data->track_particles.m_rho_2d,
                 amr_data->track_particles.m_phi,
                 amr_data->refRatio()
             );

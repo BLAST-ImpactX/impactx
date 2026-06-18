@@ -7,7 +7,9 @@
 
 #include <ImpactX.H>
 #include <diagnostics/FilePrefix.H>
+#include <initialization/Algorithms.H>
 #include <initialization/InitDistribution.H>
+#include <particles/ChargeDeposition.H>
 #include <particles/CovarianceMatrix.H>
 #include <particles/transformation/CoordinateTransformation.H>
 #include <particles/ParticleBoundary.H>
@@ -666,6 +668,20 @@ void init_ImpactX (py::module& m)
                     ix.amr_data->track_particles.m_rho,
                     ix.amr_data->refRatio());
 
+                // for the 2D models, also produce the x-y projected (charge-
+                // conserving) density, so it is available via sim.rho without a
+                // Poisson solve
+                auto const space_charge = get_space_charge_algo();
+                if (space_charge == SpaceChargeAlgo::True_2D ||
+                    space_charge == SpaceChargeAlgo::True_2p5D)
+                {
+                    auto geom_3d = ix.amr_data->track_particles
+                        .m_particle_container->GetParGDB()->Geom();
+                    amrex::Box const domain_3d = geom_3d[0].Domain();
+                    ix.amr_data->track_particles.m_rho_2d = project_charge_to_2D(
+                        ix.amr_data->track_particles.m_rho, domain_3d);
+                }
+
                 // transform from x,y,z to x',y',t
                 transformation::CoordinateTransformation(
                     *(ix.amr_data)->track_particles.m_particle_container,
@@ -784,10 +800,26 @@ void init_ImpactX (py::module& m)
         )
         .def(
             "rho",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_rho.at(lev); },
+            [](py::object self, int const lev) -> py::object {
+                ImpactX & ix = self.cast<ImpactX &>();
+                auto & tp = ix.amr_data->track_particles;
+                auto const space_charge = get_space_charge_algo();
+                // The 2D models solve the x-y projected charge density: return
+                // that (stored like the solved potential phi, populated by the
+                // last deposit / Poisson solve); the 3D charge otherwise.
+                auto & rho_per_level =
+                    (space_charge == SpaceChargeAlgo::True_2D ||
+                     space_charge == SpaceChargeAlgo::True_2p5D)
+                    ? tp.m_rho_2d : tp.m_rho;
+                return py::cast(
+                    &rho_per_level.at(lev),
+                    py::return_value_policy::reference_internal, self);
+            },
             py::arg("lev"),
-            py::return_value_policy::reference_internal,
-            "charge density per level"
+            "charge density per level.\n\n"
+            "For the 2D space-charge models (``2D`` / ``2.5D``) this returns the\n"
+            "x-y projected (2D) charge density that is actually solved; for the\n"
+            "3D models it returns the 3D charge density."
         )
         .def(
             "phi",

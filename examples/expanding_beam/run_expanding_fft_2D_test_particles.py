@@ -61,9 +61,9 @@ pc = sim.particle_container()
 #  add test particles
 if amr.ParallelDescriptor.IOProcessor():
     df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
-    dx, dy, dt, dpx, dpy, dpt = df_initial[
-        ["x", "y", "t", "px", "py", "pt"]
-    ].to_numpy().T
+    dx, dy, dt, dpx, dpy, dpt = (
+        df_initial[["x", "y", "t", "px", "py", "pt"]].to_numpy().T
+    )
     pc.add_n_particles(dx, dy, dt, dpx, dpy, dpt, qm_eev, bunch_charge=0.0)
 
 # add beam diagnostics

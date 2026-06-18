@@ -566,7 +566,7 @@ namespace impactx::integrators
            element.map(tau2,particle2,particle1,zeval2,zeval1);
            element.map(tau1,particle1,particle2,zeval1,zeval2);
 
-        } else {
+        } else if (int_order==6) {
 
            // initialize numerical integration parameters (int_order = 6)
            amrex::ParticleReal const w0 = 1.31518632068391121888424973_prt;

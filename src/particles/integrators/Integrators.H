@@ -13,6 +13,7 @@
 #include <AMReX_Extension.H>  // for AMREX_RESTRICT
 #include <AMReX_REAL.H>       // for ParticleReal
 
+#include <stdexcept>
 
 namespace impactx::integrators
 {

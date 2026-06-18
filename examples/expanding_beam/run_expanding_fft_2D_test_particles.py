@@ -59,14 +59,12 @@ sim.add_particles(beam_current_A, distr, npart)
 pc = sim.particle_container()
 
 #  add test particles
-df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
-dx = df_initial["x"].to_numpy()
-dpx = df_initial["px"].to_numpy()
-dy = df_initial["y"].to_numpy()
-dpy = df_initial["py"].to_numpy()
-dt = df_initial["t"].to_numpy()
-dpt = df_initial["pt"].to_numpy()
-pc.add_n_particles(dx, dy, dt, dpx, dpy, dpt, qm_eev, bunch_charge=0.0)
+if amr.ParallelDescriptor.IOProcessor():
+    df_initial = pd.read_csv("./initial_coords.csv", sep=" ")
+    dx, dy, dt, dpx, dpy, dpt = df_initial[
+        ["x", "y", "t", "px", "py", "pt"]
+    ].to_numpy().T
+    pc.add_n_particles(dx, dy, dt, dpx, dpy, dpt, qm_eev, bunch_charge=0.0)
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")

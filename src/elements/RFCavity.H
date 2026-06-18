@@ -21,7 +21,6 @@
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
 #include "mixin/spintransport.H"
-#include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
 
@@ -31,6 +30,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 #include <AMReX_SmallMatrix.H>
+#include <AMReX_TrackedVector.H>
 
 #include <cmath>
 #include <memory>
@@ -94,8 +94,8 @@ namespace impactx::elements
      */
     struct CavityFourierCoefficients
     {
-        mixin::TrackedVector<amrex::ParticleReal> cos;
-        mixin::TrackedVector<amrex::ParticleReal> sin;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> cos;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> sin;
     };
 
     struct RFCavity

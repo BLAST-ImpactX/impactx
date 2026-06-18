@@ -21,13 +21,13 @@
 #include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
-#include "mixin/TrackedVector.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_GpuComplex.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
+#include <AMReX_TrackedVector.H>
 
 #include <cmath>
 #include <memory>
@@ -45,8 +45,8 @@ namespace impactx::elements
      */
     struct MultipoleCoefficients
     {
-        mixin::TrackedVector<amrex::ParticleReal> k_normal;
-        mixin::TrackedVector<amrex::ParticleReal> k_skew;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> k_normal;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> k_skew;
     };
 
     struct ExactMultipole

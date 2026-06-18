@@ -20,7 +20,6 @@
 #include "mixin/nofinalize.H"
 #include "mixin/spintransport.H"
 #include "mixin/thin.H"
-#include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
 
@@ -28,6 +27,7 @@
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
+#include <AMReX_TrackedVector.H>
 
 #include <cmath>
 #include <map>
@@ -46,8 +46,8 @@ namespace impactx::elements
      */
     struct PolygonVertices
     {
-        mixin::TrackedVector<amrex::ParticleReal> x;
-        mixin::TrackedVector<amrex::ParticleReal> y;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> x;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> y;
     };
 
     struct PolygonAperture

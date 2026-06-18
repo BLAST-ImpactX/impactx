@@ -601,6 +601,8 @@ namespace impactx::integrators
            element.map(tau3,particle1,particle2,zeval1,zeval2);
            element.map(tau2,particle2,particle1,zeval2,zeval1);
            element.map(tau1,particle1,particle2,zeval1,zeval2);
+    } else {
+              throw std::runtime_error("Symplectic integrator: order must be 2, 4, or 6.");
 
         }
 

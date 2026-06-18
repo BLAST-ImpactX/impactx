@@ -1271,6 +1271,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.05"
+__version__: str = "26.06"
 s: CoordSystem
 t: CoordSystem

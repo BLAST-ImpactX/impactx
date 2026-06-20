@@ -80,7 +80,7 @@ option(ImpactX_pyamrex_internal "Download & build pyAMReX" ON)
 set(ImpactX_pyamrex_repo "https://github.com/AMReX-Codes/pyamrex.git"
     CACHE STRING
     "Repository URI to pull and build pyamrex from if(ImpactX_pyamrex_internal)")
-set(ImpactX_pyamrex_branch "26.06"
+set(ImpactX_pyamrex_branch "0952566bbd3477fc2c556bc892657bbf9314cf3c"
     CACHE STRING
     "Repository branch for ImpactX_pyamrex_repo if(ImpactX_pyamrex_internal)")
 

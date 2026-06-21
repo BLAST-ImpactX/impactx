@@ -47,9 +47,9 @@ def test_charge_deposition_2D(save_png=True):
     # (0.15, static units) and must be independent of grid resolution,
     # padding (prob_relative) and domain decomposition
     rs = rho_2d_lvl0.sum_unique(comp=0, local=False)
-    beam_charge = dV * rs  # in static units
+    beam_current = dV * rs  # in static units
     rel_tol = 1.0e-5 if Config.precision == "SINGLE" else 1.0e-9
-    assert math.isclose(beam_charge, 0.15, rel_tol=rel_tol, abs_tol=0.0)
+    assert math.isclose(beam_current, 0.15, rel_tol=rel_tol, abs_tol=0.0)
 
     # plot charge density
     f = plt.figure()
@@ -87,9 +87,9 @@ def test_charge_deposition_2D(save_png=True):
 
     # charge is conserved under tracking: the projected charge still equals
     # the beam current (0.15, static units)
-    beam_charge = dV * rs  # in static units
+    beam_current = dV * rs  # in static units
     rel_tol = 1.0e-5 if Config.precision == "SINGLE" else 1.0e-9
-    assert math.isclose(beam_charge, 0.15, rel_tol=rel_tol, abs_tol=0.0)
+    assert math.isclose(beam_current, 0.15, rel_tol=rel_tol, abs_tol=0.0)
 
     # plot charge density
     f = plt.figure()

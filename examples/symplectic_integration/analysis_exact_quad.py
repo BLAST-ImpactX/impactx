@@ -40,6 +40,7 @@ series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 initial_step = list(series.iterations)[0]
 last_step = list(series.iterations)[-1]
 initial = series.iterations[initial_step].particles["beam"].to_df()
+is_double = initial["position_x"].dtype == np.float64
 beam_final = series.iterations[last_step].particles["beam"]
 final = beam_final.to_df()
 
@@ -142,7 +143,7 @@ dH = (Hf - Hi).abs()
 dH_max_relative = dH.max() / H_sigma
 
 # particle-wise comparison of H & I initial to final
-atol = 1.0e-3
+atol = 1.0e-3 if is_double else 2.0e-2
 rtol = 0.0  # large number
 print()
 print(f"  atol={atol} (ignored: rtol~={rtol})")

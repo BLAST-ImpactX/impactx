@@ -68,6 +68,7 @@ Space Charge
    examples/kurth/README.rst
    examples/epac2004_benchmarks/README.rst
    examples/fodo_space_charge/README.rst
+   examples/space_charge_gaussian_kick/README.rst
 
 Coherent Synchrotron Radiation (CSR)
 """"""""""""""""""""""""""""""""""""
@@ -134,6 +135,7 @@ Virtual Test Stands
 
    examples/cyclotron/README.rst
    examples/iota_lattice/README.rst
+   examples/simple_booster/README.rst
    examples/positron_channel/README.rst
    examples/pytorch_surrogate_model/README.rst
    examples/apochromatic/README.rst

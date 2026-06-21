@@ -231,6 +231,10 @@ namespace impactx
                 amrex::ParticleReal muxpx = distribution.m_muxpx;
                 amrex::ParticleReal muypy = distribution.m_muypy;
                 amrex::ParticleReal mutpt = distribution.m_mutpt;
+                amrex::ParticleReal dispx = distribution.m_dispx;
+                amrex::ParticleReal disppx = distribution.m_disppx;
+                amrex::ParticleReal dispy = distribution.m_dispy;
+                amrex::ParticleReal disppy = distribution.m_disppy;
 
                 // some things we cannot represent in envelope mode
                 if (distribution.m_meanx  != 0.0_prt ||
@@ -238,33 +242,43 @@ namespace impactx
                     distribution.m_meant  != 0.0_prt ||
                     distribution.m_meanpx != 0.0_prt ||
                     distribution.m_meanpy != 0.0_prt ||
-                    distribution.m_meanpt != 0.0_prt ||
-                    distribution.m_dispx  != 0.0_prt ||
-                    distribution.m_disppx != 0.0_prt ||
-                    distribution.m_dispy  != 0.0_prt ||
-                    distribution.m_disppy != 0.0_prt
+                    distribution.m_meanpt != 0.0_prt
                 ) {
-                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means or dispersion! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
+                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
                 }
 
                 // use distribution inputs to populate a 6x6 covariance matrix
-                amrex::ParticleReal denom_x = 1.0 - muxpx*muxpx;
+                amrex::ParticleReal denom_x = 1.0_prt - muxpx*muxpx;
                 cv(1,1) = lambdaX*lambdaX / denom_x;
                 cv(1,2) = -lambdaX*lambdaPx*muxpx / denom_x;
                 cv(2,1) = cv(1,2);
                 cv(2,2) = lambdaPx*lambdaPx / denom_x;
 
-                amrex::ParticleReal denom_y = 1.0 - muypy*muypy;
+                amrex::ParticleReal denom_y = 1.0_prt - muypy*muypy;
                 cv(3,3) = lambdaY*lambdaY / denom_y;
                 cv(3,4) = -lambdaY*lambdaPy*muypy / denom_y;
                 cv(4,3) = cv(3,4);
                 cv(4,4) = lambdaPy*lambdaPy / denom_y;
 
-                amrex::ParticleReal denom_t = 1.0 - mutpt*mutpt;
+                amrex::ParticleReal denom_t = 1.0_prt - mutpt*mutpt;
                 cv(5,5) = lambdaT*lambdaT / denom_t;
                 cv(5,6) = -lambdaT*lambdaPt*mutpt / denom_t;
                 cv(6,5) = cv(5,6);
                 cv(6,6) = lambdaPt*lambdaPt / denom_t;
+
+                // normalizing matrix to handle nonzero dispersion
+                CovarianceMatrix dmat{};
+                dmat(1,1) = 1_prt;
+                dmat(1,6) = -dispx;
+                dmat(2,2) = 1_prt;
+                dmat(2,6) = -disppx;
+                dmat(3,3) = 1_prt;
+                dmat(3,6) = -dispy;
+                dmat(4,4) = 1_prt;
+                dmat(4,6) = -disppy;
+                dmat(5,5) = 1_prt;
+                dmat(6,6) = 1_prt;
+                cv = dmat * cv * dmat.transpose();
             }
         }, distr);
 
@@ -475,7 +489,7 @@ namespace impactx
         // calculate Twiss / Courant-Snyder gammas
         amrex::Vector<amrex::ParticleReal> gammas;
         for (size_t i = 0; i < alphas.size(); i++)
-            gammas.push_back((1.0 + powi<2>(alphas.at(i))) / betas.at(i));
+            gammas.push_back((1.0_prt + powi<2>(alphas.at(i))) / betas.at(i));
 
         amrex::Vector<amrex::ParticleReal> lambdas_pos;
         amrex::Vector<amrex::ParticleReal> lambdas_mom;

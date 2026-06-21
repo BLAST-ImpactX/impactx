@@ -4,7 +4,7 @@
  *
  * This file is part of ImpactX.
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 #ifndef IMPACTX_ELEMENTS_DIAGS_BEAMMONITOR_H
@@ -179,9 +179,9 @@ namespace detail
         AMREX_FORCE_INLINE
         int period_sample_intervals () const { return m_period_sample_intervals; }
 
-        /** track all m_series_name instances
+        /** track all openPMD series instances
          *
-         * Ensure m_series is the same for the same name.
+         * Ensure m_series is the same for the same output path.
          */
         static inline std::map<std::string, std::any> m_unique_series = {};
 
@@ -198,6 +198,7 @@ namespace detail
         std::string m_OpenPMDFileType; //! openPMD backend: usually HDF5 (h5) or ADIOS2 (bp/bp4/bp5) or ADIOS2 SST (sst)
         std::string m_encoding; //! openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
         std::any m_series; //! openPMD::Series that holds potentially multiple outputs
+        std::string m_series_key; //! full path used as key in m_unique_series
         int m_step = 0; //! global step for output
 
         int m_file_min_digits = 6; //! minimum number of digits to iteration number in file name

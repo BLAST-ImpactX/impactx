@@ -50,23 +50,6 @@ __all__: list[str] = [
     "wakeconvolution",
 ]
 
-class Envelope:
-    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    @typing.overload
-    def __init__(self) -> None: ...
-    @typing.overload
-    def __init__(
-        self,
-        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        arg1: typing.SupportsFloat | typing.SupportsIndex,
-    ) -> None: ...
-    @property
-    def beam_intensity(self) -> float: ...
-    @beam_intensity.setter
-    def beam_intensity(
-        self, arg1: typing.SupportsFloat | typing.SupportsIndex
-    ) -> Envelope: ...
-
 class RefPart:
     @staticmethod
     def load_file(ref: RefPart, madx_file):
@@ -170,15 +153,6 @@ class RefPart:
         Get reference particle energy [MeV]
         """
     @property
-    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
-        """
-        linearized map
-        """
-    @map.setter
-    def map(
-        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    ) -> None: ...
-    @property
     def mass(self) -> float:
         """
         reference rest mass [kg]
@@ -271,6 +245,30 @@ class RefPart:
     @z.setter
     def z(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
+class Envelope:
+    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        arg1: typing.SupportsFloat | typing.SupportsIndex,
+    ) -> None: ...
+    def beam_moments(self, ref: RefPart) -> dict[str, float]:
+        """
+        Calculate beam moments (position and momentum moments, emittances,
+        Twiss functions, dispersion, ...) from this envelope's covariance
+        matrix and a reference particle. The envelope counterpart of
+        ImpactXParticleContainer.beam_moments().
+        """
+    @property
+    def beam_intensity(self) -> float: ...
+    @beam_intensity.setter
+    def beam_intensity(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> Envelope: ...
+
 class CoordSystem:
     """
     Members:
@@ -343,7 +341,7 @@ class ImpactXParticleContainer(
 ):
     ConstIterator = ImpactXParConstIter
     Iterator = ImpactXParIter
-    def add_n_particles(
+    def _add_n_particles(
         self,
         x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         y: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
@@ -378,6 +376,47 @@ class ImpactXParticleContainer(
         :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent:param sx: spin component in x
         :param sy: spin component in y
         :param sz: spin component in z
+        """
+    def add_n_particles(
+        self,
+        x,
+        y,
+        t,
+        px,
+        py,
+        pt,
+        qm,
+        bunch_charge=None,
+        w=None,
+        sx=None,
+        sy=None,
+        sz=None,
+    ):
+        """
+        Add new particles to the container for fixed s.
+
+        The coordinate and weight arguments accept NumPy or CuPy arrays (or
+        array-likes), as well as pyAMReX ``PODVector`` objects. Inputs are copied
+        into device-compatible PODVectors as needed.
+
+        Either the total charge (``bunch_charge``) or the weight of each particle
+        (``w``) must be provided.
+
+        Note: This can only be used *after* the grids have been created, i.e. after
+        ``ImpactX.init_grids`` has been called.
+
+        Parameters
+        ----------
+        x, y, t, px, py, pt : array_like
+            Particle positions (x, y, time-of-flight c*t) and momenta.
+        qm : float
+            Charge over mass in 1/eV.
+        bunch_charge : float, optional
+            Total charge within a bunch in C.
+        w : array_like, optional
+            Weight of each particle: how many real particles to represent.
+        sx, sy, sz : array_like, optional
+            Spin components in x, y, z.
         """
     def beam_moments(self) -> dict[str, float]:
         """
@@ -668,6 +707,13 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
+    def diag_file_prefix(self) -> str:
+        """
+        Root directory for diagnostic output (default: ``diags``).
+        """
+    @diag_file_prefix.setter
+    def diag_file_prefix(self, arg1: str) -> None: ...
+    @property
     def diagnostics(self) -> bool:
         """
         Enable or disable diagnostics generally (default: enabled).
@@ -696,6 +742,12 @@ class ImpactX:
         """
     @eigenemittances.setter
     def eigenemittances(self, arg1: bool) -> None: ...
+    @property
+    def envelope(self) -> Envelope:
+        """
+        Access the beam envelope (6x6 covariance matrix and beam intensity)
+        used for envelope tracking. Only available after init_envelope().
+        """
     @property
     def finest_level(self) -> int:
         """
@@ -892,6 +944,15 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
+    def space_charge_gauss_long_scale(self) -> float:
+        """
+        Longitudinal space charge scale for the Gauss2p5D space charge model. Approximation affecting only the longitudinal momentum (``pt``) kick. If not set, it defaults to ``6 * gamma * sigma_z``, estimated in-situ from the current reduced beam characteristics, which is a typical value when comparing to a 3D model.
+        """
+    @space_charge_gauss_long_scale.setter
+    def space_charge_gauss_long_scale(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> None: ...
+    @property
     def space_charge_gauss_nint(self) -> int:
         """
         Number of steps for computing the integrals (default: ``101``).
@@ -1031,6 +1092,7 @@ class UnorderedMap:
 
 class Config:
     gpu_backend = None
+    have_fft: typing.ClassVar[bool] = True
     have_gpu: typing.ClassVar[bool] = False
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True
@@ -1209,6 +1271,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.04"
+__version__: str = "26.06"
 s: CoordSystem
 t: CoordSystem

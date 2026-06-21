@@ -38,6 +38,7 @@ def get_moments(beam):
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
+is_double = initial["position_x"].dtype == np.float64
 final = series.iterations[last_step].particles["beam"].to_df()
 
 # compare number of particles
@@ -80,7 +81,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.0e-12  # exact to within roundoff tolerance
+rtol = 1.0e-12 if is_double else 1.0e-10
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

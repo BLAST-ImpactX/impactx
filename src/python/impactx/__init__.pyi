@@ -20,6 +20,7 @@ from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x1_F_SI1_double as Vector
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_3x6_F_SI1_double as Map3x6
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 from impactx.distribution_input_helpers import twiss
+from impactx.extensions.Elements import register_elements_value_semantics
 from impactx.extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
@@ -102,6 +103,7 @@ __all__: list[str] = [
     "register_RFCavity_extension",
     "register_SoftQuadrupole_extension",
     "register_SoftSolenoid_extension",
+    "register_elements_value_semantics",
     "reverse",
     "s",
     "t",
@@ -112,6 +114,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.04"
+__version__: str = "26.06"
 s: impactx_pybind.CoordSystem
 t: impactx_pybind.CoordSystem

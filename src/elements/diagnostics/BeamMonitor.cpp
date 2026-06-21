@@ -4,15 +4,16 @@
  *
  * This file is part of ImpactX.
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 
 #include "BeamMonitor.H"
 
 #include "ImpactXVersion.H"
-#include "particles/ImpactXParticleContainer.H"
+#include "diagnostics/FilePrefix.H"
 #include "diagnostics/ReducedBeamCharacteristics.H"
+#include "particles/ImpactXParticleContainer.H"
 
 #include <AMReX.H>
 #include <AMReX_BLProfiler.H>
@@ -118,8 +119,10 @@ namespace detail {
         }
 
         // remove from unique series map
-        if (m_unique_series.count(m_series_name) != 0u)
-            m_unique_series.erase(m_series_name);
+        if (!m_series_key.empty() && m_unique_series.count(m_series_key) != 0u) {
+            m_unique_series.erase(m_series_key);
+            m_series_key.clear();
+        }
 #endif // ImpactX_USE_OPENPMD
     }
 
@@ -164,24 +167,28 @@ namespace detail {
         // legacy options from other diagnostics
         pp_diag.queryAddWithParser("file_min_digits", m_file_min_digits);
 
-        // Ensure m_series is the same for the same names.
-        if (m_unique_series.count(m_series_name) == 0u) {
-            std::string filepath = "diags/openPMD/";
-            std::string filename = m_series_name;
+        std::filesystem::path filepath = impactx::diagnostics::FilePrefixPath("openPMD");
+        std::string filename = m_series_name;
 
-            if (series_encoding == openPMD::IterationEncoding::fileBased)
-            {
-                std::string const fileSuffix = std::string("_%0") + std::to_string(m_file_min_digits) + std::string("T");
-                filename.append(fileSuffix);
-            }
-            filename.append(".").append(m_OpenPMDFileType);
+        if (series_encoding == openPMD::IterationEncoding::fileBased)
+        {
+            std::string const fileSuffix =
+                std::string("_%0") + std::to_string(m_file_min_digits) + std::string("T");
+            filename.append(fileSuffix);
+        }
+        filename.append(".").append(m_OpenPMDFileType);
 
-            // transform paths for Windows
+        std::string series_path = (filepath / filename).string();
+
+        // transform paths for Windows
 #   ifdef _WIN32
-            filepath = openPMD::auxiliary::replace_all(filepath, "/", "\\");
+        series_path = openPMD::auxiliary::replace_all(series_path, "/", "\\");
 #   endif
+        m_series_key = series_path;
 
-            auto series = io::Series(filepath + filename, io::Access::CREATE
+        // Ensure m_series is the same for the same full output path.
+        if (m_unique_series.count(m_series_key) == 0u) {
+            auto series = io::Series(m_series_key, io::Access::CREATE
 #   if openPMD_HAVE_MPI==1
                 , amrex::ParallelDescriptor::Communicator()
 #   endif
@@ -189,20 +196,20 @@ namespace detail {
             series.setSoftware("ImpactX", IMPACTX_VERSION);
             series.setIterationEncoding( series_encoding );
             m_series = series;
-            m_unique_series[m_series_name] = series;
+            m_unique_series[m_series_key] = series;
 
             // create a little helper file for ParaView 5.9+
             if (amrex::ParallelDescriptor::IOProcessor())
             {
                 std::filesystem::create_directories(filepath);
-                std::ofstream pv_helper_file(filepath + "paraview.pmd");
+                std::ofstream pv_helper_file((filepath / "paraview.pmd").string());
                 AMREX_ALWAYS_ASSERT_WITH_MESSAGE(pv_helper_file.is_open(), "Could not open paraview.pmd file.");
                 pv_helper_file << filename << "\n";
                 pv_helper_file.close();
             }
         }
         else {
-            m_series = m_unique_series[m_series_name];
+            m_series = m_unique_series[m_series_key];
         }
 #else
         amrex::AllPrint() << "Warning: openPMD output requested but not compiled for series=" << m_series_name << "\n";

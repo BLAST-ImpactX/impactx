@@ -34,6 +34,8 @@ namespace impactx::diagnostics
     {
         BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(pc)");
 
+        using namespace amrex::literals; // for _prt
+
         // preparing to access reference particle data: RefPart
         RefPart const ref_part = pc.GetRefParticle();
         // reference particle charge in C
@@ -318,14 +320,14 @@ namespace impactx::diagnostics
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
         amrex::ParticleReal const e2_t = t_ms*pt_ms-tpt*tpt;
-        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0;
-        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0;
-        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0;
+        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0_prt;
+        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0_prt;
+        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0_prt;
         // Dispersion and dispersive beam moments
-        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0_prt);
         amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
         amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
         amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;
@@ -490,6 +492,8 @@ namespace impactx::diagnostics
     {
         BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(cm)");
 
+        using namespace amrex::literals; // for _prt
+
         // reference particle relativistic beta*gamma
         amrex::ParticleReal const bg = ref_part.beta_gamma();
         amrex::ParticleReal const bg2 = bg*bg;
@@ -528,14 +532,14 @@ namespace impactx::diagnostics
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
         amrex::ParticleReal const e2_t = t_ms*pt_ms-tpt*tpt;
-        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0;
-        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0;
-        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0;
+        amrex::ParticleReal const emittance_x = (e2_x > 0.0)? std::sqrt(e2_x) : 0.0_prt;
+        amrex::ParticleReal const emittance_y = (e2_y > 0.0)? std::sqrt(e2_y) : 0.0_prt;
+        amrex::ParticleReal const emittance_t = (e2_t > 0.0)? std::sqrt(e2_t) : 0.0_prt;
         // Dispersion and dispersive beam moments
-        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0);
-        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0);
+        amrex::ParticleReal const dispersion_x = ((pt_ms > 0.0) ? (- xpt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_px = ((pt_ms > 0.0) ? (- pxpt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_y = ((pt_ms > 0.0) ? (- ypt / pt_ms) : 0.0_prt);
+        amrex::ParticleReal const dispersion_py = ((pt_ms > 0.0) ? (- pypt / pt_ms) : 0.0_prt);
         amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
         amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
         amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;
@@ -615,50 +619,50 @@ namespace impactx::diagnostics
         auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
 
         std::unordered_map<std::string, amrex::ParticleReal> data;
-        data["mean_x"] = nan;
+        data["mean_x"] = 0.0_prt;
         data["min_x"] = nan;
         data["max_x"] = nan;
-        data["mean_y"] = nan;
+        data["mean_y"] = 0.0_prt;
         data["min_y"] = nan;
         data["max_y"] = nan;
-        data["mean_t"] = nan;
+        data["mean_t"] = 0.0_prt;
         data["min_t"] = nan;
         data["max_t"] = nan;
         data["sigma_x"] = sig_x;
         data["sigma_y"] = sig_y;
         data["sigma_t"] = sig_t;
-        data["mean_px"] = nan;
+        data["mean_px"] = 0.0_prt;
         data["min_px"] = nan;
         data["max_px"] = nan;
-        data["mean_py"] = nan;
+        data["mean_py"] = 0.0_prt;
         data["min_py"] = nan;
         data["max_py"] = nan;
-        data["mean_pt"] = nan;
+        data["mean_pt"] = 0.0_prt;
         data["min_pt"] = nan;
         data["max_pt"] = nan;
         data["sigma_px"] = sig_px;
         data["sigma_py"] = sig_py;
         data["sigma_pt"] = sig_pt;
         // start deprecated attributes
-        data["x_mean"] = nan;
+        data["x_mean"] = 0.0_prt;
         data["x_min"] = nan;
         data["x_max"] = nan;
-        data["y_mean"] = nan;
+        data["y_mean"] = 0.0_prt;
         data["y_min"] = nan;
         data["y_max"] = nan;
-        data["t_mean"] = nan;
+        data["t_mean"] = 0.0_prt;
         data["t_min"] = nan;
         data["t_max"] = nan;
         data["sig_x"] = sig_x;
         data["sig_y"] = sig_y;
         data["sig_t"] = sig_t;
-        data["px_mean"] = nan;
+        data["px_mean"] = 0.0_prt;
         data["px_min"] = nan;
         data["px_max"] = nan;
-        data["py_mean"] = nan;
+        data["py_mean"] = 0.0_prt;
         data["py_min"] = nan;
         data["py_max"] = nan;
-        data["pt_mean"] = nan;
+        data["pt_mean"] = 0.0_prt;
         data["pt_min"] = nan;
         data["pt_max"] = nan;
         data["sig_px"] = sig_px;

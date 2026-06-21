@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
-# Authors: Matthias Frey, Andreas Adelmann, Marco Garten, Axel Huebl
+# Copyright 2022-2026 ImpactX contributors
+# Authors: Axel Huebl
 # License: BSD-3-Clause
 #
 # -*- coding: utf-8 -*-
@@ -395,6 +395,22 @@ class MADXLexer:
                 self._advance()
                 self._advance()
                 tokens.append(Token(TokenType.AND, "&&", start_line, start_col))
+
+            elif char == "&":
+                # MAD-X line continuation: '&' at end-of-line joins the next line.
+                self._advance()
+                while self._peek() in (" ", "\t", "\r"):
+                    self._advance()
+                self._skip_comment()
+                if self._peek() == "\n":
+                    self._advance()
+                elif self._peek() is not None:
+                    raise MADXInputError(
+                        "'&' is only valid as a line-continuation marker "
+                        "at end of line",
+                        start_line,
+                        file=self.file,
+                    )
 
             elif char == "|" and self._peek(1) == "|":
                 self._advance()

@@ -23,13 +23,13 @@ namespace impactx::diagnostics
      * This prints reduced beam characteristics derived from particles in ASCII.
      *
      * @param pc container of the particles use for diagnostics
-     * @param file_name the file name to write to
+     * @param file_name file base name; the full path is resolved under ``diag.file_prefix``
      * @param step the global step
      * @param append open a new file with a fresh header (false) or append data to an existing file (true)
      */
     void DiagnosticOutput (
         ImpactXParticleContainer const & pc,
-        std::string file_name,
+        std::string const & file_name,
         int step = 0,
         bool append = false
     );
@@ -40,14 +40,14 @@ namespace impactx::diagnostics
      *
      * @param cm covariance matrix
      * @param ref_part reference particle
-     * @param file_name the file name to write to
+     * @param file_name file base name; the full path is resolved under ``diag.file_prefix``
      * @param step the global step
      * @param append open a new file with a fresh header (false) or append data to an existing file (true)
      */
     void DiagnosticOutput (
         Map6x6 const & cm,
         RefPart const & ref_part,
-        std::string file_name,
+        std::string const & file_name,
         int step = 0,
         bool append = false
     );
@@ -57,13 +57,13 @@ namespace impactx::diagnostics
      * This prints reference particle properties in ASCII.
      *
      * @param ref_part reference particle
-     * @param file_name the file name to write to
+     * @param file_name file base name; the full path is resolved under ``diag.file_prefix``
      * @param step the global step
      * @param append open a new file with a fresh header (false) or append data to an existing file (true)
      */
     void DiagnosticOutput (
         RefPart const & ref_part,
-        std::string file_name,
+        std::string const & file_name,
         int step = 0,
         bool append = false
     );

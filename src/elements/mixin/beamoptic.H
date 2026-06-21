@@ -10,6 +10,8 @@
 #ifndef IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_H
 #define IMPACTX_ELEMENTS_MIXIN_BEAMOPTIC_H
 
+#include "alignment.H"
+#include "pipeaperture.H"
 #include "spintransport.H"
 
 #include "particles/ImpactXParticleContainer.H"
@@ -37,8 +39,9 @@ namespace detail
      * Minimal demonstrator: https://cuda.godbolt.org/z/39e4q53Ye
      *
      * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
+     * @tparam T_DoAlignment whether to apply or ignore element misalignment
      */
-    template <typename T_Element>
+    template <typename T_Element, bool T_DoAlignment>
     struct PushSingleParticleSpin
     {
         using PType = ImpactXParticleContainer::ParticleType;
@@ -112,24 +115,52 @@ namespace detail
             decltype(auto) sz = load_1d(m_part_sz, i);
             decltype(auto) idcpu = load_1d(m_part_idcpu, i);
 
+            // pre/post-push functionality declared by mixin classes
+            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
+            constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
+
+            // shift into the alignment-error frame (compile-time gated)
+            if constexpr (has_alignment) {
+                m_element.shift_in(x, y, px, py);
+                m_element.rotate_in(sx, sy);
+            }
+
             // push spin & phase space through element
             m_element.spin_and_phasespace_push(x, y, t, px, py, pt, sx, sy, sz, idcpu, m_ref_part);
+
+            // apply transverse aperture in the element-local frame (compile-time gated)
+            if constexpr (has_aperture) {
+                m_element.apply_aperture(x, y, idcpu);
+            }
+
+            // shift back to the lab frame (compile-time gated)
+            if constexpr (has_alignment) {
+                m_element.shift_out(x, y, px, py);
+                m_element.rotate_out(sx, sy);
+            }
 
             // SIMD: write back to memory
             using RealType = std::decay_t<decltype(x)>;
             using IdCpuType = std::decay_t<decltype(idcpu)>;
             constexpr decltype(auto) P_Method = &T_Element::template spin_and_phasespace_push<RealType, IdCpuType>;
 
-            store_1d<P_Method, 0>(x, m_part_x, i);
-            store_1d<P_Method, 1>(y, m_part_y, i);
-            store_1d<P_Method, 2>(t, m_part_t, i);
-            store_1d<P_Method, 3>(px, m_part_px, i);
-            store_1d<P_Method, 4>(py, m_part_py, i);
-            store_1d<P_Method, 5>(pt, m_part_pt, i);
-            store_1d<P_Method, 6>(sx, m_part_sx, i);
-            store_1d<P_Method, 7>(sy, m_part_sy, i);
-            store_1d<P_Method, 8>(sz, m_part_sz, i);
-            store_1d<P_Method, 9>(idcpu, m_part_idcpu, i);
+            // shift_in/shift_out write x, y, px, py; rotate_in/rotate_out
+            // write sx, sy; apply_aperture writes idcpu.
+            // These wrapper-modified slots must be stored regardless of the push
+            // method's argument constness.
+            constexpr bool wb_align    = has_alignment;
+            constexpr bool wb_aperture = has_aperture;
+
+            store_1d<P_Method, 0, wb_align>   (x,     m_part_x,     i);
+            store_1d<P_Method, 1, wb_align>   (y,     m_part_y,     i);
+            store_1d<P_Method, 2>             (t,     m_part_t,     i);
+            store_1d<P_Method, 3, wb_align>   (px,    m_part_px,    i);
+            store_1d<P_Method, 4, wb_align>   (py,    m_part_py,    i);
+            store_1d<P_Method, 5>             (pt,    m_part_pt,    i);
+            store_1d<P_Method, 6, wb_align>   (sx,    m_part_sx,    i);
+            store_1d<P_Method, 7, wb_align>   (sy,    m_part_sy,    i);
+            store_1d<P_Method, 8>             (sz,    m_part_sz,    i);
+            store_1d<P_Method, 9, wb_aperture>(idcpu, m_part_idcpu, i);
         }
 
     private:
@@ -159,8 +190,9 @@ namespace detail
      * Minimal demonstrator: https://cuda.godbolt.org/z/39e4q53Ye
      *
      * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
+     * @tparam T_DoAlignment whether to apply or ignore element misalignment
      */
-    template <typename T_Element>
+    template <typename T_Element, bool T_DoAlignment>
     struct PushSingleParticle
     {
         using PType = ImpactXParticleContainer::ParticleType;
@@ -224,8 +256,27 @@ namespace detail
             decltype(auto) pt = load_1d(m_part_pt, i);
             decltype(auto) idcpu = load_1d(m_part_idcpu, i);
 
+            // pre/post-push functionality declared by mixin classes
+            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
+            constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
+
+            // shift into the alignment-error frame (compile-time gated)
+            if constexpr (has_alignment) {
+                m_element.shift_in(x, y, px, py);
+            }
+
             // push through element
             m_element(x, y, t, px, py, pt, idcpu, m_ref_part);
+
+            // apply transverse aperture in the element-local frame (compile-time gated)
+            if constexpr (has_aperture) {
+                m_element.apply_aperture(x, y, idcpu);
+            }
+
+            // shift back to the lab frame (compile-time gated)
+            if constexpr (has_alignment) {
+                m_element.shift_out(x, y, px, py);
+            }
 
             // write back to memory
             if constexpr (amrex::simd::is_vectorized<T_Element>)
@@ -234,13 +285,19 @@ namespace detail
                 using IdCpuType = std::decay_t<decltype(idcpu)>;
                 constexpr decltype(auto) P_Method = &T_Element::template operator()<RealType, IdCpuType>;
 
-                store_1d<P_Method, 0>(x, m_part_x, i);
-                store_1d<P_Method, 1>(y, m_part_y, i);
-                store_1d<P_Method, 2>(t, m_part_t, i);
-                store_1d<P_Method, 3>(px, m_part_px, i);
-                store_1d<P_Method, 4>(py, m_part_py, i);
-                store_1d<P_Method, 5>(pt, m_part_pt, i);
-                store_1d<P_Method, 6>(idcpu, m_part_idcpu, i);
+                // shift_in/shift_out write x, y, px, py; apply_aperture writes idcpu.
+                // These wrapper-modified slots must be stored regardless of the push
+                // method's argument constness.
+                constexpr bool wb_align    = has_alignment;
+                constexpr bool wb_aperture = has_aperture;
+
+                store_1d<P_Method, 0, wb_align>   (x,     m_part_x,     i);
+                store_1d<P_Method, 1, wb_align>   (y,     m_part_y,     i);
+                store_1d<P_Method, 2>             (t,     m_part_t,     i);
+                store_1d<P_Method, 3, wb_align>   (px,    m_part_px,    i);
+                store_1d<P_Method, 4, wb_align>   (py,    m_part_py,    i);
+                store_1d<P_Method, 5>             (pt,    m_part_pt,    i);
+                store_1d<P_Method, 6, wb_aperture>(idcpu, m_part_idcpu, i);
             }
         }
 
@@ -255,6 +312,32 @@ namespace detail
         uint64_t* const AMREX_RESTRICT m_part_idcpu;
         RefPart m_ref_part;
     };
+
+    /** Run a callable with the element's runtime misalignment lifted to a compile-time
+     *  bool, selecting specialized (branch-free) push paths for with and without alignment.
+     *
+     * With ImpactX_OPTIMIZE_ALIGNMENT (default), alignment-capable elements compile two
+     * push variants (with/without the shift/rotate transforms) and pick the matching one
+     * at runtime, so a perfectly aligned element skips the otherwise-identity transforms.
+     * Without it, only the always-on (always shift/rotate) variant is compiled, which
+     * halves the element-push compile time at the cost of running the transforms on every
+     * particle even when the element is perfectly aligned.
+     */
+    template< typename T_Element, typename F >
+    void dispatch_misalignment ([[maybe_unused]] T_Element & element, F && f)
+    {
+        if constexpr (std::is_base_of_v<mixin::Alignment, std::decay_t<T_Element>>) {
+#ifdef ImpactX_OPTIMIZE_ALIGNMENT
+            if (element.misaligned()) { f(std::true_type{}); }
+            else                      { f(std::false_type{}); }
+#else
+            // always apply the alignment transforms (single instantiation)
+            f(std::true_type{});
+#endif
+        } else {
+            f(std::false_type{});
+        }
+    }
 
     /** This pushes all particles on a particle iterator tile/box
      */
@@ -285,21 +368,23 @@ namespace detail
                 amrex::ParticleReal* const AMREX_RESTRICT part_sy = soa_real[RealSoA::sy].dataPtr();
                 amrex::ParticleReal* const AMREX_RESTRICT part_sz = soa_real[RealSoA::sz].dataPtr();
 
-                detail::PushSingleParticleSpin<T_Element> const pushSingleParticle(
-                    element, part_x, part_y, part_t, part_px, part_py, part_pt, part_sx, part_sy, part_sz, part_idcpu, ref_part);
-
                 // loop over beam particles in the box
-                amrex::ParallelForSIMD<T_Element>(np, pushSingleParticle);
+                dispatch_misalignment(element, [&](auto do_alignment) {
+                    detail::PushSingleParticleSpin<T_Element, decltype(do_alignment)::value> const pushSingleParticle(
+                        element, part_x, part_y, part_t, part_px, part_py, part_pt, part_sx, part_sy, part_sz, part_idcpu, ref_part);
+                    amrex::ParallelForSIMD<T_Element>(np, pushSingleParticle);
+                });
             } else {
                 throw std::runtime_error("Spin transport requested but element does not implement the `SpinTransport` interface class!");
             }
         }
         else {
-            detail::PushSingleParticle<T_Element> const pushSingleParticle(
-                element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
-
             // loop over beam particles in the box
-            amrex::ParallelForSIMD<T_Element>(np, pushSingleParticle);
+            dispatch_misalignment(element, [&](auto do_alignment) {
+                detail::PushSingleParticle<T_Element, decltype(do_alignment)::value> const pushSingleParticle(
+                    element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
+                amrex::ParallelForSIMD<T_Element>(np, pushSingleParticle);
+            });
         }
     }
 } // namespace detail

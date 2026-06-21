@@ -79,7 +79,8 @@ void init_impactxparticlecontainer(py::module& m)
              py::arg("keep_mass")=false, py::arg("keep_charge")=false,
              "Empty the container and reset the reference particle"
         )
-        .def("add_n_particles",
+        // internal: there is a high-level Python wrapper that accepts more types
+        .def("_add_n_particles",
              &ImpactXParticleContainer::AddNParticles,
              py::arg("x"), py::arg("y"), py::arg("t"),
              py::arg("px"), py::arg("py"), py::arg("pt"),

@@ -101,7 +101,7 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const coeff = ds * rcN / betgam2 * (1_prt/(5_prt * std::sqrt(5_prt)));
 
         // set parameters for elliptic integrals
-        amrex::ParticleReal const errtol = 1.0e-3;
+        amrex::ParticleReal const errtol = 1.0e-3_prt;
         amrex::ParticleReal const x = cm(1,1);
         amrex::ParticleReal const y = cm(3,3);
         amrex::ParticleReal const z = betgam2 * cm(5,5);
@@ -110,9 +110,9 @@ namespace impactx::envelope::spacecharge
         amrex::ParticleReal const xy = x*y;
         amrex::ParticleReal const yz = y*z;
         amrex::ParticleReal const zx = z*x;
-        amrex::ParticleReal const corr_xy = (xy==0.0)? 0.0 : std::abs(cm(1,3)/std::sqrt(xy));
-        amrex::ParticleReal const corr_yz = (yz==0.0)? 0.0 : std::abs(cm(3,5)/std::sqrt(yz));
-        amrex::ParticleReal const corr_zx = (zx==0.0)? 0.0 : std::abs(cm(5,1)/std::sqrt(zx));
+        amrex::ParticleReal const corr_xy = (xy==0.0)? 0.0_prt : std::abs(cm(1,3)/std::sqrt(xy));
+        amrex::ParticleReal const corr_yz = (yz==0.0)? 0.0_prt : std::abs(cm(3,5)/std::sqrt(yz));
+        amrex::ParticleReal const corr_zx = (zx==0.0)? 0.0_prt : std::abs(cm(5,1)/std::sqrt(zx));
         if (corr_xy > errtol || corr_yz > errtol || corr_zx > errtol) {
             ablastr::warn_manager::WMRecordWarning(
                 "algo.space_charge",

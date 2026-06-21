@@ -35,7 +35,7 @@ def register_RFCavity_extension(cls):
         rotation=0,
         aperture_x=0,
         aperture_y=0,
-        mapsteps=1,
+        mapsteps=10,
         nslice=1,
         name=None,
     ):

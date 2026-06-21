@@ -137,6 +137,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${analysis_script}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
+        impactx_test_set_pythonpath(${name}.analysis)
         set_property(TEST ${name}.analysis APPEND PROPERTY DEPENDS "${name}.run")
 
         # make HDF5 I/O more robust on various filesystems
@@ -152,6 +153,7 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                  COMMAND ${Python_EXECUTABLE} ${ImpactX_SOURCE_DIR}/${plot_script} --save-png
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )
+        impactx_test_set_pythonpath(${name}.plot)
         set_property(TEST ${name}.plot APPEND PROPERTY DEPENDS "${name}.run")
 
         # make HDF5 I/O more robust on various filesystems
@@ -1610,6 +1612,30 @@ add_impactx_test(dogleg-reverse.py
     OFF  # no plot script yet
 )
 
+# Dogleg in Reverse with Envelope Tracking #############################################
+#
+add_impactx_test(dogleg-reverse-envelope
+    examples/dogleg/input_dogleg_reverse_envelope.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(dogleg-reverse-envelope.py
+    examples/dogleg/run_dogleg_reverse_envelope.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+
+# Dogleg, Vertical (bends rolled 90 deg) ######################################
+#
+add_impactx_test(dogleg-vertical.py
+    examples/dogleg/run_dogleg_vertical.py
+    OFF  # ImpactX MPI-parallel (script runs two sims: envelope then particles)
+    OFF  # no analysis script (the run script self-validates in-situ)
+    OFF  # no plot script
+)
+
 # Dogleg with Energy Jitter ###################################################
 #
 add_impactx_test(dogleg-jitter
@@ -1634,6 +1660,17 @@ add_impactx_test(htu-beamline.py
     ON   # ImpactX MPI-parallel
     examples/htu_beamline/analysis_htu_beamline.py
     OFF  # no plot script yet
+)
+
+# Fermilab Booster (Simple Lattice) ###########################################
+#
+file(COPY ${ImpactX_SOURCE_DIR}/examples/simple_booster/booster_impactx_lattice.py
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/simple-booster.py)
+add_impactx_test(simple-booster.py
+    examples/simple_booster/run_simple_booster.py
+    OFF  # ImpactX MPI-parallel
+    examples/simple_booster/analysis_simple_booster.py
+    examples/simple_booster/plot_simple_booster.py
 )
 
 # HTU Beamline Model with Off-Energy Transport ################################
@@ -2039,5 +2076,67 @@ add_impactx_test(phase-wrap.py
     examples/phase_wrapper/run_phase_wrap.py
     ON    # ImpactX MPI-parallel
     examples/phase_wrapper/analysis_phase_wrap.py
+    OFF  # no plot script yet
+)
+
+# FODO Cell Using Soft-Edge Quadrupoles ###################
+add_impactx_test(fodo-softedge.py
+    examples/quadrupole_softedge/run_fodo_softedge_tanh.py
+    ON    # ImpactX MPI-parallel
+    examples/quadrupole_softedge/analysis_fodo_softedge.py
+    OFF  # no plot script yet
+)
+
+# Expanding Beam in Free Space with 2D Space Charge, with Test Particles ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/expanding_beam/initial_coords.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/expanding-fft-2d-test-particles.py)
+add_impactx_test(expanding-fft-2d-test-particles.py
+    examples/expanding_beam/run_expanding_fft_2D_test_particles.py
+    ON  # ImpactX MPI-parallel
+    OFF
+    OFF
+)
+label_impactx_test(expanding-fft-2d-test-particles.py slow)
+
+# Expanding Beam in Free Space with 2D Space Charge, Test Space Charge Kick ###################
+add_impactx_test(expanding-fft-2d-test-particles-1slice.py
+    examples/expanding_beam/run_expanding_fft_2D_test_particles_1slice.py
+    ON  # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_fft_2D_test_particles_1slice.py
+    OFF
+)
+label_impactx_test(expanding-fft-2d-test-particles-1slice.py slow)
+
+# Momentum Kick in the 2.5D Gaussian Space Charge Model ###################
+add_impactx_test(kick-Gauss2p5D.py
+    examples/space_charge_gaussian_kick/run_sc_kick_Gauss2p5D.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_Gauss2p5D.py
+    OFF  # no plot script yet
+)
+add_impactx_test(kick-PIC2p5D.py
+    examples/space_charge_gaussian_kick/run_sc_kick_PIC2p5D.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_PIC2p5D.py
+    OFF  # no plot script yet
+)
+
+# Scaling Test of Spin in an Exact Bend ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-sbend-spin-scaling.py)
+add_impactx_test(exact-sbend-spin-scaling.py
+    examples/spin_tracking/run_exact_sbend_spin_scaling.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_exact_sbend_spin_scaling.py
+    OFF  # no plot script yet
+)
+
+# Scaling Test of Spin in an Exact Combined Function Bend ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-cfbend-spin-scaling.py)
+add_impactx_test(exact-cfbend-spin-scaling.py
+    examples/spin_tracking/run_cfbend_spin_scaling.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_cfbend_spin_scaling.py
     OFF  # no plot script yet
 )

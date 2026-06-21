@@ -30,9 +30,10 @@ Tracking Modes
 
   .. note::
 
-     Our current ``envelope`` tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
-     Support for misalignments and feed-down effects in envelope tracking is in development.
-     Until then, misalignment options set on elements are silently ignored.
+     Our current ``envelope`` tracking implements ideal transfer maps, assuming always zero misalignments (translations).
+     Element rotations are handled.
+     Support for translations errors, non-zero envelope means, and feed-down effects in envelope tracking is in development.
+     Until then, translations errors set on elements are silently ignored.
 
 .. _running-cpp-parameters-particle:
 
@@ -238,7 +239,7 @@ If the same element name is used multiple times, then an output series is create
 * ``<element_name>.name`` (``string``, default value: ``<element_name>``)
 
   The output series name to use.
-  By default, output is created under ``diags/openPMD/<element_name>.<backend>``.
+  By default, output is created under ``<diag.file_prefix>/openPMD/<element_name>.<backend>``.
 
 * ``<element_name>.backend`` (``string``, default value: ``default``)
 
@@ -720,10 +721,17 @@ This requires these additional parameters:
 ``quadrupole_softedge``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``quadrupole_softedge`` for a soft-edge quadrupole. This requires these additional parameters:
+``quadrupole_softedge`` for a soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``) attain a peak on-axis value of 1, then the parameter
+``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``
+has units of inverse meters squared.
+
+This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
-* ``<element_name>.gscale`` (``float``, in inverse meters) Scaling factor for on-axis magnetic field gradient
+* ``<element_name>.gscale`` (``float``, in inverse meters squared) Scaling factor for on-axis magnetic field gradient
 * ``<element_name>.cos_coefficients`` (array of ``float``) cos coefficients in Fourier expansion of the on-axis field gradient
   (optional); default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
 * ``<element_name>.sin_coefficients`` (array of ``float``) sin coefficients in Fourier expansion of the on-axis field gradient
@@ -733,7 +741,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 ``quadedge``
@@ -761,7 +769,13 @@ This requires these additional parameters:
 ``rfcavity``
 ^^^^^^^^^^^^
 
-``rfcavity`` a radiofrequency cavity.
+``rfcavity`` a radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis longitudinal electric field are described in the documentation of ``escale`` below.  For example, if the values used to
+describe the on-axis electric field (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
+``escale``, which multiplies this profile, specifies the peak value of the longitudinal electric field gradient on-axis, divided by particle rest energy.  In this case,
+``escale`` has units of inverse meters.
+
 This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
@@ -776,7 +790,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
@@ -854,7 +868,14 @@ This requires these additional parameters:
 ``solenoid_softedge``
 ^^^^^^^^^^^^^^^^^^^^^
 
-``solenoid_softedge`` for a soft-edge solenoid. This requires these additional parameters:
+``solenoid_softedge`` for a soft-edge solenoid.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The units used for the on-axis longitudinal magnetic field data are determined by the parameter ``unit``.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``field_on_axis``) attain a peak on-axis value of 1, then the parameter
+``bscale``, which multiplies this profile, specifies the peak value of the longitudinal magnetic field gradient on-axis.  If ``unit=0``, this is normalized by the magnetic
+rigidity.
+
+This requires these additional parameters:
 
 * ``<element_name>.ds`` (``float``, in meters) the segment length
 * ``<element_name>.bscale`` (``float``, in inverse meters) Scaling factor for on-axis longitudinal magnetic field
@@ -872,7 +893,7 @@ This requires these additional parameters:
 * ``<element_name>.rotation`` (``float``, in degrees) rotation error in the transverse plane
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``1``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for map and reference particle push in applied fields (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
@@ -1048,6 +1069,14 @@ See there ``nslice`` option on lattice elements for slicing.
 
       Initial integral region to avoid divergence of integrand at 0.
 
+    * ``algo.space_charge.gauss_long_scale`` (``float``, default: in-situ :math:`6 \cdot \gamma \cdot \sigma_z`)
+
+      Longitudinal space charge scale for the Gauss2p5D space charge model.
+      This is an approximation that only influences the longitudinal momentum (``pt``) kick.
+      If not set, it defaults to :math:`6 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
+      typical value when comparing to a 3D model.
+
     * ``algo.space_charge.gauss_charge_z_bins`` (``int``, default: ``129``)
 
       Number of bins for longitudinal line density deposition.
@@ -1128,7 +1157,7 @@ See there ``nslice`` option on lattice elements for slicing.
 
 Multigrid-specific numerical options:
 
-* ``algo.mlmg_relative_tolerance`` (``float``, optional, default: ``1.e-7``)
+* ``algo.mlmg_relative_tolerance`` (``float``, optional, default: ``1.e-7`` (DP) / ``1.e-4`` (SP))
 
   The relative precision with which the electrostatic space-charge fields should be calculated.
   More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver.
@@ -1258,6 +1287,8 @@ Currently, the implementation of spin tracking is a work in progress, and this f
 
   Whether to track particle spin.
 
+  Spin tracking uses the gyromagnetic anomaly of the reference particle, which is set together with the particle species (see ``<beam>.particle``).
+
 
 .. _running-cpp-parameters-parser:
 
@@ -1336,13 +1367,26 @@ Diagnostics and output
   By default, diagnostics are computed and written at the beginning and end of the simulation.
   Enabling this flag will write diagnostics at every step and slice step.
 
+* ``diag.file_prefix`` (``string``, optional, default: ``diags``)
+
+  Root directory for diagnostic output.
+  By default, diagnostics are written in the folder ``diags/``.
+
+  Set to an empty string or ``.`` to write diagnostics in the current working directory.
+
+  If a directory at ``diag.file_prefix`` already exists when a simulation starts,
+  ImpactX renames it to ``<diag.file_prefix>.old.<suffix>`` to preserve prior results.
+  This is skipped when ``diag.file_prefix`` resolves to the current working directory,
+  the root directory, or an ancestor of the current working directory; in those cases
+  new output is written alongside existing files.
+
 * ``diag.file_min_digits`` (``integer``, optional, default: ``6``)
 
   The minimum number of digits used for the step number appended to the diagnostic file names.
 
 * ``diag.backend`` (``string``, default value: ``default``)
 
-  Diagnostics for particles lost in apertures, stored as ``diags/openPMD/particles_lost.*`` at the end of the simulation.
+  Diagnostics for particles lost in apertures, stored as ``<diag.file_prefix>/openPMD/particles_lost.*`` at the end of the simulation.
   See the ``beam_monitor`` element for backend values.
 
 * ``diag.eigenemittances`` (``boolean``, optional, default: ``false``)

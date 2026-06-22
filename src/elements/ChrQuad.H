@@ -155,97 +155,95 @@ namespace impactx::elements
             T_Real const tout = t;
 
             // compute particle momentum deviation delta + 1
-            T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+            T_Real const delta1 = sqrt(1_prt - 2_prt * pt / m_beta + powi<2>(pt));
             T_Real const delta = delta1 - 1_prt;
 
             // compute phase advance per unit length in s (in rad/m)
             // chromatic dependence on delta is included
-            T_Real const omega = sqrt(abs(m_g)/delta1);
+            T_Real const omega = sqrt(abs(m_g) / delta1);
 
             // initialize output values of momenta
             T_Real pxout = px;
             T_Real pyout = py;
             // T_Real const ptout = pt;
 
-            // paceholder variables
-            T_Real q1 = xout;
-            T_Real q2 = yout;
-            T_Real p1 = px;
-            T_Real p2 = py;
-
             if (m_g != 0_prt)
             {
-               // advance transverse position and momentum (focusing/defocusing
-               // quad). The two cases differ only by which plane is oscillatory
-               // vs. hyperbolic; the m_g sign is uniform across particles and
-               // delta1 > 0 always, so we select the trig factors branch-free.
-               // Only raw trig values are selected, so the arithmetic order
-               // matches the original branches byte-for-byte.
-               bool const focusing = m_g > 0_prt;
-               // x-plane: cos/sin for focusing, cosh/sinh for defocusing
-               T_Real const cx = focusing ? cos(omega*m_slice_ds) : cosh(omega*m_slice_ds);
-               T_Real const sx = focusing ? sin(omega*m_slice_ds) : sinh(omega*m_slice_ds);
-               // y-plane: cosh/sinh for focusing, cos/sin for defocusing
-               T_Real const cy = focusing ? cosh(omega*m_slice_ds) : cos(omega*m_slice_ds);
-               T_Real const sy = focusing ? sinh(omega*m_slice_ds) : sin(omega*m_slice_ds);
-               // sign on the px,py focusing kick: -1 (x focusing) / +1 (x defocusing)
-               T_Real const ax = focusing ? -1_prt : 1_prt;
-               T_Real const ay = -ax;
+                // Advance transverse position and momentum.
 
-               x = cx * xout + sx / (omega*delta1)*px;
-               pxout = ax * omega * delta1 * sx * xout + cx * px;
+                // Focusing/defocusing quad:
+                //   The two cases differ only by which plane is oscillatory
+                //   vs. hyperbolic; the m_g sign is uniform across particles and
+                //   delta1 > 0 always, so we select the trig factors branch-free.
+                bool const focusing = m_g > 0_prt;
+                // raw off-diagonal trig: oscillatory (sin) for the focusing plane,
+                // hyperbolic (sinh) for the defocusing plane (delta1 > 0 always).
+                T_Real const sx = focusing ? sin(omega  * m_slice_ds) : sinh(omega * m_slice_ds);
+                T_Real const sy = focusing ? sinh(omega * m_slice_ds) : sin(omega  * m_slice_ds);
+                // sign on the px,py kick: -1 (x focusing) / +1 (x defocusing)
+                T_Real const ax = focusing ? -1_prt : 1_prt;
 
-               y = cy * yout + sy / (omega*delta1)*py;
-               pyout = ay * omega * delta1 * sy * yout + cy * py;
+                // per-particle 2x2 transfer-map blocks. omega is chromatic (it depends
+                // on delta1), so unlike our linear Quad these cannot be cached in compute_constants.
+                T_Real const w = omega * delta1;
+                T_Real const R11 = focusing ? cos(omega * m_slice_ds) : cosh(omega * m_slice_ds);
+                T_Real const R12 = sx / w;
+                T_Real const R21 = ax * w * sx;
+                T_Real const R22 = R11;
+                T_Real const R33 = focusing ? cosh(omega * m_slice_ds) : cos(omega * m_slice_ds);
+                T_Real const R34 = sy / w;
+                T_Real const R43 = -ax * w * sy;
+                T_Real const R44 = R33;
 
-               // For the longitudinal update below, (q1,p1) is the oscillatory
-               // plane and (q2,p2) the hyperbolic plane. For focusing that is
-               // (x,px) and (y,py); for defocusing the planes swap.
-               q1 = focusing ? xout : yout;
-               q2 = focusing ? yout : xout;
-               p1 = focusing ? px : py;
-               p2 = focusing ? py : px;
-            } else
-            {
-               // advance transverse position and momentum (zero focusing strength = drift)
-               x = xout + m_slice_ds * px / delta1;
-               // pxout = px;
-               y = yout + m_slice_ds * py / delta1;
-               // pyout = py;
-            }
+                x     = R11 * xout + R12 * px;
+                pxout = R21 * xout + R22 * px;
+                y     = R33 * yout + R34 * py;
+                pyout = R43 * yout + R44 * py;
 
+                // For the longitudinal update below, (q1,p1) is the oscillatory
+                // plane and (q2,p2) the hyperbolic plane. For focusing that is
+                // (x,px) and (y,py), for defocusing the planes swap.
+                T_Real const q1 = focusing ? xout : yout;
+                T_Real const q2 = focusing ? yout : xout;
+                T_Real const p1 = focusing ? px : py;
+                T_Real const p2 = focusing ? py : px;
 
-            // advance longitudinal position and momentum
-
-            if (m_g == 0.0)
-            {
-               // the corresponding symplectic update to t (zero strength = drift)
-               T_Real term = 2_prt * powi<2>(pt) + powi<2>(px) + powi<2>(py);
-               term = 2_prt - 4_prt * m_beta * pt + powi<2>(m_beta) * term;
-               term = -2_prt + powi<2>(refpart.gamma())*term;
-               term = (-1_prt + m_beta * pt) * term;
-               term = term * m_const1;
-               t = tout - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
-               // ptout = pt;
-
-            } else
-            {
                 // the corresponding symplectic update to t (nonzero strength)
                 T_Real const term = pt + delta / m_beta;
                 T_Real const t0 = tout - term * m_slice_ds / delta1;
 
-                T_Real const w = omega * delta1;
-                T_Real const term1 = -(powi<2>(p2) + powi<2>(q2) * powi<2>(w)) * sinh(2_prt*m_slice_ds*omega);
-                T_Real const term2 = -(powi<2>(p1) - powi<2>(q1) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
-                T_Real const term3 = -2_prt * q2 * p2 * w * cosh(2_prt*m_slice_ds*omega);
-                T_Real const term4 = -2_prt * q1 * p1 * w * cos(2_prt*m_slice_ds*omega);
-                T_Real const term5 =  2_prt * omega * (q1*p1*delta1 + q2*p2*delta1
-                    -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1)-powi<2>(q2)) * powi<2>(w)*m_slice_ds);
-                t = t0 + (-1_prt+m_beta*pt)
-                       / (8_prt*m_beta * powi<3>(delta1)*omega)
-                       * (term1+term2+term3+term4+term5);
-               // ptout = pt;
-             }
+                T_Real const term1 = -(powi<2>(p2) + powi<2>(q2) * powi<2>(w)) * sinh(2_prt * m_slice_ds * omega);
+                T_Real const term2 = -(powi<2>(p1) - powi<2>(q1) * powi<2>(w)) * sin(2_prt  * m_slice_ds * omega);
+                T_Real const term3 = -2_prt * q2 * p2 * w * cosh(2_prt * m_slice_ds * omega);
+                T_Real const term4 = -2_prt * q1 * p1 * w * cos(2_prt  * m_slice_ds * omega);
+                T_Real const term5 =  2_prt * omega * (
+                    q1 * p1 * delta1 + q2 * p2 * delta1
+                    -(powi<2>(p1) + powi<2>(p2)) * m_slice_ds
+                    -(powi<2>(q1) - powi<2>(q2)) * powi<2>(w) * m_slice_ds
+                );
+                t = t0 + (-1_prt + m_beta * pt)
+                         / (8_prt * m_beta * powi<3>(delta1) * omega)
+                         * (term1 + term2 + term3 + term4 + term5);
+                // ptout = pt;
+
+            } else // drift
+            {
+                // advance transverse position and momentum (zero focusing strength = drift)
+                x = xout + m_slice_ds * px / delta1;
+                // pxout = px;
+                y = yout + m_slice_ds * py / delta1;
+                // pyout = py;
+
+                // advance longitudinal position and momentum
+                //   the corresponding symplectic update to t (zero strength = drift)
+                T_Real term = 2_prt * powi<2>(pt) + powi<2>(px) + powi<2>(py);
+                term = 2_prt - 4_prt * m_beta * pt + powi<2>(m_beta) * term;
+                term = -2_prt + powi<2>(refpart.gamma()) * term;
+                term = (-1_prt + m_beta * pt) * term;
+                term = term * m_const1;
+                t = tout - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
+                // ptout = pt;
+            }
 
             // assign updated momenta
             px = pxout;
@@ -260,7 +258,7 @@ namespace impactx::elements
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
-            using namespace amrex::literals; // for _rt and _prt
+            using namespace amrex::literals;  // for _rt and _prt
             using amrex::Math::powi;
 
             // assign input reference particle values
@@ -278,18 +276,17 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // advance position and momentum (straight element)
-            refpart.x = x + step*px;
-            refpart.y = y + step*py;
-            refpart.z = z + step*pz;
-            refpart.t = t - step*pt;
+            refpart.x = x + step * px;
+            refpart.y = y + step * py;
+            refpart.z = z + step * pz;
+            refpart.t = t - step * pt;
 
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
-
 
 
         /** This operator pushes the particle spin.
@@ -322,34 +319,33 @@ namespace impactx::elements
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
-            using namespace amrex::literals; // for _rt and _prt
+            using namespace amrex::literals;  // for _rt and _prt
             using amrex::Math::powi;
-            using namespace std; // for cmath(float)
+            using namespace std;  // for cmath(float)
 
             // compute particle momentum deviation delta + 1
-            T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
+            T_Real const delta1 = sqrt(1_prt - 2_prt * pt / m_beta + powi<2>(pt));
             T_Real const inv_delta1 = 1_prt / delta1;
 
             // compute particle relativistic gamma
-            T_Real const gamma = refpart.gamma() * (1_prt - m_beta*pt);
+            T_Real const gamma = refpart.gamma() * (1_prt - m_beta * pt);
             T_Real const gyro_const = 1_prt + refpart.gyromagnetic_anomaly * gamma;
 
             // compute phase advance per unit length in s (in rad/m)
             // chromatic dependence on delta is included
-            T_Real const omega = sqrt(abs(m_g)*inv_delta1);
+            T_Real const omega = sqrt(abs(m_g) * inv_delta1);
+            T_Real const omega_ds = omega * m_slice_ds;
 
             // compute trigonometric quantities
-            auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*m_slice_ds);
-            T_Real const sinh_omega_ds = sinh(omega*m_slice_ds);
-            T_Real const cosh_omega_ds = cosh(omega*m_slice_ds);
+            auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega_ds);
+            T_Real const sinh_omega_ds = sinh(omega_ds);
+            T_Real const cosh_omega_ds = cosh(omega_ds);
 
             // The focusing/defocusing/drift cases differ only by which plane is
             // oscillatory vs. hyperbolic and by an overall sign. omega is real
             // (delta1 > 0 always) and the m_g sign is uniform across particles,
-            // so we select the per-plane factors branch-free. Only the raw
-            // trig values are selected; the surrounding arithmetic order is
-            // kept identical to the original branches so the result is
-            // byte-identical. For m_g == 0, omega == 0 makes all of (1-cos),
+            // so we select the per-plane factors branch-free.
+            // For m_g == 0, omega == 0 makes all of (1-cos),
             // sin, (cosh-1), sinh vanish, so the generator is identically zero
             // (drift) with no division by omega anywhere.
             bool const focusing = m_g > 0.0_prt;
@@ -362,16 +358,15 @@ namespace impactx::elements
             // overall sign: -gyro for focusing, +gyro for defocusing/drift
             T_Real const sgn = focusing ? -gyro_const : gyro_const;
 
-            T_Real const lambdax = sgn * ( py * inv_delta1 * fac_y + y * omega * sin_y );
-            T_Real const lambday = sgn * ( px * inv_delta1 * fac_x + x * omega * sin_x );
+            T_Real const lambdax = sgn * (py * inv_delta1 * fac_y + y * omega * sin_y);
+            T_Real const lambday = sgn * (px * inv_delta1 * fac_x + x * omega * sin_x);
             T_Real const lambdaz = 0_prt;
 
             // push the spin vector using the generator just determined
-            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+            rotate_spin(lambdax, lambday, lambdaz, sx, sy, sz);
 
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
-
         }
 
 

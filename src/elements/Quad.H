@@ -121,26 +121,29 @@ namespace impactx::elements
             // element, so the per-particle operator() and spin push are
             // branch-free. omega = sqrt(|k|) is independent of the tracked
             // particle, so all trigonometric quantities can be cached.
-            // The transverse map per plane is:
-            //   xout  = m_c*x + m_s*px ;  pxout = m_f*x + m_c*px
+            // The transverse 6x6 transfer-map blocks are:
+            //   xout = m_R11*x + m_R12*px ;  pxout = m_R21*x + m_R22*px
+            //   yout = m_R33*y + m_R34*py ;  pyout = m_R43*y + m_R44*py
             // and the spin generator is:
             //   lambdax = m_spin_py*py + m_spin_y*y
             //   lambday = m_spin_px*px + m_spin_x*x
             amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
-            amrex::ParticleReal const sin_omega_ds = std::sin(omega*m_slice_ds);
-            amrex::ParticleReal const cos_omega_ds = std::cos(omega*m_slice_ds);
-            amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*m_slice_ds);
-            amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*m_slice_ds);
+            amrex::ParticleReal const sin_omega_ds = std::sin(omega * m_slice_ds);
+            amrex::ParticleReal const cos_omega_ds = std::cos(omega * m_slice_ds);
+            amrex::ParticleReal const sinh_omega_ds = std::sinh(omega * m_slice_ds);
+            amrex::ParticleReal const cosh_omega_ds = std::cosh(omega * m_slice_ds);
 
             if (m_k > 0.0_prt)
             {
                 // horizontally focusing quad (x focusing, y defocusing)
-                m_cx = cos_omega_ds;
-                m_sx = sin_omega_ds / omega;
-                m_fx = -omega * sin_omega_ds;
-                m_cy = cosh_omega_ds;
-                m_sy = sinh_omega_ds / omega;
-                m_fy = omega * sinh_omega_ds;
+                m_R11 = cos_omega_ds;
+                m_R12 = sin_omega_ds / omega;
+                m_R21 = -omega * sin_omega_ds;
+                m_R22 = cos_omega_ds;
+                m_R33 = cosh_omega_ds;
+                m_R34 = sinh_omega_ds / omega;
+                m_R43 = omega * sinh_omega_ds;
+                m_R44 = cosh_omega_ds;
 
                 m_spin_py = -m_gyro_const * (cosh_omega_ds - 1_prt);
                 m_spin_y  = -m_gyro_const * omega * sinh_omega_ds;
@@ -150,12 +153,14 @@ namespace impactx::elements
             else if (m_k < 0.0_prt)
             {
                 // horizontally defocusing quad (x defocusing, y focusing)
-                m_cx = cosh_omega_ds;
-                m_sx = sinh_omega_ds / omega;
-                m_fx = omega * sinh_omega_ds;
-                m_cy = cos_omega_ds;
-                m_sy = sin_omega_ds / omega;
-                m_fy = -omega * sin_omega_ds;
+                m_R11 = cosh_omega_ds;
+                m_R12 = sinh_omega_ds / omega;
+                m_R21 = omega * sinh_omega_ds;
+                m_R22 = cosh_omega_ds;
+                m_R33 = cos_omega_ds;
+                m_R34 = sin_omega_ds / omega;
+                m_R43 = -omega * sin_omega_ds;
+                m_R44 = cos_omega_ds;
 
                 m_spin_py = m_gyro_const * (1_prt - cos_omega_ds);
                 m_spin_y  = m_gyro_const * omega * sin_omega_ds;
@@ -165,12 +170,14 @@ namespace impactx::elements
             else
             {
                 // zero strength = drift
-                m_cx = 1.0_prt;
-                m_sx = m_slice_ds;
-                m_fx = 0.0_prt;
-                m_cy = 1.0_prt;
-                m_sy = m_slice_ds;
-                m_fy = 0.0_prt;
+                m_R11 = 1.0_prt;
+                m_R12 = m_slice_ds;
+                m_R21 = 0.0_prt;
+                m_R22 = 1.0_prt;
+                m_R33 = 1.0_prt;
+                m_R34 = m_slice_ds;
+                m_R43 = 0.0_prt;
+                m_R44 = 1.0_prt;
 
                 m_spin_py = 0.0_prt;
                 m_spin_y  = 0.0_prt;
@@ -207,23 +214,19 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // initialize output values
-            // Note: x and y are read before being overwritten below, so we
-            // capture them up front to keep the push branch-free and order
-            // independent.
+            // copies of original input values
             T_Real const xin = x;
             T_Real const yin = y;
 
             // advance position and momentum
-            // The focusing/defocusing/drift selection is fully resolved in
-            // compute_constants(); see the m_c*/m_s*/m_f* coefficients there.
-            x = m_cx*xin + m_sx*px;
-            px = m_fx*xin + m_cx*px;
+            x  = m_R11 * xin + m_R12 * px;
+            px = m_R21 * xin + m_R22 * px;
 
-            y = m_cy*yin + m_sy*py;
-            py = m_fy*yin + m_cy*py;
+            y  = m_R33 * yin + m_R34 * py;
+            py = m_R43 * yin + m_R44 * py;
 
-            t = t + m_slice_bg*pt;
+            // R56 = m_slice_bg ;  R55 = R66 = 1
+            t = t + m_slice_bg * pt;
             // pt unchanged
         }
 
@@ -232,8 +235,8 @@ namespace impactx::elements
          * @param[in,out] refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const {  // TODO: update as well, but needs more careful placement of calc_constants
-
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
 
@@ -252,7 +255,7 @@ namespace impactx::elements
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // assign intermediate parameter
-            amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt)-1.0_prt);
+            amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // advance position and momentum (straight element)
             refpart.x = x + step*px;
@@ -270,7 +273,7 @@ namespace impactx::elements
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map (RefPart const & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
@@ -352,13 +355,13 @@ namespace impactx::elements
 
             // the axis-angle vector
             // The focusing/defocusing/drift selection is fully resolved in
-            // compute_constants(); see the m_spin_* coefficients there.
-            T_Real const lambdax = m_spin_py*py + m_spin_y*y;
-            T_Real const lambday = m_spin_px*px + m_spin_x*x;
+            // compute_constants(), see the m_spin_* coefficients there.
+            T_Real const lambdax = m_spin_py * py + m_spin_y * y;
+            T_Real const lambday = m_spin_px * px + m_spin_x * x;
             T_Real const lambdaz = 0_prt;
 
             // push the spin vector using the generator just determined
-            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+            rotate_spin(lambdax, lambday, lambdaz, sx, sy, sz);
 
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
@@ -375,15 +378,11 @@ namespace impactx::elements
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
         amrex::ParticleReal m_betgam2;        //! beta*gamma^2
-        amrex::ParticleReal m_slice_bg;       //! m_slice_ds / m_betgam2
+        amrex::ParticleReal m_slice_bg;       //! R56 = m_slice_ds / m_betgam2
         amrex::ParticleReal m_gyro_const;     //! (1 + G*gamma) for spin calculation
-        // branch-free transverse map coefficients (per plane), see compute_constants()
-        amrex::ParticleReal m_cx;             //! x,px diagonal coefficient (cos or cosh)
-        amrex::ParticleReal m_sx;             //! x += m_sx*px off-diagonal coefficient
-        amrex::ParticleReal m_fx;             //! px += m_fx*x off-diagonal coefficient
-        amrex::ParticleReal m_cy;             //! y,py diagonal coefficient (cos or cosh)
-        amrex::ParticleReal m_sy;             //! y += m_sy*py off-diagonal coefficient
-        amrex::ParticleReal m_fy;             //! py += m_fy*y off-diagonal coefficient
+        // pre-resolved 6x6 transfer-map elements (transverse blocks), see compute_constants()
+        amrex::ParticleReal m_R11, m_R12, m_R21, m_R22; //! x--px block
+        amrex::ParticleReal m_R33, m_R34, m_R43, m_R44; //! y--py block
         // branch-free spin generator coefficients, see compute_constants()
         amrex::ParticleReal m_spin_px;        //! lambday += m_spin_px*px
         amrex::ParticleReal m_spin_x;         //! lambday += m_spin_x*x

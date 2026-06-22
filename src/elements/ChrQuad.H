@@ -173,32 +173,38 @@ namespace impactx::elements
             T_Real p1 = px;
             T_Real p2 = py;
 
-            if (m_g > 0_prt)
+            if (m_g != 0_prt)
             {
-               // advance transverse position and momentum (focusing quad)
-               x = cos(omega*m_slice_ds) * xout +
-                   sin(omega*m_slice_ds) / (omega*delta1)*px;
-               pxout = -omega * delta1 * sin(omega*m_slice_ds) * xout + cos(omega * m_slice_ds) * px;
+               // advance transverse position and momentum (focusing/defocusing
+               // quad). The two cases differ only by which plane is oscillatory
+               // vs. hyperbolic; the m_g sign is uniform across particles and
+               // delta1 > 0 always, so we select the trig factors branch-free.
+               // Only raw trig values are selected, so the arithmetic order
+               // matches the original branches byte-for-byte.
+               bool const focusing = m_g > 0_prt;
+               // x-plane: cos/sin for focusing, cosh/sinh for defocusing
+               T_Real const cx = focusing ? cos(omega*m_slice_ds) : cosh(omega*m_slice_ds);
+               T_Real const sx = focusing ? sin(omega*m_slice_ds) : sinh(omega*m_slice_ds);
+               // y-plane: cosh/sinh for focusing, cos/sin for defocusing
+               T_Real const cy = focusing ? cosh(omega*m_slice_ds) : cos(omega*m_slice_ds);
+               T_Real const sy = focusing ? sinh(omega*m_slice_ds) : sin(omega*m_slice_ds);
+               // sign on the px,py focusing kick: -1 (x focusing) / +1 (x defocusing)
+               T_Real const ax = focusing ? -1_prt : 1_prt;
+               T_Real const ay = -ax;
 
-               y = cosh(omega*m_slice_ds) * yout +
-                   sinh(omega*m_slice_ds) / (omega*delta1)*py;
-               pyout = omega * delta1 * sinh(omega*m_slice_ds) * yout + cosh(omega * m_slice_ds) * py;
+               x = cx * xout + sx / (omega*delta1)*px;
+               pxout = ax * omega * delta1 * sx * xout + cx * px;
 
-            } else if (m_g < 0_prt)
-            {
-               // advance transverse position and momentum (defocusing quad)
-               x = cosh(omega*m_slice_ds) * xout +
-                   sinh(omega*m_slice_ds) / (omega*delta1)*px;
-               pxout = omega * delta1 * sinh(omega*m_slice_ds) * xout + cosh(omega * m_slice_ds) * px;
+               y = cy * yout + sy / (omega*delta1)*py;
+               pyout = ay * omega * delta1 * sy * yout + cy * py;
 
-               y = cos(omega*m_slice_ds) * yout +
-                   sin(omega*m_slice_ds) / (omega*delta1) * py;
-               pyout = -omega * delta1 * sin(omega*m_slice_ds) * yout + cos(omega * m_slice_ds) * py;
-
-               q1 = yout;
-               q2 = xout;
-               p1 = py;
-               p2 = px;
+               // For the longitudinal update below, (q1,p1) is the oscillatory
+               // plane and (q2,p2) the hyperbolic plane. For focusing that is
+               // (x,px) and (y,py); for defocusing the planes swap.
+               q1 = focusing ? xout : yout;
+               q2 = focusing ? yout : xout;
+               p1 = focusing ? px : py;
+               p2 = focusing ? py : px;
             } else
             {
                // advance transverse position and momentum (zero focusing strength = drift)
@@ -320,11 +326,6 @@ namespace impactx::elements
             using amrex::Math::powi;
             using namespace std; // for cmath(float)
 
-            // initialize the three components of the axis-angle vector
-            T_Real lambdax = 0_prt;
-            T_Real lambday = 0_prt;
-            T_Real lambdaz = 0_prt;
-
             // compute particle momentum deviation delta + 1
             T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
             T_Real const inv_delta1 = 1_prt / delta1;
@@ -342,35 +343,28 @@ namespace impactx::elements
             T_Real const sinh_omega_ds = sinh(omega*m_slice_ds);
             T_Real const cosh_omega_ds = cosh(omega*m_slice_ds);
 
-            if (m_g > 0.0_prt)
-            {
+            // The focusing/defocusing/drift cases differ only by which plane is
+            // oscillatory vs. hyperbolic and by an overall sign. omega is real
+            // (delta1 > 0 always) and the m_g sign is uniform across particles,
+            // so we select the per-plane factors branch-free. Only the raw
+            // trig values are selected; the surrounding arithmetic order is
+            // kept identical to the original branches so the result is
+            // byte-identical. For m_g == 0, omega == 0 makes all of (1-cos),
+            // sin, (cosh-1), sinh vanish, so the generator is identically zero
+            // (drift) with no division by omega anywhere.
+            bool const focusing = m_g > 0.0_prt;
+            // "1 - cos"-type factors multiplying p*inv_delta1, per plane
+            T_Real const fac_x = focusing ? (1_prt - cos_omega_ds) : (cosh_omega_ds - 1_prt);
+            T_Real const fac_y = focusing ? (cosh_omega_ds - 1_prt) : (1_prt - cos_omega_ds);
+            // raw "sin"-type trig multiplying q*omega, per plane
+            T_Real const sin_x = focusing ? sin_omega_ds : sinh_omega_ds;
+            T_Real const sin_y = focusing ? sinh_omega_ds : sin_omega_ds;
+            // overall sign: -gyro for focusing, +gyro for defocusing/drift
+            T_Real const sgn = focusing ? -gyro_const : gyro_const;
 
-                // horizontally focusing quad case
-                lambdax = -gyro_const * (
-                    py * inv_delta1 * (cosh_omega_ds - 1_prt) +
-                    y * omega * sinh_omega_ds
-                );
-                lambday = -gyro_const * (
-                    px * inv_delta1 * (1_prt - cos_omega_ds) +
-                    x * omega * sin_omega_ds
-                );
-
-            } else if (m_g < 0.0_prt)
-            {
-
-                // horizontally defocusing quad case
-                lambdax = gyro_const * (
-                    py * inv_delta1 * (1_prt - cos_omega_ds) +
-                    y * omega * sin_omega_ds
-                );
-                lambday = gyro_const * (
-                    px * inv_delta1 * (cosh_omega_ds - 1_prt) +
-                    x * omega * sinh_omega_ds
-                );
-
-            } else {
-                // treat as a drift
-            }
+            T_Real const lambdax = sgn * ( py * inv_delta1 * fac_y + y * omega * sin_y );
+            T_Real const lambday = sgn * ( px * inv_delta1 * fac_x + x * omega * sin_x );
+            T_Real const lambdaz = 0_prt;
 
             // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);

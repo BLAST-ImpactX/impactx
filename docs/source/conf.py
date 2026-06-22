@@ -35,6 +35,10 @@ import sphinx_rtd_theme  # noqa
 
 sys.path.insert(0, os.path.join(os.path.abspath(__file__), "../Python"))
 
+# Modify sys.path to use custom extension in _ext
+_ext_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_ext")
+sys.path.insert(0, _ext_path)
+
 
 def download_with_headers(url, filename):
     """Download a file with proper User-Agent header to avoid 403 errors."""
@@ -68,6 +72,7 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinxcontrib.googleanalytics",
     "breathe",
+    "parmparse",
 ]
 
 # Google Analytics
@@ -138,6 +143,9 @@ numfig = True
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+# Custom CSS files, copied after the builtin static files
+html_css_files = ["custom.css"]
 
 
 # -- Options for HTMLHelp output ------------------------------------------

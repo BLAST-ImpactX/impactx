@@ -597,11 +597,13 @@ class ImpactX:
         """
         Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.
         """
-    def rho(
-        self, lev: typing.SupportsInt | typing.SupportsIndex
-    ) -> amrex.space3d.amrex_3d_pybind.MultiFab:
+    def rho(self, lev: typing.SupportsInt | typing.SupportsIndex) -> typing.Any:
         """
-        charge density per level
+        charge density per level.
+
+        For the 2D space-charge models (``2D`` / ``2.5D``) this returns the
+        x-y projected (2D) charge density that is actually solved; for the
+        3D models it returns the 3D charge density.
         """
     def space_charge_field(
         self, lev: typing.SupportsInt | typing.SupportsIndex, comp: str

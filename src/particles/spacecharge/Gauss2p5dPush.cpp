@@ -19,6 +19,7 @@
 #include <ablastr/warn_manager/WarnManager.H>
 
 #include <cmath>
+#include <string>
 
 
 namespace impactx::particles::spacecharge
@@ -176,11 +177,13 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const aspect_ratio = std::sqrt(sigx*sigx + sigy*sigy) / (beta_gamma * sigt);
 
         if (aspect_ratio > 1_rt) {
-           ablastr::warn_manager::WMRecordWarning(
-               "Impactx::particles::spacecharge::Gauss2p5dPush",
-               "Gauss2p5D model assumes a long bunch, but here sigma_perp / (gamma * sigmaz) > 1. ",
-               ablastr::warn_manager::WarnPriority::medium
-           );
+            ablastr::warn_manager::WMRecordWarning(
+                "Impactx::particles::spacecharge::Gauss2p5dPush",
+                "Gauss2p5D model assumes a long bunch, but here "
+                "sigma_perp / (beta_gamma * sigmaz) = " +
+                std::to_string(aspect_ratio) + " > 1.",
+                ablastr::warn_manager::WarnPriority::medium
+            );
         }
 
         int nint = 101;

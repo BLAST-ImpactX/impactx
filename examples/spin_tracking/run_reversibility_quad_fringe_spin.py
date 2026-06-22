@@ -81,12 +81,12 @@ sim.lattice.append(quad_edge_in)
 sim.lattice.append(inv_quad1)
 
 # sequence 4 (full sequence):
-#sim.lattice.append(quad_edge_in)
-#sim.lattice.append(quad1)
-#sim.lattice.append(quad_edge_out)
-#sim.lattice.append(quad_edge_in) 
-#sim.lattice.append(inv_quad1)
-#sim.lattice.append(quad_edge_out)
+# sim.lattice.append(quad_edge_in)
+# sim.lattice.append(quad1)
+# sim.lattice.append(quad_edge_out)
+# sim.lattice.append(quad_edge_in)
+# sim.lattice.append(inv_quad1)
+# sim.lattice.append(quad_edge_out)
 
 sim.lattice.append(monitor)
 

@@ -1077,6 +1077,9 @@ See there ``nslice`` option on lattice elements for slicing.
       current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
       typical value when comparing to a 3D model.  This value minimizes the L2-norm of the error in
       the on-axis field Ez in the case of a long 3D Gaussian bunch.
+      In a perfectly conducting pipe with a long bunch—where the bunch length in  
+      the rest frame is significantly larger than the pipe radius—it is recommended  
+      to set the longitudinal scale length to the pipe radius in the input file.
       In a perfectly conducting pipe with a long bunch—where the bunch length in
       the rest frame is significantly larger than the pipe radius—it is recommended
       to set the longitudinal scale length to the pipe radius in the input file.

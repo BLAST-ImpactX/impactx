@@ -49,7 +49,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: prob_relative
 
-      This is a list with ``amr.max_level`` + 1 entries.
+      This is a list with :pp:param:`amr.max_level` + 1 entries.
 
       By default, we dynamically extract the minimum and maximum of the particle positions in the beam.
       The field mesh spans, per direction, multiple times the maximum physical extent of beam particles, as given by this factor.
@@ -79,13 +79,13 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
-        When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
+        When running in envelope mode (when :pp:param:`algo.track = envelope`), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
       * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
 
       * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
-        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+        These models are supported only in particle tracking mode (when :pp:param:`algo.track = particles`).
         Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
 
@@ -197,7 +197,7 @@ Collective Effects & Overall Simulation Parameters
 
       `F. Niel et al., Phys. Rev. E 97, 043209 (2018), DOI:10.1103/PhysRevE.97.043209 <https://doi.org/10.1103/PhysRevE.97.043209>`__
 
-      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When ``algo.isr_order = 1``, the model is equivalent to that described in:
+      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When :pp:param:`algo.isr_order = 1`, the model is equivalent to that described in:
 
       `J. M. Jowett, "Introductory Statistical Mechanics for Electron Storage Rings", AIP Conf. Proc. 153, 864-970 (1987), DOI:10.1063/1.36374 <https://doi.org/10.1063/1.36374>`__
 

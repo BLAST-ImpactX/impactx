@@ -6,7 +6,6 @@
 #
 # -*- coding: utf-8 -*-
 
-import math
 
 from impactx import ImpactX, distribution, elements
 
@@ -72,7 +71,7 @@ qs3t = elements.Quad(name="qs3t", ds=0.4804000, k=0.62221964, nslice=ns)
 sextupole = elements.Multipole(name="sextupole", multipole=3, K_normal=0.2, K_skew=0.0)
 
 # Short RF element for bunching:
-rf = elements.ShortRF(name="rf", V=2.3184782e-8, freq = 1.0e4, phase = -90.0)
+rf = elements.ShortRF(name="rf", V=2.3184782e-8, freq=1.0e4, phase=-90.0)
 
 # Lines of interest
 cell = [dr1, e1, sbend1, e2, dr2, e1, sbend1, e2, dr3, qs1f, dr4, qs2d, dr5, qs3t, dr6]

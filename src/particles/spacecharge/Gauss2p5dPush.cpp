@@ -16,8 +16,10 @@
 #include <AMReX_BLProfiler.H>
 #include <AMReX_GpuContainers.H>
 #include <AMReX_ParmParse.H>
+#include <ablastr/warn_manager/WarnManager.H>
 
 #include <cmath>
+#include <string>
 
 
 namespace impactx::particles::spacecharge
@@ -167,14 +169,28 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
         amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
         amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
+        amrex::ParticleReal const beta_gamma = pc.GetRefParticle().beta_gamma();
         amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
         amrex::ParticleReal const rfpiepslon = c0_SI * c0_SI * 1.0e-7_prt;
 
         amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
+        amrex::ParticleReal const aspect_ratio = std::sqrt(sigx*sigx + sigy*sigy) / (beta_gamma * sigt);
+
+        if (aspect_ratio > 1_rt) {
+            ablastr::warn_manager::WMRecordWarning(
+                "Impactx::particles::spacecharge::Gauss2p5dPush",
+                "Gauss2p5D model assumes a long bunch, but here "
+                "sigma_perp / (beta_gamma * sigmaz) = " +
+                std::to_string(aspect_ratio) + " > 1.",
+                ablastr::warn_manager::WarnPriority::medium
+            );
+        }
 
         int nint = 101;
         amrex::Real delta = 0.01_rt;
-        amrex::Real long_scale = 6.0_rt * gamma * sigt;
+        // note: the default value below is the optimal value minimizing the L2-norm
+        // of the error in the on-axis longitudinal field Ez for a 3D Gaussian bunch
+        amrex::Real long_scale = 1.103_rt * beta_gamma * sigt;
         amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("gauss_nint", nint);
         pp_algo.queryAddWithParser("gauss_taylor_delta", delta);

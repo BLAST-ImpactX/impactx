@@ -1,0 +1,105 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 2.5
+beam.charge = 1.0e-9
+beam.particle = proton
+beam.distribution = waterbag
+#beam.lambdaX = 2.0e-3
+#beam.lambdaY = beam.lambdaX
+#beam.lambdaT = 1.0e-3
+#beam.lambdaPx = 3.0e-4
+#beam.lambdaPy = 3.0e-4
+#beam.lambdaPt = 0.0
+#beam.muxpx = 0.0
+#beam.muypy = 0.0
+#beam.mutpt = 0.0
+beam.lambdaX = 1.397456296195e-003
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 1.0e-4
+beam.lambdaPx = 1.256184325020e-003
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = 0.0
+beam.muxpx = 0.8090169943749474
+beam.muypy = beam.muxpx
+beam.mutpt = 0.0
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor lens const monitor
+
+lens.type = line
+lens.elements = = dr_end nll1 dr nll2 dr nll3 dr nll4 dr nll5 dr nll6  \
+                       dr nll7 dr nll8 dr nll9 dr nll9 dr nll8 dr nll7  \
+                       dr nll6 dr nll5 dr nll4 dr nll3 dr nll2 dr nll1  \
+                       dr_end
+
+# Nonlinear lens segments
+nll1.type = nonlinear_lens
+nll1.knll = 2.2742558121e-6
+nll1.cnll = 0.013262040169952
+
+nll2.type = nonlinear_lens
+nll2.knll = 2.641786366e-6
+nll2.cnll = 0.012304986694423
+
+nll3.type = nonlinear_lens
+nll3.knll = 3.076868353e-6
+nll3.cnll = 0.011401855643727
+
+nll4.type = nonlinear_lens
+nll4.knll = 3.582606522e-6
+nll4.cnll = 0.010566482535866
+
+nll5.type = nonlinear_lens
+nll5.knll = 4.151211157e-6
+nll5.cnll = 0.009816181575902
+
+nll6.type = nonlinear_lens
+nll6.knll = 4.754946985e-6
+nll6.cnll = 0.0091718544892154
+
+nll7.type = nonlinear_lens
+nll7.knll = 5.337102374e-6
+nll7.cnll = 0.008657195579489
+
+nll8.type = nonlinear_lens
+nll8.knll = 5.811437818e-6
+nll8.cnll = 0.008296371635942
+
+nll9.type = nonlinear_lens
+nll9.knll = 6.081693334e-6
+nll9.cnll = 0.008109941789663
+
+dr.type = drift
+dr.ds = 0.1
+
+dr_end.type = drift
+dr_end.ds = 0.05
+
+# Focusing of the external lattice
+const.type = constf
+const.ds = 1.0e-8
+const.kx = 12060.113295833
+const.ky = 12060.113295833
+const.kt = 1.0e-12
+const.nslice = 1
+
+# Beam Monitor: Diagnostics
+monitor.type = beam_monitor
+monitor.backend = h5
+monitor.nonlinear_lens_invariants = true
+monitor.alpha = 1.376381920471173
+monitor.beta = 1.892632003628881
+monitor.tn = 0.4
+monitor.cn = 0.01
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false

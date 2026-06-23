@@ -22,18 +22,22 @@ In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`
 Run
 ---
 
-This example can be run as a Python script (``python3 run_fodo.py``) or with an app with an input file (``impactx input_fodo.in``).
-Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, such as ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_fodo.py`` or
+* ImpactX **executable** using an input file: ``impactx input_fodo.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
 .. tab-set::
 
-   .. tab-item:: Python Script
+   .. tab-item:: Python: Script
 
        .. literalinclude:: run_fodo.py
           :language: python3
           :caption: You can copy this file from ``examples/fodo/run_fodo.py``.
 
-   .. tab-item:: App Input File
+   .. tab-item:: Executable: Input File
 
        .. literalinclude:: input_fodo.in
           :language: ini
@@ -64,7 +68,7 @@ You can run the following script to visualize the beam evolution over time:
       :caption: You can copy this file from ``examples/fodo/plot_fodo.py``.
 
 .. figure:: https://user-images.githubusercontent.com/1353258/180287840-8561f6fd-278f-4856-abd8-04fbdb78c8ff.png
-   :alt: focusing, defocusing and preserved emittane in our FODO cell benchmark.
+   :alt: focusing, defocusing and preserved emittance in our FODO cell benchmark.
 
    FODO transversal beam width and emittance evolution
 
@@ -72,3 +76,115 @@ You can run the following script to visualize the beam evolution over time:
    :alt: focusing, defocusing and phase space rotation in our FODO cell benchmark.
 
    FODO transversal beam width and phase space evolution
+
+
+.. _examples-fodo-envelope:
+
+FODO Cell Using Envelope Tracking
+=================================
+
+This identical to the FODO example, except that envelope tracking is used instead of particle tracking.
+
+Stable FODO cell with a zero-current phase advance of 67.8 degrees.
+
+The matched Twiss parameters at entry are:
+
+* :math:`\beta_\mathrm{x} = 2.82161941` m
+* :math:`\alpha_\mathrm{x} = -1.59050035`
+* :math:`\beta_\mathrm{y} = 2.82161941` m
+* :math:`\alpha_\mathrm{y} = 1.59050035`
+
+We use a 2 GeV electron beam with initial unnormalized rms emittance of 2 nm.
+
+The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected
+due to$
+
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_fodo_envelope.py`` or
+* ImpactX **executable** using an input file: ``impactx input_fodo_envelope.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_fodo_envelope.py
+          :language: python3
+          :caption: You can copy this file from ``examples/fodo/run_fodo_envelope.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_fodo_envelope.in
+          :language: ini
+          :caption: You can copy this file from ``examples/fodo/input_fodo_envelope.in``.
+
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_fodo_envelope.py``
+
+   .. literalinclude:: analysis_fodo_envelope.py
+      :language: python3
+      :caption: You can copy this file from ``examples/fodo/analysis_fodo_envelope.py``.
+
+
+.. _examples-fodo-exact:
+
+FODO Cell Using Nonlinear Tracking
+===================================
+
+This is identical to the example ``examples-fodo``, except that fully nonlinear tracking is used based on the exact relativistic Hamiltonian.
+
+The kinematic nonlinear effects are essentially negligible, so this is primarily a test that the nonlinear elements correctly reproduce the results of linear tracking.
+
+The second moments of the particle distribution after the FODO cell should coincide with the second moments of the particle distribution before the FODO cell, to within the level expected due to
+noise due to the finite particle population.
+
+In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+
+
+Run
+---
+
+This example can be run **either** as:
+
+* **Python** script: ``python3 run_fodo_exact.py`` or
+* ImpactX **executable** using an input file: ``impactx input_fodo_exact.in``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_fodo_exact.py
+          :language: python3
+          :caption: You can copy this file from ``examples/fodo/run_fodo_exact.py``.
+
+   .. tab-item:: Executable: Input File
+
+       .. literalinclude:: input_fodo_exact.in
+          :language: ini
+          :caption: You can copy this file from ``examples/fodo/input_fodo_exact.in``.
+
+
+Analyze
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_fodo_exact.py``
+
+   .. literalinclude:: analysis_fodo_exact.py
+      :language: python3
+      :caption: You can copy this file from ``examples/fodo/analysis_fodo_exact.py``.

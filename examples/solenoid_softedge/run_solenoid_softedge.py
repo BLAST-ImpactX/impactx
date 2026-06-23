@@ -6,13 +6,11 @@
 #
 # -*- coding: utf-8 -*-
 
-import amrex.space3d as amr
-from impactx import ImpactX, RefPart, distribution, elements
+from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = False
@@ -23,27 +21,28 @@ sim.init_grids()
 # load a 250 MeV proton beam with an initial
 # horizontal rms emittance of 1 um and an
 # initial vertical rms emittance of 2 um
-energy_MeV = 250.0  # reference energy
+kin_energy_MeV = 250.0  # reference energy
 bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_energy_MeV(energy_MeV)
+ref = sim.beam.ref
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=1.559531175539e-3,
-    sigmaY=2.205510139392e-3,
-    sigmaT=1.0e-3,
-    sigmaPx=6.41218345413e-4,
-    sigmaPy=9.06819680526e-4,
-    sigmaPt=1.0e-3,
+    lambdaX=1.559531175539e-3,
+    lambdaY=2.205510139392e-3,
+    lambdaT=1.0e-3,
+    lambdaPx=6.41218345413e-4,
+    lambdaPy=9.06819680526e-4,
+    lambdaPt=1.0e-3,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
 # design the accelerator lattice
 sol = elements.SoftSolenoid(
+    name="sol1",
     ds=6.0,
     bscale=1.233482899483985,
     cos_coefficients=[
@@ -136,8 +135,7 @@ sim.lattice.extend(
 )
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
-del sim
-amr.finalize()
+sim.finalize()

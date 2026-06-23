@@ -1,0 +1,32 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 2.0e3
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = waterbag
+beam.lambdaX = 4.0e-3
+beam.lambdaY = 2.0e-3
+beam.lambdaT = 1.0e-3
+beam.lambdaPx = 2.0e-4
+beam.lambdaPy = 5.0e-4
+beam.lambdaPt = 2.0e-3
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor rotation1 monitor
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+rotation1.type = plane_xyrotation
+rotation1.angle = 90.0
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false

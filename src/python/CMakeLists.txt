@@ -6,8 +6,11 @@ target_sources(pyImpactX
   PRIVATE
     distribution.cpp
     elements.cpp
+    flatten_rho.cpp
     ImpactX.cpp
     ImpactXParticleContainer.cpp
+    lattice.cpp
     ReferenceParticle.cpp
     transformation.cpp
+    WakeConvolution.cpp
 )

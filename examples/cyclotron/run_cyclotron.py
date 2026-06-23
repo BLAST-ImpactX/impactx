@@ -6,13 +6,11 @@
 #
 # -*- coding: utf-8 -*-
 
-import amrex.space3d as amr
-from impactx import ImpactX, RefPart, distribution, elements
+from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
@@ -21,22 +19,22 @@ sim.slice_step_diagnostics = True
 sim.init_grids()
 
 # load initial beam
-energy_MeV = 4.0e-3  # reference energy
+kin_energy_MeV = 4.0e-3  # reference energy
 bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_energy_MeV(energy_MeV)
+ref = sim.beam.ref
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=1.0e-3,
-    sigmaY=1.0e-3,
-    sigmaT=0.3,
-    sigmaPx=2.0e-4,
-    sigmaPy=2.0e-4,
-    sigmaPt=2.0e-5,
+    lambdaX=1.0e-3,
+    lambdaY=1.0e-3,
+    lambdaT=0.3,
+    lambdaPx=2.0e-4,
+    lambdaPy=2.0e-4,
+    lambdaPt=2.0e-5,
     muxpx=-0.0,
     muypy=0.0,
     mutpt=0.0,
@@ -47,13 +45,13 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice)
-ns = 25  # number of slices per ds in the element
+ns = 1  # number of slices per ds in the element
 period = [
     monitor,
-    elements.ChrAcc(ds=0.038, ez=1.12188308693e-4, bz=1.0e-14, nslice=ns),
-    elements.ExactSbend(ds=0.25, phi=180.0, B=1),
-    elements.ChrAcc(ds=0.038, ez=1.12188308693e-4, bz=1.0e-14, nslice=ns),
-    elements.ExactSbend(ds=0.25, phi=180.0, B=1),
+    elements.ChrAcc(name="acc1", ds=0.038, ez=1.12188308693e-4, bz=1.0e-14, nslice=ns),
+    elements.ExactSbend(name="sbend1", ds=0.25, phi=180.0, B=1),
+    elements.ChrAcc(name="acc2", ds=0.038, ez=1.12188308693e-4, bz=1.0e-14, nslice=ns),
+    elements.ExactSbend(name="sbend2", ds=0.25, phi=180.0, B=1),
     monitor,
 ]
 
@@ -63,8 +61,7 @@ sim.lattice.extend(period)
 sim.periods = 150
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
-del sim
-amr.finalize()
+sim.finalize()

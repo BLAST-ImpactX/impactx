@@ -3,13 +3,6 @@ Acknowledge ImpactX
 
 Please acknowledge the role that ImpactX played in your research.
 
-In presentations
-****************
-
-.. note::
-
-   TODO :-)
-
 In publications
 ***************
 
@@ -17,7 +10,7 @@ Please add the following sentence to your publications, it helps contributors ke
 
 **Plain text:**
 
-  This research used the open-source particle-in-cell code ImpactX https://github.com/ECP-WarpX/impactx.
+  This research used the open-source particle-in-cell code ImpactX https://github.com/BLAST-ImpactX/impactx.
   We acknowledge all ImpactX contributors.
 
 **Latex:**
@@ -25,7 +18,7 @@ Please add the following sentence to your publications, it helps contributors ke
 .. code-block:: latex
 
   \usepackage{hyperref}
-  This research used the open-source particle-in-cell code ImpactX \url{https://github.com/ECP-WarpX/impactx}.
+  This research used the open-source particle-in-cell code ImpactX \url{https://github.com/BLAST-ImpactX/impactx}.
   We acknowledge all ImpactX contributors.
 
 Main ImpactX Reference
@@ -42,11 +35,55 @@ If your project leads to a scientific publication, please consider citing the pa
 Further ImpactX References
 **************************
 
+- Huebl A et al.
+  **Towards Differentiable Beam Dynamics Modeling in BLAST/ImpactX**.
+  in Proc. NAPAC2025, TUP101, Sacramento, CA, 2025.
+  `preprint: TUP101.pdf <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP101.pdf>`__
+
+- Planned feature: Mitchell C and Hwang K.
+  **Explicit Symplectic Representations of Nonlinear Dipole Fringe Field Maps**.
+  in Proc. NAPAC2025, TUP040, Sacramento, CA, 2025.
+  `preprint: TUP040.pdf <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP040.pdf>`__
+
+- Mitchell C, et al.
+  **A Community Effort Toward a Particle Accelerator Lattice Standard (PALS)**.
+  in Proc. NAPAC2025, TUP004, Sacramento, CA, 2025.
+  `preprint: TUP004.pdf <https://prebys.physics.ucdavis.edu/NAPAC-25/proceedings/pdf/TUP004.pdf>`__
+
+- Qiang J, Mitchell C, Lehe R, Formenti A.
+  **Implementation of the Integrated Green's Function Method for 3D Poisson's Equation in a Large Aspect Ratio Computational Domain**.
+  Journal of Software Engineering and Applications, 17, 740-749, 2024.
+  `DOI:10.4236/jsea.2024.179039 <https://doi.org/10.4236/jsea.2024.179039>`__
+
+- Mitchell C, Formenti A, Huebl A, Vay J-L, Qiang J, Garten M, Lehe R.
+  **ImpactX Space Charge Modeling of High Intensity Linacs with Mesh Refinement**.
+  32nd Linear Accelerator Conference (LINAC'24), TUPB090, p. 505, 2024.
+  `DOI:10.18429/JACoW-LINAC2024-TUPB090 <https://doi.org/10.18429/JACoW-LINAC2024-TUPB090>`__
+
+- Mitchell C, Formenti A, Huebl A, Vay J-L, Qiang J, Garten M, Lehe R, Sandberg R.
+  **ImpactX Space Charge Modeling of High Intensity Linacs with Mesh Refinement**.
+  15th International Particle Accelerator Physics Conference (IPAC'24), WEPR65, p. 2653, 2024.
+  `DOI:10.18429/JACoW-IPAC2024-WEPR65 <https://doi.org/10.18429/JACoW-IPAC2024-WEPR65>`__
+
+- Sandberg R T, Lehe R, Mitchell C E, Garten M, Myers A, Qiang J, Vay J-L, Huebl A.
+  **Synthesizing Particle-in-Cell Simulations Through Learning and GPU Computing for Hybrid Particle Accelerator Beamlines**.
+  Proc. of Platform for Advanced Scientific Computing (PASC'24), *PASC24 Best Paper Award*, 2024.
+  `DOI:10.1145/3659914.3659937 <https://doi.org/10.1145/3659914.3659937>`__
+
+- Mitchell C E, Huebl A, Qiang J, Lehe R, Garten M, Sandberg R T, Vay J-L.
+  **ImpactX Modeling of Benchmark Tests for Space Charge Validation**.
+  68th ICFA Advanced Beam Dynamics Workshop on High-Intensity and High-Brightness Hadron Beams (HB2023), THBP44, pp. 583-586, 2023.
+  `DOI:10.18429/JACoW-HB2023-THBP44 <https://doi.org/10.18429/JACoW-HB2023-THBP44>`__
+
+- Mitchell C E, Huebl A, Qiang J, Lehe R, Garten M, Sandberg R T, Vay J-L.
+  **Community Modeling Tools for High Brightness Beam Physics**.
+  68th ICFA Advanced Beam Dynamics Workshop on High-Intensity and High-Brightness Hadron Beams (HB2023), TUA2I2, pp. 81-85, 2023.
+  `DOI:10.18429/JACoW-HB2023-TUA2I2 <https://doi.org/10.18429/JACoW-HB2023-TUA2I2>`__
+
 - Sandberg R T, Lehe R, Mitchell C E, Garten M, Qiang J, Vay J-L and Huebl A.
   **Hybrid Beamline Element ML-Training for Surrogates in the ImpactX Beam-Dynamics Code**.
-  14th International Particle Accelerator Conference (IPAC'23), WEPA101, *in print*, 2023.
-  `preprint <https://www.ipac23.org/preproc/pdf/WEPA101.pdf>`__,
-  `DOI:10.18429/JACoW-IPAC-23-WEPA101 <https://doi.org/10.18429/JACoW-IPAC-23-WEPA101>`__
+  14th International Particle Accelerator Conference (IPAC'23), WEPA101, 2023.
+  `DOI:10.18429/JACoW-IPAC2023-WEPA101 <https://doi.org/10.18429/JACoW-IPAC2023-WEPA101>`__
 
 - Huebl A, Lehe R, Zoni E, Shapoval O, Sandberg R T, Garten M, Formenti A, Jambunathan R, Kumar P, Gott K, Myers A, Zhang W, Almgren A, Mitchell C E, Qiang J, Sinn A, Diederichs S, Thevenet M, Grote D, Fedeli L, Clark T, Zaim N, Vincenti H, Vay JL.
   **From Compact Plasma Particle Sources to Advanced Accelerators with Modeling at Exascale**.

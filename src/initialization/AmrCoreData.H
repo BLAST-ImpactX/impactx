@@ -10,13 +10,22 @@
 #ifndef IMPACTX_AMR_CORE_DATA_H
 #define IMPACTX_AMR_CORE_DATA_H
 
+#include "AmrCoreData_fwd.H"
+#include "particles/ImpactXParticleContainer.H"
+#include "particles/CovarianceMatrix.H"
+
 #include <AMReX_AmrCore.H>
 #include <AMReX_AmrMesh.H>
 #include <AMReX_BoxArray.H>
 #include <AMReX_DistributionMapping.H>
 #include <AMReX_Geometry.H>
+#include <AMReX_MultiFab.H>
 #include <AMReX_REAL.H>
 #include <AMReX_TagBox.H>
+
+#include <optional>
+#include <string>
+#include <unordered_map>
 
 
 namespace impactx::initialization
@@ -33,7 +42,7 @@ namespace impactx::initialization
     class AmrCoreData final
         : public amrex::AmrCore
     {
-    public:
+      public:
         AmrCoreData (
             amrex::Geometry const& level_0_geom,
             amrex::AmrInfo const& amr_info
@@ -55,7 +64,46 @@ namespace impactx::initialization
 
         ~AmrCoreData() = default;
 
-    private:
+        /** Data needed for the symplectic particle tracking mode */
+        struct TrackModeParticles
+        {
+            /** these are the physical/beam particles of the simulation */
+            std::unique_ptr<impactx::ImpactXParticleContainer> m_particle_container;
+
+            /** former beam particles that got lost in apertures, the wall, etc. */
+            std::unique_ptr<impactx::ImpactXParticleContainer> m_particles_lost;
+
+            /** charge density per level */
+            std::unordered_map<int, amrex::MultiFab> m_rho;
+            /** charge density projected to 2D (x-y) per level, for the 2D
+             *  space-charge models; (re)derived from m_rho on access */
+            std::unordered_map<int, amrex::MultiFab> m_rho_2d;
+            /** scalar potential per level */
+            std::unordered_map<int, amrex::MultiFab> m_phi;
+            /** space charge field (vector) per level */
+            std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > m_space_charge_field;
+
+        } track_particles;
+
+        /** Data needed for the beam envelop (covariance matrix) tracking mode */
+        struct TrackModeEnvelope
+        {
+            /** The reference particle */
+            std::optional<RefPart> m_ref;
+
+            /** The 6x6 covariance matrix for the beam envelope, relative to the reference particle */
+            std::optional<Envelope> m_env;
+
+        } track_envelope;
+
+        /** Data needed for the reference orbit tracking mode */
+        struct TrackModeReference
+        {
+            /** The reference particle */
+            std::optional<RefPart> m_ref;
+
+        } track_reference;
+
         void ErrorEst (
             [[maybe_unused]] int lev,
             [[maybe_unused]] amrex::TagBoxArray& tags,

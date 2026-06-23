@@ -3,16 +3,16 @@
 ###############################################################################
 beam.npart = 10000
 beam.units = static
-beam.energy = 2.5
+beam.kin_energy = 2.5
 beam.charge = 1.0e-9
 beam.particle = proton
 beam.distribution = waterbag
-beam.sigmaX = 1.588960728035e-3
-beam.sigmaY = 2.496625268437e-3
-beam.sigmaT = 1.0e-3
-beam.sigmaPx = 2.8320397837724e-3
-beam.sigmaPy = 1.802433091137e-3
-beam.sigmaPt = 0.0
+beam.lambdaX = 1.588960728035e-3
+beam.lambdaY = 2.496625268437e-3
+beam.lambdaT = 1.0e-3
+beam.lambdaPx = 2.8320397837724e-3
+beam.lambdaPy = 1.802433091137e-3
+beam.lambdaPt = 0.0
 beam.muxpx = 0.0
 beam.muypy = 0.0
 beam.mutpt = 0.0
@@ -22,28 +22,24 @@ beam.mutpt = 0.0
 # Beamline: lattice elements and segments
 ###############################################################################
 lattice.periods = 5
-lattice.elements = monitor
-                   first_half
-                   qe3
-                   second_half
-                   monitor
+lattice.elements = monitor first_half qe3 second_half monitor
 
 # lines
 first_half.type = line
-first_half.elements = dra1 qa1 dra2 qa2 dra3 qa3 dra4 qa4 dra5
-                      edge30 sbend30 edge30 drb1 qb1 drb2 qb2 drb2 qb3
-                      drb3 dnll drb3 qb4 drb2 qb5 drb2 qb6 drb4
-                      edge60 sbend60 edge60 drc1 qc1 drc2 qc2 drc2 qc3 drc1
-                      edge60 sbend60 edge60 drd1 qd1 drd2 qd2 drd3 qd3 drd2 qd4 drd4
+first_half.elements = dra1 qa1 dra2 qa2 dra3 qa3 dra4 qa4 dra5                \
+                      edge30 sbend30 edge30 drb1 qb1 drb2 qb2 drb2 qb3        \
+                      drb3 dnll drb3 qb4 drb2 qb5 drb2 qb6 drb4               \
+                      edge60 sbend60 edge60 drc1 qc1 drc2 qc2 drc2 qc3 drc1   \
+                      edge60 sbend60 edge60 drd1 qd1 drd2 qd2 drd3 qd3 drd2 qd4 drd4  \
                       edge30 sbend30 edge30 dre1 qe1 dre2 qe2 dre3
 
 second_half.type = line
 second_half.reverse = true
-second_half.elements = dra1 qa1 dra2 qa2 dra3 qa3 dra4 qa4 dra5
-                       edge30 sbend30 edge30 drb1 qb1 drb2 qb2 drb2 qb3
-                       drb3 dnll drb3 qb4 drb2 qb5 drb2 qb6 drb4
-                       edge60 sbend60 edge60 drc1 qc1 drc2 qc2 drc2 qc3 drc1
-                       edge60 sbend60 edge60 drd1 qd1 drd2 qd2 drd3 qd3 drd2 qd4 drd4
+second_half.elements = dra1 qa1 dra2 qa2 dra3 qa3 dra4 qa4 dra5               \
+                       edge30 sbend30 edge30 drb1 qb1 drb2 qb2 drb2 qb3       \
+                       drb3 dnll drb3 qb4 drb2 qb5 drb2 qb6 drb4              \
+                       edge60 sbend60 edge60 drc1 qc1 drc2 qc2 drc2 qc3 drc1  \
+                       edge60 sbend60 edge60 drd1 qd1 drd2 qd2 drd3 qd3 drd2 qd4 drd4  \
                        edge30 sbend30 edge30 dre1 qe1 dre2 qe2 dre3
 
 # thick element splitting for space charge
@@ -218,12 +214,12 @@ qe3.k = -6.69148177
 # Beam Monitor: Diagnostics
 monitor.type = beam_monitor
 monitor.backend = h5
+monitor.nonlinear_lens_invariants = true
 
 
 ###############################################################################
 # Algorithms
 ###############################################################################
-algo.particle_shape = 2
 algo.space_charge = false
 
 

@@ -1,0 +1,250 @@
+/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+ *           Berkeley National Laboratory (subject to receipt of any required
+ *           approvals from the U.S. Dept. of Energy). All rights reserved.
+ *
+ * This file is part of ImpactX.
+ *
+ * Authors: Chad Mitchell, Axel Huebl
+ * License: BSD-3-Clause-LBNL
+ */
+#ifndef IMPACTX_NONLINEARLENS_H
+#define IMPACTX_NONLINEARLENS_H
+
+#include "particles/ImpactXParticleContainer.H"
+#include "mixin/alignment.H"
+#include "mixin/beamoptic.H"
+#include "mixin/thin.H"
+#include "mixin/lineartransport.H"
+#include "mixin/named.H"
+#include "mixin/nofinalize.H"
+
+#include <AMReX_Extension.H>
+#include <AMReX_GpuComplex.H>
+#include <AMReX_Math.H>
+#include <AMReX_REAL.H>
+// TODO: #include <AMReX_SIMD.H>
+//   SIMD will require better complex math support in vir-simd / C++26
+//   https://github.com/mattkretz/vir-simd/issues/42
+
+#include <cmath>
+#include <stdexcept>
+
+
+namespace impactx::elements
+{
+    struct NonlinearLens
+    : public mixin::Named,
+      public mixin::BeamOptic<NonlinearLens>,
+      public mixin::LinearTransport<NonlinearLens>,
+      public mixin::Thin,
+      public mixin::Alignment,
+      public mixin::NoFinalize
+      // TODO: public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+    {
+        static constexpr auto type = "NonlinearLens";
+        using PType = ImpactXParticleContainer::ParticleType;
+
+        /** Single short segment of the nonlinear magnetic insert element
+         *
+         *  A thin lens associated with a single short segment of the
+         *  nonlinear magnetic insert described by V. Danilov and
+         *  S. Nagaitsev, PRSTAB 13, 084002 (2010), Sect. V.A.  This
+         *  element appears in MAD-X as type NLLENS.
+         *
+         * @param knll integrated strength of the nonlinear lens (m)
+         * @param cnll distance of singularities from the origin (m)
+         * @param dx horizontal translation error in m
+         * @param dy vertical translation error in m
+         * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param name a user defined and not necessarily unique name of the element
+         */
+        NonlinearLens (
+            amrex::ParticleReal knll,
+            amrex::ParticleReal cnll,
+            amrex::ParticleReal dx = 0,
+            amrex::ParticleReal dy = 0,
+            amrex::ParticleReal rotation_degree = 0,
+            std::optional<std::string> name = std::nullopt
+        )
+        : Named(std::move(name)),
+          Alignment(dx, dy, rotation_degree),
+          m_knll(knll), m_cnll(cnll)
+        {
+        }
+
+        /** Reverse the element (negate strength) */
+        void reverse () { m_knll = -m_knll; }
+
+        /** Push all particles */
+        using BeamOptic::operator();
+
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            Alignment::compute_constants(refpart);
+
+            m_inv_cnll = 1.0_prt / m_cnll;
+            m_kick = -m_knll * m_inv_cnll;
+        }
+
+        /** This is a nonlinear lens functor, so that a variable of this type
+         *  can be used like a nonlinear lens function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t (unused)
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t (unused)
+         * @param idcpu particle global index (unused)
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // a complex type with two T_Real
+            using Complex = amrex::GpuComplex<T_Real>;
+
+            // access reference particle values to find (beta*gamma)^2
+            //amrex::ParticleReal const pt_ref = refpart.pt;
+            //amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
+
+            // initialize output values
+            // T_Real xout = x;
+            // T_Real yout = y;
+            // T_Real tout = t;
+            T_Real pxout = px;
+            T_Real pyout = py;
+            // T_Real ptout = pt;
+
+            // assign complex position zeta = (x + iy)/cnll
+            Complex zeta(x, y);
+            zeta = zeta * m_inv_cnll;
+            Complex const re1(1.0_prt, 0.0_prt);
+            Complex const im1(0.0_prt, 1.0_prt);
+
+            // compute croot = sqrt(1-zeta**2)
+            Complex croot = powi<2>(zeta);
+            croot = re1 - croot;
+            croot = amrex::sqrt(croot);
+
+            // compute carcsin = arcsin(zeta)
+            Complex carcsin = im1 * zeta + croot;
+            carcsin = -im1 * amrex::log(carcsin);
+
+            // compute complex function F'(zeta)
+            Complex dF = zeta / powi<2>(croot);
+            dF = dF + carcsin / powi<3>(croot);
+
+            // compute momentum kick
+            T_Real const dpx = +m_kick * dF.m_real;
+            T_Real const dpy = -m_kick * dF.m_imag;
+
+            // advance position and momentum
+            // xout = x;
+            pxout = px + dpx;
+
+            // yout = y;
+            pyout = py + dpy;
+
+            // tout = t;
+            // ptout = pt;
+
+            // assign updated values
+            // x = xout;
+            // y = yout;
+            // t = tout;
+            px = pxout;
+            py = pyout;
+            // pt = ptout;
+        }
+
+        /** This pushes the reference particle. */
+        using Thin::operator();
+
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
+        /** This function returns the linear transport map.
+         *
+         * The Danilov-Nagaitsev kick implemented by @see operator() is
+         *   dpx - i*dpy = -(knll / cnll) * F'(zeta),
+         * with zeta = (x + i*y) / cnll and
+         *   F'(zeta) = zeta / (1 - zeta^2) + arcsin(zeta) / (1 - zeta^2)^(3/2).
+         * The Taylor series around zeta = 0 starts at
+         *   F'(zeta) = 2*zeta + (8/3)*zeta^3 + O(zeta^5),
+         * so the linearized map at the reference trajectory is a thin
+         * quadrupole with equal and opposite focusing strengths in the
+         * two transverse planes:
+         *   R(2,1) = -2 * knll / cnll^2,
+         *   R(4,3) = +2 * knll / cnll^2.
+         *
+         * Ideal behavior only: alignment and rotation errors, as well as
+         * feed-down from an off-axis reference orbit, are ignored; the
+         * map is evaluated at (x, y) = (0, 0).
+         *
+         * This element appears in MAD-X as type NLLENS. The linear limit
+         * above is the MAD-X linear quadrupole equivalent of the NLLENS
+         * thin kick (cf. MAD-X Physical Methods Manual, nonlinear lens).
+         *
+         * Reference: V. Danilov and S. Nagaitsev, Phys. Rev. ST Accel.
+         * Beams 13, 084002 (2010), Sect. V.A
+         *
+         * @param[in] refpart reference particle (unused)
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            Map6x6 R = Map6x6::Identity();
+            // Leading 2*zeta term of F'(zeta); higher orders vanish at zero.
+            amrex::ParticleReal const k_lin = 2.0_prt * m_knll / powi<2>(m_cnll);
+            R(2,1) = -k_lin;
+            R(4,3) = +k_lin;
+
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
+        }
+
+        amrex::ParticleReal m_knll; //! integrated strength of the nonlinear lens (m)
+        amrex::ParticleReal m_cnll; //! distance of singularities from the origin (m)
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_inv_cnll;  //! 1 / m_cnll
+        amrex::ParticleReal m_kick;
+    };
+
+} // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::NonlinearLens)
+
+#endif // IMPACTX_NONLINEARLENS_H

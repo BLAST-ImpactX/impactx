@@ -1,7 +1,17 @@
 macro(find_ablastr)
+    # if pyAMReX is external, AMReX must be as well
+    if(ImpactX_amrex_internal AND NOT ImpactX_pyamrex_internal)
+        message(WARNING "AMReX requested as internal superbuild, but pyAMReX as external. Changing to both external.")
+        set(ImpactX_amrex_internal OFF CACHE BOOL
+            "Download & build AMReX" FORCE)
+    endif()
+
     if(ImpactX_ablastr_src)
         message(STATUS "Compiling local ABLASTR ...")
         message(STATUS "ABLASTR source path: ${ImpactX_ablastr_src}")
+        if(NOT IS_DIRECTORY ${ImpactX_ablastr_src})
+            message(FATAL_ERROR "Specified directory ImpactX_ablastr_src='${ImpactX_ablastr_src}' does not exist!")
+        endif()
     elseif(ImpactX_ablastr_internal)
         message(STATUS "Downloading ABLASTR ...")
         message(STATUS "ABLASTR repository: ${ImpactX_ablastr_repo} (${ImpactX_ablastr_branch})")
@@ -44,18 +54,24 @@ macro(find_ablastr)
             "Download & build openPMD-api" FORCE)
     endif()
 
-    # transitive control for FFT/PICSAR superbuild
-    # TODO (future)
-
-    # ABLASTR superbuild
+    # transitive control for ABLASTR superbuild
     if(ImpactX_ablastr_internal OR ImpactX_ablastr_src)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
+        set(ABLASTR_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
+        set(AMReX_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
+        # TODO: set consistently (AMReX default: ON)
+        #set(AMReX_CUDA_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
+        set(ABLASTR_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
+        set(AMReX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
 
         set(WarpX_APP OFF CACHE BOOL "" FORCE)
         set(WarpX_LIB OFF CACHE BOOL "" FORCE)
         set(WarpX_QED OFF CACHE BOOL "" FORCE)
-        set(WarpX_DIMS 3 CACHE INTERNAL "" FORCE)
         set(WarpX_COMPUTE ${ImpactX_COMPUTE} CACHE INTERNAL "" FORCE)
+        set(WarpX_SIMD ${ImpactX_SIMD} CACHE INTERNAL "" FORCE)
+        set(WarpX_DIMS 3 CACHE INTERNAL "" FORCE)
+        set(WarpX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
         set(WarpX_OPENPMD ${ImpactX_OPENPMD} CACHE INTERNAL "" FORCE)
         set(WarpX_PRECISION ${ImpactX_PRECISION} CACHE INTERNAL "" FORCE)
         set(WarpX_MPI ${ImpactX_MPI} CACHE INTERNAL "" FORCE)
@@ -63,7 +79,7 @@ macro(find_ablastr)
         set(WarpX_IPO ${ImpactX_IPO} CACHE INTERNAL "" FORCE)
 
         # shared libs, i.e. for Python bindings, need relocatable code
-        if(ImpactX_PYTHON OR (ImpactX_LIB AND BUILD_SHARED_LIBS))
+        if(ImpactX_PYTHON OR BUILD_SHARED_LIBS)
             set(AMReX_PIC ON CACHE INTERNAL
                 "Build AMReX with position independent code")
             set(ABLASTR_POSITION_INDEPENDENT_CODE ON CACHE INTERNAL
@@ -80,38 +96,26 @@ macro(find_ablastr)
             #list(APPEND CMAKE_MODULE_PATH "${WarpX_amrex_src}/Tools/CMake")
             if(ImpactX_COMPUTE STREQUAL CUDA)
                 enable_language(CUDA)
-                # AMReX 21.06+ supports CUDA_ARCHITECTURES
-                #if(CMAKE_VERSION VERSION_LESS 3.20)
-                #    include(AMReX_SetupCUDA)
-                #endif()
             endif()
             add_subdirectory(${ImpactX_ablastr_src} _deps/localablastr-build/)
-            # TODO: this is a bit hacky, check if we find a variable like
-            #       fetchedamrex_SOURCE_DIR or FETCHCONTENT_SOURCE_DIR_FETCHEDAMREX
-            #       that we could use for the named path instead
-            list(APPEND CMAKE_MODULE_PATH "${FETCHCONTENT_BASE_DIR}/fetchedamrex-src/Tools/CMake")
+            if(DEFINED AMReX_DIR)
+                list(APPEND CMAKE_MODULE_PATH "${AMReX_DIR}/AMReXCMakeModules")
+            else()
+                list(APPEND CMAKE_MODULE_PATH "${FETCHCONTENT_BASE_DIR}/fetchedamrex-src/Tools/CMake")
+            endif()
         else()
+            if(ImpactX_COMPUTE STREQUAL CUDA)
+                enable_language(CUDA)
+            endif()
             FetchContent_Declare(fetchedablastr
                 GIT_REPOSITORY ${ImpactX_ablastr_repo}
                 GIT_TAG        ${ImpactX_ablastr_branch}
                 BUILD_IN_SOURCE 0
             )
-            FetchContent_GetProperties(fetchedablastr)
-
-            if(NOT fetchedablastr_POPULATED)
-                FetchContent_Populate(fetchedablastr)
-                #list(APPEND CMAKE_MODULE_PATH "${fetchedamrex_SOURCE_DIR}/Tools/CMake")
-                if(ImpactX_COMPUTE STREQUAL CUDA)
-                    enable_language(CUDA)
-                    # ABLASTR 21.06+ supports CUDA_ARCHITECTURES
-                    #if(CMAKE_VERSION VERSION_LESS 3.20)
-                    #    include(ABLASTR_SetupCUDA)
-                    #endif()
-                endif()
-                add_subdirectory(${fetchedablastr_SOURCE_DIR} ${fetchedablastr_BINARY_DIR})
-                # TODO: this is a bit hacky, check if we find a variable like
-                #       fetchedamrex_SOURCE_DIR or FETCHCONTENT_SOURCE_DIR_FETCHEDAMREX
-                #       that we could use for the named path instead
+            FetchContent_MakeAvailable(fetchedablastr)
+            if(DEFINED AMReX_DIR)
+                list(APPEND CMAKE_MODULE_PATH "${AMReX_DIR}/AMReXCMakeModules")
+            else()
                 list(APPEND CMAKE_MODULE_PATH "${FETCHCONTENT_BASE_DIR}/fetchedamrex-src/Tools/CMake")
             endif()
 
@@ -131,12 +135,20 @@ macro(find_ablastr)
     else()
         message(STATUS "Searching for pre-installed ABLASTR ...")
         message(FATAL_ERROR "Not yet supported!")
-        # TODO: MPI control
+        # TODO: MPI & FFT control
         set(COMPONENT_DIM 3D)
         set(COMPONENT_PRECISION ${ImpactX_PRECISION} P${ImpactX_PRECISION})
 
-        find_package(ABLASTR 23.06 CONFIG REQUIRED COMPONENTS ${COMPONENT_DIM})
+        find_package(ABLASTR 26.06 CONFIG REQUIRED COMPONENTS ${COMPONENT_DIM})
         message(STATUS "ABLASTR: Found version '${ABLASTR_VERSION}'")
+    endif()
+
+    # AMReX CMake helper scripts
+    list(APPEND CMAKE_MODULE_PATH "${AMReX_DIR}/AMReXCMakeModules")
+
+    # ABLASTR's find_package(AMReX) might not re-export on ImpactX_amrex_internal==FALSE
+    if(NOT TARGET AMReX::amrex)
+        find_package(AMReX CONFIG REQUIRED)
     endif()
 
     # transitive control for openPMD external
@@ -146,7 +158,7 @@ macro(find_ablastr)
         else()
             set(COMPONENT_WMPI NOMPI)
         endif()
-        find_package(openPMD 0.15.1 CONFIG REQUIRED COMPONENTS ${COMPONENT_WMPI})
+        find_package(openPMD 0.17.0 CONFIG REQUIRED COMPONENTS ${COMPONENT_WMPI})
         message(STATUS "openPMD-api: Found version '${openPMD_VERSION}'")
     endif()
 endmacro()
@@ -163,10 +175,10 @@ set(ImpactX_openpmd_src ""
     "Local path to openPMD-api source directory (preferred if set)")
 
 # Git fetcher
-set(ImpactX_ablastr_repo "https://github.com/ECP-WarpX/WarpX.git"
+set(ImpactX_ablastr_repo "https://github.com/BLAST-WarpX/warpx.git"
     CACHE STRING
     "Repository URI to pull and build ABLASTR from if(ImpactX_ablastr_internal)")
-set(ImpactX_ablastr_branch "23.06"
+set(ImpactX_ablastr_branch "759c5cb11a417187edc764b853cfb68018b91fce"
     CACHE STRING
     "Repository branch for ImpactX_ablastr_repo if(ImpactX_ablastr_internal)")
 
@@ -174,7 +186,7 @@ set(ImpactX_ablastr_branch "23.06"
 set(ImpactX_amrex_repo "https://github.com/AMReX-Codes/amrex.git"
     CACHE STRING
     "Repository URI to pull and build AMReX from if(ImpactX_amrex_internal)")
-set(ImpactX_amrex_branch "23.06"
+set(ImpactX_amrex_branch "c5d27c8ff1b7b32238ebc75a9642a3fc36e65e9c"
     CACHE STRING
     "Repository branch for ImpactX_amrex_repo if(ImpactX_amrex_internal)")
 
@@ -182,7 +194,7 @@ set(ImpactX_amrex_branch "23.06"
 set(ImpactX_openpmd_repo "https://github.com/openPMD/openPMD-api.git"
     CACHE STRING
     "Repository URI to pull and build openPMD-api from if(ImpactX_openpmd_internal)")
-set(ImpactX_openpmd_branch "0.15.1"
+set(ImpactX_openpmd_branch "0.17.0"
     CACHE STRING
     "Repository branch for ImpactX_openPMD_repo if(ImpactX_openpmd_internal)")
 

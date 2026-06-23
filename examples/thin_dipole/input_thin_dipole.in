@@ -1,0 +1,56 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 5.0
+beam.charge = 1.0e-9
+beam.particle = proton
+beam.distribution = waterbag
+beam.lambdaX = 1.0e-3
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 0.3
+beam.lambdaPx = 2.0e-4
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = beam.lambdaPx
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor bend inverse_bend monitor
+lattice.nslice = 1
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+#90 degree sbend using drift-kick-drift:
+bend.type = line
+bend.elements = dr kick dr
+bend.repeat = 200
+
+dr.type = drift
+dr.ds = 0.003926990816987
+
+kick.type = thin_dipole
+kick.theta = 0.45
+kick.rc = 1.0
+
+#inverse of a 90 degree sbend using exact nonlinear map:
+inverse_bend.type = sbend_exact
+inverse_bend.ds = -1.570796326794897
+inverse_bend.phi = -90.0
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

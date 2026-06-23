@@ -11,28 +11,39 @@
 
 #include <AMReX_BLProfiler.H>
 
-#include <string>
 #include <variant>
 
 
 namespace impactx
 {
-    void Push (ImpactXParticleContainer & pc,
-               KnownElements & element_variant,
-               int step)
+    void push (
+        ImpactXParticleContainer & pc,
+        elements::KnownElements & element_variant,
+        int step,
+        int period
+    )
     {
         // here we just access the element by its respective type
-        std::visit([&pc, step](auto&& element)
+        std::visit([&pc, step, period](auto&& element)
         {
-            // performance profiling per element
-            std::string element_name;
-            element_name = element.name;
-            std::string const profile_name = "impactx::Push::" + element_name;
-            BL_PROFILE("impactx::Push");
-            BL_PROFILE(profile_name);
+            BL_PROFILE("impactx::push");
 
             // push reference particle & all particles
-            element(pc, step);
+            element(pc, step, period);
+        }, element_variant);
+    }
+
+    void push (
+        RefPart & ref,
+        elements::KnownElements & element_variant
+    )
+    {
+        // here we just access the element by its respective type
+        std::visit([&ref](auto&& element)
+        {
+            // push reference particle in global coordinates
+            BL_PROFILE("impactx::push::RefPart");
+            element(ref);
         }, element_variant);
     }
 

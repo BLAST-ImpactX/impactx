@@ -3,28 +3,145 @@
 Examples
 ========
 
-This section allows you to **download input files** that correspond to different physical situations or test different code features.
+This section demonstrates use cases and benchmarks of ImpactX, each correspond to various physical situations and/or test different code features.
+Each example provides detailed **input scripts** that can be used as templates for your research projects.
+
+
+Single Particle Dynamics
+------------------------
 
 .. toctree::
    :maxdepth: 1
 
    examples/fodo/README.rst
+   examples/pals/README.rst
    examples/chicane/README.rst
-   examples/cfchannel/README.rst
-   examples/expanding_beam/README.rst
-   examples/kurth/README.rst
+   examples/alignment/README.rst
+   examples/rotation/README.rst
    examples/rfcavity/README.rst
    examples/fodo_rf/README.rst
    examples/fodo_chromatic/README.rst
    examples/multipole/README.rst
-   examples/iota_lens/README.rst
-   examples/iota_lattice/README.rst
    examples/solenoid/README.rst
-   examples/rotation/README.rst
    examples/solenoid_softedge/README.rst
    examples/quadrupole_softedge/README.rst
-   examples/positron_channel/README.rst
+   examples/fourier_coefficients/README.rst
+   examples/cfbend/README.rst
+   examples/compression/README.rst
+   examples/kicker/README.rst
+   examples/thin_dipole/README.rst
+   examples/aperture/README.rst
+   examples/polygon_aperture/README.rst
+   examples/iota_lens/README.rst
+   examples/achromatic_spectrometer/README.rst
+   examples/fodo_userdef/README.rst
+   examples/fodo_programmable/README.rst
+   examples/dogleg/README.rst
+   examples/coupled_optics/README.rst
+   examples/linear_map/README.rst
+   examples/scraping_beam/README.rst
+   examples/reversibility/README.rst
+   examples/charge_sign/README.rst
+   examples/symplectic_integration/README.rst
+   examples/active_plasma_lens/README.rst
+   examples/edge_effects/README.rst
+
+Spin and Polarization
+---------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/spin_tracking/README.rst
+
+Collective Effects
+------------------
+
+Space Charge
+""""""""""""
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/expanding_beam/README.rst
+   examples/cfchannel/README.rst
+   examples/kurth/README.rst
+   examples/epac2004_benchmarks/README.rst
+   examples/fodo_space_charge/README.rst
+   examples/space_charge_gaussian_kick/README.rst
+
+Coherent Synchrotron Radiation (CSR)
+""""""""""""""""""""""""""""""""""""
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/chicane/README_csr.rst
+
+
+Quantum Excitation
+--------------------
+
+Incoherent Synchrotron Radiation (ISR)
+""""""""""""""""""""""""""""""""""""""
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/incoherent_synchrotron/README.rst
+   examples/chicane/README_isr.rst
+
+
+Beam Distributions
+------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/initialize_from_array/README
+
+.. toctree::
+   :maxdepth: 2
+
+   examples/distgen/README
+
+
+Channels & Rings
+----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/fodo_channel/README.rst
+   examples/solenoid_restart/README.rst
+
+
+Lattice Design & Optimization
+-----------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/fodo_tune/README.rst
+   examples/optimize_triplet/README.rst
+   examples/turn_update/README.rst
+
+
+Virtual Test Stands
+-------------------
+
+.. toctree::
+   :maxdepth: 1
+
    examples/cyclotron/README.rst
+   examples/iota_lattice/README.rst
+   examples/simple_booster/README.rst
+   examples/positron_channel/README.rst
+   examples/pytorch_surrogate_model/README.rst
+   examples/apochromatic/README.rst
+   examples/fodo_tune/README.rst
+   examples/linac_segment/README.rst
+   examples/htu_beamline/README.rst
 
 
 Unit tests

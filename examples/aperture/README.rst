@@ -1,0 +1,210 @@
+.. _examples-aperture:
+
+Aperture Collimation
+====================
+
+Proton beam undergoing collimation by a rectangular boundary aperture.
+
+
+We use a 250 MeV proton beam with a horizontal rms beam size of 1.56 mm and a vertical rms beam size of 2.21 mm.
+
+After a short drift of 0.123, the beam is scraped by a 1 mm x 1.5 mm rectangular aperture.
+
+In this test, the initial values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+The test fails if:
+
+* any of the final coordinates for the valid (not lost) particles lie outside the aperture boundary or
+* any of the lost particles are inside the aperture boundary or
+* if the sum of lost and kept particles is not equal to the initial particles or
+* if the recorded position :math:`s` for the lost particles does not coincide with the drift distance.
+
+
+Run
+---
+
+This example can be run as a Python script (``python3 run_aperture.py``) or with an app with an input file (``impactx input_aperture.in``).
+Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, such as ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python Script
+
+       .. literalinclude:: run_aperture.py
+          :language: python3
+          :caption: You can copy this file from ``examples/aperture/run_aperture.py``.
+
+   .. tab-item:: App Input File
+
+       .. literalinclude:: input_aperture.in
+          :language: ini
+          :caption: You can copy this file from ``examples/aperture/input_aperture.in``.
+
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_aperture.py``
+
+   .. literalinclude:: analysis_aperture.py
+      :language: python3
+      :caption: You can copy this file from ``examples/aperture/analysis_aperture.py``.
+
+
+.. _examples-aperture-periodic:
+
+Aperture Collimation with Periodic Masking
+==========================================
+
+Proton beam undergoing collimation by a periodic array of rectangular apertures, such as those used in a pepperpot emittance measurement.
+
+We use a 250 MeV proton beam with a horizontal rms beam size of 1.56 mm and a vertical rms beam size of 2.21 mm.
+
+After a short drift of 0.123 m, the beam intercepts a periodic array of apertures of period 1 mm (in the horizontal and vertical), each of which is 0.15 mm x 0.1 mm in size.
+Every 2nd row of the aperture pattern (rows -3, -1, 1, 3, ...) is shifted horizontally by half the horizontal period, creating a `hexagonal / triangular pattern <https://github.com/BLAST-ImpactX/impactx/pull/1019>`__.
+
+In this test, the initial values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+The test fails if:
+
+* any of the final coordinates for the valid (not lost) particles lie outside the aperture boundary or
+* any of the lost particles lie inside the aperture boundary or
+* if the sum of the numbers of lost and retained particles is not equal to the number of initial particles
+
+
+Run
+---
+
+This example can be run as a Python script (``python3 run_aperture_periodic.py``) or with an app with an input file (``impactx input_aperture_periodic.in``).
+Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, such as ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python Script
+
+       .. literalinclude:: run_aperture_periodic.py
+          :language: python3
+          :caption: You can copy this file from ``examples/aperture/run_aperture_periodic.py``.
+
+   .. tab-item:: App Input File
+
+       .. literalinclude:: input_aperture_periodic.in
+          :language: ini
+          :caption: You can copy this file from ``examples/aperture/input_aperture_periodic.in``.
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_aperture_periodic.py``
+
+   .. literalinclude:: analysis_aperture_periodic.py
+      :language: python3
+      :caption: You can copy this file from ``examples/aperture/analysis_aperture_periodic.py``.
+
+
+.. _examples-absorber:
+
+Collimation Using an Absorber
+================================
+
+Proton beam undergoing collimation through partial absorption by a rectangular domain.
+This test is the exact negative of the previous test, and illustrates the ``absorb`` option of the ``Aperture`` element.
+
+We use a 250 MeV proton beam with a horizontal rms beam size of 1.56 mm and a vertical rms beam size of 2.21 mm.
+
+After a short drift of 0.123, the beam hits a 1 mm x 1.5 mm rectangular structure, resulting in particle loss.
+
+In this test, the initial values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nomin>
+The test fails if:
+
+* any of the final coordinates for the valid (not lost) particles lie inside the absorber boundary or
+* any of the lost particles are outside the absorber boundary or
+* if the sum of lost and kept particles is not equal to the initial particles or
+* if the recorded position :math:`s` for the lost particles does not coincide with the drift distance.
+
+
+Run
+---
+
+This example can be run as a Python script (``python3 run_absorber.py``) or with an app with an input file (``impactx input_absorber.in``).
+Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, such as ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python Script
+
+       .. literalinclude:: run_absorber.py
+          :language: python3
+          :caption: You can copy this file from ``examples/aperture/run_absorber.py``.
+
+   .. tab-item:: App Input File
+
+       .. literalinclude:: input_absorber.in
+          :language: ini
+          :caption: You can copy this file from ``examples/aperture/input_absorber.in``.
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_absorber.py``
+
+   .. literalinclude:: analysis_absorber.py
+      :language: python3
+      :caption: You can copy this file from ``examples/aperture/analysis_absorber.py``.
+
+
+.. _examples-aperture-thick:
+
+Aperture Collimation for a Thick Element
+=========================================
+
+Proton beam in a drift, undergoing collimation by a rectangular boundary aperture.
+
+We use a 250 MeV proton beam with a horizontal rms beam size of 1.56 mm and a vertical rms beam size of 2.21 mm.
+
+The beam is scraped by a 1 mm x 1.5 mm rectangular aperture.  For this test, the parameter nslice = 1, so application at the aperture boundary is equivalent to using a thin aperture element located at the exit of the drift.
+
+In this test, the initial values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must>
+The test fails if:
+
+* any of the final coordinates for the valid (not lost) particles lie outside the aperture boundary or
+* any of the lost particles are inside the aperture boundary or
+* if the sum of lost and kept particles is not equal to the initial particles or
+* if the recorded position :math:`s` for the lost particles does not coincide with the drift distance.
+
+
+Run
+---
+
+This example can be run as a Python script (``python3 run_aperture_thick.py``) or with an app with an input file (``impactx input_aperture_thick.in``).
+Each can also be prefixed with an `MPI executor <https://www.mpi-forum.org>`__, such as ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python Script
+
+       .. literalinclude:: run_aperture_thick.py
+          :language: python3
+          :caption: You can copy this file from ``examples/aperture/run_aperture_thick.py``.
+
+   .. tab-item:: App Input File
+
+       .. literalinclude:: input_aperture_thick.in
+          :language: ini
+          :caption: You can copy this file from ``examples/aperture/input_aperture_thick.in``.
+
+
+Analyze
+-------
+
+We run the following script to analyze correctness:
+
+.. dropdown:: Script ``analysis_aperture_thick.py``
+
+   .. literalinclude:: analysis_aperture_thick.py
+      :language: python3
+      :caption: You can copy this file from ``examples/aperture/analysis_aperture_thick.py``.

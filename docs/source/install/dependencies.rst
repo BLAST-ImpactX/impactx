@@ -6,11 +6,11 @@ Dependencies
 ImpactX depends on the following popular third party software.
 Please see installation instructions below.
 
-- a mature `C++17 <https://en.wikipedia.org/wiki/C%2B%2B17>`__ compiler, e.g., GCC 8.4+, Clang 7, NVCC 11.0, MSVC 19.15 or newer
-- `CMake 3.20.0+ <https://cmake.org>`__
+- a mature `C++20 <https://en.wikipedia.org/wiki/C%2B%2B20>`__ compiler, e.g., GCC 12+, Clang 14, NVCC 12.4, MSVC 19.39 or newer
+- `CMake 3.24.0+ <https://cmake.org>`__
 - `Git 2.18+ <https://git-scm.com>`__
 - `AMReX <https://amrex-codes.github.io>`__: we automatically download and compile a copy
-- `ABLASTR/WarpX <https://github.com/ECP-WarpX/warpx>`__: we automatically download and compile a copy
+- `ABLASTR/WarpX <https://github.com/BLAST-WarpX/warpx>`__: we automatically download and compile a copy
 
 Optional dependencies include:
 
@@ -18,19 +18,30 @@ Optional dependencies include:
 - for on-node accelerated compute *one of either*:
 
   - `OpenMP 3.1+ <https://www.openmp.org>`__: for threaded CPU execution or
-  - `CUDA Toolkit 11.0+ (11.3+ recommended) <https://developer.nvidia.com/cuda-downloads>`__: for Nvidia GPU support (see `matching host-compilers <https://gist.github.com/ax3l/9489132>`_) or
-  - `ROCm 5.2+ (5.5+ recommended) <https://gpuopen.com/learn/amd-lab-notes/amd-lab-notes-rocm-installation-readme/>`__: for AMD GPU support
-- `openPMD-api 0.15.1+ <https://github.com/openPMD/openPMD-api>`__: we automatically download and compile a copy of openPMD-api for openPMD I/O support
+  - `CUDA Toolkit 12.2+ <https://developer.nvidia.com/cuda-downloads>`__: for Nvidia GPU support (see `matching host-compilers <https://gist.github.com/ax3l/9489132>`_) or
+  - `ROCm 6.0+ <https://gpuopen.com/learn/amd-lab-notes/amd-lab-notes-rocm-installation-readme/>`__: for AMD GPU support or
+  - `oneAPI <https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html>`__: for Intel GPU support
+- `vir::stdx::simd <https://github.com/mattkretz/vir-simd>`__: for SIMD-accelerated CPU acceleration, can be combined with OpenMP
+- `FFTW3 <http://www.fftw.org>`__: for algorithms such as IGF space charge solver or CSR when running on CPU or with SYCL
+
+  - also needs the ``pkg-config`` tool on Unix
+- `openPMD-api 0.17.0+ <https://github.com/openPMD/openPMD-api>`__: we automatically download and compile a copy of openPMD-api for openPMD I/O support
 
   - see `optional I/O backends <https://github.com/openPMD/openPMD-api#dependencies>`__
 - `CCache <https://ccache.dev>`__: to speed up rebuilds (For CUDA support, needs version 3.7.9+ and 4.2+ is recommended)
 - `Ninja <https://ninja-build.org>`__: for faster parallel compiles
-- `Python 3.7+ <https://www.python.org>`__
+- `Python 3.11+ <https://www.python.org>`__
 
+  - `matplotlib 3.3+ <https://matplotlib.org>`__
   - `mpi4py <https://mpi4py.readthedocs.io>`__
   - `numpy <https://numpy.org>`__
   - `openPMD-api <https://github.com/openPMD/openPMD-api>`__
+  - `pals-schema <https://github.com/campa-consortium/pals-python>`__
+  - `quantiphy <https://quantiphy.readthedocs.io/>`__
   - see our ``requirements.txt`` file for compatible versions
+  - web browser/Jupyter Dashboard: `trame <https://kitware.github.io/trame/>`__
+
+    - see our ``src/python/impactx/dashboard/requirements.txt`` file for all packages
 
 If you are on a high-performance computing (HPC) system, then :ref:`please see our separate HPC documentation <install-hpc>`.
 
@@ -38,20 +49,12 @@ For all other systems, we recommend to use a **package dependency manager**:
 Pick *one* of the installation methods below to install all dependencies for ImpactX development in a consistent manner.
 
 
-Conda (Linux/macOS/Windows)
----------------------------
+Conda-Forge (Linux/macOS/Windows)
+---------------------------------
 
-`Conda <https://conda.io>`__/`Mamba <https://mamba.readthedocs.io>`__ are cross-compatible, user-level package managers.
+`Conda-Forge <https://conda-forge.org/download/>`__ is a repository for cross-compatible, user-level packages.
 
 .. tip::
-
-   We recommend to configure your conda to use the faster ``libmamba`` `dependency solver <https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community>`__.
-
-   .. code-block:: bash
-
-      conda update -n base conda
-      conda install -n base conda-libmamba-solver
-      conda config --set solver libmamba
 
    We recommend to deactivate that conda self-activates its ``base`` environment.
    This `avoids interference with the system and other package managers <https://collegeville.github.io/CW20/WorkshopResources/WhitePapers/huebl-working-with-multiple-pkg-mgrs.pdf>`__.
@@ -60,13 +63,20 @@ Conda (Linux/macOS/Windows)
 
       conda config --set auto_activate_base false
 
+   In order to make sure that the conda configuration uses ``conda-forge`` as the only channel, which will help avoid issues with blocked ``defaults`` or ``anaconda`` repositories, please set the following configurations:
+
+   .. code-block:: bash
+
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+
 .. tab-set::
 
    .. tab-item:: With MPI (only Linux/macOS)
 
       .. code-block:: bash
 
-         conda create -n impactx-cpu-mpich-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp "openpmd-api=*=mpi_mpich*" python numpy pandas scipy yt pkg-config matplotlib mamba ninja mpich pip virtualenv
+         conda create -n impactx-cpu-mpich-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp "openpmd-api=*=mpi_mpich*" packaging pytest pytest-benchmark python python-build numpy pandas quantiphy scipy setuptools yt "fftw=*=mpi_mpich*" pkg-config matplotlib mamba ninja mpich pip virtualenv vir-simd wheel
          conda activate impactx-cpu-mpich-dev
 
          # compile ImpactX with -DImpactX_MPI=ON
@@ -76,7 +86,7 @@ Conda (Linux/macOS/Windows)
 
       .. code-block:: bash
 
-         conda create -n impactx-cpu-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp openpmd-api python numpy pandas scipy yt pkg-config matplotlib mamba ninja pip virtualenv
+         conda create -n impactx-cpu-dev -c conda-forge blaspp boost ccache cmake compilers git lapackpp openpmd-api packaging pytest pytest-benchmark python python-build numpy pandas quantiphy scipy setuptools yt fftw pkg-config matplotlib mamba ninja pip virtualenv vir-simd wheel
          conda activate impactx-cpu-dev
 
          # compile ImpactX with -DImpactX_MPI=OFF
@@ -98,6 +108,12 @@ For OpenMP support, you will further need:
 
          conda install -c conda-forge llvm-openmp
 
+For the ImpactX browser/Jupyter dashboard dependencies, install from the ImpactX source directory:
+
+.. code-block:: bash
+
+   python3 -m pip install -r src/python/impactx/dashboard/requirements.txt
+
 
 Spack (Linux/macOS)
 -------------------
@@ -105,7 +121,7 @@ Spack (Linux/macOS)
 `Spack <https://spack.readthedocs.io>`__ is a user-level package manager.
 It is primarily written for Linux, with slightly less support for macOS, and future support for Windows.
 
-First, download a `WarpX Spack desktop development environment <https://github.com/ECP-WarpX/WarpX/blob/development/Tools/machines/desktop>`__ of your choice (which will also work for ImpactX).
+First, download a `WarpX Spack desktop development environment <https://github.com/BLAST-WarpX/warpx/blob/development/Tools/machines/desktop>`__ of your choice (which will also work for ImpactX).
 For most desktop developments, pick the OpenMP environment for CPUs unless you have a supported GPU.
 
 * **Debian/Ubuntu** Linux:
@@ -130,7 +146,7 @@ Now install the WarpX/ImpactX dependencies in a new development environment:
 .. code-block:: bash
 
    # download environment file
-   curl -sLO https://raw.githubusercontent.com/ECP-WarpX/WarpX/development/Tools/machines/desktop/spack-${system}-${compute}.yaml
+   curl -sLO https://raw.githubusercontent.com/BLAST-WarpX/warpx/development/Tools/machines/desktop/spack-${system}-${compute}.yaml
 
    # create new development environment
    spack env create impactx-${compute}-dev spack-${system}-${compute}.yaml
@@ -138,7 +154,13 @@ Now install the WarpX/ImpactX dependencies in a new development environment:
 
    # installation
    spack install
-   python3 -m pip install jupyter matplotlib numpy openpmd-api openpmd-viewer pandas scipy virtualenv yt
+   python3 -m pip install jupyter matplotlib numpy openpmd-api openpmd-viewer pandas quantiphy scipy virtualenv yt
+
+For the ImpactX browser/Jupyter dashboard dependencies, install from the ImpactX source directory:
+
+.. code-block:: bash
+
+   python3 -m pip install -r src/python/impactx/dashboard/requirements.txt
 
 In new terminal sessions, re-activate the environment with
 
@@ -165,11 +187,13 @@ Brew (macOS/Linux)
    brew install adios2      # for openPMD
    brew install ccache
    brew install cmake
+   brew install fftw        # for IGF, CSR
    brew install git
    brew install hdf5-mpi    # for openPMD
    brew install libomp
    brew unlink gcc
    brew link --force libomp
+   brew install pkg-config  # for fftw
    brew install open-mpi
    brew install openblas    # for PSATD in RZ
    brew install openpmd-api # for openPMD
@@ -203,7 +227,7 @@ The `Advanced Package Tool (APT) <https://en.wikipedia.org/wiki/APT_(software)>`
       .. code-block:: bash
 
          sudo apt update
-         sudo apt install build-essential ccache cmake g++ git libhdf5-openmpi-dev libopenmpi-dev pkg-config python3 python3-matplotlib python3-numpy python3-pandas python3-pip python3-scipy python3-venv
+         sudo apt install build-essential ccache cmake g++ git libfftw3-mpi-dev libfftw3-dev libhdf5-openmpi-dev libopenmpi-dev pkg-config python3 python3-matplotlib python3-numpy python3-pandas python3-pip python3-scipy python3-venv
 
          # optional:
          # for CUDA, either install
@@ -219,7 +243,7 @@ The `Advanced Package Tool (APT) <https://en.wikipedia.org/wiki/APT_(software)>`
       .. code-block:: bash
 
          sudo apt update
-         sudo apt install build-essential ccache cmake g++ git libhdf5-dev pkg-config python3 python3-matplotlib python3-numpy python3-pandas python3-pip python3-scipy python3-venv
+         sudo apt install build-essential ccache cmake g++ git libfftw3-dev libfftw3-dev libhdf5-dev pkg-config python3 python3-matplotlib python3-numpy python3-pandas python3-pip python3-scipy python3-venv
 
          # optional:
          # for CUDA, either install

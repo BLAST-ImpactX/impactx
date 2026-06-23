@@ -12,13 +12,16 @@
 
 #include <ablastr/constant.H>
 
-#include <AMReX_Array.H>
 #include <AMReX_BLassert.H>
 #include <AMReX_Extension.H>
 #include <AMReX_GpuQualifiers.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
+#include <AMReX_SmallMatrix.H>
 
 #include <cmath>
+#include <stdexcept>
+#include <string>
 
 
 namespace impactx
@@ -33,15 +36,99 @@ namespace impactx
         amrex::ParticleReal y = 0.0;  ///< vertical position y, in meters
         amrex::ParticleReal z = 0.0;  ///< longitudinal position z, in meters
         amrex::ParticleReal t = 0.0;  ///< clock time * c in meters
-        amrex::ParticleReal px = 0.0; ///< momentum in x, normalized to proper velocity
-        amrex::ParticleReal py = 0.0; ///< momentum in y, normalized to proper velocity
-        amrex::ParticleReal pz = 0.0; ///< momentum in z, normalized to proper velocity
-        amrex::ParticleReal pt = 0.0; ///< energy deviation, normalized by rest energy
+        amrex::ParticleReal px = 0.0; ///< momentum in x divided by m*c = beta_x*gamma [unitless]
+        amrex::ParticleReal py = 0.0; ///< momentum in y divided by m*c = beta_y*gamma [unitless]
+        amrex::ParticleReal pz = 0.0; ///< momentum in z divided by m*c = beta_z*gamma [unitless]
+        amrex::ParticleReal pt = 0.0; ///< energy, normalized by rest energy
         amrex::ParticleReal mass = 0.0; ///< reference rest mass, in kg
         amrex::ParticleReal charge = 0.0; ///< reference charge, in C
+        amrex::ParticleReal gyromagnetic_anomaly = 0.0; ///< anomalous magnetic moment [unitless]
 
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
-        amrex::Array2D<amrex::ParticleReal, 1, 6, 1, 6> map; ///< linearized map
+
+        /** Copy the reference particle
+         *
+         * Use this if you want to do an operation that modifies the reference particle,
+         * but you want to avoid modifying the particle container that it is assigned to.
+         */
+        RefPart
+        copy () const
+        {
+            return RefPart{*this};
+        }
+
+        /** Reset the reference particle
+         *
+         * @param keep_mass do not reset the reference particle mass
+         * @param keep_charge do not reset the reference particle charge
+         */
+        void
+        reset (bool keep_mass=false, bool keep_charge=false)
+        {
+            auto old_mass = mass;
+            auto old_charge = charge;
+
+            RefPart zero{};
+            *this = zero;
+
+            if (keep_mass) { mass = old_mass; }
+            if (keep_charge) { charge = old_charge; }
+        }
+
+        /** Set reference particle species by name
+         *
+         * Sets charge, mass, and gyromagnetic anomaly for a known particle species.
+         *
+         * @param species_name particle species name
+         * @returns reference to this RefPart for chaining
+         */
+        RefPart &
+        set_species (std::string const & species_name)
+        {
+            using namespace amrex::literals; // for _prt
+
+            constexpr amrex::ParticleReal m_e = ablastr::constant::SI::m_e_v<amrex::ParticleReal>;
+            constexpr amrex::ParticleReal m_p = ablastr::constant::SI::m_p_v<amrex::ParticleReal>;
+            constexpr amrex::ParticleReal MeV_inv_c2 = ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
+
+            amrex::ParticleReal qe;
+            amrex::ParticleReal massE;
+            amrex::ParticleReal g_anomaly;
+
+            // [known_species]
+            if (species_name == "electron") {
+                qe = -1.0;
+                massE = m_e / MeV_inv_c2;
+                g_anomaly = 0.00115965218062_prt;
+            } else if (species_name == "positron") {
+                qe = 1.0;
+                massE = m_e / MeV_inv_c2;
+                g_anomaly = 0.00115965218062_prt;
+            } else if (species_name == "proton") {
+                qe = 1.0;
+                massE = m_p / MeV_inv_c2;
+                g_anomaly = 1.7928473446_prt;
+            } else if (species_name == "Hminus") {
+                qe = -1.0;
+                massE = (m_p + 2.0_prt * m_e) / MeV_inv_c2;  // neglect ~14 eV/c^2 binding energy
+                g_anomaly = 1.7928473446_prt;
+            }
+            // [/known_species]
+            else {
+                throw std::runtime_error(
+                    "Unknown species: '" + species_name +
+                    "'. Known species: electron, positron, proton, Hminus. "
+                    "For other species, set charge, mass, and gyromagnetic anomaly "
+                    "individually via set_charge_qe(), set_mass_MeV(), and "
+                    "set_gyromagnetic_anomaly()."
+                );
+            }
+
+            set_charge_qe(qe);
+            set_mass_MeV(massE);
+            set_gyromagnetic_anomaly(g_anomaly);
+            return *this;
+        }
 
         /** Get reference particle relativistic gamma
          *
@@ -64,9 +151,10 @@ namespace impactx
         beta () const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_beta = sqrt(1.0_prt - 1.0_prt/pow(ref_gamma,2));
+            amrex::ParticleReal const ref_beta = std::sqrt(1.0_prt - 1.0_prt / powi<2>(ref_gamma));
             return ref_beta;
         }
 
@@ -79,15 +167,16 @@ namespace impactx
         beta_gamma () const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_betagamma = sqrt(pow(ref_gamma, 2) - 1.0_prt);
+            amrex::ParticleReal const ref_betagamma = std::sqrt(powi<2>(ref_gamma) - 1.0_prt);
             return ref_betagamma;
         }
 
-        /** Get reference particle rest mass
+        /** Get reference particle rest mass expressed in MeV
          *
-         * @returns rest mass in MeV/c^2
+         * @returns reference particle rest mass * c^2, expressed as an energy (MeV)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         amrex::ParticleReal
@@ -95,67 +184,69 @@ namespace impactx
         {
             using namespace amrex::literals;
 
-            constexpr amrex::ParticleReal inv_MeV_invc2 = 1.0_prt /  ablastr::constant::SI::MeV_invc2;
+            constexpr amrex::ParticleReal inv_MeV_invc2 = 1.0_prt / ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
             return amrex::ParticleReal(mass * inv_MeV_invc2);
         }
 
         /** Set reference particle rest mass
          *
-         * @param massE particle rest mass (MeV/c^2)
+         * @param massE reference particle rest mass * c^2, expressed as an energy (MeV)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         RefPart &
         set_mass_MeV (amrex::ParticleReal const massE)
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             AMREX_ASSERT_WITH_MESSAGE(massE != 0.0_prt,
                                       "set_mass_MeV: Mass cannot be zero!");
 
-            mass = massE * ablastr::constant::SI::MeV_invc2;
+            mass = massE * ablastr::constant::SI::MeV_inv_c2_v<amrex::ParticleReal>;
 
             // re-scale pt and pz
             if (pt != 0.0_prt)
             {
-                pt = -energy_MeV() / massE - 1.0_prt;
-                pz = sqrt(pow(pt, 2) - 1.0_prt);
+                pt = -kin_energy_MeV() / massE - 1.0_prt;
+                pz = std::sqrt(powi<2>(pt) - 1.0_prt);
             }
 
             return *this;
         }
 
-        /** Get reference particle energy
+        /** Get reference particle kinetic energy
          *
          * @returns kinetic energy in MeV
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         amrex::ParticleReal
-        energy_MeV () const
+        kin_energy_MeV () const
         {
             using namespace amrex::literals;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_energy = mass_MeV() * (ref_gamma - 1.0_prt);
-            return ref_energy;
+            amrex::ParticleReal const ref_kin_energy = mass_MeV() * (ref_gamma - 1.0_prt);
+            return ref_kin_energy;
         }
 
-        /** Set reference particle energy
+        /** Set reference particle kinetic energy
          *
-         * @param energy initial kinetic energy (MeV)
+         * @param kin_energy initial kinetic energy (MeV)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         RefPart &
-        set_energy_MeV (amrex::ParticleReal const energy)
+        set_kin_energy_MeV (amrex::ParticleReal const kin_energy)
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             AMREX_ASSERT_WITH_MESSAGE(mass != 0.0_prt,
-                                      "set_energy_MeV: Set mass first!");
+                                      "set_kin_energy_MeV: Set mass first!");
 
             px = 0.0;
             py = 0.0;
-            pt = -energy / mass_MeV() - 1.0_prt;
-            pz = sqrt(pow(pt, 2) - 1.0_prt);
+            pt = -kin_energy / mass_MeV() - 1.0_prt;
+            pz = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             return *this;
         }
@@ -169,11 +260,11 @@ namespace impactx
         rigidity_Tm () const
         {
             using namespace amrex::literals;
+            using amrex::Math::powi;
 
             amrex::ParticleReal const ref_gamma = -pt;
-            amrex::ParticleReal const ref_betagamma = sqrt(pow(ref_gamma, 2) - 1.0_prt);
-            //amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/charge; //fails due to "charge"
-            amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/(ablastr::constant::SI::q_e);
+            amrex::ParticleReal const ref_betagamma = std::sqrt(powi<2>(ref_gamma) - 1.0_prt);
+            amrex::ParticleReal const ref_rigidity = mass*ref_betagamma*(ablastr::constant::SI::c)/charge;
             return ref_rigidity;
         }
 
@@ -208,14 +299,31 @@ namespace impactx
 
         /** Get reference particle charge to mass ratio
          *
-         * @returns charge to mass ratio (elementary charge/eV)
+         * @returns charge to mass ratio (in SI units of C/kg)
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         amrex::ParticleReal
-        qm_qeeV () const
+        qm_ratio_SI () const
         {
             return charge / mass;
         }
+
+        /** Set reference particle anomalous magnetic dipole moment
+         *  (aka gyromagnetic anomaly).
+         *
+         * @param gyromagnetic_anomaly_ref unitless
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        RefPart &
+        set_gyromagnetic_anomaly (amrex::ParticleReal const gyromagnetic_anomaly_ref)
+        {
+            using namespace amrex::literals;
+
+            this->gyromagnetic_anomaly = gyromagnetic_anomaly_ref;
+
+            return *this;
+        }
+
     };
 
 } // namespace impactx

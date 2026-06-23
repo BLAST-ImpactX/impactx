@@ -9,46 +9,48 @@
 
 import numpy as np
 import pytest
+from conftest import basepath
 
-import amrex.space3d as amr
-from impactx import ImpactX, RefPart, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
+
+# FIXME in AMReX via https://github.com/AMReX-Codes/amrex/pull/3727
+# def test_impactx_module():
+#    """
+#    Tests the basic modules we provide.
+#    """
+#    print(f"version={impactx.__version__}")
+#    assert impactx.__version__  # version must not be empty
 
 
-def test_impactx_fodo_file():
-    """
-    This tests an equivalent to main.cpp in C++
-    """
-    sim = ImpactX()
-
-    sim.load_inputs_file("examples/fodo/input_fodo.in")
-
-    sim.init_grids()
-    sim.init_beam_distribution_from_inputs()
-    sim.init_lattice_elements_from_inputs()
-
-    sim.evolve()
-
-    # validate the results
-    beam = sim.particle_container()
-    num_particles = beam.TotalNumberOfParticles()
+def validate_fodo(beam):
+    """see examples/fodo/analysis_fodo.py"""
+    num_particles = beam.total_number_of_particles()
     assert num_particles == 10000
-    atol = 0.0  # ignored
-    rtol = num_particles**-0.5  # from random sampling of a smooth distribution
+    if Config.precision == "SINGLE":
+        atol = 0.0  # ignored
+        rtol = (
+            2.5 * num_particles**-0.5
+        )  # from random sampling of a smooth distribution
+    else:
+        atol = 0.0  # ignored
+        rtol = (
+            2.2 * num_particles**-0.5
+        )  # from random sampling of a smooth distribution
 
     # in situ calculate the reduced beam characteristics
-    rbc = beam.reduced_beam_characteristics()
-
-    # see examples/fodo/analysis_fodo.py
+    rbc = beam.beam_moments()
+    ref = beam.ref_particle()
     print("charge=", rbc["charge_C"])
     assert np.allclose(
         [
-            rbc["sig_x"],
-            rbc["sig_y"],
-            rbc["sig_t"],
+            rbc["sigma_x"],
+            rbc["sigma_y"],
+            rbc["sigma_t"],
             rbc["emittance_x"],
             rbc["emittance_y"],
             rbc["emittance_t"],
             rbc["charge_C"],
+            ref.s,
         ],
         [
             7.5451170454175073e-005,
@@ -58,10 +60,32 @@ def test_impactx_fodo_file():
             2.0175015289132990e-009,
             2.0013820193294972e-006,
             -1.0e-9,
+            3.0,
         ],
         rtol=rtol,
         atol=atol,
     )
+
+
+def test_impactx_fodo_file():
+    """
+    This tests an equivalent to main.cpp in C++
+    """
+    sim = ImpactX()
+
+    sim.load_inputs_file(basepath + "/examples/fodo/input_fodo.in")
+
+    sim.init_grids()
+    sim.init_beam_distribution_from_inputs()
+    sim.init_lattice_elements_from_inputs()
+
+    sim.track_particles()
+
+    # validate the results
+    validate_fodo(sim.beam)
+
+    # finalize simulation
+    sim.finalize()
 
 
 def test_impactx_nofile():
@@ -70,59 +94,83 @@ def test_impactx_nofile():
     """
     sim = ImpactX()
 
+    # various ways to change OMP threads from the default "nosmt"
+    sim.omp_threads = 1
+    sim.omp_threads = "1"
+    sim.omp_threads = "nosmt"
+
     sim.particle_shape = 2
     sim.slice_step_diagnostics = True
     sim.init_grids()
 
     # init particle beam
-    energy_MeV = 2.0e3
+    kin_energy_MeV = 2.0e3
     bunch_charge_C = 1.0e-9
     npart = 10000
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_energy_MeV(energy_MeV)
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
     #   particle bunch
     distr = distribution.Waterbag(
-        sigmaX=3.9984884770e-5,
-        sigmaY=3.9984884770e-5,
-        sigmaT=1.0e-3,
-        sigmaPx=2.6623538760e-5,
-        sigmaPy=2.6623538760e-5,
-        sigmaPt=2.0e-3,
+        lambdaX=3.9984884770e-5,
+        lambdaY=3.9984884770e-5,
+        lambdaT=1.0e-3,
+        lambdaPx=2.6623538760e-5,
+        lambdaPy=2.6623538760e-5,
+        lambdaPt=2.0e-3,
         muxpx=-0.846574929020762,
         muypy=0.846574929020762,
         mutpt=0.0,
     )
     sim.add_particles(bunch_charge_C, distr, npart)
 
-    assert sim.particle_container().TotalNumberOfParticles() == npart
+    beam = sim.beam
+    assert beam.total_number_of_particles() == npart
 
     # init accelerator lattice
     fodo = [
-        elements.Drift(0.25),
-        elements.Quad(1.0, 1.0),
-        elements.Drift(0.5),
-        elements.Quad(1.0, -1.0),
-        elements.Drift(0.25),
+        elements.Drift(name="d1", ds=0.25),
+        elements.Quad(name="q1", ds=1.0, k=1.0),
+        elements.Drift(name="d2", ds=0.5),
+        elements.Quad(name="q2", ds=1.0, k=-1.0),
+        elements.Drift(name="d3", ds=0.25),
     ]
     #  assign a fodo segment
-    # sim.lattice = fodo
+    sim.lattice.extend(fodo)
 
-    #  add 4 more FODO segments
-    for i in range(4):
-        sim.lattice.extend(fodo)
+    # simulate
+    sim.track_particles()
+
+    # validate the results
+    validate_fodo(beam)
+
+    # init beam again
+    beam.clear(keep_mass=True, keep_charge=True)
+    ref.set_kin_energy_MeV(kin_energy_MeV)
+    sim.add_particles(bunch_charge_C, distr, npart)
+
+    # simulate again
+    sim.track_particles()
+
+    # validate again
+    validate_fodo(beam)
 
     # add 2 more drifts
     for i in range(4):
-        sim.lattice.append(elements.Drift(0.25))
+        sim.lattice.append(elements.Drift(name="d" + str(4 + i), ds=0.25))
 
     print(sim.lattice)
     print(len(sim.lattice))
     assert len(sim.lattice) > 5
 
-    sim.evolve()
+    # simulate full lattice but keep beam global position
+    sim.track_particles()
+    assert ref.s == pytest.approx(7.0)
+
+    # finalize simulation
+    sim.finalize()
 
 
 def test_impactx_noparticles():
@@ -136,46 +184,26 @@ def test_impactx_noparticles():
     sim.init_grids()
 
     # init particle beam
-    energy_MeV = 2.0e3
+    kin_energy_MeV = 2.0e3
 
     #   reference particle
-    ref = sim.particle_container().ref_particle()
-    ref.set_charge_qe(-1.0).set_mass_MeV(0.510998950).set_energy_MeV(energy_MeV)
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
     #   particle bunch: init intentionally missing
 
     # init accelerator lattice
-    sim.lattice.append(elements.Drift(0.5))
-
-    with pytest.raises(
-        RuntimeError, match="No particles found. Cannot run evolve without a beam."
-    ):
-        sim.evolve()
-
-
-def test_impactx_noshape():
-    """
-    This tests using ImpactX without particle shape:
-    must throw a user-friendly runtime error
-    """
-    sim = ImpactX()
-
-    # "sim.particle_shape = order" is intentionally missing
+    sim.lattice.append(elements.Drift(ds=0.5))
 
     with pytest.raises(
         RuntimeError,
-        match="particle_shape is not set, cannot initialize grids with guard cells.",
+        match="No particles found. "
+        "Cannot track particles without an initialized beam. "
+        "Did you forget to call sim.add_particles ?",
     ):
-        sim.init_grids()
+        sim.track_particles()
 
-    with pytest.raises(
-        RuntimeError,
-        match="algo.particle_shape is not set yet",
-    ):
-        print(sim.particle_shape)
-
-    # correct the mistake and keep going
-    sim.particle_shape = 2
-    sim.init_grids()
+    # finalize simulation
+    sim.finalize()
 
 
 def test_impactx_resting_refparticle():
@@ -192,12 +220,12 @@ def test_impactx_resting_refparticle():
     #   reference particle: init intentionally missing
     #   particle bunch
     gaussian = distribution.Gaussian(
-        sigmaX=4.0e-5,
-        sigmaY=5.0e-5,
-        sigmaT=1.0e-3,
-        sigmaPx=1.0e-5,
-        sigmaPy=3.0e-5,
-        sigmaPt=2.0e-3,
+        lambdaX=4.0e-5,
+        lambdaY=5.0e-5,
+        lambdaT=1.0e-3,
+        lambdaPx=1.0e-5,
+        lambdaPy=3.0e-5,
+        lambdaPt=2.0e-3,
     )
     with pytest.raises(
         RuntimeError,
@@ -205,13 +233,16 @@ def test_impactx_resting_refparticle():
     ):
         sim.add_particles(bunch_charge=0.0, distr=gaussian, npart=10)
 
-    sim.lattice.append(elements.Drift(0.25))
+    sim.lattice.append(elements.Drift(ds=0.25))
 
     with pytest.raises(
         RuntimeError,
         match="The reference particle energy is zero. Not yet initialized?",
     ):
-        sim.evolve()
+        sim.track_particles()
+
+    # finalize simulation
+    sim.finalize()
 
 
 def test_impactx_no_elements():
@@ -221,7 +252,7 @@ def test_impactx_no_elements():
     """
     sim = ImpactX()
 
-    sim.load_inputs_file("examples/fodo/input_fodo.in")
+    sim.load_inputs_file(basepath + "/examples/fodo/input_fodo.in")
 
     sim.init_grids()
     sim.init_beam_distribution_from_inputs()
@@ -231,7 +262,10 @@ def test_impactx_no_elements():
         RuntimeError,
         match="Beamline lattice has zero elements. Not yet initialized?",
     ):
-        sim.evolve()
+        sim.track_particles()
+
+    # finalize simulation
+    sim.finalize()
 
 
 def test_impactx_change_resolution():
@@ -240,15 +274,9 @@ def test_impactx_change_resolution():
     This is currently a work-around because we cannot yet change the cells
     after the simulation object as been created.
     """
-    pp_amr = amr.ParmParse("amr")
-    pp_amr.addarr("n_cell", [16, 24, 32])
-
     sim = ImpactX()
 
-    # Future:
-    # sim.ncell = [16, 24, 32]
-    # sim.domain = amr.RealBox([1., 2., 3.], [4., 5., 6.])
-
+    sim.n_cell = [16, 24, 32]
     sim.particle_shape = 2
     sim.slice_step_diagnostics = False
     sim.diagnostics = False
@@ -260,8 +288,66 @@ def test_impactx_change_resolution():
     assert rho.nComp == 1
     assert rho.size == 1
     assert rho.num_comp == 1
-    # assert rho.nGrowVect == [2, 2, 2]
-    print(f"rho.nGrowVect={rho.nGrowVect}")
+    # assert rho.n_grow_vect == [2, 2, 2]
+    print(f"rho.n_grow_vect={rho.n_grow_vect}")
     assert iter(rho).length > 0
     assert not rho.is_all_cell_centered
     assert rho.is_all_nodal
+
+    # finalize simulation
+    sim.finalize()
+
+
+def test_impactx_fodo_hook():
+    """
+    Test hooks (callback functions) into evolve loops
+    """
+    sim = ImpactX()
+
+    sim.load_inputs_file(basepath + "/examples/fodo/input_fodo.in")
+
+    sim.init_grids()
+    sim.init_beam_distribution_from_inputs()
+    sim.init_lattice_elements_from_inputs()
+
+    def hook_before_element(sim):
+        element = sim.tracking_element
+        print(
+            f"  Current element name: {element.name} with ds={element.ds:.2f}",
+            flush=True,
+        )
+
+        if element.name != "monitor":
+            print(f"  Drift ds is: {element.ds:.2f}m", flush=True)
+
+    sim.hook["before_element"] = hook_before_element
+
+    assert sim.tracking_element is None
+    sim.track_particles()
+    assert sim.tracking_element is None
+
+    # validate the results
+    validate_fodo(sim.beam)
+
+    # finalize simulation
+    sim.finalize()
+
+
+def test_deprecated_beam_ref_accessors_warn():
+    """Legacy accessor methods emit deprecation warnings."""
+    sim = ImpactX()
+    sim.particle_shape = 2
+    sim.init_grids()
+
+    with pytest.warns(
+        DeprecationWarning, match="particle_container\\(\\) is deprecated"
+    ):
+        beam = sim.particle_container()
+
+    with pytest.warns(DeprecationWarning, match="ref_particle\\(\\) is deprecated"):
+        ref = beam.ref_particle()
+
+    ref.x = 1.5
+    assert beam.ref.x == pytest.approx(1.5)
+
+    sim.finalize()

@@ -7,13 +7,11 @@
 # -*- coding: utf-8 -*-
 
 
-import amrex.space3d as amr
-from impactx import ImpactX, RefPart, distribution, elements
+from impactx import ImpactX, distribution
 
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
@@ -27,16 +25,16 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle().load_file("chicane.madx")
+ref = sim.beam.ref.load_file("chicane.madx")
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=2.2951017632e-5,
-    sigmaY=1.3084093142e-5,
-    sigmaT=5.5555553e-8,
-    sigmaPx=1.598353425e-6,
-    sigmaPy=2.803697378e-6,
-    sigmaPt=2.000000000e-6,
+    lambdaX=2.2951017632e-5,
+    lambdaY=1.3084093142e-5,
+    lambdaT=5.5555553e-8,
+    lambdaPx=1.598353425e-6,
+    lambdaPy=2.803697378e-6,
+    lambdaPt=2.000000000e-6,
     muxpx=0.933345606203060,
     muypy=0.933345606203060,
     mutpt=0.999999961419755,
@@ -47,8 +45,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 sim.lattice.load_file("chicane.madx", nslice=25)
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
-del sim
-amr.finalize()
+sim.finalize()

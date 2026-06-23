@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
-cmake_minimum_required(VERSION 3.20.0)
-project(ImpactX VERSION 23.06)
+cmake_minimum_required(VERSION 3.24.0)
+project(ImpactX VERSION 26.06)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -16,21 +16,25 @@ endif()
 
 # CMake policies ##############################################################
 #
+# Setting a cmake_policy to OLD is deprecated by definition and will raise a
+# verbose warning
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+endif()
+
 # AMReX 21.06+ supports CUDA_ARCHITECTURES with CMake 3.20+
 # CMake 3.18+: CMAKE_CUDA_ARCHITECTURES
 # https://cmake.org/cmake/help/latest/policy/CMP0104.html
-#if(CMAKE_VERSION VERSION_LESS 3.20)
-    if(POLICY CMP0104)
-        cmake_policy(SET CMP0104 OLD)
-    endif()
-#endif()
+if(POLICY CMP0104)
+    cmake_policy(SET CMP0104 OLD)
+endif()
 
 
 # C++ Standard in Superbuilds #################################################
 #
-# This is the easiest way to push up a C++17 requirement for AMReX and
+# This is the easiest way to push up a C++20 requirement for AMReX and
 # openPMD-api until they increase their requirement.
-set_cxx17_superbuild()
+set_cxx20_superbuild()
 
 
 # CCache Support ##############################################################
@@ -38,7 +42,15 @@ set_cxx17_superbuild()
 # this is an optional tool that stores compiled object files; allows fast
 # re-builds even with "make clean" in between. Mainly used to store AMReX
 # objects
-set_ccache()
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(ImpactX_CCACHE_DEFAULT ON)
+else()
+    set(ImpactX_CCACHE_DEFAULT OFF)  # we are a subproject in a superbuild
+endif()
+option(ImpactX_CCACHE "Enable ccache for faster rebuilds" ${ImpactX_CCACHE_DEFAULT})
+if(ImpactX_CCACHE)
+    set_ccache()
+endif()
 
 
 # Output Directories ##########################################################
@@ -54,10 +66,18 @@ impactx_set_default_install_dirs()
 #
 include(CMakeDependentOption)
 option(ImpactX_APP           "Build the ImpactX executable application"     ON)
-option(ImpactX_LIB           "Build ImpactX as a library"                   OFF)
+option(ImpactX_FASTMATH      "Enable fast-math optimizations"               OFF)
+option(ImpactX_FFT           "FFT-based solvers (IGF Space Charge, CSR)"    OFF)
 option(ImpactX_MPI           "Multi-node support (message-passing)"         ON)
+option(ImpactX_SIMD          "CPU SIMD Acceleration"                        OFF)
 option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
+
+# Specialize the particle push into branch-free paths for aligned vs. misaligned
+# elements (selected at runtime). This doubles the compile time of the element
+# pushes. Set to OFF to compile a single, always-on shift/rotate path instead.
+option(ImpactX_OPTIMIZE_ALIGNMENT "Branch-free push paths for aligned/misaligned elements (OFF halves element-push compile time)" ON)
+mark_as_advanced(ImpactX_OPTIMIZE_ALIGNMENT)
 
 set(ImpactX_PRECISION_VALUES SINGLE DOUBLE)
 set(ImpactX_PRECISION DOUBLE CACHE STRING "Floating point precision (SINGLE/DOUBLE)")
@@ -76,24 +96,44 @@ endif()
 option(ImpactX_MPI_THREAD_MULTIPLE "MPI thread-multiple support, i.e. for async_io" ON)
 mark_as_advanced(ImpactX_MPI_THREAD_MULTIPLE)
 
+# Advanced option to run tests
+option(ImpactX_TEST_CLEANUP "Clean up automated test directories" OFF)
+mark_as_advanced(ImpactX_TEST_CLEANUP)
+
 option(ImpactX_ablastr_internal                  "Download & build ABLASTR" ON)
 option(ImpactX_amrex_internal                    "Download & build AMReX" ON)
 option(ImpactX_openpmd_internal                  "Download & build openPMD-api" ON)
 option(ImpactX_pyamrex_internal                  "Download & build pyAMReX" ON)
 
-set(pyImpactX_VERSION_INFO "" CACHE STRING
-    "PEP-440 conformant version (set by distutils)")
+set(pyImpactX_VERSION_INFO "${ImpactX_VERSION}" CACHE STRING
+    "PEP-440 conformant version (set by setup.py)")
 
 # change the default build type to Release (or RelWithDebInfo) instead of Debug
 set_default_build_type("Release")
 
 # Option to enable interprocedural optimization
 # (also know as "link-time optimization" or "whole program optimization")
-option(ImpactX_IPO "Compile ImpactX with interprocedural optimization (will take more time)" OFF)
+set(_ImpactX_IPO_DEFAULT OFF)
+set(_ImpactX_PYTHON_IPO_DEFAULT ON)
+if(DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+    set(_ImpactX_IPO_DEFAULT ${CMAKE_INTERPROCEDURAL_OPTIMIZATION})
+    set(_ImpactX_PYTHON_IPO_DEFAULT ${CMAKE_INTERPROCEDURAL_OPTIMIZATION})
+endif()
+option(ImpactX_IPO
+    "Compile ImpactX with interprocedural optimization (will take more time)"
+    ${_ImpactX_IPO_DEFAULT}
+)
+option(ImpactX_PYTHON_IPO
+    "Compile Python bindings with interprocedural optimization (IPO) / link-time optimization (LTO)"
+    ${_ImpactX_PYTHON_IPO_DEFAULT}
+)
 
-# enforce consistency of dependent options
-if(ImpactX_PYTHON)
-    set(ImpactX_LIB ON CACHE STRING "Build ImpactX as a library" FORCE)
+# Unity builds combine all .cpp files into a single one (a single translation
+# unit, TU).
+option(ImpactX_UNITY_BUILD          "ImpactX library as unity build" OFF)
+
+if(ImpactX_FFT)
+    set(ABLASTR_FFT ON CACHE STRING "FFT-based solvers" FORCE)
 endif()
 
 # this defined the variable BUILD_TESTING which is ON by default
@@ -112,7 +152,7 @@ impactx_make_third_party_includes_system(WarpX::ablastr_3d ablastr_3d)
 
 # Python
 if(ImpactX_PYTHON)
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+    find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
 
     # default installation directories: Python
     impactx_set_default_install_dirs_python()
@@ -129,14 +169,41 @@ endif()
 
 # Targets #####################################################################
 #
-if(NOT ImpactX_APP AND NOT ImpactX_LIB)
-    message(FATAL_ERROR "Need to build at least ImpactX app or "
-                        "library/Python bindings")
+
+# collect into a library (default: static)
+add_library(lib)
+add_library(ImpactX::lib ALIAS lib)
+set(_BUILDINFO_SRC lib)
+set(_ALL_TARGETS lib)
+
+set_target_properties(lib PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
+)
+
+include(GenerateExportHeader)
+generate_export_header(lib
+    BASE_NAME impactx
+    EXPORT_FILE_NAME src/impactx_export.H
+)
+if(NOT BUILD_SHARED_LIBS)
+    target_compile_definitions(lib PUBLIC IMPACTX_STATIC_DEFINE)
 endif()
 
-# collect all objects for compilation
-add_library(ImpactX OBJECT)
-set(_ALL_TARGETS ImpactX)
+# Optional: build only a single TU
+if(ImpactX_UNITY_BUILD)
+    set_target_properties(lib PROPERTIES
+        UNITY_BUILD ON
+        UNITY_BUILD_MODE BATCH
+        # Number must be more than the number of .cpp files in ImpactX
+        UNITY_BUILD_BATCH_SIZE 10000
+    )
+endif()
+
+# Fast-Math
+if(ImpactX_FASTMATH)
+    target_link_libraries(lib PUBLIC AMReX::Flags_FASTMATH)
+endif()
 
 # executable application
 #   note: we currently avoid a dependency on a core library
@@ -144,30 +211,16 @@ set(_ALL_TARGETS ImpactX)
 if(ImpactX_APP)
     add_executable(app)
     add_executable(ImpactX::app ALIAS app)
-    target_link_libraries(app PRIVATE ImpactX)
+    target_link_libraries(app PRIVATE lib)
     set(_BUILDINFO_SRC app)
     list(APPEND _ALL_TARGETS app)
-endif()
-
-# link into a library (shared or static)
-if(ImpactX_LIB)
-    add_library(lib)
-    add_library(ImpactX::lib ALIAS lib)
-    target_link_libraries(lib PUBLIC ImpactX)
-    set(_BUILDINFO_SRC lib)
-    list(APPEND _ALL_TARGETS lib)
-
-    set_target_properties(ImpactX lib PROPERTIES
-        POSITION_INDEPENDENT_CODE ON
-        WINDOWS_EXPORT_ALL_SYMBOLS ON
-    )
 endif()
 
 # build Python module (this is always a shared library)
 if(ImpactX_PYTHON)
     add_library(pyImpactX MODULE src/python/pyImpactX.cpp)
     add_library(ImpactX::pyImpactX ALIAS pyImpactX)
-    target_link_libraries(pyImpactX PUBLIC lib)
+    target_link_libraries(pyImpactX PRIVATE lib)
     set(_BUILDINFO_SRC pyImpactX)
     list(APPEND _ALL_TARGETS pyImpactX)
 
@@ -215,7 +268,7 @@ if(ImpactX_PYTHON)
 endif()
 
 # own headers
-target_include_directories(ImpactX PUBLIC
+target_include_directories(lib PUBLIC
     $<BUILD_INTERFACE:${ImpactX_SOURCE_DIR}/src>
     $<BUILD_INTERFACE:${ImpactX_BINARY_DIR}/src>
 )
@@ -223,15 +276,15 @@ target_include_directories(ImpactX PUBLIC
 # if we include <AMReX_buildInfo.H> we will need to call:
 include(AMReXBuildInfo)
 generate_buildinfo(${_BUILDINFO_SRC} "${ImpactX_SOURCE_DIR}")
-target_link_libraries(ImpactX PRIVATE buildInfo::${_BUILDINFO_SRC})
+target_link_libraries(lib PRIVATE buildInfo::${_BUILDINFO_SRC})
 unset(_BUILDINFO_SRC)
 
 # add sources
 add_subdirectory(src)
 
-# C++ properties: at least a C++17 capable compiler is needed
+# C++ properties: at least a C++20 capable compiler is needed
 foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-    target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_17)
+    target_compile_features(${ImpactX_tgt} PUBLIC cxx_std_20)
 endforeach()
 set_target_properties(${_ALL_TARGETS} PROPERTIES
     CXX_EXTENSIONS OFF
@@ -240,26 +293,34 @@ set_target_properties(${_ALL_TARGETS} PROPERTIES
 
 # Interprocedural optimization
 if(ImpactX_IPO)
-    enable_IPO("${_ALL_TARGETS}")
+    impactx_enable_IPO("${_ALL_TARGETS}")
 endif()
 
 # link dependencies
-#     note: only PUBLIC because ImpactX is an OBJECT collection
-target_link_libraries(ImpactX PUBLIC ImpactX::thirdparty::ablastr_3d)
+target_link_libraries(lib PUBLIC ImpactX::thirdparty::ablastr_3d)
 if(ImpactX_PYTHON)
-    target_link_libraries(pyImpactX PRIVATE pybind11::module pybind11::lto pybind11::windows_extras)
+    target_link_libraries(pyImpactX PRIVATE pybind11::module pybind11::windows_extras)
+    if(ImpactX_PYTHON_IPO)
+        if(DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+            impactx_enable_IPO(pyImpactX)
+        else()
+            # conditionally defined target in pybind11
+            # https://github.com/pybind/pybind11/blob/v3.0.3/tools/pybind11Common.cmake#L436-L442
+            target_link_libraries(pyImpactX PRIVATE pybind11::lto)
+        endif()
+    endif()
 endif()
 
 if(ImpactX_OPENPMD)
-    target_link_libraries(ImpactX PUBLIC openPMD::openPMD)
+    target_link_libraries(lib PUBLIC openPMD::openPMD)
 endif()
 
 if(ImpactX_QED)
-    target_compile_definitions(ImpactX PUBLIC ImpactX_QED)
+    target_compile_definitions(lib PUBLIC ImpactX_QED)
     if(ImpactX_QED_TABLE_GEN)
-        target_compile_definitions(ImpactX PUBLIC ImpactX_QED_TABLE_GEN)
+        target_compile_definitions(lib PUBLIC ImpactX_QED_TABLE_GEN)
     endif()
-    target_link_libraries(ImpactX PUBLIC PXRMP_QED::PXRMP_QED)
+    target_link_libraries(lib PUBLIC PXRMP_QED::PXRMP_QED)
 endif()
 
 # AMReX helper function: propagate CUDA specific target & source properties
@@ -269,7 +330,7 @@ if(ImpactX_COMPUTE STREQUAL CUDA)
     endforeach()
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
         foreach(ImpactX_tgt IN LISTS _ALL_TARGETS)
-            target_compile_features(${ImpactX_tgt} PUBLIC cuda_std_17)
+            target_compile_features(${ImpactX_tgt} PUBLIC cuda_std_20)
         endforeach()
         set_target_properties(${_ALL_TARGETS} PROPERTIES
             CUDA_EXTENSIONS OFF
@@ -284,19 +345,20 @@ impactx_set_binary_name()
 
 # Defines #####################################################################
 #
+if(ImpactX_FFT)
+    target_compile_definitions(lib PUBLIC ImpactX_USE_FFT)
+endif()
 if(ImpactX_OPENPMD)
-    target_compile_definitions(ImpactX PUBLIC ImpactX_USE_OPENPMD)
+    target_compile_definitions(lib PUBLIC ImpactX_USE_OPENPMD)
+endif()
+if(ImpactX_OPTIMIZE_ALIGNMENT)
+    target_compile_definitions(lib PUBLIC ImpactX_OPTIMIZE_ALIGNMENT)
 endif()
 if(ImpactX_PYTHON)
     # for module __version__
     target_compile_definitions(pyImpactX PRIVATE
         PYIMPACTX_VERSION_INFO=${pyImpactX_VERSION_INFO})
 endif()
-
-
-# Warnings ####################################################################
-#
-set_cxx_warnings()
 
 
 # Generate Configuration and .pc Files ########################################
@@ -322,12 +384,9 @@ configure_file(
 #
 
 # headers, libraries and executables
-set(ImpactX_INSTALL_TARGET_NAMES)
+set(ImpactX_INSTALL_TARGET_NAMES lib)
 if(ImpactX_APP)
     list(APPEND ImpactX_INSTALL_TARGET_NAMES app)
-endif()
-if(ImpactX_LIB)
-    list(APPEND ImpactX_INSTALL_TARGET_NAMES lib)
 endif()
 if(ImpactX_PYTHON)
     list(APPEND ImpactX_INSTALL_TARGET_NAMES pyImpactX)
@@ -342,20 +401,18 @@ install(TARGETS ${ImpactX_INSTALL_TARGET_NAMES}
 )
 
 # simplified library alias
-if(ImpactX_LIB)
-    if(IS_ABSOLUTE ${CMAKE_INSTALL_LIBDIR})
-        set(ABS_INSTALL_LIB_DIR "${CMAKE_INSTALL_LIBDIR}")
-    else()
-        set(ABS_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-    endif()
-    # escape spaces for generated cmake_install.cmake file
-    file(TO_CMAKE_PATH "${ABS_INSTALL_LIB_DIR}" ABS_INSTALL_LIB_DIR)
-
-    install(CODE "file(CREATE_LINK
-        $<TARGET_FILE_NAME:lib>
-        \"${ABS_INSTALL_LIB_DIR}/libImpactX$<TARGET_FILE_SUFFIX:lib>\"
-        COPY_ON_ERROR SYMBOLIC)")
+if(IS_ABSOLUTE ${CMAKE_INSTALL_LIBDIR})
+    set(ABS_INSTALL_LIB_DIR "${CMAKE_INSTALL_LIBDIR}")
+else()
+    set(ABS_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 endif()
+# escape spaces for generated cmake_install.cmake file
+file(TO_CMAKE_PATH "${ABS_INSTALL_LIB_DIR}" ABS_INSTALL_LIB_DIR)
+
+install(CODE "file(CREATE_LINK
+    $<TARGET_FILE_NAME:lib>
+    \"${ABS_INSTALL_LIB_DIR}/libimpactx$<TARGET_FILE_SUFFIX:lib>\"
+    COPY_ON_ERROR SYMBOLIC)")
 
 # CMake package file for find_package(ImpactX::ImpactX) in depending projects
 #install(EXPORT ImpactXTargets
@@ -374,8 +431,10 @@ endif()
 # pip helpers for the impactx package #########################################
 #
 if(ImpactX_PYTHON)
-    set(PYINSTALLOPTIONS "" CACHE STRING
-        "Additional parameters to pass to `pip install`")
+    set(PY_PIP_OPTIONS "-v" CACHE STRING
+        "Additional parameters to pass to `pip` as ; separated list")
+    set(PY_PIP_INSTALL_OPTIONS "" CACHE STRING
+        "Additional parameters to pass to `pip install` as ; separated list")
 
     # add a prefix to custom targets so we do not collide if used as a subproject
     if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
@@ -391,11 +450,13 @@ if(ImpactX_PYTHON)
         ${CMAKE_COMMAND} -E rm -f -r impactx-whl
         COMMAND
             ${CMAKE_COMMAND} -E env PYIMPACTX_LIBDIR=$<TARGET_FILE_DIR:pyImpactX>
-                ${Python_EXECUTABLE} -m pip wheel -v --no-build-isolation --no-deps --wheel-dir=impactx-whl ${ImpactX_SOURCE_DIR}
+                ${Python_EXECUTABLE} -m pip ${PY_PIP_OPTIONS} wheel --no-build-isolation --no-deps --wheel-dir=impactx-whl "${ImpactX_SOURCE_DIR}"
+        COMMAND_EXPAND_LISTS VERBATIM
         WORKING_DIRECTORY
             ${ImpactX_BINARY_DIR}
         DEPENDS
             pyImpactX
+            pyImpactX_python_sources
     )
 
     # this will also upgrade/downgrade dependencies, e.g., when the version of numpy changes
@@ -405,7 +466,8 @@ if(ImpactX_PYTHON)
         set(pyImpactX_REQUIREMENT_FILE "requirements.txt")
     endif()
     add_custom_target(${ImpactX_CUSTOM_TARGET_PREFIX}pip_install_requirements
-        ${Python_EXECUTABLE} -m pip install ${PYINSTALLOPTIONS} -r "${ImpactX_SOURCE_DIR}/${pyImpactX_REQUIREMENT_FILE}"
+        ${Python_EXECUTABLE} -m pip ${PY_PIP_OPTIONS} install ${PY_PIP_INSTALL_OPTIONS} -r "${ImpactX_SOURCE_DIR}/${pyImpactX_REQUIREMENT_FILE}"
+        COMMAND_EXPAND_LISTS VERBATIM
         WORKING_DIRECTORY
             ${ImpactX_BINARY_DIR}
     )
@@ -422,7 +484,8 @@ if(ImpactX_PYTHON)
     # because otherwise pip would also force reinstall all dependencies.
     add_custom_target(${ImpactX_CUSTOM_TARGET_PREFIX}pip_install
         ${CMAKE_COMMAND} -E env IMPACTX_MPI=${ImpactX_MPI}
-            ${Python_EXECUTABLE} -m pip install --force-reinstall --no-index --no-deps ${PYINSTALLOPTIONS} --find-links=impactx-whl impactx
+            ${Python_EXECUTABLE} -m pip ${PY_PIP_OPTIONS} install --force-reinstall --no-index --no-deps ${PY_PIP_INSTALL_OPTIONS} --find-links=impactx-whl impactx
+        COMMAND_EXPAND_LISTS VERBATIM
         WORKING_DIRECTORY
             ${ImpactX_BINARY_DIR}
         DEPENDS
@@ -430,6 +493,32 @@ if(ImpactX_PYTHON)
             ${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel ${ImpactX_CUSTOM_TARGET_PREFIX}pip_install_requirements
             ${_EXTRA_INSTALL_DEPENDS}
     )
+
+    # this is for package managers only
+    add_custom_target(${ImpactX_CUSTOM_TARGET_PREFIX}pip_install_nodeps
+        ${CMAKE_COMMAND} -E env IMPACTX_MPI=${ImpactX_MPI}
+            ${Python_EXECUTABLE} -m pip ${PY_PIP_OPTIONS} install --force-reinstall --no-index --no-deps ${PY_PIP_INSTALL_OPTIONS} --find-links=impactx-whl impactx
+        COMMAND_EXPAND_LISTS VERBATIM
+        WORKING_DIRECTORY
+            ${ImpactX_BINARY_DIR}
+        DEPENDS
+            pyImpactX
+            ${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
+    )
+
+    # populate the build-tree Python package for ctest and direct build-tree imports
+    add_custom_target(pyImpactX_python_sources ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${ImpactX_SOURCE_DIR}/src/python/impactx
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${ImpactX_SOURCE_DIR}/examples
+            ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx/examples
+        VERBATIM
+    )
+    add_dependencies(pyImpactX_python_sources pyImpactX)
 endif()
 
 
@@ -444,16 +533,15 @@ if(BUILD_TESTING)
     endif()
 
     # unit tests
-    if(ImpactX_PYTHON)
-        # copy Python wrapper library to build directory
-        add_custom_command(TARGET pyImpactX POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${ImpactX_SOURCE_DIR}/src/python/impactx
-                $<TARGET_FILE_DIR:pyImpactX>
-        )
-    endif()
     add_subdirectory(tests)
 endif()
+
+
+# Warnings ####################################################################
+#
+foreach(impactx_tgt IN LISTS _ALL_TARGETS)
+    impactx_set_compile_warnings(${impactx_tgt})
+endforeach()
 
 
 # Status Summary for Build Options ############################################

@@ -12,21 +12,34 @@
 
 #include "elements/All.H"
 #include "particles/ImpactXParticleContainer.H"
-
-#include <list>
+#include "particles/ReferenceParticle.H"
 
 
 namespace impactx
 {
-    /** Push particles
+    /** Push a whole particle beam (incl. reference particle) through an element
      *
      * @param[inout] pc container of the particles to push
      * @param[inout] element_variant a single element to push the particles through
      * @param[in] step global step for diagnostics
+     * @param[in] period for periodic lattices, this is the current period (turn or cycle)
      */
-    void Push (ImpactXParticleContainer & pc,
-               KnownElements & element_variant,
-               int step);
+    void push (
+        ImpactXParticleContainer & pc,
+        elements::KnownElements & element_variant,
+        int step,
+        int period
+    );
+
+    /** Push the reference particle through an element
+     *
+     * @param[inout] ref the reference particle
+     * @param[inout] element_variant a single element to push the particles through
+     */
+    void push (
+        RefPart & ref,
+        elements::KnownElements & element_variant
+    );
 
 } // namespace impactx
 

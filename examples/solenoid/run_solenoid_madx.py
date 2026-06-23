@@ -6,13 +6,11 @@
 #
 # -*- coding: utf-8 -*-
 
-import amrex.space3d as amr
-from impactx import ImpactX, RefPart, distribution, elements
+from impactx import ImpactX, distribution
 
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
@@ -27,16 +25,16 @@ bunch_charge_C = 1.0e-9  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle().load_file("solenoid.madx")
+ref = sim.beam.ref.load_file("solenoid.madx")
 
 #   particle bunch
 distr = distribution.Waterbag(
-    sigmaX=1.559531175539e-3,
-    sigmaY=2.205510139392e-3,
-    sigmaT=1.0e-3,
-    sigmaPx=6.41218345413e-4,
-    sigmaPy=9.06819680526e-4,
-    sigmaPt=1.0e-3,
+    lambdaX=1.559531175539e-3,
+    lambdaY=2.205510139392e-3,
+    lambdaT=1.0e-3,
+    lambdaPx=6.41218345413e-4,
+    lambdaPy=9.06819680526e-4,
+    lambdaPt=1.0e-3,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -44,8 +42,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 sim.lattice.load_file("solenoid.madx", nslice=1)
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
-del sim
-amr.finalize()
+sim.finalize()

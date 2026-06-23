@@ -5,9 +5,6 @@
 # Authors: Axel Huebl
 # License: BSD-3-Clause-LBNL
 #
-from distutils.command.build import build
-from distutils.command.clean import clean
-from distutils.version import LooseVersion
 import os
 import platform
 import re
@@ -16,6 +13,7 @@ import subprocess
 import sys
 
 from setuptools import Extension, setup
+from setuptools.command.build import build
 from setuptools.command.build_ext import build_ext
 
 
@@ -26,38 +24,27 @@ class CopyPreBuild(build):
         # clashes with directories many developers have in their source trees;
         # this can create confusing results with "pip install .", which clones
         # the whole source tree by default
-        self.build_base = "_tmppythonbuild"
+        self.build_base = os.path.join("_tmppythonbuild", "impactx")
 
     def run(self):
         # remove existing build directory
         #   by default, this stays around. we want to make sure generated
-        #   files like libwarpx.(2d|3d|rz).(so|pyd) are always only the
+        #   files like libimpactx.(so|pyd) are always only the
         #   ones we want to package and not ones from an earlier wheel's stage
-        c = clean(self.distribution)
-        c.all = True
-        c.finalize_options()
-        c.run()
+        if os.path.exists(self.build_base):
+            shutil.rmtree(self.build_base)
 
         # call superclass
         build.run(self)
 
-        # matches: impactx_pybind.*.(so|pyd)
-        re_libprefix = re.compile(r"impactx_pybind\..*\.(?:so|pyd)")
-        libs_found = []
-        for lib_name in os.listdir(PYIMPACTX_libdir):
-            if re_libprefix.match(lib_name):
-                lib_path = os.path.join(PYIMPACTX_libdir, lib_name)
-                libs_found.append(lib_path)
-        if len(libs_found) == 0:
-            raise RuntimeError(
-                "Error: no pre-build pyImpactX libraries found in "
-                "PYIMPACTX_libdir='{}'".format(PYIMPACTX_libdir)
-            )
-
-        # copy external libs into collection of files in a temporary build dir
+        # copy Python module artifacts and sources
         dst_path = os.path.join(self.build_lib, "impactx")
-        for lib_path in libs_found:
-            shutil.copy(lib_path, dst_path)
+        shutil.copytree(
+            PYIMPACTX_libdir,
+            dst_path,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns("diags", "diags.*"),
+        )
 
 
 class CMakeExtension(Extension):
@@ -68,20 +55,20 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
     def run(self):
+        from packaging.version import parse
+
         try:
             out = subprocess.check_output(["cmake", "--version"])
         except OSError:
             raise RuntimeError(
-                "CMake 3.20.0+ must be installed to build the following "
+                "CMake 3.24.0+ must be installed to build the following "
                 + "extensions: "
                 + ", ".join(e.name for e in self.extensions)
             )
 
-        cmake_version = LooseVersion(
-            re.search(r"version\s*([\d.]+)", out.decode()).group(1)
-        )
-        if cmake_version < "3.20.0":
-            raise RuntimeError("CMake >= 3.20.0 is required")
+        cmake_version = parse(re.search(r"version\s*([\d.]+)", out.decode()).group(1))
+        if cmake_version < parse("3.24.0"):
+            raise RuntimeError("CMake >= 3.24.0 is required")
 
         for ext in self.extensions:
             self.build_extension(ext)
@@ -92,21 +79,29 @@ class CMakeBuild(build_ext):
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
 
+        pyv = sys.version_info
         cmake_args = [
+            # Python: use the calling interpreter in CMake
+            # https://cmake.org/cmake/help/latest/module/FindPython.html#hints
+            # https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-version-selection
+            f"-DPython_ROOT_DIR={sys.prefix}",
+            f"-DPython_FIND_VERSION={pyv.major}.{pyv.minor}.{pyv.micro}",
+            "-DPython_FIND_VERSION_EXACT=TRUE",
+            "-DPython_FIND_STRATEGY=LOCATION",
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + os.path.join(extdir, "impactx"),
             "-DCMAKE_VERBOSE_MAKEFILE=ON",
             "-DCMAKE_PYTHON_OUTPUT_DIRECTORY=" + extdir,
-            "-DPython_EXECUTABLE=" + sys.executable,
             ## variants
             "-DImpactX_COMPUTE=" + ImpactX_COMPUTE,
+            "-DImpactX_FFT:BOOL=" + ImpactX_FFT,
             "-DImpactX_MPI:BOOL=" + ImpactX_MPI,
             "-DImpactX_PRECISION=" + ImpactX_PRECISION,
             #'-DImpactX_PARTICLES_PRECISION=' + ImpactX_PARTICLES_PRECISION,
             "-DImpactX_PYTHON:BOOL=ON",
+            "-DImpactX_SIMD=" + ImpactX_SIMD,
             ## dependency control (developers & package managers)
-            #'-DImpactX_pyamrex_internal=' + ImpactX_pyamrex_internal,
-            #'-DImpactX_pyamrex_repo=' + ImpactX_pyamrex_repo,
-            #'-DImpactX_pyamrex_branch=' + ImpactX_pyamrex_branch,
+            "-DImpactX_amrex_internal=" + ImpactX_amrex_internal,
+            "-DImpactX_pyamrex_internal=" + ImpactX_pyamrex_internal,
             # PEP-440 conformant version from package
             "-DpyImpactX_VERSION_INFO=" + self.distribution.get_version(),
             #        see PICSAR and openPMD below
@@ -121,8 +116,16 @@ class CMakeBuild(build_ext):
         # further dependency control (developers & package managers)
         if ImpactX_amrex_src:
             cmake_args.append("-DImpactX_amrex_src=" + ImpactX_amrex_src)
-        # if ImpactX_pyamrex_src:
-        #    cmake_args.append('-DImpactX_pyamrex_src=' + ImpactX_pyamrex_src)
+        if ImpactX_pyamrex_src:
+            cmake_args.append("-DImpactX_pyamrex_src=" + ImpactX_pyamrex_src)
+        if ImpactX_amrex_repo:
+            cmake_args.append("-DImpactX_amrex_repo=" + ImpactX_amrex_repo)
+        if ImpactX_pyamrex_repo:
+            cmake_args.append("-DImpactX_pyamrex_repo=" + ImpactX_pyamrex_repo)
+        if ImpactX_amrex_branch:
+            cmake_args.append("-DImpactX_amrex_branch=" + ImpactX_amrex_branch)
+        if ImpactX_pyamrex_branch:
+            cmake_args.append("-DImpactX_pyamrex_branch=" + ImpactX_pyamrex_branch)
 
         if CMAKE_INTERPROCEDURAL_OPTIMIZATION is not None:
             cmake_args.append(
@@ -179,8 +182,10 @@ PYIMPACTX_libdir = os.environ.get("PYIMPACTX_LIBDIR")
 # ... build ImpactX libraries with CMake
 #   note: changed default for SHARED, MPI, TESTING and EXAMPLES
 ImpactX_COMPUTE = os.environ.get("IMPACTX_COMPUTE", "OMP")
+ImpactX_FFT = os.environ.get("IMPACTX_FFT", "OFF")
 ImpactX_MPI = os.environ.get("IMPACTX_MPI", "OFF")
 ImpactX_PRECISION = os.environ.get("IMPACTX_PRECISION", "DOUBLE")
+ImpactX_SIMD = os.environ.get("IMPACTX_SIMD", "OFF")
 #   already prepared as a list 1;2;3
 ImpactX_SPACEDIM = os.environ.get("IMPACTX_SPACEDIM", "3")
 BUILD_SHARED_LIBS = os.environ.get("IMPACTX_BUILD_SHARED_LIBS", "OFF")
@@ -190,15 +195,13 @@ CMAKE_INTERPROCEDURAL_OPTIMIZATION = os.environ.get(
 # CMake dependency control (developers & package managers)
 ImpactX_amrex_src = os.environ.get("IMPACTX_AMREX_SRC")
 ImpactX_amrex_internal = os.environ.get("IMPACTX_AMREX_INTERNAL", "ON")
-ImpactX_amrex_repo = os.environ.get(
-    "IMPACTX_AMREX_REPO", "https://github.com/AMReX-Codes/amrex.git"
-)
-ImpactX_amrex_branch = os.environ.get("IMPACTX_PYAMREX_BRANCH", "development")
-# ImpactX_pyamrex_src = os.environ.get('IMPACTX_PYAMREX_SRC')
-# ImpactX_pyamrex_internal = os.environ.get('IMPACTX_PYAMREX_INTERNAL', 'ON')
-# ImpactX_pyamrex_repo = os.environ.get('IMPACTX_PYAMREX_REPO',
-#    'https://github.com/AMReX-Codes/pyamrex.git')
-# ImpactX_pyamrex_branch = os.environ.get('IMPACTX_PYAMREX_BRANCH', 'development')
+ImpactX_amrex_repo = os.environ.get("IMPACTX_AMREX_REPO")
+ImpactX_amrex_branch = os.environ.get("IMPACTX_AMREX_BRANCH")
+
+ImpactX_pyamrex_src = os.environ.get("IMPACTX_PYAMREX_SRC")
+ImpactX_pyamrex_internal = os.environ.get("IMPACTX_PYAMREX_INTERNAL", "ON")
+ImpactX_pyamrex_repo = os.environ.get("IMPACTX_PYAMREX_REPO")
+ImpactX_pyamrex_branch = os.environ.get("IMPACTX_PYAMREX_BRANCH")
 
 # extra CMake arguments
 extra_cmake_args = []
@@ -239,7 +242,7 @@ with open("./requirements.txt") as f:
 setup(
     name="impactx",
     # note PEP-440 syntax: x.y.zaN but x.y.z.devN
-    version="23.06",
+    version="26.06",
     packages=["impactx"],
     # Python sources:
     package_dir={"": "src/python"},
@@ -260,22 +263,22 @@ setup(
         "Documentation": "https://impactx.readthedocs.io",
         # 'Tutorials': 'https://impactx-codes.github.io/impactx/tutorials_html/',
         "Doxygen": "https://impactx.readthedocs.io/en/latest/_static/doxyhtml",
-        "Source": "https://github.com/ECP-WarpX/impactx",
+        "Source": "https://github.com/BLAST-ImpactX/impactx",
         "DOI (source)": "https://doi.org/10.5281/zenodo.6954922",
         "DOI (paper)": "https://doi.org/10.48550/arXiv.2208.02382",
-        "Tracker": "https://github.com/ECP-WarpX/impactx/issues",
+        "Tracker": "https://github.com/BLAST-ImpactX/impactx/issues",
     },
     # CMake: self-built as extension module
     ext_modules=cxx_modules,
     cmdclass=cmdclass,
     zip_safe=False,
-    python_requires=">=3.7",
-    tests_require=["numpy", "pandas", "pytest", "scipy"],
+    python_requires=">=3.8",  # left for CI, truly ">=3.11"
+    tests_require=["numpy", "pandas", "pytest", "pytest-benchmark", "scipy"],
     install_requires=install_requires,
     # cmdclass={'test': PyTest},
     # platforms='any',
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Natural Language :: English",
         "Environment :: Console",
         "Environment :: GPU",
@@ -287,15 +290,20 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Programming Language :: C++",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         (
-            "License :: OSI Approved :: " "BSD License"
+            "License :: OSI Approved :: BSD License"
         ),  # TODO: use real SPDX: BSD-3-Clause-LBNL
     ],
     # new PEP 639 format
     license="BSD-3-Clause-LBNL",
     license_files=["LICENSE"],
+    entry_points={
+        "console_scripts": [
+            "impactx-dashboard=impactx.dashboard.__main__:main",
+        ],
+    },
 )

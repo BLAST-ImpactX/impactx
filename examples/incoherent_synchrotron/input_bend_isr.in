@@ -1,0 +1,48 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 100000
+beam.units = static
+beam.kin_energy = 100.0e3  # 100 GeV nominal energy
+beam.charge = 1.0e-12  # 1 pC charge
+beam.particle = electron
+beam.distribution = gaussian
+beam.lambdaX = 1.0e-4
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 1.0e-4
+beam.lambdaPx = 0.0
+beam.lambdaPy = 0.0
+beam.lambdaPt = 0.0
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor bend monitor
+lattice.nslice = 25
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+bend.type = sbend_exact
+bend.ds = 0.1  #used only to parameterize reference arc length
+bend.phi = 0.5729577951308232  #deg
+
+#bend.type = sbend
+#bend.ds = 0.1  #used only to parameterize reference arc length
+#bend.rc = 10.0  #0.5729577951308232 deg
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+algo.isr = true
+algo.isr_order = 1
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true
+diag.eigenemittances = true

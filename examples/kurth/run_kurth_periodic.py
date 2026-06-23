@@ -6,13 +6,11 @@
 #
 # -*- coding: utf-8 -*-
 
-import amrex.space3d as amr
 from impactx import ImpactX, distribution, elements
 
 sim = ImpactX()
 
 # set numerical parameters and IO control
-sim.particle_shape = 2  # B-spline order
 sim.space_charge = False
 # sim.diagnostics = False  # benchmarking
 sim.slice_step_diagnostics = True
@@ -23,22 +21,22 @@ sim.init_grids()
 # load a 2 GeV proton beam with an initial
 # unnormalized rms emittance of 1 um in each
 # coordinate plane
-energy_MeV = 2.0e3  # reference energy
+kin_energy_MeV = 2.0e3  # reference energy
 bunch_charge_C = 1.0e-8  # used with space charge
 npart = 10000  # number of macro particles
 
 #   reference particle
-ref = sim.particle_container().ref_particle()
-ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_energy_MeV(energy_MeV)
+ref = sim.beam.ref
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.Kurth6D(
-    sigmaX=1.11e-3,
-    sigmaY=1.11e-3,
-    sigmaT=3.74036839224568e-4,
-    sigmaPx=9.00900900901e-4,
-    sigmaPy=9.00900900901e-4,
-    sigmaPt=2.6735334467940146e-3,
+    lambdaX=1.11e-3,
+    lambdaY=1.11e-3,
+    lambdaT=3.74036839224568e-4,
+    lambdaPx=9.00900900901e-4,
+    lambdaPy=9.00900900901e-4,
+    lambdaPt=2.6735334467940146e-3,
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -46,13 +44,12 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice
-constf1 = elements.ConstF(ds=2.0, kx=0.7, ky=0.7, kt=0.7)
-drift1 = elements.Drift(ds=1.0)
+constf1 = elements.ConstF(name="constf1", ds=2.0, kx=0.7, ky=0.7, kt=0.7)
+drift1 = elements.Drift(name="drift1", ds=1.0)
 sim.lattice.extend([monitor, drift1, constf1, drift1, monitor])
 
 # run simulation
-sim.evolve()
+sim.track_particles()
 
 # clean shutdown
-del sim
-amr.finalize()
+sim.finalize()

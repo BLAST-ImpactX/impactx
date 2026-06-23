@@ -14,30 +14,31 @@
 #include "Kurth4D.H"
 #include "Kurth6D.H"
 #include "KVdist.H"
-#include "None.H"
+#include "Empty.H"
 #include "Semigaussian.H"
+#include "Thermal.H"
 #include "Triangle.H"
 #include "Waterbag.H"
+#include "SpinvMF.H"
 
 #include <variant>
 
 
-namespace impactx
+namespace impactx::distribution
 {
-namespace distribution
-{
+    // Phase space distributions
     using KnownDistributions = std::variant<
-        None, /* must be first, so KnownDistributions creates a default constructor */
+        Empty, /* must be first, so KnownDistributions creates a default constructor */
         Gaussian,
         Kurth4D,
         Kurth6D,
         KVdist,
+        Thermal,
         Triangle,
         Semigaussian,
         Waterbag
     >;
 
-} // namespace distribution
-} // namespace impactx
+} // namespace impactx::distribution
 
 #endif // IMPACTX_DISTRIBUTION_ALL_H

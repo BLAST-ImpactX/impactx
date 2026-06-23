@@ -26,15 +26,9 @@ def get_moments(beam):
     sigpt = moment(beam["momentum_t"], moment=2) ** 0.5
 
     epstrms = beam.cov(ddof=0)
-    emittance_x = (
-        sigx**2 * sigpx**2 - epstrms["position_x"]["momentum_x"] ** 2
-    ) ** 0.5
-    emittance_y = (
-        sigy**2 * sigpy**2 - epstrms["position_y"]["momentum_y"] ** 2
-    ) ** 0.5
-    emittance_t = (
-        sigt**2 * sigpt**2 - epstrms["position_t"]["momentum_t"] ** 2
-    ) ** 0.5
+    emittance_x = (sigx**2 * sigpx**2 - epstrms["position_x"]["momentum_x"] ** 2) ** 0.5
+    emittance_y = (sigy**2 * sigpy**2 - epstrms["position_y"]["momentum_y"] ** 2) ** 0.5
+    emittance_t = (sigt**2 * sigpt**2 - epstrms["position_t"]["momentum_t"] ** 2) ** 0.5
 
     return (sigx, sigy, sigt, emittance_x, emittance_y, emittance_t)
 
@@ -43,6 +37,7 @@ def get_moments(beam):
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
+is_double = initial["position_x"].dtype == np.float64
 final = series.iterations[last_step].particles["beam"].to_df()
 
 # compare number of particles
@@ -58,7 +53,8 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = num_particles**-0.5  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 1.3 * num_particles**-0.5 if is_double else 3.0e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
@@ -85,7 +81,8 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = num_particles**-0.5  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 1.3 * num_particles**-0.5 if is_double else 3.0e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

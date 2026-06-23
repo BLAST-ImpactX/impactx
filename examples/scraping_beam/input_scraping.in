@@ -1,0 +1,49 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 100000
+beam.units = static
+beam.kin_energy = 250.0
+beam.charge = 1.0e-9
+beam.particle = proton
+beam.distribution = kurth4d
+beam.lambdaX = 1.0e-3
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 1.0e-3
+beam.lambdaPx = 0.0
+beam.lambdaPy = 0.0
+beam.lambdaPt = 0.0
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor map1 drift1 monitor
+lattice.nslice = 40
+
+map1.type = linear_map
+map1.R21 = 0.5
+map1.R43 = map1.R21
+
+drift1.type = drift
+drift1.ds = 6.0
+drift1.aperture_x = 3.5e-3
+drift1.aperture_y = 3.5e-3
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

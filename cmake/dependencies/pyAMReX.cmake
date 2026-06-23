@@ -2,6 +2,9 @@ function(find_pyamrex)
     if(ImpactX_pyamrex_src)
         message(STATUS "Compiling local pyAMReX ...")
         message(STATUS "pyAMReX source path: ${ImpactX_pyamrex_src}")
+        if(NOT IS_DIRECTORY ${ImpactX_pyamrex_src})
+            message(FATAL_ERROR "Specified directory ImpactX_pyamrex_src='${ImpactX_pyamrex_src}' does not exist!")
+        endif()
     elseif(ImpactX_pyamrex_internal)
         message(STATUS "Downloading pyAMReX ...")
         message(STATUS "pyAMReX repository: ${ImpactX_pyamrex_repo} (${ImpactX_pyamrex_branch})")
@@ -36,6 +39,12 @@ function(find_pyamrex)
     if(ImpactX_pyamrex_internal OR ImpactX_pyamrex_src)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
+        # safe compile time
+        set(pyAMReX_CODES "ImpactX" CACHE INTERNAL "Fine-tune the pre-compiled particle containers for downstream codes")
+
+        # skip pyAMReX's own tests (e.g., pytest.AMReX) in the ImpactX superbuild
+        set(pyAMReX_BUILD_TESTING OFF CACHE BOOL "Run the pyAMReX tests" FORCE)
+
         if(ImpactX_pyamrex_src)
             add_subdirectory(${ImpactX_pyamrex_src} _deps/localpyamrex-build/)
         else()
@@ -44,12 +53,7 @@ function(find_pyamrex)
                 GIT_TAG        ${ImpactX_pyamrex_branch}
                 BUILD_IN_SOURCE 0
             )
-            FetchContent_GetProperties(fetchedpyamrex)
-
-            if(NOT fetchedpyamrex_POPULATED)
-                FetchContent_Populate(fetchedpyamrex)
-                add_subdirectory(${fetchedpyamrex_SOURCE_DIR} ${fetchedpyamrex_BINARY_DIR})
-            endif()
+            FetchContent_MakeAvailable(fetchedpyamrex)
 
             # advanced fetch options
             mark_as_advanced(FETCHCONTENT_BASE_DIR)
@@ -61,8 +65,8 @@ function(find_pyamrex)
         endif()
     elseif(NOT ImpactX_pyamrex_internal)
         # TODO: MPI control
-        find_package(pyAMReX 23.06 CONFIG REQUIRED)
-        message(STATUS "pyAMReX: Found version '${pyamrex_VERSION}'")
+        find_package(pyAMReX 26.06 CONFIG REQUIRED COMPONENTS CODES_ImpactX)
+        message(STATUS "pyAMReX: Found version '${pyAMReX_VERSION}'")
     endif()
 endfunction()
 
@@ -76,7 +80,7 @@ option(ImpactX_pyamrex_internal "Download & build pyAMReX" ON)
 set(ImpactX_pyamrex_repo "https://github.com/AMReX-Codes/pyamrex.git"
     CACHE STRING
     "Repository URI to pull and build pyamrex from if(ImpactX_pyamrex_internal)")
-set(ImpactX_pyamrex_branch "23.06"
+set(ImpactX_pyamrex_branch "0952566bbd3477fc2c556bc892657bbf9314cf3c"
     CACHE STRING
     "Repository branch for ImpactX_pyamrex_repo if(ImpactX_pyamrex_internal)")
 

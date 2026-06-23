@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+#
+# Copyright 2022-2023 The ImpactX Community
+#
+# Authors: Axel Huebl
+# License: BSD-3-Clause-LBNL
+#
+# -*- coding: utf-8 -*-
+
+import importlib.util
+
+import matplotlib.pyplot as plt
+import pytest
+
+from impactx import ImpactX, amr, distribution, elements
+
+
+@pytest.mark.skipif(
+    importlib.util.find_spec("pandas") is None, reason="pandas is not available"
+)
+def test_df_pandas(save_png=True):
+    """
+    This tests using ImpactX and Pandas Dataframes
+    """
+    sim = ImpactX()
+
+    sim.verbose = 0  # quiet
+    sim.particle_shape = 2
+    sim.diagnostics = False  # no files
+    sim.space_charge = False
+    sim.slice_step_diagnostics = False
+    sim.init_grids()
+
+    # init particle beam
+    kin_energy_MeV = 2.0e3
+    bunch_charge_C = 1.0e-9
+    npart = 10000
+
+    #   reference particle
+    beam = sim.beam
+    ref = beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
+
+    #   particle bunch
+    distr = distribution.Waterbag(
+        lambdaX=3.9984884770e-5,
+        lambdaY=3.9984884770e-5,
+        lambdaT=1.0e-3,
+        lambdaPx=2.6623538760e-5,
+        lambdaPy=2.6623538760e-5,
+        lambdaPt=2.0e-3,
+        muxpx=-0.846574929020762,
+        muypy=0.846574929020762,
+        mutpt=0.0,
+    )
+    sim.add_particles(bunch_charge_C, distr, npart)
+
+    assert beam.total_number_of_particles() == npart
+
+    # record purely in memory
+    sim.beam.store_beam_moments = True
+
+    # init accelerator lattice
+    fodo = [
+        elements.Drift(name="d1", ds=0.25),
+        elements.Quad(name="q1", ds=1.0, k=1.0),
+        elements.Drift(name="d2", ds=0.5),
+        elements.Quad(name="q2", ds=1.0, k=-1.0),
+        elements.Drift(name="d3", ds=0.25),
+    ]
+    sim.lattice.extend(fodo)
+
+    # plot lattice survey
+    if amr.ParallelDescriptor.IOProcessor():
+        sim.lattice.plot_survey(ref=ref)
+        if save_png:
+            plt.gcf().savefig("lattice_survey.png")
+            plt.close(plt.gcf())
+        else:
+            plt.show()
+
+    # simulate
+    sim.track_particles()
+
+    # look at beam history (reduced beam diagnostics)
+    beam_moments = sim.beam.beam_moments_history()
+
+    if amr.ParallelDescriptor.IOProcessor():
+        print(beam_moments)
+        plt.plot(beam_moments.s, beam_moments.beta_x)
+        if save_png:
+            plt.gcf().savefig("beam_moments.png")
+            plt.close(plt.gcf())
+        else:
+            plt.show()
+
+    # check local particles
+    df = beam.to_df(local=True)
+    print(df)
+
+    # ensure the column heads are correctly labeled
+    assert df.columns.tolist() == [
+        "idcpu",
+        "position_x",
+        "position_y",
+        "position_t",
+        "momentum_x",
+        "momentum_y",
+        "momentum_t",
+        "spin_x",
+        "spin_y",
+        "spin_z",
+        "qm",
+        "weighting",
+    ]
+
+    # compare number of global particles
+    # FIXME
+    # df = beam.to_df(local=False)
+    # if df is not None:
+    #    assert npart == len(df)
+    #    assert df.columns.tolist() == ['idcpu', 'position_x', 'position_y', 'position_t', 'momentum_x', 'momentum_y', 'momentum_t', 'qm', 'weighting']
+
+    # plot
+    fig = beam.plot_phasespace()
+
+    #   note: figure data available on MPI rank zero
+    if fig is not None:
+        if save_png:
+            fig.savefig("phase_space.png")
+        else:
+            plt.show()
+
+    # finalize simulation
+    sim.finalize()
+
+
+if __name__ == "__main__":
+    test_df_pandas(save_png=False)
+
+    # clean simulation shutdown
+    amr.finalize()

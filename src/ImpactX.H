@@ -10,15 +10,17 @@
 #ifndef IMPACT_X_H
 #define IMPACT_X_H
 
+#include "elements/All.H"
+#include "initialization/AmrCoreData.H"
 #include "particles/distribution/All.H"
-#include "particles/elements/All.H"
-#include "particles/ImpactXParticleContainer.H"
+#include "tracking/TrackingState.H"
 
-#include <AMReX_AmrCore.H>
-#include <AMReX_MultiFab.H>
+#include <AMReX_REAL.H>
 
+#include <functional>
 #include <list>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 
@@ -28,8 +30,7 @@ namespace impactx
      *
      * This is the central ImpactX simulation class
      */
-    class ImpactX final
-        : public amrex::AmrCore
+    class ImpactX
     {
       public:
         /** Construct an ImpactX simulation object
@@ -42,12 +43,24 @@ namespace impactx
         void operator= (ImpactX const&) = delete;
         void operator= (ImpactX &&) = delete;
 
+        /** Destruct the ImpactX simulation object
+         */
+        ~ImpactX ();
+
+        /** Deallocate all contexts and data
+         */
+        void finalize ();
+
+        /** Finalize elements
+         */
+        void finalize_elements ();
+
         /** Initialize AMReX blocks/grids for domain decomposition & space charge mesh.
          *
          * This must come first, before particle beams and lattice elements are
          * initialized.
          */
-        void initGrids ();
+        void init_grids ();
 
         /** Initialize the particle beam distribution
          *
@@ -72,15 +85,17 @@ namespace impactx
          * @param bunch_charge bunch charge (C)
          * @param distr distribution function to draw from (object)
          * @param npart number of particles to draw
+         * @param spin_distr optional spin distribution
          */
         void
         add_particles (
             amrex::ParticleReal bunch_charge,
             distribution::KnownDistributions distr,
-            int npart
+            amrex::Long npart,
+            std::optional<distribution::SpinvMF> spin_distr = std::nullopt
         );
 
-        /** Validate the simulation is ready to run via @see evolve
+        /** Validate the simulation is ready to run the particle tracking loop via @see track_particles
          */
         void validate ();
 
@@ -90,9 +105,23 @@ namespace impactx
          */
         bool early_param_check ();
 
-        /** Run the main simulation loop for a number of steps
+        /** Run the main simulation loop
          */
         void evolve ();
+
+        /** Run the particle tracking simulation loop
+         */
+        void track_particles ();
+
+        /** Run the envelope tracking simulation loop
+         *
+         * Modeled as linear transport of the covariance matrix.
+         */
+        void track_envelope ();
+
+        /** Run the reference orbit tracking simulation loop
+         */
+        void track_reference (RefPart & ref);
 
         /** Query input for warning logger variables and set up warning logger accordingly
          *
@@ -100,30 +129,12 @@ namespace impactx
          */
         void init_warning_logger ();
 
-      private:
-        //! Tag cells for refinement.  TagBoxArray tags is built on level lev grids.
-        void ErrorEst (int lev, amrex::TagBoxArray& tags, amrex::Real time,
-                               int ngrow) override;
+        /** The AMReX core object that contains AMR hierarchy, \see amrex::AmrCore
+         *
+         * Inside here, we store our particle containers and space charge fields.
+         */
+        std::unique_ptr<initialization::AmrCoreData> amr_data;
 
-        //! Make a new level from scratch using provided BoxArray and DistributionMapping.
-        //! Only used during initialization.
-        void MakeNewLevelFromScratch (int lev, amrex::Real time, const amrex::BoxArray& ba,
-                                              const amrex::DistributionMapping& dm) override;
-
-        //! Make a new level using provided BoxArray and DistributionMapping and fill
-        //  with interpolated coarse level data.
-        void MakeNewLevelFromCoarse (int lev, amrex::Real time, const amrex::BoxArray& ba,
-                                             const amrex::DistributionMapping& dm) override;
-
-        //! Remake an existing level using provided BoxArray and DistributionMapping
-        //  and fill with existing fine and coarse data.
-        void RemakeLevel (int lev, amrex::Real time, const amrex::BoxArray& ba,
-                                  const amrex::DistributionMapping& dm) override;
-
-        //! Delete level data
-        void ClearLevel (int lev) override;
-
-      public:
         /** Resize the mesh, based on the extent of the bunch of particle
          *
          * This only changes the physical extent of the mesh, but not the
@@ -131,18 +142,47 @@ namespace impactx
          */
         void ResizeMesh ();
 
-        /** these are the physical/beam particles of the simulation */
-        std::unique_ptr<ImpactXParticleContainer> m_particle_container;
-
-        /** charge density per level */
-        std::unordered_map<int, amrex::MultiFab> m_rho;
-        /** scalar potential per level */
-        std::unordered_map<int, amrex::MultiFab> m_phi;
-        /** space charge field (vector) per level */
-        std::unordered_map<int, std::unordered_map<std::string, amrex::MultiFab> > m_space_charge_field;
-
         /** these are elements defining the accelerator lattice */
-        std::list<KnownElements> m_lattice;
+        std::list<elements::KnownElements> m_lattice;
+
+        /** Was init_grids already called?
+         *
+         * Some operations, like resizing a simulation in terms of cells and changing blocking
+         * factors are not possible after they were initialized in AMReX. This keeps track
+         * of this.
+         */
+        bool initialized ()
+        {
+            return m_grids_initialized;
+        }
+
+        /** Call user-defined functions while the simulation is running.
+         *
+         * Check if an optional, user-defined function is registered by
+         * name and if yes, call it.
+         *
+         * @see m_hook for function signature:
+         *   void user_defined_hook (ImpactX *);
+         */
+        void call_hook (std::string const & name);
+
+        std::unordered_map<
+            std::string,
+            std::function<void(ImpactX *)>
+        > m_hook;  //! hooks that users can call
+
+        /** A few states during tracking loops, useful to know in hooks (Python callback functions).
+         */
+        TrackingState m_tracking_state;
+
+      private:
+        /** Keeps track if init_grids was called.
+         *
+         * Some operations, like resizing a simulation in terms of cells and changing blocking
+         * factors are not possible after they were initialized in AMReX. This keeps track
+         * of this.
+         */
+        bool m_grids_initialized = false;
     };
 
 } // namespace impactx

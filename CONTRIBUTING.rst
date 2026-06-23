@@ -31,7 +31,7 @@ First, let's setup your Git environment and GitHub account.
 Make your own fork
 ^^^^^^^^^^^^^^^^^^
 
-First, fork the ImpactX `"mainline" repo on GitHub <https://github.com/ECP-WarpX/impactx>`__ by pressing the *Fork* button on the top right of the page.
+First, fork the ImpactX `"mainline" repo on GitHub <https://github.com/BLAST-ImpactX/impactx>`__ by pressing the *Fork* button on the top right of the page.
 A fork is a copy of ImpactX on GitHub, which is under your full control.
 
 Then, we create local copies, for development:
@@ -40,7 +40,7 @@ Then, we create local copies, for development:
 
    # Clone the mainline ImpactX source code to your local computer.
    # You cannot write to this repository, but you can read from it.
-   git clone git@github.com:ECP-WarpX/impactx.git
+   git clone git@github.com:BLAST-ImpactX/impactx.git
    cd impactx
 
    # rename what we just cloned: call it "mainline"
@@ -178,7 +178,7 @@ It's the way to protect your work from adventurous developers.
 
 .. note::
 
-   TOOD: Write a workflow how to add a test.
+   TODO: Write a workflow how to add a test.
 
 Include documentation about your PR
 """""""""""""""""""""""""""""""""""

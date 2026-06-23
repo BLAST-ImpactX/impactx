@@ -1,0 +1,314 @@
+"""
+This file is part of ImpactX
+
+Copyright 2025 ImpactX contributors
+Authors: Parthib Roy
+License: BSD-3-Clause-LBNL
+"""
+
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import pytest
+from selenium.common.exceptions import TimeoutException
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+TIMEOUT = 120
+APPROX_TOL = {"rel": 1e-12, "abs": 1e-12}
+
+
+def start_dashboard() -> subprocess.Popen[str]:
+    """
+    Starts the impactx-dashboard in a subprocess.
+    """
+    repo_root = REPO_ROOT
+    working_directory = os.path.normpath(
+        os.path.join(repo_root, "src", "python", "impactx")
+    )
+
+    print(f"Starting dashboard server from: {working_directory}")
+    return subprocess.Popen(
+        [sys.executable, "-u", "-m", "dashboard", "--server", "--port", "8080"],
+        cwd=working_directory,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )
+
+
+def wait_for_interaction_ready(sb, timeout=TIMEOUT):
+    """
+    Waits until the dashboard has fully loaded and is ready for interaction.
+
+    Helper function from:
+    https://github.com/Kitware/trame-client/blob/master/trame_client/utils/testing.py#L132
+
+    """
+    for i in range(timeout):
+        print(f"Waiting for dashboard to load - ({i + 1}s elapsed)")
+        if sb.is_element_present(".trame__loader"):
+            sb.sleep(1)
+        else:
+            print("Ready to interact with.")
+            return
+
+
+def wait_for_server_ready(process, timeout=TIMEOUT):
+    """
+    Waits for the server of the dashboard to launch.
+    """
+    for i in range(timeout):
+        print(f"Waiting for dashboard server to start - {i}s elapsed.")
+        line = process.stdout.readline()
+        if line:
+            print(line, end="")
+            if "App running at:" in line:
+                for _ in range(2):
+                    next_line = process.stdout.readline()
+                    if next_line:
+                        print(next_line, end="")
+                print("Dashboard server has successfully launched.")
+                return
+        else:
+            time.sleep(1)
+
+    raise RuntimeError(f"Dashboard server did not start within {timeout} seconds.")
+
+
+class DashboardTester:
+    def __init__(self, sb):
+        self.sb = sb
+
+        # Set up the examples directory path once
+        impactx_directory = REPO_ROOT
+        self.examples_directory = impactx_directory / "examples"
+        self.testing_directory = impactx_directory / "tests" / "python" / "dashboard"
+
+    def load_example(self, example_path, manual=False):
+        """
+        Load an example file into the dashboard
+        """
+        base_dir = self.testing_directory if manual else self.examples_directory
+        full_path = base_dir / example_path
+
+        self.sb.choose_file('input[type="file"]', full_path)
+
+    def clear(self):
+        self.sb.click("#reset_all_inputs_button")
+
+    def add_lattice_element(self, element_name: str) -> None:
+        """
+        Add a lattice element to the dashboard.
+
+        :param element_name: Name of the lattice element to add.
+        """
+        try:
+            current_lattice = self.get_state("selected_lattice_list") or []
+            expected_count = len(current_lattice) + 1
+            self.set_state("selected_lattice", element_name)
+            self.assert_state("is_selected_element_invalid", False)
+            self.sb.click("#add_lattice_element")
+            self.assert_state_list_length("selected_lattice_list", expected_count)
+        except Exception as error:
+            raise Exception(
+                f"Unable to set input for lattice element '{element_name}': {str(error)}"
+            )
+
+    def set_js_input(self, element_id: str, new_input) -> None:
+        """
+        Set input using JavaScript by accessing the DOM.
+
+        Primarily used nested states, such as distribution parameters or the lattice configuration.
+        However, this function can still be utilized for inputs using the 'set_state()' method.
+
+        :param element_id: ID of the input element to set. The id is the same as the v_model_name.
+        :param new_input: New value to set for the input element.
+        """
+        try:
+            self._commit_input_js(element_id, new_input)
+        except Exception as error:
+            raise Exception(
+                f"Unable to set input for lattice element '{element_id}': {str(error)}"
+            )
+
+    def _commit_input_js(self, element_id: str, new_input) -> None:
+        """
+        Update a Vuetify text input field in the browser using JavaScript.
+
+        What happens step by step:
+        1. Find the input element by its ID.
+        2. Focus the element (like clicking inside it so it’s active).
+        3. Set the element’s value to the new text.
+        4. Trigger an "input" event so the web app reacts as if you typed the text.
+        5. Trigger a "change" event so the app thinks you finished editing.
+        6. Blur the element (like clicking away so it’s no longer active).
+
+        Purpose:
+        This makes the page behave exactly as if a real user typed into the field
+        and then clicked out, ensuring the app updates correctly.
+        """
+        js = (
+            "var el = document.getElementById(arguments[0]);"
+            "if (!el) { throw new Error('element not found'); }"
+            "el.focus();"
+            "el.value = arguments[1];"
+            "el.dispatchEvent(new InputEvent('input', {bubbles:true,cancelable:true}));"
+            "el.dispatchEvent(new Event('change', {bubbles:true}));"
+            "el.blur();"
+            "return true;"
+        )
+        successful_input = self.sb.execute_script(js, element_id, str(new_input))
+        if not successful_input:
+            raise RuntimeError("failed to commit value via JS")
+
+    def set_state(self, state_name: str, state_value):
+        """
+        Sets the given state name to the specified value.
+
+        :param state_name: Name of the state variable to update (same as v_model_name).
+        :param state_value: Value to set for the state.
+        """
+        js_script = """
+            const state = window.trame?.state;
+            const state_name = arguments[0];
+            const state_value = arguments[1];
+            if (state?.set) { state.set(state_name, state_value); }
+            else if (state) {
+                state[state_name] = state_value;
+                if (state.dirty) state.dirty(state_name);
+            }
+        """
+        self.sb.execute_script(js_script, state_name, state_value)
+
+    def set_input(self, element_id: str, new_value) -> None:
+        """
+        Set input value by first trying set_state, then falling back to set_js_input if needed.
+
+        This method combines the functionality of set_state and set_js_input, providing
+        a unified interface for setting input values in the dashboard.
+
+        :param element_id: ID of the input element to set (same as v_model_name).
+        :param new_value: New value to set for the input element.
+        """
+        # Check if the state exists in trame state
+        js_check_state = """
+            if (window.trame && window.trame.state) {
+                const state = window.trame.state;
+                const state_name = arguments[0];
+                if (state.get) {
+                    return state.get(state_name) !== undefined;
+                }
+                return state.hasOwnProperty(state_name);
+            }
+            return false;
+        """
+
+        try:
+            state_exists = self.sb.execute_script(js_check_state, element_id)
+        except Exception:
+            state_exists = False
+
+        if state_exists:
+            self.set_state(element_id, new_value)
+        else:
+            self.set_js_input(element_id, new_value)
+
+    def assert_state(self, state_name: str, expected_input, timeout=TIMEOUT):
+        """
+        Checks if trame.state[state_name] == expected_input.
+
+        :param state_name: Name of the state variable to update (same as v_model_name).
+        :param expected_input: Expected value of the state variable.
+        """
+        for i in range(timeout):
+            try:
+                value = self.get_state(state_name)
+            except TimeoutException:
+                value = None
+
+            if isinstance(expected_input, (int, float)):
+                try:
+                    v_num = None if value is None else float(value)
+                    if v_num is not None and v_num == pytest.approx(
+                        float(expected_input), **APPROX_TOL
+                    ):
+                        return
+                except (TypeError, ValueError):
+                    pass
+            elif value == expected_input:
+                return
+
+            print(
+                f"Waiting for state['{state_name}'] to become '{expected_input}' - (current value: '{value}') - ({i + 1}s elapsed)"
+            )
+            time.sleep(1)
+
+        raise TimeoutError(
+            f"state['{state_name}'] never became '{expected_input}' after {timeout} seconds "
+            f"(last value: '{value}').\n"
+            f"curr_view_details_log: {self.get_state('curr_view_details_log')}"
+        )
+
+    def assert_state_list_length(
+        self, state_name: str, expected_length: int, timeout=TIMEOUT
+    ):
+        """
+        Checks if trame.state[state_name] is a list with the expected length.
+        """
+        value = None
+        for i in range(timeout):
+            try:
+                value = self.get_state(state_name)
+            except TimeoutException:
+                value = None
+
+            if isinstance(value, list) and len(value) == expected_length:
+                return
+
+            current_length = len(value) if isinstance(value, list) else None
+            print(
+                f"Waiting for len(state['{state_name}']) to become '{expected_length}' "
+                f"- (current length: '{current_length}') - ({i + 1}s elapsed)"
+            )
+            time.sleep(1)
+
+        raise TimeoutError(
+            f"len(state['{state_name}']) never became '{expected_length}' "
+            f"after {timeout} seconds (last value: '{value}')."
+        )
+
+    def get_state(self, state_name):
+        js_script = """
+            if (window.trame && window.trame.state) {
+                const state = window.trame.state;
+                const state_name = arguments[0];
+                if (state.get) { return state.get(state_name); }
+                return state[state_name];
+            }
+            return null;
+        """
+        return self.sb.execute_script(js_script, state_name)
+
+
+def save_failure_screenshot(
+    dashboard, request, directory: str | None = None
+) -> str | None:
+    """
+    Save a screenshot PNG for the current test and return the absolute path.
+
+    - Respects env var `IMPACTX_SCREENSHOT_DIR` to override the output folder.
+    - Falls back to `directory` arg or `screenshots/` in the current CWD.
+    Returns the absolute file path on success, else None.
+    """
+    base_dir = os.environ.get("IMPACTX_SCREENSHOT_DIR", directory or "screenshots")
+    try:
+        os.makedirs(base_dir, exist_ok=True)
+        name = f"{request.node.name}.png".replace(os.sep, "_")
+        path = os.path.abspath(os.path.join(base_dir, name))
+        dashboard.sb.driver.save_screenshot(path)
+        return path
+    except Exception:
+        return None

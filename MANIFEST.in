@@ -15,3 +15,9 @@ recursive-include tests *
 # see .gitignore
 prune cmake-build*
 prune .spack-env*
+
+# exclude diagnostics output directories (see .gitignore)
+prune diags
+prune diags.*
+prune **/diags
+prune **/diags.*

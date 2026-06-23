@@ -3,18 +3,18 @@
 ###############################################################################
 beam.npart = 10000
 beam.units = static
-beam.energy = 2.0e3
+beam.kin_energy = 2.0e3
 beam.charge = 1.0e-9
 beam.particle = electron
 beam.distribution = waterbag
-beam.sigmaX = 3.9984884770e-5
-beam.sigmaY = 3.9984884770e-5
-beam.sigmaT = 1.0e-3
-beam.sigmaPx = 2.6623538760e-5
-beam.sigmaPy = 2.6623538760e-5
-beam.sigmaPt = 2.0e-3
+beam.lambdaX = 3.9984884770e-5
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 1.0e-3
+beam.lambdaPx = 2.6623538760e-5
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = 2.0e-3
 beam.muxpx = -0.846574929020762
-beam.muypy = 0.846574929020762
+beam.muypy = -beam.muxpx
 beam.mutpt = 0.0
 
 
@@ -48,7 +48,6 @@ drift3.ds = 0.25
 ###############################################################################
 # Algorithms
 ###############################################################################
-algo.particle_shape = 2
 algo.space_charge = false
 
 

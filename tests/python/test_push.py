@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+#
+# Copyright 2022-2023 The ImpactX Community
+#
+# Authors: Axel Huebl
+# License: BSD-3-Clause-LBNL
+#
+# -*- coding: utf-8 -*-
+
+from impactx import ImpactX, distribution, elements, push
+
+
+def test_element_push():
+    """
+    This tests using ImpactX without a lattice.
+    """
+    sim = ImpactX()
+
+    sim.particle_shape = 2
+    sim.slice_step_diagnostics = True
+    sim.init_grids()
+
+    # init particle beam
+    kin_energy_MeV = 2.0e3
+    bunch_charge_C = 1.0e-9
+    npart = 10000
+
+    #   reference particle
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
+
+    #   particle bunch
+    distr = distribution.Waterbag(
+        lambdaX=3.9984884770e-5,
+        lambdaY=3.9984884770e-5,
+        lambdaT=1.0e-3,
+        lambdaPx=2.6623538760e-5,
+        lambdaPy=2.6623538760e-5,
+        lambdaPt=2.0e-3,
+        muxpx=-0.846574929020762,
+        muypy=0.846574929020762,
+        mutpt=0.0,
+    )
+    sim.add_particles(bunch_charge_C, distr, npart)
+
+    beam = sim.beam
+    assert beam.total_number_of_particles() == npart
+
+    # init accelerator lattice
+    drift = elements.Drift(name="drift1", ds=0.25)
+    assert drift.name == "drift1"
+    # changed my mind on the name
+    drift.name = "mydrift"
+    assert drift.name == "mydrift"
+
+    fodo = [
+        drift,
+    ]
+    sim.lattice.extend(fodo)
+
+    sim.track_particles()
+
+    # Push manually through a few (unnamed) elements
+    elements.Quad(ds=1.0, k=1.0).push(beam)
+    elements.Drift(ds=0.5).push(beam)
+    elements.Quad(ds=1.0, k=-1.0).push(beam)
+
+    # alternative formulation
+    push(beam, elements.Drift(ds=0.25))
+
+    # push only the reference particle
+    assert ref.s == 3.0
+    dr1 = elements.Drift(ds=0.25)
+    push(ref, dr1)
+    assert ref.s == 3.25
+
+    # push a copy of the reference particle
+    ref_copy = ref.copy()
+    push(ref_copy, dr1)
+    assert ref.s == 3.25  # must be unchanged!
+    assert ref_copy.s == 3.5  # copy + dr1
+
+    # finalize simulation
+    sim.finalize()

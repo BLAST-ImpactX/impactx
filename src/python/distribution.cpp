@@ -5,7 +5,9 @@
  */
 #include "pyImpactX.H"
 
+#include <diagnostics/ReducedBeamCharacteristics.H>
 #include <particles/distribution/All.H>
+#include <initialization/InitDistribution.H>
 
 #include <AMReX.H>
 #include <AMReX_REAL.H>
@@ -18,45 +20,71 @@ using namespace impactx;
 
 void init_distribution(py::module& m)
 {
-    py::module_ md = m.def_submodule(
+    py::module_ const md = m.def_submodule(
         "distribution",
         "Particle beam distributions in ImpactX"
     );
 
     py::class_<distribution::Gaussian>(md, "Gaussian")
         .def(py::init<
-                amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal,
+                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("sigmaX"), py::arg("sigmaY"), py::arg("sigmaT"),
-             py::arg("sigmaPx"), py::arg("sigmaPy"), py::arg("sigmaPt"),
+             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
+             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
+             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
+             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
+             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
+             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
+             py::arg("cutX")=0.0, py::arg("cutY")=0.0, py::arg("cutT")=0.0,
              "A 6D Gaussian distribution"
         );
 
     py::class_<distribution::Kurth4D>(md, "Kurth4D")
         .def(py::init<
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal
          >(),
-             py::arg("sigmaX"), py::arg("sigmaY"), py::arg("sigmaT"),
-             py::arg("sigmaPx"), py::arg("sigmaPy"), py::arg("sigmaPt"),
+             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
+             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
+             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
+             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
+             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
+             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
              "A 4D Kurth distribution transversely + a uniform distribution\n"
-             "it t + a Gaussian distribution in pt"
+             "in t + a Gaussian distribution in pt"
         );
 
     py::class_<distribution::Kurth6D>(md, "Kurth6D")
         .def(py::init<
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("sigmaX"), py::arg("sigmaY"), py::arg("sigmaT"),
-             py::arg("sigmaPx"), py::arg("sigmaPy"), py::arg("sigmaPt"),
+             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
+             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
+             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
+             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
+             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
+             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
              "A 6D Kurth distribution\n\n"
              "R. Kurth, Quarterly of Applied Mathematics vol. 32, pp. 325-329 (1978)\n"
              "C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)"
@@ -64,43 +92,79 @@ void init_distribution(py::module& m)
 
     py::class_<distribution::KVdist>(md, "KVdist")
         .def(py::init<
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("sigmaX"), py::arg("sigmaY"), py::arg("sigmaT"),
-             py::arg("sigmaPx"), py::arg("sigmaPy"), py::arg("sigmaPt"),
+             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
+             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
+             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
+             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
+             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
+             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
              "A K-V distribution transversely + a uniform distribution\n"
-             "it t + a Gaussian distribution in pt"
+             "in t + a Gaussian distribution in pt"
         );
 
-    py::class_<distribution::None>(md, "None")
+    py::class_<distribution::Empty>(md, "Empty")
         .def(py::init<>(),
-             "This distribution does nothing"
+             "Sets all values to zero."
         );
 
     py::class_<distribution::Semigaussian>(md, "Semigaussian")
         .def(py::init<
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("sigmaX"), py::arg("sigmaY"), py::arg("sigmaT"),
-             py::arg("sigmaPx"), py::arg("sigmaPy"), py::arg("sigmaPt"),
+             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
+             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
+             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
+             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
+             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
+             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
              "A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum)."
+        );
+
+    py::class_<distribution::Thermal>(md, "Thermal")
+        .def(py::init<
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
+             >(),
+             py::arg("k"), py::arg("kT"), py::arg("kT_halo"),
+             py::arg("normalize"), py::arg("normalize_halo"),
+             py::arg("halo")=0.0,
+             "A stationary thermal or bithermal distribution\n\n"
+             "R. D. Ryne, J. Qiang, and A. Adelmann, in Proc. EPAC2004, pp. 1942-1944 (2004)"
         );
 
     py::class_<distribution::Triangle>(md, "Triangle")
         .def(py::init<
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("sigmaX"), py::arg("sigmaY"), py::arg("sigmaT"),
-             py::arg("sigmaPx"), py::arg("sigmaPy"), py::arg("sigmaPt"),
+             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
+             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
+             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
+             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
+             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
+             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
              "A triangle distribution for laser-plasma acceleration related applications.\n\n"
              "A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).\n"
              "The transverse distribution is a 4D waterbag."
@@ -108,13 +172,55 @@ void init_distribution(py::module& m)
 
     py::class_<distribution::Waterbag>(md, "Waterbag")
         .def(py::init<
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const,
-                 amrex::ParticleReal const, amrex::ParticleReal const, amrex::ParticleReal const
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal,
+                 amrex::ParticleReal, amrex::ParticleReal
              >(),
-             py::arg("sigmaX"), py::arg("sigmaY"), py::arg("sigmaT"),
-             py::arg("sigmaPx"), py::arg("sigmaPy"), py::arg("sigmaPt"),
+             py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
+             py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
+             py::arg("meanX")=0.0, py::arg("meanY")=0.0, py::arg("meanT")=0.0,
+             py::arg("meanPx")=0.0, py::arg("meanPy")=0.0, py::arg("meanPt")=0.0,
+             py::arg("dispX")=0.0, py::arg("dispPx")=0.0,
+             py::arg("dispY")=0.0, py::arg("dispPy")=0.0,
              "A 6D Waterbag distribution"
         );
+
+    py::class_<distribution::SpinvMF>(md, "SpinvMF")
+        .def(py::init<
+                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
+             >(),
+             py::arg("mux"), py::arg("muy"), py::arg("muz"),
+             "A von Mises-Fisher (vMF) distribution on the unit 2-sphere, for particle spin."
+        )
+        .def_static("inverse_Langevin",
+            &distribution::SpinvMF::inverse_Langevin,
+            py::arg("pmag"),
+            "This function evaluates the inverse Langevin function, in order to return "
+            "the value of concentration (kappa) required to produce a given polarization magnitude."
+        )
+    ;
+
+    py::class_<Envelope>(m, "Envelope")
+        .def(py::init<>())
+        .def(py::init<CovarianceMatrix, amrex::ParticleReal>())
+        .def_property("envelope", &Envelope::covariance_matrix, &Envelope::set_covariance_matrix)
+        .def_property("beam_intensity", &Envelope::beam_intensity, &Envelope::set_beam_intensity)
+        .def("beam_moments",
+            [](Envelope const & env, RefPart const & ref) {
+                return diagnostics::reduced_beam_characteristics(env.covariance_matrix(), ref);
+            },
+            py::arg("ref"),
+            "Calculate beam moments (position and momentum moments, emittances,\n"
+            "Twiss functions, dispersion, ...) from this envelope's covariance\n"
+            "matrix and a reference particle. The envelope counterpart of\n"
+            "ImpactXParticleContainer.beam_moments()."
+        )
+    ;
+
+    m.def("create_envelope", &initialization::create_envelope);
 }

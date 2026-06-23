@@ -1,11 +1,11 @@
-# Set C++17 for the whole build if not otherwise requested
+# Set C++20 for the whole build if not otherwise requested
 #
-# This is the easiest way to push up a C++17 requirement for AMReX and
+# This is the easiest way to push up a C++20 requirement for AMReX and
 # openPMD-api until they increase their requirement.
 #
-macro(set_cxx17_superbuild)
+macro(set_cxx20_superbuild)
     if(NOT DEFINED CMAKE_CXX_STANDARD)
-        set(CMAKE_CXX_STANDARD 17)
+        set(CMAKE_CXX_STANDARD 20)
     endif()
     if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
         set(CMAKE_CXX_EXTENSIONS OFF)
@@ -15,7 +15,7 @@ macro(set_cxx17_superbuild)
     endif()
 
     if(NOT DEFINED CMAKE_CUDA_STANDARD)
-        set(CMAKE_CUDA_STANDARD 17)
+        set(CMAKE_CUDA_STANDARD 20)
     endif()
     if(NOT DEFINED CMAKE_CUDA_EXTENSIONS)
         set(CMAKE_CUDA_EXTENSIONS OFF)
@@ -171,43 +171,46 @@ macro(set_default_build_type default_build_type)
 endmacro()
 
 
-# Set CXX
-# Note: this is a bit legacy and one should use CMake TOOLCHAINS instead.
+# Set compile warnings
 #
-macro(set_cxx_warnings)
+function(impactx_set_compile_warnings tgt)
     # On Windows, Clang -Wall aliases -Weverything; default is /W3
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT WIN32)
         # list(APPEND CMAKE_CXX_FLAGS "-fsanitize=address") # address, memory, undefined
         # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
         # set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
         # set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fsanitize=address")
-
         # note: might still need a
         #   export LD_PRELOAD=libclang_rt.asan.so
         # or on Debian 9 with Clang 6.0
         #   export LD_PRELOAD=/usr/lib/llvm-6.0/lib/clang/6.0.0/lib/linux/libclang_rt.asan-x86_64.so:
         #                     /usr/lib/llvm-6.0/lib/clang/6.0.0/lib/linux/libclang_rt.ubsan_minimal-x86_64.so
         # at runtime when used with symbol-hidden code (e.g. pybind11 module)
-
-        #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code")
+        target_compile_options(${tgt} PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code -Wfloat-conversion)
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+        target_compile_options(${tgt} PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code -Wfloat-conversion)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wshadow -Woverloaded-virtual -Wunreachable-code")
+        target_compile_options(${tgt} PRIVATE -Wall -Wextra  -Wshadow -Woverloaded-virtual -Wunreachable-code -Wno-array-bounds -Wfloat-conversion)
+        if(NOT ImpactX_COMPUTE STREQUAL CUDA)
+            # In older NVCC, -Wpedantic causes "warning: style of line directive is a GCC extension"
+            target_compile_options(${tgt} PRIVATE -Wpedantic)
+        else()
+
+        endif()
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         # Warning C4503: "decorated name length exceeded, name was truncated"
         # Symbols longer than 4096 chars are truncated (and hashed instead)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4503")
         # Yes, you should build against the same C++ runtime and with same
         # configuration (Debug/Release). MSVC does inconvenient choices for their
         # developers, so be it. (Our Windows-users use conda-forge builds, which
         # are consistent.)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4251")
+        target_compile_options(${tgt} PRIVATE /wd4503 /wd4251)
     endif ()
-endmacro()
+endfunction()
 
 # Enables interprocedural optimization for a list of targets
 #
-function(enable_IPO all_targets_list)
+function(impactx_enable_IPO all_targets_list)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT is_IPO_available)
     if(is_IPO_available)
@@ -244,16 +247,22 @@ endfunction()
 # ImpactX symlink to it. Only sets options relevant for users (see summary).
 #
 function(impactx_set_binary_name)
-    set(ImpactX_bin_names)
+    set(ImpactX_bin_names lib)
     if(ImpactX_APP)
         list(APPEND ImpactX_bin_names app)
     endif()
-    if(ImpactX_LIB)
-        list(APPEND ImpactX_bin_names lib)
-    endif()
-    foreach(tgt IN LISTS ImpactX_bin_names)
-        set_target_properties(${tgt} PROPERTIES OUTPUT_NAME "impactx")
 
+    # On WIN32, the OUTPUT_NAME must not collide between lib and app!
+    if(WIN32)
+        set_target_properties(lib PROPERTIES OUTPUT_NAME "libimpactx")
+    else()
+        set_target_properties(lib PROPERTIES OUTPUT_NAME "impactx")
+    endif()
+    if(ImpactX_APP)
+        set_target_properties(app PROPERTIES OUTPUT_NAME "impactx")
+    endif()
+
+    foreach(tgt IN LISTS ImpactX_bin_names)
         if(ImpactX_MPI)
             set_property(TARGET ${tgt} APPEND_STRING PROPERTY OUTPUT_NAME ".MPI")
         else()
@@ -294,13 +303,11 @@ function(impactx_set_binary_name)
                 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/impactx
         )
     endif()
-    if(ImpactX_LIB)
-        add_custom_command(TARGET lib POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E create_symlink
-                $<TARGET_FILE_NAME:lib>
-                $<TARGET_FILE_DIR:lib>/libimpactx$<TARGET_FILE_SUFFIX:lib>
-        )
-    endif()
+    add_custom_command(TARGET lib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+            $<TARGET_FILE_NAME:lib>
+            $<TARGET_FILE_DIR:lib>/libimpactx$<TARGET_FILE_SUFFIX:lib>
+    )
 endfunction()
 
 
@@ -384,24 +391,29 @@ function(impactx_print_summary)
     endif()
     message("  Build type: ${CMAKE_BUILD_TYPE}${BLD_TYPE_UNKNOWN}")
     set(LIB_TYPE "")
-    if(ImpactX_LIB)
-        if(BUILD_SHARED_LIBS)
-            set(LIB_TYPE " (shared)")
-        else()
-            set(LIB_TYPE " (static)")
-        endif()
+    if(BUILD_SHARED_LIBS)
+        set(LIB_TYPE "shared")
+    else()
+        set(LIB_TYPE "static")
+    endif()
+    if(ImpactX_UNITY_BUILD)
+        set(LIB_TYPE "${LIB_TYPE} (unity build)")
     endif()
     #message("  Testing: ${BUILD_TESTING}")
     message("  Build options:")
     message("    APP: ${ImpactX_APP}")
     #message("    ASCENT: ${ImpactX_ASCENT}")
     message("    COMPUTE: ${ImpactX_COMPUTE}")
+    message("    SIMD: ${ImpactX_SIMD}")
     message("    IPO/LTO: ${ImpactX_IPO}")
-    message("    LIB: ${ImpactX_LIB}${LIB_TYPE}")
+    message("    FASTMATH: ${ImpactX_FASTMATH}")
+    message("    FFT: ${ImpactX_FFT}")
+    message("    LIB: ${LIB_TYPE}")
     message("    MPI: ${ImpactX_MPI}")
     if(MPI)
         message("    MPI (thread multiple): ${ImpactX_MPI_THREAD_MULTIPLE}")
     endif()
+    message("    OPTIMIZE_ALIGNMENT: ${ImpactX_OPTIMIZE_ALIGNMENT}")
     message("    PRECISION: ${ImpactX_PRECISION}")
     message("    PYTHON: ${ImpactX_PYTHON}")
     message("    OPENPMD: ${ImpactX_OPENPMD}")

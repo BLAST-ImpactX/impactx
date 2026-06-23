@@ -17,6 +17,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 
 
 namespace impactx
@@ -24,6 +25,10 @@ namespace impactx
 void ImpactX::init_warning_logger ()
 {
     amrex::ParmParse pp_impactx("impactx");
+
+    // verbosity
+    int verbose = 1;
+    pp_impactx.queryAddWithParser("verbose", verbose);
 
     // Set the flag to control if ImpactX has to emit a warning message
     // as soon as a warning is recorded
@@ -34,8 +39,9 @@ void ImpactX::init_warning_logger ()
 
     // Set the WarnPriority threshold to decide if ImpactX has to abort
     // when a warning is recorded
-    if(std::string str_abort_on_warning_threshold = "";
-            pp_impactx.query("abort_on_warning_threshold", str_abort_on_warning_threshold)){
+    if (std::string str_abort_on_warning_threshold;
+        pp_impactx.query("abort_on_warning_threshold", str_abort_on_warning_threshold))
+   {
         std::optional<ablastr::warn_manager::WarnPriority> abort_on_warning_threshold = std::nullopt;
         if (str_abort_on_warning_threshold == "high")
             abort_on_warning_threshold = ablastr::warn_manager::WarnPriority::high;
@@ -56,12 +62,43 @@ bool ImpactX::early_param_check ()
 {
     BL_PROFILE("ImpactX::early_param_check");
 
-    amrex::Print() << "\n";
-    amrex::ParmParse().QueryUnusedInputs();
+    // any unknown hooks?
+    // see python.rst docs
+    std::unordered_set<std::string> allowed_hook_names = {
+        "before_period",
+        "after_period",
+        "before_element",
+        "after_element",
+        "before_slice"
+    };
+    for (auto const & pair : m_hook) {
+        std::string const & key = pair.first;
+        if (allowed_hook_names.find(key) == allowed_hook_names.end()) {
+            ablastr::warn_manager::WMRecordWarning(
+                "ImpactX Python Hook",
+                "The hook name '" + key + "' is not defined.",
+                ablastr::warn_manager::WarnPriority::high
+            );
+        }
+    }
+
+    // verbosity
+    amrex::ParmParse pp_impactx("impactx");
+    int verbose = 1;
+    pp_impactx.queryAddWithParser("verbose", verbose);
+
+    // Print a warning for unused inputs early on, so users are informed and
+    // might decide to abort their long-running runs, if needed.
+    if (verbose > 0 && amrex::ParmParse::hasUnusedInputs()) {
+        amrex::Print() << "\n";
+    }
+    amrex::ParmParse::QueryUnusedInputs();
 
     // Print the warning list right after the first step.
-    amrex::Print() << ablastr::warn_manager::GetWMInstance()
-            .PrintGlobalWarnings("FIRST STEP");
+    if (verbose > 0) {
+        amrex::Print() << ablastr::warn_manager::GetWMInstance()
+                          .PrintGlobalWarnings("FIRST STEP");
+    }
 
     return true;
 }

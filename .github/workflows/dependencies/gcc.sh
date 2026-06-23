@@ -14,6 +14,7 @@ sudo apt-get install -y \
     ccache              \
     cmake               \
     gnupg               \
+    libfftw3-dev        \
     libhdf5-dev         \
     ninja-build         \
     pkg-config          \
@@ -21,8 +22,22 @@ sudo apt-get install -y \
     python3-pip         \
     wget
 
-python3 -m pip install -U pip setuptools wheel
-python3 -m pip install -U cmake pytest
-python3 -m pip install -r examples/requirements.txt
+# vir-simd
+wget https://github.com/mattkretz/vir-simd/archive/refs/tags/v0.4.4.tar.gz
+tar -xvf v0.4.4.tar.gz
+rm -rf v0.4.4.tar.gz
+cmake -S vir-simd-0.4.4 -B vir-simd-build
+sudo cmake --build vir-simd-build --target install
 
+python3 -m pip install -U pip
+python3 -m pip install -U build packaging setuptools[core] wheel
+python3 -m pip install -U cmake
+python3 -m pip install -U -r requirements.txt
+python3 -m pip install -U -r src/python/impactx/dashboard/requirements.txt
+python3 -m pip install -U -r examples/requirements.txt
+python3 -m pip install -U -r tests/python/requirements.txt
+python3 -m pip install -U pytest-codspeed
+
+# extra tests
+python3 -m pip install -U -r examples/requirements_torch_cpu.txt
 python3 -m pip install -U openPMD-validator

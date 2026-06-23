@@ -1,0 +1,77 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 1.0e3
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = waterbag
+beam.lambdaX = 1.0e-3
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 0.3
+beam.lambdaPx = 2.0e-4
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = 2.0e-5
+beam.muxpx = 0.0
+beam.muypy = 0.0
+beam.mutpt = 0.0
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor quad1 quad2inv quad3 quad4inv bend1 bend2inv bend3 bend4inv monitor
+lattice.nslice = 20
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+quad1.type = quad_chromatic
+quad1.ds = 0.25
+quad1.k = 29.963938169129919
+quad1.units = 0
+
+quad2inv.type = quad_chromatic
+quad2inv.ds = -0.25
+quad2inv.k = -100.0
+quad2inv.units = 1
+
+quad3.type = quad_chromatic
+quad3.ds = 0.25
+quad3.k = -29.963938169129919
+quad3.units = 0
+
+quad4inv.type = quad_chromatic
+quad4inv.ds = -0.25
+quad4inv.k = 100.0
+quad4inv.units = 1
+
+bend1.type = sbend_exact
+bend1.ds = 0.25
+bend1.phi = 45.0
+bend1.B = 10.484578615324974
+
+bend2inv.type = sbend_exact
+bend2inv.ds = -0.25
+bend2inv.phi = 45.0
+
+bend3.type = sbend_exact
+bend3.ds = 0.25
+bend3.phi = 45.0
+bend3.B = -10.484578615324974
+
+bend4inv.type = sbend_exact
+bend4inv.ds = -0.25
+bend4inv.phi = -45.0
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

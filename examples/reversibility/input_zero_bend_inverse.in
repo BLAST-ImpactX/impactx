@@ -1,0 +1,49 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 2.0e3
+beam.charge = 1.0e-9
+beam.particle = electron
+beam.distribution = waterbag
+beam.lambdaX = 4.0e-3
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 1.0e-3
+beam.lambdaPx = 3.0e-4
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = 2.0e-3
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.elements = monitor bend1 inv_drift1 bend2 inv_drift2 monitor
+lattice.nslice = 24
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+bend1.type = sbend # a zero-field "sbend" is equivalent to a "drift"
+bend1.ds = 10.0
+bend1.rc = 0.0
+
+bend2.type = sbend_exact # a zero-field "sbend_exact" is equivalent to a "drift_exact"
+bend2.ds = 5.0
+bend2.phi = 0.0
+
+inv_drift1.type = drift
+inv_drift1.ds = -bend1.ds
+
+inv_drift2.type = drift_exact
+inv_drift2.ds = -bend2.ds
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = true

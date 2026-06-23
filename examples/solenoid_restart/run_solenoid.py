@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+#
+# Copyright 2022-2023 ImpactX contributors
+# Authors: Marco Garten, Axel Huebl, Chad Mitchell
+# License: BSD-3-Clause-LBNL
+#
+# -*- coding: utf-8 -*-
+
+from impactx import ImpactX, elements, push
+
+sim = ImpactX()
+
+# set numerical parameters and IO control
+sim.space_charge = False
+# sim.diagnostics = False  # benchmarking
+sim.slice_step_diagnostics = True
+
+# domain decomposition & space charge mesh
+sim.init_grids()
+
+# load a 250 MeV proton beam with an initial
+# horizontal rms emittance of 1 um and an
+# initial vertical rms emittance of 2 um
+kin_energy_MeV = 250.0  # reference energy
+
+#   reference particle
+beam = sim.beam
+ref = beam.ref
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
+
+#   load particle bunch from file
+push(beam, elements.Source("openPMD", "../solenoid.py/diags/openPMD/m1.h5"))
+
+# add beam diagnostics
+m1 = elements.BeamMonitor("m1", backend="h5")
+
+# design the accelerator lattice
+sol1 = elements.Sol(name="sol1", ds=3.820395, ks=0.8223219329893234)
+sim.lattice.append(m1)
+sim.lattice.extend([sol1] * 3)
+sim.lattice.append(m1)
+
+# run simulation
+sim.track_particles()
+
+# clean shutdown
+sim.finalize()

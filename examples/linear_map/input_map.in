@@ -1,0 +1,57 @@
+###############################################################################
+# Particle Beam(s)
+###############################################################################
+beam.npart = 10000
+beam.units = static
+beam.kin_energy = 45.6e3
+beam.charge = 2.72370027e-8  #population 1.7e11
+beam.particle = electron
+beam.distribution = waterbag_from_twiss
+beam.alphaX = 0.0
+beam.alphaY = 0.0
+beam.alphaT = 0.0
+beam.betaX = 0.15
+beam.betaY = 0.8e-3
+beam.betaT = 9.210526315789473
+beam.emittX = 0.27e-09
+beam.emittY = 1e-12
+beam.emittT = 1.33e-6
+
+
+###############################################################################
+# Beamline: lattice elements and segments
+###############################################################################
+lattice.periods = 5
+lattice.elements = monitor map1
+
+monitor.type = beam_monitor
+monitor.backend = h5
+
+map1.type = linear_map
+# horizontal plane
+map1.R11 = 0.642252653176584
+map1.R12 = 0.114973951021402
+map1.R21 = -5.109953378728999
+map1.R22 = 0.642252653176584
+# vertical plane
+map1.R33 = 0.193549468050860
+map1.R34 = 0.0007848724139547
+map1.R43 = -1226.363146804167548
+map1.R44 = 0.193549468050860
+# longitudinal plane
+map1.R55 = 0.987688340595138
+map1.R56 = 1.440843756949495
+map1.R65 = -0.016984313347225
+map1.R66 = 0.987688340595138
+
+
+###############################################################################
+# Algorithms
+###############################################################################
+algo.space_charge = false
+
+
+###############################################################################
+# Diagnostics
+###############################################################################
+diag.slice_step_diagnostics = false

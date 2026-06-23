@@ -18,12 +18,21 @@ namespace impactx::initialization
     {
         amrex::ParmParse pp_amrex("amrex");
 
+        // throw exceptions in asserts, to enable optional error handling, especially in Python
+        // https://amrex-codes.github.io/amrex/docs_html/RuntimeParameters.html#amrex.throw_exception
+        bool throw_exception = true; // AMReX' default: false
+        pp_amrex.queryAdd("throw_exception", throw_exception);
+
         // https://amrex-codes.github.io/amrex/docs_html/GPU.html#inputs-parameters
         bool abort_on_out_of_gpu_memory = true; // AMReX' default: false
         pp_amrex.queryAdd("abort_on_out_of_gpu_memory", abort_on_out_of_gpu_memory);
 
         bool the_arena_is_managed = false; // AMReX' default: true
         pp_amrex.queryAdd("the_arena_is_managed", the_arena_is_managed);
+
+        // https://amrex-codes.github.io/amrex/docs_html/InputsComputeBackends.html
+        std::string omp_threads = "nosmt"; // AMReX' default: system
+        pp_amrex.queryAdd("omp_threads", omp_threads);
 
         // Here we override the default tiling option for particles, which is always
         // "false" in AMReX, to "false" if compiling for GPU execution and "true"

@@ -1,5 +1,6 @@
-target_sources(ImpactX
+target_sources(lib
   PRIVATE
+    Algorithms.cpp
     AmrCoreData.cpp
     InitAMReX.cpp
     InitAmrCore.cpp

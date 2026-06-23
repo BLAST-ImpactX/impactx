@@ -1,0 +1,15 @@
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #807f7f #f0f0f0;
+}
+
+.code-editor-style {
+  white-space: pre-wrap;
+  background-color: #1e1e1e;
+  color: #dcdcdc;
+  padding: 16px;
+  border-radius: 12px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  max-height: 300px;
+  overflow: auto;
+}

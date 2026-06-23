@@ -1,0 +1,380 @@
+/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+ *           Berkeley National Laboratory (subject to receipt of any required
+ *           approvals from the U.S. Dept. of Energy). All rights reserved.
+ *
+ * This file is part of ImpactX.
+ *
+ * Authors: Chad Mitchell, Axel Huebl, Kyrre Ness Sjobak
+ * License: BSD-3-Clause-LBNL
+ */
+#ifndef IMPACTX_QUAD_H
+#define IMPACTX_QUAD_H
+
+#include "particles/ImpactXParticleContainer.H"
+#include "mixin/alignment.H"
+#include "mixin/pipeaperture.H"
+#include "mixin/beamoptic.H"
+#include "mixin/thick.H"
+#include "mixin/named.H"
+#include "mixin/nofinalize.H"
+#include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
+
+#include <AMReX_Extension.H>
+#include <AMReX_Math.H>
+#include <AMReX_REAL.H>
+#include <AMReX_SIMD.H>
+
+#include <cmath>
+
+
+namespace impactx::elements
+{
+    struct Quad
+    : public mixin::Named,
+      public mixin::BeamOptic<Quad>,
+      public mixin::LinearTransport<Quad>,
+      public mixin::Thick,
+      public mixin::Alignment,
+      public mixin::PipeAperture,
+      public mixin::SpinTransport,
+      public mixin::NoFinalize
+      // At least on Intel AVX512, there is a small overhead to vectorize this element for DP and a gain for SP, see
+      // https://github.com/BLAST-ImpactX/impactx/pull/1002
+#ifdef AMREX_SINGLE_PRECISION_PARTICLES
+      , public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
+#endif
+    {
+        static constexpr auto type = "Quad";
+        using PType = ImpactXParticleContainer::ParticleType;
+
+        /** A Quadrupole magnet
+         *
+         * @param ds Segment length in m.
+         * @param k  Quadrupole strength in m^(-2) (MADX convention)
+         *           = (gradient in T/m) / (rigidity in T-m)
+         *           k > 0 horizontal focusing
+         *           k < 0 horizontal defocusing
+         * @param dx horizontal translation error in m
+         * @param dy vertical translation error in m
+         * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
+         * @param nslice number of slices used for the application of space charge
+         * @param name a user defined and not necessarily unique name of the element
+         */
+        Quad (
+            amrex::ParticleReal ds,
+            amrex::ParticleReal k,
+            amrex::ParticleReal dx = 0,
+            amrex::ParticleReal dy = 0,
+            amrex::ParticleReal rotation_degree = 0,
+            amrex::ParticleReal aperture_x = 0,
+            amrex::ParticleReal aperture_y = 0,
+            int nslice = 1,
+            std::optional<std::string> name = std::nullopt
+        )
+        : Named(std::move(name)),
+          Thick(ds, nslice),
+          Alignment(dx, dy, rotation_degree),
+          PipeAperture(aperture_x, aperture_y),
+          m_k(k)
+        {
+        }
+
+        /** Reverse the element (negate ds) */
+        void reverse () { Thick::reverse(); }
+
+        /** Push all particles */
+        using BeamOptic::operator();
+
+        /** Compute and cache the constants for the push.
+         *
+         * In particular, used to pre-compute and cache variables that are
+         * independent of the individually tracked particle.
+         *
+         * @param refpart reference particle
+         */
+        void compute_constants (RefPart const & refpart)
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            Alignment::compute_constants(refpart);
+
+            // length of the current slice
+            m_slice_ds = m_ds / nslice();
+
+            amrex::ParticleReal const pt_ref = refpart.pt;
+            // find beta*gamma^2
+            m_betgam2 = powi<2>(pt_ref) - 1.0_prt;
+            m_slice_bg = m_slice_ds / m_betgam2;
+
+            // compute phase advance per unit length in s (in rad/m)
+            m_omega = std::sqrt(std::abs(m_k));
+            m_sin_omega_ds = std::sin(m_omega*m_slice_ds);
+            m_cos_omega_ds = std::cos(m_omega*m_slice_ds);
+            m_sinh_omega_ds = std::sinh(m_omega*m_slice_ds);
+            m_cosh_omega_ds = std::cosh(m_omega*m_slice_ds);
+
+            // gyromagnetic constant (used during spin push)
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+            m_gyro_const = 1_prt + G * refpart.gamma();
+        }
+
+        /** This is a quad functor, so that a variable of this type can be used like a quad function.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize output values
+            T_Real xout = x;
+            T_Real yout = y;
+            T_Real tout = t;
+            T_Real pxout = px;
+            T_Real pyout = py;
+            // T_Real const ptout = pt;
+
+            if (m_k > 0.0_prt)
+            {
+                // advance position and momentum (focusing quad)
+                xout = m_cos_omega_ds*x + m_sin_omega_ds/m_omega*px;
+                pxout = -m_omega*m_sin_omega_ds*x + m_cos_omega_ds*px;
+
+                yout = m_cosh_omega_ds*y + m_sinh_omega_ds/m_omega*py;
+                pyout = m_omega*m_sinh_omega_ds*y + m_cosh_omega_ds*py;
+
+                tout = t + (m_slice_bg)*pt;
+                // ptout = pt;
+            } else if (m_k < 0.0_prt)
+            {
+                // advance position and momentum (defocusing quad)
+                xout = m_cosh_omega_ds*x + m_sinh_omega_ds/m_omega*px;
+                pxout = m_omega*m_sinh_omega_ds*x + m_cosh_omega_ds*px;
+
+                yout = m_cos_omega_ds*y + m_sin_omega_ds/m_omega*py;
+                pyout = -m_omega*m_sin_omega_ds*y + m_cos_omega_ds*py;
+
+                tout = t + m_slice_bg*pt;
+                // ptout = pt;
+            } else {
+                // advance position and momentum (zero strength = drift)
+                xout = x + m_slice_ds * px;
+                // pxout = px;
+                yout = y + m_slice_ds * py;
+                // pyout = py;
+                tout = t + m_slice_bg * pt;
+                // ptout = pt;
+            }
+
+            // assign updated values
+            x = xout;
+            y = yout;
+            t = tout;
+            px = pxout;
+            py = pyout;
+            // pt = ptout;
+        }
+
+        /** This pushes the reference particle.
+         *
+         * @param[in,out] refpart reference particle
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void operator() (RefPart & AMREX_RESTRICT refpart) const {  // TODO: update as well, but needs more careful placement of calc_constants
+
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // assign input reference particle values
+            amrex::ParticleReal const x = refpart.x;
+            amrex::ParticleReal const px = refpart.px;
+            amrex::ParticleReal const y = refpart.y;
+            amrex::ParticleReal const py = refpart.py;
+            amrex::ParticleReal const z = refpart.z;
+            amrex::ParticleReal const pz = refpart.pz;
+            amrex::ParticleReal const t = refpart.t;
+            amrex::ParticleReal const pt = refpart.pt;
+            amrex::ParticleReal const s = refpart.s;
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // assign intermediate parameter
+            amrex::ParticleReal const step = slice_ds / std::sqrt(powi<2>(pt)-1.0_prt);
+
+            // advance position and momentum (straight element)
+            refpart.x = x + step*px;
+            refpart.y = y + step*py;
+            refpart.z = z + step*pz;
+            refpart.t = t - step*pt;
+
+            // advance integrated path length
+            refpart.s = s + slice_ds;
+        }
+
+        /** This function returns the linear transport map.
+         *
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // access reference particle values to find beta*gamma^2
+            amrex::ParticleReal const pt_ref = refpart.pt;
+            amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
+
+            // compute phase advance per unit length in s (in rad/m)
+            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            if (m_k > 0.0) {
+                R(1,1) = std::cos(omega*slice_ds);
+                R(1,2) = std::sin(omega*slice_ds)/omega;
+                R(2,1) = -omega*std::sin(omega*slice_ds);
+                R(2,2) = std::cos(omega*slice_ds);
+                R(3,3) = std::cosh(omega*slice_ds);
+                R(3,4) = std::sinh(omega*slice_ds)/omega;
+                R(4,3) = omega*std::sinh(omega*slice_ds);
+                R(4,4) = std::cosh(omega*slice_ds);
+                R(5,6) = slice_ds/betgam2;
+            } else if (m_k < 0.0) {
+                R(1,1) = std::cosh(omega*slice_ds);
+                R(1,2) = std::sinh(omega*slice_ds)/omega;
+                R(2,1) = omega*std::sinh(omega*slice_ds);
+                R(2,2) = std::cosh(omega*slice_ds);
+                R(3,3) = std::cos(omega*slice_ds);
+                R(3,4) = std::sin(omega*slice_ds)/omega;
+                R(4,3) = -omega*std::sin(omega*slice_ds);
+                R(4,4) = std::cos(omega*slice_ds);
+                R(5,6) = slice_ds/betgam2;
+            } else {
+                R(1,2) = slice_ds;
+                R(3,4) = slice_ds;
+                R(5,6) = slice_ds / betgam2;
+            }
+
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
+        }
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            if (m_k > 0.0_prt)
+            {
+
+                // horizontally focusing quad case
+                lambdax = -m_gyro_const * ( py*(m_cosh_omega_ds - 1_prt) + y*m_omega*m_sinh_omega_ds );
+                lambday = -m_gyro_const * ( px*(1_prt - m_cos_omega_ds) + x*m_omega*m_sin_omega_ds );
+
+            } else if (m_k < 0.0_prt)
+            {
+
+                // horizontally defocusing quad case
+                lambdax = m_gyro_const * ( py*(1_prt - m_cos_omega_ds) + y*m_omega*m_sin_omega_ds );
+                lambday = m_gyro_const * ( px*(m_cosh_omega_ds - 1_prt) + x*m_omega*m_sinh_omega_ds );
+
+            } else {
+                // treat as a drift
+            }
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
+
+
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
+        amrex::ParticleReal m_k; //! quadrupole strength in 1/m
+
+    private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
+        amrex::ParticleReal m_betgam2;        //! beta*gamma^2
+        amrex::ParticleReal m_slice_bg;       //! m_slice_ds / m_betgam2
+        amrex::ParticleReal m_omega;          //! std::sqrt(std::abs(m_k)) compute phase advance per unit length in s (in rad/m)
+        amrex::ParticleReal m_sin_omega_ds;   //! std::sin(omega*slice_ds)
+        amrex::ParticleReal m_cos_omega_ds;   //! std::cos(omega*slice_ds)
+        amrex::ParticleReal m_sinh_omega_ds;  //! std::sinh(omega*slice_ds)
+        amrex::ParticleReal m_cosh_omega_ds;  //! std::cosh(omega*slice_ds)
+        amrex::ParticleReal m_gyro_const;     //! (1 + G*gamma) for spin calculation
+
+    };
+
+} // namespace impactx
+
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Quad)
+
+#endif // IMPACTX_QUAD_H

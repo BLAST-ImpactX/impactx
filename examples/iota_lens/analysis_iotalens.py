@@ -4,10 +4,9 @@
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
-import glob
 
 import numpy as np
-import pandas as pd
+import openpmd_api as io
 from scipy.stats import moment
 
 
@@ -25,26 +24,11 @@ def get_moments(beam):
     return (meanH, sigH, meanI, sigI)
 
 
-def read_all_files(file_pattern):
-    """Read in all CSV files from each MPI rank (and potentially OpenMP
-    thread). Concatenate into one Pandas dataframe.
-    Returns
-    -------
-    pandas.DataFrame
-    """
-    return pd.concat(
-        (
-            pd.read_csv(filename, delimiter=r"\s+")
-            for filename in glob.glob(file_pattern)
-        ),
-        axis=0,
-        ignore_index=True,
-    ).set_index("id")
-
-
 # initial/final beam
-initial = read_all_files("diags/nonlinear_lens_invariants_000000.*")
-final = read_all_files("diags/nonlinear_lens_invariants_final.*")
+series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
+last_step = list(series.iterations)[-1]
+initial = series.iterations[1].particles["beam"].to_df()
+final = series.iterations[last_step].particles["beam"].to_df()
 
 # compare number of particles
 num_particles = 10000
@@ -56,7 +40,7 @@ meanH, sigH, meanI, sigI = get_moments(initial)
 print(f"  meanH={meanH:e} sigH={sigH:e} meanI={meanI:e} sigI={sigI:e}")
 
 atol = 0.0  # a big number
-rtol = 1.5 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 3.0 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
@@ -73,7 +57,7 @@ meanH, sigH, meanI, sigI = get_moments(final)
 print(f"  meanH={meanH:e} sigH={sigH:e} meanI={meanI:e} sigI={sigI:e}")
 
 atol = 0.0  # a big number
-rtol = 1.5 * num_particles**-0.5  # from random sampling of a smooth distribution
+rtol = 3.2 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

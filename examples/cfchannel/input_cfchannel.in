@@ -3,16 +3,16 @@
 ###############################################################################
 beam.npart = 10000
 beam.units = static
-beam.energy = 2.0e3
+beam.kin_energy = 2.0e3
 beam.charge = 1.0e-9
 beam.particle = proton
 beam.distribution = waterbag
-beam.sigmaX = 1.0e-3
-beam.sigmaY = 1.0e-3
-beam.sigmaT = 3.369701494258956e-4
-beam.sigmaPx = 1.0e-3
-beam.sigmaPy = 1.0e-3
-beam.sigmaPt = 2.9676219145931020e-3
+beam.lambdaX = 1.0e-3
+beam.lambdaY = beam.lambdaX
+beam.lambdaT = 3.369701494258956e-4
+beam.lambdaPx = 1.0e-3
+beam.lambdaPy = beam.lambdaPx
+beam.lambdaPt = 2.9676219145931020e-3
 beam.muxpx = 0.0
 beam.muypy = 0.0
 beam.mutpt = 0.0
@@ -36,5 +36,4 @@ constf1.kt = 1.0
 ###############################################################################
 # Algorithms
 ###############################################################################
-algo.particle_shape = 2
 algo.space_charge = false

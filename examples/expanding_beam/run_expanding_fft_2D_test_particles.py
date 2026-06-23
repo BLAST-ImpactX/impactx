@@ -127,8 +127,8 @@ if do_plot:
 
     n = len(sarr)
     for i in range(0, len(df), n):
-       subset = sorted_df.iloc[i : i + n]
-       plt.scatter(subset["s"], subset["x"], s=5)
+        subset = sorted_df.iloc[i : i + n]
+        plt.scatter(subset["s"], subset["x"], s=5)
 
     plt.xlabel("s [m]", fontsize=12)
     plt.ylabel("x [mm]", fontsize=12)

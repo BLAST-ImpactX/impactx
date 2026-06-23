@@ -9,7 +9,6 @@
 import numpy as np
 import pandas as pd
 
-# import matplotlib.pyplot as plt
 import amrex.space3d as amr
 from impactx import ImpactX, distribution, elements
 
@@ -122,5 +121,16 @@ sorted_df = df.sort_values(by="id")
 
 # plt.xlabel("s [m]", fontsize=12)
 # plt.ylabel("x [mm]", fontsize=12)
-# plt.title("Test Particles: Horizontal Coordinates")
+do_plot = False  # True to generate a plot of the test particle orbits
+if do_plot:
+    import matplotlib.pyplot as plt
+
+    n = len(sarr)
+    for i in range(0, len(df), n):
+       subset = sorted_df.iloc[i : i + n]
+       plt.scatter(subset["s"], subset["x"], s=5)
+
+    plt.xlabel("s [m]", fontsize=12)
+    plt.ylabel("x [mm]", fontsize=12)
+    plt.title("Test Particles: Horizontal Coordinates")
 # plt.show()

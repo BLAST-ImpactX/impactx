@@ -38,7 +38,7 @@ distr = distribution.Gaussian(
         emitt_y=1.8537742844e-6,
         emitt_t=0.0100875,
         alpha_x=1.292,
-        alpha_y=0.427, 
+        alpha_y=0.427,
         alpha_t=0.0,
         dispersion_x=1.946,
         dispersion_px=-0.325,
@@ -46,7 +46,7 @@ distr = distribution.Gaussian(
 )
 sim.add_particles(bunch_charge_C, distr, npart)
 # Uncomment here to run in envelope mode:
-#sim.init_envelope(ref, distr, bunch_charge_C)
+# sim.init_envelope(ref, distr, bunch_charge_C)
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
@@ -92,12 +92,12 @@ sim.lattice.extend(chain)
 sim.lattice.append(rf)
 
 # number of turns in the ring
-#sim.periods = 5
+# sim.periods = 5
 
 # run simulation
 sim.track_particles()
 # Uncomment here to run in envelope mode:
-#sim.track_envelope()
+# sim.track_envelope()
 
 # clean shutdown
 sim.finalize()

@@ -1,10 +1,10 @@
-import openpmd_api as io  # install with python3 -m pip install openpmd-api
 import numpy as np
+import openpmd_api as io  # install with python3 -m pip install openpmd-api
 
 # open the data series
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 
-#from openpmd_viewer import OpenPMDTimeSeries
+# from openpmd_viewer import OpenPMDTimeSeries
 import matplotlib.pyplot as plt
 
 # 2. Define the range of iterations to plot (e.g., steps 1000 to 5000 with a period of 1000)
@@ -19,12 +19,11 @@ for it in steps:
     x = beam["position_x"] * mm_scale
     px = beam["momentum_x"]
     xp = px / np.sqrt(1.0 - px**2) * mm_scale
-    
+
     # Example: Plot x vs. px as a scatter
-    plt.scatter(x, xp, c='red', s=3)
+    plt.scatter(x, xp, c="red", s=3)
 
 plt.xlabel("x [mm]", fontsize=12)
 plt.ylabel("px/p0 [mrad]", fontsize=12)
 plt.title("Test Particles: Horizontal Coordinates")
 plt.show()
-

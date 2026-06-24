@@ -47,16 +47,18 @@ distr = distribution.Gaussian(
         dispersion_px=-0.325,
     )
 )
-#sim.add_particles(bunch_charge_C, distr, npart)
+# sim.add_particles(bunch_charge_C, distr, npart)
 
 pc = sim.particle_container()
 
 #  add test particles
 if amr.ParallelDescriptor.IOProcessor():
-    #dx = np.linspace(0, 4.5e-2, 20)
+    # dx = np.linspace(0, 4.5e-2, 20)
     dx = np.linspace(0, 4.31e-2, 20)
     zero_arr = np.linspace(0, 0.0, 20)
-    pc.add_n_particles(dx, zero_arr, zero_arr, zero_arr, zero_arr, zero_arr, qm_eev, bunch_charge=0.0)
+    pc.add_n_particles(
+        dx, zero_arr, zero_arr, zero_arr, zero_arr, zero_arr, qm_eev, bunch_charge=0.0
+    )
 
 # init accelerator lattice
 ns = 1  # number of slices per ds in the element
@@ -82,7 +84,7 @@ qs3t = elements.Quad(name="qs3t", ds=0.4804000, k=0.62221964, nslice=ns)
 
 # Sextupole elements
 K2L = 0.2 * 3.0
-#K2L = 0.2
+# K2L = 0.2
 sextupole = elements.Multipole(name="sextupole", multipole=3, K_normal=K2L, K_skew=0.0)
 
 # Short RF element for bunching:
@@ -110,6 +112,7 @@ sarr = []
 test_data = []
 mm_scale = 1.0e3
 
+
 def hook_after_period(sim):
     s = sim.beam.ref.s
     sarr.append(s)
@@ -120,6 +123,7 @@ def hook_after_period(sim):
         test_data.append(
             [s, row.idcpu, row.position_x * mm_scale, row.momentum_x * mm_scale]
         )
+
 
 sim.hook["after_period"] = hook_after_period
 
@@ -136,14 +140,13 @@ sorted_df = df.sort_values(by="id")
 do_plot = True  # True to generate a plot of the test particle orbits
 if do_plot:
     import matplotlib.pyplot as plt
- 
+
     n = len(sarr)
     for i in range(0, len(df), n):
         subset = sorted_df.iloc[i : i + n]
         plt.scatter(subset["x"], subset["px"], s=5)
-    
+
     plt.xlabel("x [mm]", fontsize=12)
     plt.ylabel("px [mrad]", fontsize=12)
     plt.title("Test Particles: Horizontal Coordinates")
     plt.show()
-        

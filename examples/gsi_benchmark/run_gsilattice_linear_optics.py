@@ -36,7 +36,7 @@ distr = distribution.Gaussian(
         emitt_y=1.8537742844e-6,
         emitt_t=0.0100875,
         alpha_x=1.292,
-        alpha_y=0.427, 
+        alpha_y=0.427,
         alpha_t=0.0,
         dispersion_x=1.946,
         dispersion_px=-0.325,
@@ -69,7 +69,7 @@ qs3t = elements.Quad(name="qs3t", ds=0.4804000, k=0.62221964, nslice=ns)
 # Sextupole elements
 sextupole = elements.Multipole(name="sextupole", multipole=3, K_normal=0.2, K_skew=0.0)
 
-# add beam diagnostics  
+# add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # Lines of interest
@@ -79,7 +79,7 @@ chain = 11 * cell
 # Construct lattice
 sim.lattice.append(monitor)
 sim.lattice.extend(cell)
-sim.lattice.append(sextupole)  #does not affect envelope tracking
+sim.lattice.append(sextupole)  # does not affect envelope tracking
 sim.lattice.extend(chain)
 sim.lattice.append(monitor)
 

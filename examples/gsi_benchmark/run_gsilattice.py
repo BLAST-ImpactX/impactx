@@ -7,7 +7,7 @@
 # -*- coding: utf-8 -*-
 
 
-from impactx import ImpactX, distribution, elements
+from impactx import ImpactX, distribution, elements, twiss
 
 sim = ImpactX()
 
@@ -30,17 +30,23 @@ ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
 distr = distribution.Gaussian(
-    lambdaX=5.0e-3,
-    lambdaY=5.0e-3,
-    lambdaT=261.198218975890164,
-    lambdaPx=1.257e-3,
-    lambdaPy=0.93e-3,
-    lambdaPt=3.8620094883e-5,
-    muxpx=0.0,
-    muypy=0.0,
-    mutpt=0.0,
+    **twiss(
+        beta_x=12.797,
+        beta_y=13.486,
+        beta_t=6.7632723266784568737e6,
+        emitt_x=1.953582871e-6,
+        emitt_y=1.8537742844e-6,
+        emitt_t=0.0100875,
+        alpha_x=1.292,
+        alpha_y=0.427, 
+        alpha_t=0.0,
+        dispersion_x=1.946,
+        dispersion_px=-0.325,
+    )
 )
 sim.add_particles(bunch_charge_C, distr, npart)
+# Uncomment here to run in envelope mode:
+#sim.init_envelope(ref, distr, bunch_charge_C)
 
 # add beam diagnostics
 monitor = elements.BeamMonitor("monitor", backend="h5")
@@ -86,10 +92,12 @@ sim.lattice.extend(chain)
 sim.lattice.append(rf)
 
 # number of turns in the ring
-sim.periods = 5
+#sim.periods = 5
 
 # run simulation
 sim.track_particles()
+# Uncomment here to run in envelope mode:
+#sim.track_envelope()
 
 # clean shutdown
 sim.finalize()

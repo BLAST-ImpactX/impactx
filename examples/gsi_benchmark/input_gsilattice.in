@@ -3,20 +3,21 @@
 ###############################################################################
 beam.npart = 10000
 beam.units = static
-beam.energy = 11.4
+beam.kin_energy = 11.4
 beam.charge = 1.0e-9
 beam.particle = proton
-beam.distribution = gaussian
-beam.sigmaX = 5.0e-3  #checked
-beam.sigmaY = 5.0e-3  #checked
-beam.sigmaT = 261.198218975890164  #checked
-beam.sigmaPx = 1.257e-3  #to verify
-beam.sigmaPy = 0.93e-3   #to verify
-beam.sigmaPt = 3.8620094883e-5  #checked
-beam.muxpx = 0.0
-beam.muypy = 0.0
-beam.mutpt = 0.0
-
+beam.distribution = gaussian_from_twiss
+beam.alphaX = 1.292
+beam.alphaY = 0.427
+beam.alphaT = 0.0
+beam.betaX = 12.797
+beam.betaY = 13.486
+beam.betaT = 6.7632723266784568737e6
+beam.emittX = 1.953582871e-6
+beam.emittY = 1.8537742844e-6
+beam.emittT = 0.0100875
+beam.dispX = 1.946
+beam.dispPx = -0.325
 
 ###############################################################################
 # Beamline: lattice elements and segments
@@ -117,7 +118,8 @@ monitor.backend = h5
 ###############################################################################
 algo.particle_shape = 2
 algo.space_charge = false
-
+# Uncomment here to run in envelope mode:
+#algo.track = envelope
 
 ###############################################################################
 # Diagnostics

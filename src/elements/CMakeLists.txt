@@ -17,6 +17,7 @@ target_sources(lib
     ExactSbend.cpp
     Kicker.cpp
     LinearMap.cpp
+    MagnetostaticVectorPotential.cpp
     Multipole.cpp
     NonlinearLens.cpp
     PlaneXYRot.cpp

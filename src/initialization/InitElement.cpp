@@ -508,6 +508,58 @@ element_name) );
             pp_element.getWithParser("rc", rc);
 
             m_lattice.emplace_back( ThinDipole(theta, rc, a["dx"], a["dy"], a["rotation_degree"], element_name) );
+        } else if (element_type == "magnetostatic_vector_potential")
+        {
+            auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
+            auto a = detail::query_alignment(pp_element);
+            auto b = detail::query_aperture(pp_element);
+
+            int unit = 0;
+            int int_order = 2;
+            int mapsteps = mapsteps_default;
+            pp_element.queryAddWithParser("unit", unit);
+
+            std::string ax = "0";
+            std::string ay = "0";
+            std::string daxdx = "0";
+            std::string daxdy = "0";
+            std::string daydx = "0";
+            std::string daydy = "0";
+            std::string dazdx = "0";
+            std::string dazdy = "0";
+            pp_element.query("A_x(x,y,z)", ax);
+            pp_element.query("A_y(x,y,z)", ay);
+            pp_element.query("dA_x/dx(x,y,z)", daxdx);
+            pp_element.query("dA_x/dy(x,y,z)", daxdy);
+            pp_element.query("dA_y/dx(x,y,z)", daydx);
+            pp_element.query("dA_y/dy(x,y,z)", daydy);
+            pp_element.query("dA_z/dx(x,y,z)", dazdx);
+            pp_element.query("dA_z/dy(x,y,z)", dazdy);
+
+            pp_element.queryAddWithParser("int_order", int_order);
+            pp_element.queryAddWithParser("mapsteps", mapsteps);
+
+            m_lattice.emplace_back(MagnetostaticVectorPotential(
+                ds,
+                unit,
+                ax,
+                ay,
+                daxdx,
+                daxdy,
+                daydx,
+                daydy,
+                dazdx,
+                dazdy,
+                a["dx"],
+                a["dy"],
+                a["rotation_degree"],
+                b["aperture_x"],
+                b["aperture_y"],
+                int_order,
+                mapsteps,
+                nslice,
+                element_name
+            ));
         } else if (element_type == "kicker")
         {
             auto a = detail::query_alignment(pp_element);

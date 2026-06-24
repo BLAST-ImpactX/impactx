@@ -2941,6 +2941,96 @@ void init_elements(py::module& m)
      register_reverse(py_SpinMap);
 
 
+
+    py::class_<MagnetostaticVectorPotential, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture> py_MagnetostaticVectorPotential(me, "MagnetostaticVectorPotential");
+    py_MagnetostaticVectorPotential
+        .def("__repr__",
+             [](MagnetostaticVectorPotential const & vp) {
+                 return element_name(
+                     vp
+                 );
+             }
+        )
+        .def("to_dict",
+            [](MagnetostaticVectorPotential const & vp) {
+                return element_dict(
+                    vp,
+                    std::make_pair("unit", vp.m_unit)
+                );
+            }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                int,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                int,
+                int,
+                std::optional<std::string>
+             >(),
+             py::arg("ds"),
+             py::arg("unit") = 0,
+             py::arg("ax") = "0",
+             py::arg("ay") = "0",
+             py::arg("daxdx") = "0",
+             py::arg("daxdy") = "0",
+             py::arg("daydx") = "0",
+             py::arg("daydy") = "0",
+             py::arg("dazdx") = "0",
+             py::arg("dazdy") = "0",
+             py::arg("dx") = 0,
+             py::arg("dy") = 0,
+             py::arg("rotation") = 0,
+             py::arg("aperture_x") = 0,
+             py::arg("aperture_y") = 0,
+             py::arg("int_order") = 2,
+             py::arg("mapsteps") = 10,
+             py::arg("nslice") = 1,
+             py::arg("name") = py::none(),
+             R"doc(Symplectic integration in a user-defined vector potential using the exact Hamiltonian, which includes all nonlinear kinematic effects.
+
+             Integration is performed with respect
+             to a Cartesian coordinate system local to the body of the
+             element.  A symmetric, semi-explicit symplectic integration
+             scheme is used, based on:
+
+             B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic
+             integrators for non-separable Hamiltonian systems,"
+             Math. Comput. 92, pp. 251-281 (2022),
+             https://doi.org/10.1090/mcom/3778
+             )doc"
+        )
+        .def_property("unit",
+            [](MagnetostaticVectorPotential & vp) { return vp.m_unit; },
+            [](MagnetostaticVectorPotential & vp, int unit) { vp.m_unit = unit; },
+            "Unit specification: 0 (dimensionless), 1 (SI units, T-m)"
+        )
+        .def_property("int_order",
+            [](MagnetostaticVectorPotential & vp) { return vp.m_int_order; },
+            [](MagnetostaticVectorPotential & vp, int io) { vp.m_int_order = io; },
+            "Order used for symplectic integration (2, 4 or 6)"
+        )
+        .def_property("mapsteps",
+            [](MagnetostaticVectorPotential & vp) { return vp.m_mapsteps; },
+            [](MagnetostaticVectorPotential & vp, int ms) { vp.m_mapsteps = ms; },
+            "Number of integration steps per slice"
+        )
+    ;
+    register_push(py_MagnetostaticVectorPotential);
+    register_reverse(py_MagnetostaticVectorPotential);
+
     // freestanding push function
     m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::KnownElements &, int, int>(&push),
         py::arg("pc"), py::arg("element"), py::arg("step")=0, py::arg("period")=0,

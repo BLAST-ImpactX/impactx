@@ -28,6 +28,7 @@
 #include "ExactSbend.H"
 #include "Kicker.H"
 #include "LinearMap.H"
+#include "MagnetostaticVectorPotential.H"
 #include "Marker.H"
 #include "Multipole.H"
 #include "NonlinearLens.H"
@@ -74,6 +75,7 @@ namespace impactx::elements
         ExactSbend,
         Kicker,
         LinearMap,
+        MagnetostaticVectorPotential,
         Marker,
         Multipole,
         NonlinearLens,

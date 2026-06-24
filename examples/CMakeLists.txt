@@ -1651,6 +1651,38 @@ add_impactx_test(dogleg-jitter.py
     OFF  # no plot script yet
 )
 
+# Symplectic Integration in a FODO Cell Based on User-Provided Vector Potential
+#
+# no space charge
+add_impactx_test(fodo-vector-potential
+    examples/vector_potential/input_fodo_vector_potential.in
+    ON   # ImpactX MPI-parallel
+    examples/vector_potential/analysis_fodo_vector_potential.py
+    OFF  # no plot script yet
+)
+add_impactx_test(fodo-vector-potential.py
+    examples/vector_potential/run_fodo_vector_potential.py
+    ON   # ImpactX MPI-parallel
+    examples/vector_potential/analysis_fodo_vector_potential.py
+    OFF  # no plot script yet
+)
+
+# Symplectic Integration in Exact Quads Based on User-Provided Vector Potential
+#
+# no space charge
+add_impactx_test(exact-quad-vector-potential
+    examples/vector_potential/input_exact_quad_vector_potential.in
+    ON   # ImpactX MPI-parallel
+    examples/vector_potential/analysis_exact_quad_vector_potential.py
+    OFF  # no plot script yet
+)
+add_impactx_test(exact-quad-vector-potential.py
+    examples/vector_potential/run_exact_quad_vector_potential.py
+    ON   # ImpactX MPI-parallel
+    examples/vector_potential/analysis_exact_quad_vector_potential.py
+    OFF  # no plot script yet
+)
+
 # HTU Beamline Model ##########################################################
 #
 file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py
@@ -1719,6 +1751,22 @@ add_impactx_test(exact-cfbend_multipole.py
     examples/symplectic_integration/run_exact_cfbend_multipole.py
     ON   # ImpactX MPI-parallel
     examples/symplectic_integration/analysis_exact_cfbend_multipole.py
+    OFF  # no plot script yet
+)
+
+# Symplectic Integration Through a Soft-Edge Solenoid Using a User-Provided Vector Potential
+#
+# no space charge
+add_impactx_test(solenoid-vector-potential
+    examples/vector_potential/input_solenoid_vector_potential.in
+    ON   # ImpactX MPI-parallel
+    examples/vector_potential/analysis_solenoid_vector_potential.py
+    OFF  # no plot script yet
+)
+add_impactx_test(solenoid-vector-potential.py
+    examples/vector_potential/run_solenoid_vector_potential.py
+    ON   # ImpactX MPI-parallel
+    examples/vector_potential/analysis_solenoid_vector_potential.py
     OFF  # no plot script yet
 )
 

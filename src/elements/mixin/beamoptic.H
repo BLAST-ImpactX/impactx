@@ -23,133 +23,10 @@
 
 #include <type_traits>
 
-
-namespace impactx
-{
-    /** A generalized ParallelFor that dispatches to amrex::ParallelFor or amrex::ParallelForSIMD
-     *  depending on whether the element type T_Element is vectorized.
-     *
-     * @tparam T_Element the element type
-     * @tparam F the functor type
-     * @param n the number of items to iterate over
-     * @param f the functor to execute
-     */
-    template <typename T_Element, typename F>
-    void ParallelFor (int n, F&& f) {
-#ifdef AMREX_USE_SIMD
-        if constexpr (amrex::simd::is_vectorized<T_Element>) {
-            amrex::ParallelForSIMD<T_Element::simd_width>(n, std::forward<F>(f));
-        } else
-#endif
-        {
-            amrex::ParallelFor(n, std::forward<F>(f));
-        }
-    }
-} // namespace impactx
-
 namespace impactx::elements::mixin
 {
 namespace detail
 {
-    /** Load particle data from array pointers
-     *
-     * On GPU and CPU w/o SIMD, this dereferences a particle property at the
-     * index position i.
-     * On CPU with SIMD, this loads a SIMD register at the IndexType::width
-     * SIMD-wide index position i.
-     *
-     * @tparam T data type (amrex::ParticleReal or uint64_t)
-     * @tparam IndexType int or amrex::SIMDindex<SIMD_WIDTH, int>
-     * @param ptr pointer to the array data
-     * @param i index or SIMD index
-     * @return a reference to the data (scalar) or a SIMD register (SIMD)
-     */
-    template <typename T, typename IndexType>
-    AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-    decltype(auto) load_pdata (T* ptr, IndexType const i)
-    {
-        if constexpr (std::is_integral_v<IndexType>) {
-            return ptr[i];
-        } else {
-#ifdef AMREX_USE_SIMD
-            using namespace amrex::simd;
-            using RealType = SIMDParticleReal<IndexType::width>;
-            using IdCpuType = SIMDIdCpu<RealType>;
-            using DataType = std::conditional_t<
-                std::is_same_v<T, amrex::ParticleReal>,
-                RealType,
-                IdCpuType
-            >;
-
-            // initialize vector register
-            // TODO stdx::vector_aligned needs alignment guarantees
-            //      https://github.com/AMReX-Codes/amrex/issues/4592
-            //      https://en.cppreference.com/w/cpp/experimental/simd/simd/copy_from
-            DataType val;
-            val.copy_from(&ptr[i.index], stdx::element_aligned);
-            return val;
-
-#else
-            // error handling: we should never get here
-            amrex::ignore_unused(ptr, i);
-            amrex::Abort("SIMD index used but SIMD is not enabled");
-            return ptr[0];
-#endif
-        }
-    }
-
-    /** Store particle data back to array pointers
-     *
-     * On GPU and CPU without SIMD, this does nothing because we already
-     * modified the (global) RAM directly via pointer.
-     *
-     * On CPU with SIMD, this performs a conditional writeback of a SIMD register
-     * to RAM (index in pointer array), but only if the argument was not passed
-     * as const and thus was likely changed.
-     *
-     * Good optimizing compilers can eliminate writebacks of unchanged values
-     * themselves, but we better help a little for robustness. Background:
-     * https://github.com/AMReX-Codes/amrex/pull/4520#issuecomment-3064064215
-     *
-     * The `ForceWriteback` flag forces the writeback regardless of the push
-     * method's argument constness. Use it for slots that may be modified by
-     * something other than the named push method itself (e.g., a pre/post
-     * step in the caller), where the push method's signature is not the
-     * authoritative source of truth for whether the value changed.
-     *
-     * @tparam P_Method pointer to the push method (for is_nth_arg_non_const)
-     * @tparam N the argument index (for is_nth_arg_non_const)
-     * @tparam ForceWriteback if true, write back regardless of P_Method's argument constness
-     * @tparam T data type
-     * @tparam IndexType int or SIMD index
-     * @tparam ValType the type of the value to store
-     * @param val the value to store
-     * @param ptr pointer to the SoA data
-     * @param i index or SIMD index
-     */
-    template <auto P_Method, int N, bool ForceWriteback = false,
-              typename T, typename IndexType, typename ValType>
-    AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-    void store_pdata (
-        ValType const & AMREX_RESTRICT val,
-        T * const AMREX_RESTRICT ptr,
-        IndexType const i
-    )
-    {
-#ifdef AMREX_USE_SIMD
-        if constexpr (!std::is_integral_v<IndexType>) {
-            if constexpr (ForceWriteback || amrex::simd::is_nth_arg_non_const(P_Method, N)) {
-                // write back to memory
-                // TODO stdx::vector_aligned needs alignment guarantees
-                //      https://github.com/AMReX-Codes/amrex/issues/4592
-                //      https://en.cppreference.com/w/cpp/experimental/simd/simd/copy_from
-                val.copy_to(&ptr[i.index], amrex::simd::stdx::element_aligned);
-            }
-        }
-#endif
-        amrex::ignore_unused(val, ptr, i);
-    }
-
     /** Push a single particle through an element
      *
      * Note: we usually would just write a C++ lambda below in ParallelFor. But, due to restrictions
@@ -227,16 +104,16 @@ namespace detail
 
             // access SoA data
             // note: an optimizing compiler will eliminate loads of unused parameters
-            decltype(auto) x = load_pdata(m_part_x, i);
-            decltype(auto) y = load_pdata(m_part_y, i);
-            decltype(auto) t = load_pdata(m_part_t, i);
-            decltype(auto) px = load_pdata(m_part_px, i);
-            decltype(auto) py = load_pdata(m_part_py, i);
-            decltype(auto) pt = load_pdata(m_part_pt, i);
-            decltype(auto) sx = load_pdata(m_part_sx, i);
-            decltype(auto) sy = load_pdata(m_part_sy, i);
-            decltype(auto) sz = load_pdata(m_part_sz, i);
-            decltype(auto) idcpu = load_pdata(m_part_idcpu, i);
+            decltype(auto) x = load_1d(m_part_x, i);
+            decltype(auto) y = load_1d(m_part_y, i);
+            decltype(auto) t = load_1d(m_part_t, i);
+            decltype(auto) px = load_1d(m_part_px, i);
+            decltype(auto) py = load_1d(m_part_py, i);
+            decltype(auto) pt = load_1d(m_part_pt, i);
+            decltype(auto) sx = load_1d(m_part_sx, i);
+            decltype(auto) sy = load_1d(m_part_sy, i);
+            decltype(auto) sz = load_1d(m_part_sz, i);
+            decltype(auto) idcpu = load_1d(m_part_idcpu, i);
 
             // pre/post-push functionality declared by mixin classes
             constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
@@ -263,32 +140,27 @@ namespace detail
             }
 
             // SIMD: write back to memory
-#ifdef AMREX_USE_SIMD
-            if constexpr (amrex::simd::is_vectorized<T_Element>)
-            {
-                using RealType = std::decay_t<decltype(x)>;
-                using IdCpuType = std::decay_t<decltype(idcpu)>;
-                constexpr auto P_Method = &T_Element::template spin_and_phasespace_push<RealType, IdCpuType>;
+            using RealType = std::decay_t<decltype(x)>;
+            using IdCpuType = std::decay_t<decltype(idcpu)>;
+            constexpr decltype(auto) P_Method = &T_Element::template spin_and_phasespace_push<RealType, IdCpuType>;
 
-                // shift_in/shift_out write x, y, px, py; rotate_in/rotate_out
-                // write sx, sy; apply_aperture writes idcpu.
-                // These wrapper-modified slots must be stored regardless of the push
-                // method's argument constness.
-                constexpr bool wb_align    = has_alignment;
-                constexpr bool wb_aperture = has_aperture;
+            // shift_in/shift_out write x, y, px, py; rotate_in/rotate_out
+            // write sx, sy; apply_aperture writes idcpu.
+            // These wrapper-modified slots must be stored regardless of the push
+            // method's argument constness.
+            constexpr bool wb_align    = has_alignment;
+            constexpr bool wb_aperture = has_aperture;
 
-                store_pdata<P_Method, 0, wb_align>   (x,     m_part_x,     i);
-                store_pdata<P_Method, 1, wb_align>   (y,     m_part_y,     i);
-                store_pdata<P_Method, 2>             (t,     m_part_t,     i);
-                store_pdata<P_Method, 3, wb_align>   (px,    m_part_px,    i);
-                store_pdata<P_Method, 4, wb_align>   (py,    m_part_py,    i);
-                store_pdata<P_Method, 5>             (pt,    m_part_pt,    i);
-                store_pdata<P_Method, 6, wb_align>   (sx,    m_part_sx,    i);
-                store_pdata<P_Method, 7, wb_align>   (sy,    m_part_sy,    i);
-                store_pdata<P_Method, 8>             (sz,    m_part_sz,    i);
-                store_pdata<P_Method, 9, wb_aperture>(idcpu, m_part_idcpu, i);
-            }
-#endif
+            store_1d<P_Method, 0, wb_align>   (x,     m_part_x,     i);
+            store_1d<P_Method, 1, wb_align>   (y,     m_part_y,     i);
+            store_1d<P_Method, 2>             (t,     m_part_t,     i);
+            store_1d<P_Method, 3, wb_align>   (px,    m_part_px,    i);
+            store_1d<P_Method, 4, wb_align>   (py,    m_part_py,    i);
+            store_1d<P_Method, 5>             (pt,    m_part_pt,    i);
+            store_1d<P_Method, 6, wb_align>   (sx,    m_part_sx,    i);
+            store_1d<P_Method, 7, wb_align>   (sy,    m_part_sy,    i);
+            store_1d<P_Method, 8>             (sz,    m_part_sz,    i);
+            store_1d<P_Method, 9, wb_aperture>(idcpu, m_part_idcpu, i);
         }
 
     private:
@@ -376,13 +248,13 @@ namespace detail
 
             // access SoA data
             // note: an optimizing compiler will eliminate loads of unused parameters
-            decltype(auto) x = load_pdata(m_part_x, i);
-            decltype(auto) y = load_pdata(m_part_y, i);
-            decltype(auto) t = load_pdata(m_part_t, i);
-            decltype(auto) px = load_pdata(m_part_px, i);
-            decltype(auto) py = load_pdata(m_part_py, i);
-            decltype(auto) pt = load_pdata(m_part_pt, i);
-            decltype(auto) idcpu = load_pdata(m_part_idcpu, i);
+            decltype(auto) x = load_1d(m_part_x, i);
+            decltype(auto) y = load_1d(m_part_y, i);
+            decltype(auto) t = load_1d(m_part_t, i);
+            decltype(auto) px = load_1d(m_part_px, i);
+            decltype(auto) py = load_1d(m_part_py, i);
+            decltype(auto) pt = load_1d(m_part_pt, i);
+            decltype(auto) idcpu = load_1d(m_part_idcpu, i);
 
             // pre/post-push functionality declared by mixin classes
             constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
@@ -407,12 +279,11 @@ namespace detail
             }
 
             // write back to memory
-#ifdef AMREX_USE_SIMD
             if constexpr (amrex::simd::is_vectorized<T_Element>)
             {
                 using RealType = std::decay_t<decltype(x)>;
                 using IdCpuType = std::decay_t<decltype(idcpu)>;
-                constexpr auto P_Method = &T_Element::template operator()<RealType, IdCpuType>;
+                constexpr decltype(auto) P_Method = &T_Element::template operator()<RealType, IdCpuType>;
 
                 // shift_in/shift_out write x, y, px, py; apply_aperture writes idcpu.
                 // These wrapper-modified slots must be stored regardless of the push
@@ -420,15 +291,14 @@ namespace detail
                 constexpr bool wb_align    = has_alignment;
                 constexpr bool wb_aperture = has_aperture;
 
-                store_pdata<P_Method, 0, wb_align>   (x,     m_part_x,     i);
-                store_pdata<P_Method, 1, wb_align>   (y,     m_part_y,     i);
-                store_pdata<P_Method, 2>             (t,     m_part_t,     i);
-                store_pdata<P_Method, 3, wb_align>   (px,    m_part_px,    i);
-                store_pdata<P_Method, 4, wb_align>   (py,    m_part_py,    i);
-                store_pdata<P_Method, 5>             (pt,    m_part_pt,    i);
-                store_pdata<P_Method, 6, wb_aperture>(idcpu, m_part_idcpu, i);
+                store_1d<P_Method, 0, wb_align>   (x,     m_part_x,     i);
+                store_1d<P_Method, 1, wb_align>   (y,     m_part_y,     i);
+                store_1d<P_Method, 2>             (t,     m_part_t,     i);
+                store_1d<P_Method, 3, wb_align>   (px,    m_part_px,    i);
+                store_1d<P_Method, 4, wb_align>   (py,    m_part_py,    i);
+                store_1d<P_Method, 5>             (pt,    m_part_pt,    i);
+                store_1d<P_Method, 6, wb_aperture>(idcpu, m_part_idcpu, i);
             }
-#endif
         }
 
     private:
@@ -502,7 +372,7 @@ namespace detail
                 dispatch_misalignment(element, [&](auto do_alignment) {
                     detail::PushSingleParticleSpin<T_Element, decltype(do_alignment)::value> const pushSingleParticle(
                         element, part_x, part_y, part_t, part_px, part_py, part_pt, part_sx, part_sy, part_sz, part_idcpu, ref_part);
-                    impactx::ParallelFor<T_Element>(np, pushSingleParticle);
+                    amrex::ParallelForSIMD<T_Element>(np, pushSingleParticle);
                 });
             } else {
                 throw std::runtime_error("Spin transport requested but element does not implement the `SpinTransport` interface class!");
@@ -513,7 +383,7 @@ namespace detail
             dispatch_misalignment(element, [&](auto do_alignment) {
                 detail::PushSingleParticle<T_Element, decltype(do_alignment)::value> const pushSingleParticle(
                     element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
-                impactx::ParallelFor<T_Element>(np, pushSingleParticle);
+                amrex::ParallelForSIMD<T_Element>(np, pushSingleParticle);
             });
         }
     }

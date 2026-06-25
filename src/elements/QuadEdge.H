@@ -15,6 +15,7 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
@@ -35,6 +36,7 @@ namespace impactx::elements
       public mixin::LinearTransport<QuadEdge>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -118,6 +120,7 @@ namespace impactx::elements
 
             // the global scale constant; sign depends on entry or exit
             m_a = static_cast<amrex::ParticleReal>(m_flag) * (-1_prt * m_g / 12.0_prt);
+
         }
 
         /** This is a quadedge functor, so that a variable of this type can be used like a
@@ -190,6 +193,60 @@ namespace impactx::elements
 
         /** This pushes the reference particle. */
         using Thin::operator();
+
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+
+            // The model used here for the rotation vector is taken from eq (41) of:
+            // D. T. Abell et al, "Accurate and efficient spin integration for particle accelerators,"
+            // Phys. Rev. Accel. Beams 18, 024001 (2015).
+
+            lambdaz = -(m_flag) * m_g * (1_prt + G) * x * y;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

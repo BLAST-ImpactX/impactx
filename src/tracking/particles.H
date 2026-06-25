@@ -35,25 +35,33 @@ namespace impactx
      *  collective-effect slices within each element). It also maintains the
      *  user-defined hooks, the reference-particle edge update and the global step
      *  counter.
-     *  The caller supplies the per-slice physics as a @p collective_kicks
-     *  (space charge, CSR, ISR, ...) and an @p element_push
-     *  (the external-field of an element). Keeping the kick and the transport as
-     *  separate, composable operations isolates the collective-effect composition:
-     *  forward, this applies ``K`` then ``M`` per slice (first order).
-     *  Planned: second-order Strang split ``K(1/2) [M K]^(n-1) M K(1/2)``.
+     *  The caller supplies the per-slice physics as a @p collective_kicks K
+     *  (space charge, CSR, ISR, ...) and an @p element_push M
+     *  (the external-field of an element). Both are combined in a second-order
+     *  Strang split:
+     *      ``K(ds/2) [M(ds) K(ds)]^(nslice-1) M(ds) K(ds/2)``
+     *  i.e., a half-length collective kick at each element edge and full-length
+     *  interior kicks between the per-slice transport maps. This is second-order
+     *  accurate in the slice step size and time-symmetric. It costs one extra
+     *  collective kick per element over a first-order ``[K(ds) M(ds)]^nslice``
+     *  scheme.
      *
      *  Hooks, the reference-particle edge update, the step counter and the
      *  tracking-state element pointer are maintained on ``Forward`` tracking only.
+     *  The ``Backward`` pass is a bare mirrored traversal that applies the same
+     *  symmetric composition with the inverted, reversed element maps.
      *
      *  The number of periods (``lattice.periods``) and verbosity (``impactx.verbose``)
      *  are read from the inputs. The step counter is advanced from its current value,
      *  so the caller is expected to reset it (to 0) before a forward run.
      *
      *  @tparam HookFn callable ``void (std::string const & name)`` invoking a named hook
-     *  @tparam CollectiveKicks callable, see @p ElementPush for the signature
+     *  @tparam CollectiveKicks callable
+     *    ``void (elements::KnownElements & element, amrex::ParticleReal slice_ds)``
+     *    applying the collective-effect kick of length @p slice_ds
      *  @tparam ElementPush callable
-     *    ``void (elements::KnownElements & element, int element_index, int slice_step,
-     *            int nslice, amrex::ParticleReal slice_ds, int step, int period)``
+     *    ``void (elements::KnownElements & element, int step, int period)``
+     *    applying one slice of the element's external-field transport map
      *  @param[in,out] lattice the beamline elements to traverse
      *  @param[in,out] pc beam particle container (reference particle / edge update)
      *  @param[in,out] tracking_state tracking state shared with hooks (element, step, period);
@@ -114,6 +122,28 @@ namespace impactx
                 slice_ds = element.ds() / nslice;
             }, element_variant);
 
+            // Second-order Strang splitting of the collective-effect kick ``K``
+            // and the per-slice element transport ``M`` over the ``nslice``
+            // slices of the element (#846 / #920):
+            //     K(ds/2) [M(ds) K(ds)]^(nslice-1) M(ds) K(ds/2)
+            // i.e. a half-length kick at each element edge and a full-length
+            // interior kick between consecutive transport maps. Each interior
+            // ``K(ds)`` is the exact merge of two adjacent half-kicks
+            // ``K(ds/2) K(ds/2)``: a collective kick only changes the momenta,
+            // not the positions it gathers the self-field from, so successive
+            // kicks compose exactly, K(a) K(b) = K(a+b). This second-order scheme
+            // therefore costs only one extra field solve per element over the
+            // first-order ``[K(ds) M(ds)]^nslice`` scheme.
+            amrex::ParticleReal const half_ds = slice_ds / amrex::ParticleReal(2);
+
+            // A kick of zero length (e.g. thin elements such as monitors) changes
+            // neither the momenta nor the gathered positions, so it is skipped
+            // exactly; this also avoids redundant field solves.
+            bool const apply_kicks = slice_ds > amrex::ParticleReal(0);
+
+            // entrance half-kick K(ds/2)
+            if (apply_kicks) { collective_kicks(element_variant, half_ds); }
+
             // sub-steps for space charge within the element
             for (int s = 0; s < nslice; ++s)
             {
@@ -132,18 +162,17 @@ namespace impactx
                     call_hook("before_slice");
                 }
 
-                // TODO: Strang-split here (#846 / #920)
-                if (forward)
-                {
-                    collective_kicks(element_variant, slice_ds);
-                    element_push(element_variant, step, period);
-                }
-                else
-                {
-                    element_push(element_variant, step, period);
-                    collective_kicks(element_variant, slice_ds);
-                }
+                // interior full kick K(ds) between consecutive transport maps
+                if (apply_kicks && s > 0) { collective_kicks(element_variant, slice_ds); }
+
+                // per-slice element transport map M(ds)
+                // (the element is reversed in place for back-tracking, so this
+                //  applies the inverse map on the ``Backward`` pass)
+                element_push(element_variant, step, period);
             }
+
+            // exit half-kick K(ds/2)
+            if (apply_kicks) { collective_kicks(element_variant, half_ds); }
 
             if (forward)
             {

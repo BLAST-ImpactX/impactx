@@ -45,6 +45,7 @@ namespace impactx::elements
       // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "CFbend";
+        static constexpr bool is_constant_field_flow = true;  // drift-outer (MKM) split eligible
         using PType = ImpactXParticleContainer::ParticleType;
 
         /** An combined-function bend, consisting of an ideal sector bend with

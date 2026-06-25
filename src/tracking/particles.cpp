@@ -127,8 +127,11 @@ namespace impactx
             particles::spacecharge::HandleSpacecharge(amr_data, [this](){ this->ResizeMesh(); }, slice_ds);
         };
 
-        // the per-slice external-field transport map and per-slice housekeeping
-        auto element_push = [this, &pc, verbose, &pp_diag, diag_enable, &early_params_checked] (
+        // the per-slice external-field transport map ``M``
+        //   For the drift-outer (MKM) Strang split this is applied twice per slice
+        //   (once for each half-drift), so it carries no per-slice book-keeping; that
+        //   lives in @see slice_diagnostics below and runs once per slice.
+        auto element_transport = [&pc] (
             elements::KnownElements & element_variant,
             int step_,
             int period_
@@ -136,7 +139,13 @@ namespace impactx
         {
             // push all particles with external maps
             push(*pc, element_variant, step_, period_);
+        };
 
+        // per-slice house-keeping and diagnostics, applied once at the end of each slice
+        auto slice_diagnostics = [this, &pc, verbose, &pp_diag, diag_enable, &early_params_checked] (
+            int step_
+        )
+        {
             // Apply optional particle boundary conditions
             particles::ParticleBoundary(*pc);
 
@@ -182,7 +191,8 @@ namespace impactx
             m_tracking_state,
             [this](std::string const & name) { call_hook(name); },
             collective_kicks,
-            element_push
+            element_transport,
+            slice_diagnostics
         );
 
         if (diag_enable)

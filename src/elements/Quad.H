@@ -46,6 +46,7 @@ namespace impactx::elements
 #endif
     {
         static constexpr auto type = "Quad";
+        static constexpr bool is_constant_field_flow = true;  // drift-outer (MKM) split eligible
         using PType = ImpactXParticleContainer::ParticleType;
 
         /** A Quadrupole magnet

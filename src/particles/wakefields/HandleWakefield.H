@@ -16,6 +16,9 @@
 #include "WakeConvolution.H"
 #include "WakePush.H"
 
+#include <AMReX_GpuContainers.H>
+#include <AMReX_GpuDevice.H>
+
 #include <cmath>
 #include <stdexcept>
 #include <vector>
@@ -100,12 +103,8 @@ namespace impactx::particles::wakefields
 
             // Sum up all partial charge histograms to one MPI process to calculate the global wakefield.
             // Once calculated, we will distribute convolved_wakefield back to every MPI process.
-            amrex::ParallelReduce::Sum(
-                charge_distribution.data(),
-                charge_distribution.size(),
-                amrex::ParallelDescriptor::IOProcessorNumber(),
-                amrex::ParallelDescriptor::Communicator()
-            );
+            // (handles GPU-aware vs. host-staged MPI for the device-resident histogram)
+            ReduceSum1D(charge_distribution, amrex::ParallelDescriptor::IOProcessorNumber());
 
             amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield;
             if (amrex::ParallelDescriptor::IOProcessor()) {
@@ -137,21 +136,24 @@ namespace impactx::particles::wakefields
                 convolved_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
             }
 
-            // Broadcast the global wakefield to every MPI rank
-            amrex::ParallelDescriptor::Bcast(
-                convolved_wakefield.data(),
-                convolved_wakefield.size(),
-                amrex::ParallelDescriptor::IOProcessorNumber()
-            );
+            // Broadcast the global wakefield from the IO processor (which alone
+            // computed it) to every MPI rank, resizing the receivers and handling
+            // GPU-aware vs. host-staged MPI for the device-resident histogram.
+            BcastFromIOProc1D(convolved_wakefield);
 
             // Check convolution output
             if (print_wakefield && amrex::ParallelDescriptor::IOProcessor())
             {
+                // convolved_wakefield is in (non-managed) device memory; copy it
+                // to the host before iterating it on the host for printing.
+                amrex::Gpu::HostVector<amrex::Real> h_wakefield(convolved_wakefield.size());
+                amrex::Gpu::dtoh_memcpy(h_wakefield.data(), convolved_wakefield.data(),
+                                        convolved_wakefield.size() * sizeof(amrex::Real));
                 std::cout << "Convolved wakefield: ";
                 std::ofstream outfile("convolved_wakefield.txt");
-                for (double const i : convolved_wakefield) {
-                    std::cout << i << " ";
-                    outfile << i << std::endl;
+                for (amrex::Real const val : h_wakefield) {
+                    std::cout << val << " ";
+                    outfile << val << std::endl;
                 }
                 std::cout << std::endl;
                 outfile.close();

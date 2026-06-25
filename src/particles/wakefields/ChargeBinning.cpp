@@ -10,6 +10,11 @@
 #include "ChargeBinning.H"
 #include "particles/ImpactXParticleContainer.H"
 
+#include <AMReX_GpuContainers.H>
+#include <AMReX_GpuDevice.H>
+#include <AMReX_ParallelDescriptor.H>
+#include <AMReX_ParallelReduce.H>
+
 #include <cmath>
 
 
@@ -188,5 +193,97 @@ namespace impactx::particles::wakefields
                 dptr_mean_y[i] = 0.0;
             }
         });
+    }
+
+    void AllReduceSum1D (
+        amrex::Gpu::DeviceVector<amrex::Real> & data
+    )
+    {
+        // Nothing to communicate for a single rank: the local histogram is
+        // already the global one.
+        if (amrex::ParallelDescriptor::NProcs() == 1) { return; }
+
+        if (amrex::ParallelDescriptor::UseGpuAwareMpi()) {
+            // GPU-aware MPI can read the (non-managed) device buffer directly.
+            amrex::ParallelAllReduce::Sum(
+                data.data(),
+                data.size(),
+                amrex::ParallelDescriptor::Communicator()
+            );
+        } else {
+            // Otherwise stage the histogram on the host: MPI must not
+            // dereference a device pointer when it is not GPU-aware.
+            amrex::Gpu::HostVector<amrex::Real> h_data(data.size());
+            amrex::Gpu::dtoh_memcpy(h_data.data(), data.data(),
+                                    data.size() * sizeof(amrex::Real));
+            amrex::ParallelAllReduce::Sum(
+                h_data.data(),
+                h_data.size(),
+                amrex::ParallelDescriptor::Communicator()
+            );
+            amrex::Gpu::htod_memcpy(data.data(), h_data.data(),
+                                    h_data.size() * sizeof(amrex::Real));
+        }
+    }
+
+    void ReduceSum1D (
+        amrex::Gpu::DeviceVector<amrex::Real> & data,
+        int root
+    )
+    {
+        if (amrex::ParallelDescriptor::NProcs() == 1) { return; }
+
+        if (amrex::ParallelDescriptor::UseGpuAwareMpi()) {
+            amrex::ParallelReduce::Sum(
+                data.data(),
+                data.size(),
+                root,
+                amrex::ParallelDescriptor::Communicator()
+            );
+        } else {
+            amrex::Gpu::HostVector<amrex::Real> h_data(data.size());
+            amrex::Gpu::dtoh_memcpy(h_data.data(), data.data(),
+                                    data.size() * sizeof(amrex::Real));
+            amrex::ParallelReduce::Sum(
+                h_data.data(),
+                h_data.size(),
+                root,
+                amrex::ParallelDescriptor::Communicator()
+            );
+            amrex::Gpu::htod_memcpy(data.data(), h_data.data(),
+                                    h_data.size() * sizeof(amrex::Real));
+        }
+    }
+
+    void BcastFromIOProc1D (
+        amrex::Gpu::DeviceVector<amrex::Real> & data
+    )
+    {
+        if (amrex::ParallelDescriptor::NProcs() == 1) { return; }
+
+        int const root = amrex::ParallelDescriptor::IOProcessorNumber();
+
+        // Broadcast the length first: only the root computed data; the other
+        // ranks arrive with an empty vector and must size their buffer to match.
+        amrex::Long n = data.size();
+        amrex::ParallelDescriptor::Bcast(&n, 1, root);
+        if (!amrex::ParallelDescriptor::IOProcessor()) {
+            data.resize(n);
+        }
+        if (n == 0) { return; }
+
+        if (amrex::ParallelDescriptor::UseGpuAwareMpi()) {
+            // GPU-aware MPI can broadcast the (non-managed) device buffer directly.
+            amrex::ParallelDescriptor::Bcast(data.data(), n, root);
+        } else {
+            // Otherwise stage on the host: MPI must not dereference a device
+            // pointer when it is not GPU-aware.
+            amrex::Gpu::HostVector<amrex::Real> h_data(n);
+            if (amrex::ParallelDescriptor::IOProcessor()) {
+                amrex::Gpu::dtoh_memcpy(h_data.data(), data.data(), n * sizeof(amrex::Real));
+            }
+            amrex::ParallelDescriptor::Bcast(h_data.data(), n, root);
+            amrex::Gpu::htod_memcpy(data.data(), h_data.data(), n * sizeof(amrex::Real));
+        }
     }
 }

@@ -220,11 +220,7 @@ namespace impactx::particles::spacecharge
 
         // Sum up all partial charge histograms to each MPI process to calculate
         // the global charge slope.
-        amrex::ParallelAllReduce::Sum(
-            charge_distribution.data(),
-            charge_distribution.size(),
-            amrex::ParallelDescriptor::Communicator()
-        );
+        impactx::particles::wakefields::AllReduceSum1D(charge_distribution);
 
         // Call charge density derivative function
         amrex::Gpu::DeviceVector<amrex::Real> slopes(charge_distribution.size() - 1, 0.0);

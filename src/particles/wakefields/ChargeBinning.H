@@ -65,6 +65,44 @@ namespace impactx::particles::wakefields
         bool is_unity_particle_weight = false
     );
 
+    /** All-reduce (sum) a 1D histogram across MPI ranks, in place.
+     *
+     * The histogram is stored in (non-managed) device memory. A device pointer
+     * is only handed to MPI when AMReX is configured for GPU-aware MPI;
+     * otherwise the data is staged on the host for the collective. No-op for a
+     * single rank.
+     *
+     * @param[in,out] data device-resident 1D array, summed across all ranks
+     */
+    void AllReduceSum1D (
+        amrex::Gpu::DeviceVector<amrex::Real> & data
+    );
+
+    /** Reduce (sum) a 1D histogram onto a single MPI rank, in place.
+     *
+     * Same GPU-aware-MPI staging behavior as @ref AllReduceSum1D, but the
+     * reduced result is only valid on rank @p root.
+     *
+     * @param[in,out] data device-resident 1D array, summed onto @p root
+     * @param[in] root the MPI rank that receives the reduced result
+     */
+    void ReduceSum1D (
+        amrex::Gpu::DeviceVector<amrex::Real> & data,
+        int root
+    );
+
+    /** Broadcast a 1D histogram from the IO processor to every MPI rank, in place.
+     *
+     * On entry @p data is only valid on the IO processor; on exit every rank holds
+     * a correctly-sized copy (receivers are resized to match). Same GPU-aware-MPI
+     * staging behavior as @ref AllReduceSum1D. No-op for a single rank.
+     *
+     * @param[in,out] data device-resident 1D array, broadcast from the IO processor
+     */
+    void BcastFromIOProc1D (
+        amrex::Gpu::DeviceVector<amrex::Real> & data
+    );
+
 } // namespace impactx::particles::wakefields
 
 #endif // CHARGE_BINNING_H

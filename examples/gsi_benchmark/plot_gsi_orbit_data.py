@@ -17,11 +17,10 @@ for it in steps:
     # Fetch x and momentum_x for electrons
     beam = series.iterations[it].particles["beam"].to_df()
     x = beam["position_x"] * mm_scale
-    px = beam["momentum_x"]
-    xp = px / np.sqrt(1.0 - px**2) * mm_scale
+    px = beam["momentum_x"] * mm_scale
 
     # Example: Plot x vs. px as a scatter
-    plt.scatter(x, xp, c="red", s=3)
+    plt.scatter(x, px, c='red', s=3)
 
 plt.xlabel("x [mm]", fontsize=12)
 plt.ylabel("px/p0 [mrad]", fontsize=12)

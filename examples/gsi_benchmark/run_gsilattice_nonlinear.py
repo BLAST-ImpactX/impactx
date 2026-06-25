@@ -12,6 +12,9 @@ import pandas as pd
 import amrex.space3d as amr
 from impactx import ImpactX, distribution, elements, twiss
 
+import distribution_gsi
+from distribution_gsi import *
+
 sim = ImpactX()
 
 # set numerical parameters and IO control
@@ -21,39 +24,17 @@ sim.slice_step_diagnostics = True
 # domain decomposition & space charge mesh
 sim.init_grids()
 
-# init particle beam
-kin_energy_MeV = 11.4
-bunch_charge_C = 1.0e-9  # used with space charge
-npart = 10000
-
-#   reference particle
+#  set reference particle
 ref = sim.beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 qm_eev = ref.charge_qe / (ref.mass_MeV * 1.0e6)  # electron charge/mass in e / eV
 
-#   particle bunch
-distr = distribution.Gaussian(
-    **twiss(
-        beta_x=12.797,
-        beta_y=13.486,
-        beta_t=6.7632723266784568737e6,
-        emitt_x=1.953582871e-6,
-        emitt_y=1.8537742844e-6,
-        emitt_t=0.0100875,
-        alpha_x=1.292,
-        alpha_y=0.427,
-        alpha_t=0.0,
-        dispersion_x=1.946,
-        dispersion_px=-0.325,
-    )
-)
-# sim.add_particles(bunch_charge_C, distr, npart)
 
+# set test particles
 pc = sim.particle_container()
 
 #  add test particles
 if amr.ParallelDescriptor.IOProcessor():
-    # dx = np.linspace(0, 4.5e-2, 20)
     dx = np.linspace(0, 4.31e-2, 20)
     zero_arr = np.linspace(0, 0.0, 20)
     pc.add_n_particles(

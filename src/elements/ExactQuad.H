@@ -29,7 +29,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ExactQuad
@@ -45,6 +44,10 @@ namespace impactx::elements
     {
         static constexpr auto type = "ExactQuad";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr int DEFAULT_int_order = 2;
+        static constexpr int DEFAULT_mapsteps = 10;
 
         /** A Quadrupole magnet treated using the exact Hamiltonian, which
          *  includes all nonlinear kinematic effects.  Like the element Quad,
@@ -75,16 +78,16 @@ namespace impactx::elements
         ExactQuad (
             amrex::ParticleReal ds,
             amrex::ParticleReal k,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int int_order = 2,
-            int mapsteps = 5,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int int_order = DEFAULT_int_order,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Thick(ds, nslice),
@@ -401,7 +404,6 @@ namespace impactx::elements
             zeval += 0_prt;
         }
 
-
         /** This pushes the reference particle.
          *
          * @param[in,out] refpart reference particle
@@ -492,7 +494,6 @@ namespace impactx::elements
             // apply the transverse rotation (roll) alignment error
             return rotate_aligned_map(R);
         }
-
 
         /** This operator pushes the particle spin.
          *

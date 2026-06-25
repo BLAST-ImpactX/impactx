@@ -18,13 +18,14 @@
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
+#include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 
 #include <cmath>
 #include <stdexcept>
-
+#include <string>
 
 namespace impactx::elements
 {
@@ -42,11 +43,24 @@ namespace impactx::elements
         static constexpr auto type = "Kicker";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        enum UnitSystem
+        AMREX_ENUM_IN_CLASS(UnitSystem,
+            dimensionless = 0,  //! in units of the magnetic rigidity of the reference particle
+            Tm = 1,             //! T-m
+        );
+
+        static std::string
+        unit_name (UnitSystem const & unit)
         {
-            dimensionless = 0, //! in units of the magnetic rigidity of the reference particle
-            Tm = 1  //! T-m
-        };
+            return unit == UnitSystem::Tm ? "T-m" : amrex::getEnumNameString(unit);
+        }
+
+        static UnitSystem
+        unit_from_name (std::string const & unit)
+        {
+            return unit == "T-m" ? UnitSystem::Tm : amrex::getEnum<UnitSystem>(unit);
+        }
+
+        static constexpr UnitSystem DEFAULT_unit = UnitSystem::dimensionless;
 
         /** A thin transverse kicker element, inducing a transverse
          *  momentum displacement from the reference orbit.
@@ -62,11 +76,11 @@ namespace impactx::elements
         Kicker (
             amrex::ParticleReal xkick,
             amrex::ParticleReal ykick,
-            UnitSystem unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            UnitSystem unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),

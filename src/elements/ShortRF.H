@@ -25,7 +25,6 @@
 
 #include <cmath>
 
-
 namespace impactx::elements
 {
     struct ShortRF
@@ -39,6 +38,8 @@ namespace impactx::elements
     {
         static constexpr auto type = "ShortRF";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr amrex::ParticleReal DEFAULT_phase = -90;
 
         /** A short RF cavity element
          *
@@ -56,11 +57,11 @@ namespace impactx::elements
         ShortRF (
             amrex::ParticleReal V,
             amrex::ParticleReal freq,
-            amrex::ParticleReal phase,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal phase = DEFAULT_phase,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),

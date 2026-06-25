@@ -72,6 +72,10 @@ namespace detail
         using PType = typename ImpactXParticleContainer::ParticleType;
         using PinnedContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PolymorphicArenaAllocator>;
 
+        static constexpr char const * DEFAULT_backend = "default";
+        static constexpr char const * DEFAULT_encoding = "g";
+        static constexpr int DEFAULT_period_sample_intervals = 1;
+
         /** This element writes the particle beam out to openPMD data.
          *
          * Elements with the same series name are identical.
@@ -81,7 +85,12 @@ namespace detail
          * @param encoding openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
          * @param period_sample_intervals for periodic lattice, only output every Nth period (turn)
          */
-        BeamMonitor (std::string series_name, std::string backend="default", std::string encoding="g", int period_sample_intervals=1);
+        BeamMonitor (
+            std::string series_name,
+            std::string backend = DEFAULT_backend,
+            std::string encoding = DEFAULT_encoding,
+            int period_sample_intervals = DEFAULT_period_sample_intervals
+        );
 
         BeamMonitor (BeamMonitor const & other) = default;
         BeamMonitor (BeamMonitor && other) = default;

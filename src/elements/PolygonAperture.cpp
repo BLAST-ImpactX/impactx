@@ -17,15 +17,7 @@ IMPACTX_GPUDATA_INSTANTIATE(impactx::elements::PolygonAperture)
 std::string
 impactx::elements::PolygonAperture::action_name (Action const & action)
 {
-    switch (action)
-    {
-        case PolygonAperture::Action::transmit :  // default
-            return "transmit";
-        case PolygonAperture::Action::absorb :
-            return "absorb";
-        default:
-            throw std::runtime_error("Unknown action");
-    }
+    return amrex::getEnumNameString(action);
 }
 
 IMPACTX_PUSH_INSTANTIATE(impactx::elements::PolygonAperture)

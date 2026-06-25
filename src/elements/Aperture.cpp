@@ -9,36 +9,4 @@
  */
 #include "Aperture.H"
 
-#include <stdexcept>
-#include <string>
-
-
-std::string
-impactx::elements::Aperture::shape_name (Shape const & shape)
-{
-    switch (shape)
-    {
-        case Aperture::Shape::rectangular :  // default
-            return "rectangular";
-        case Aperture::Shape::elliptical :
-            return "elliptical";
-        default:
-            throw std::runtime_error("Unknown shape");
-    }
-}
-
-std::string
-impactx::elements::Aperture::action_name (Action const & action)
-{
-    switch (action)
-    {
-        case Aperture::Action::transmit :  // default
-            return "transmit";
-        case Aperture::Action::absorb :
-            return "absorb";
-        default:
-            throw std::runtime_error("Unknown action");
-    }
-}
-
 IMPACTX_PUSH_INSTANTIATE(impactx::elements::Aperture)

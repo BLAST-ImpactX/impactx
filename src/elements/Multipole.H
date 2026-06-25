@@ -27,7 +27,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct Multipole
@@ -74,10 +73,10 @@ namespace impactx::elements
             int multipole,
             amrex::ParticleReal K_normal,
             amrex::ParticleReal K_skew,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
@@ -190,7 +189,6 @@ namespace impactx::elements
         /** This pushes the reference particle. */
         using Thin::operator();
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -274,7 +272,6 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

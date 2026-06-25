@@ -28,7 +28,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct PRot
@@ -54,7 +53,7 @@ namespace impactx::elements
         PRot (
             amrex::ParticleReal phi_in,
             amrex::ParticleReal phi_out,
-            std::optional<std::string> name = std::nullopt
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           m_phi_in(phi_in * mixin::Alignment::degree2rad),

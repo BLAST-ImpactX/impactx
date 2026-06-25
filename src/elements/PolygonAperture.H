@@ -10,7 +10,6 @@
 #ifndef IMPACTX_POLYGONAPERTURE_H
 #define IMPACTX_POLYGONAPERTURE_H
 
-
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
@@ -23,6 +22,7 @@
 
 #include <ablastr/constant.H>
 
+#include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
@@ -35,10 +35,8 @@
 #include <stdexcept>
 #include <vector>
 
-
 namespace impactx::elements
 {
-
     /** Polygon vertices for aperture boundary definition.
      *
      * Host data persists across simulations; device data is uploaded
@@ -65,14 +63,19 @@ namespace impactx::elements
 
         using DynamicData = mixin::GPUDataRegistry<PolygonVertices>;
 
-        enum Action
-        {
-            transmit,
-            absorb
-        };
+        AMREX_ENUM_IN_CLASS(Action,
+            transmit,  //! transmit particles inside the aperture
+            absorb,    //! absorb particles inside the aperture
+        );
 
         static std::string
         action_name (Action const & action);
+
+        static constexpr amrex::ParticleReal DEFAULT_min_radius2 = 0;
+        static constexpr amrex::ParticleReal DEFAULT_repeat_x = 0;
+        static constexpr amrex::ParticleReal DEFAULT_repeat_y = 0;
+        static constexpr bool DEFAULT_shift_odd_x = false;
+        static constexpr Action DEFAULT_action = Action::transmit;
 
         /** A thin collimator element that applies a transverse aperture boundary defined
          *  by points of a polygon vertices.
@@ -93,15 +96,15 @@ namespace impactx::elements
         PolygonAperture (
             std::vector< amrex::ParticleReal> vertices_x,
             std::vector< amrex::ParticleReal> vertices_y,
-            amrex::ParticleReal min_radius2,
-            amrex::ParticleReal repeat_x,
-            amrex::ParticleReal repeat_y,
-            bool shift_odd_x,
-            Action action,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal min_radius2 = DEFAULT_min_radius2,
+            amrex::ParticleReal repeat_x = DEFAULT_repeat_x,
+            amrex::ParticleReal repeat_y = DEFAULT_repeat_y,
+            bool shift_odd_x = DEFAULT_shift_odd_x,
+            Action action = DEFAULT_action,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),

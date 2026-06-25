@@ -25,7 +25,6 @@
 #include <functional>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct Programmable
@@ -36,6 +35,9 @@ namespace impactx::elements
         static constexpr auto type = "Programmable";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr amrex::ParticleReal DEFAULT_ds = 0;
+        static constexpr int DEFAULT_nslice = mixin::Thick::DEFAULT_nslice;
+
         /** This element can be programmed
          *
          * @param ds Segment length in m
@@ -43,9 +45,9 @@ namespace impactx::elements
          * @param name a user defined and not necessarily unique name of the element
          */
         Programmable (
-            amrex::ParticleReal ds=0.0,
-            int nslice=1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal ds = DEFAULT_ds,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
           : Named(std::move(name)), m_ds(ds), m_nslice(nslice)
         {}
@@ -126,8 +128,8 @@ namespace impactx::elements
         void
         finalize ();
 
-        amrex::ParticleReal m_ds = 0.0; //! segment length in m
-        int m_nslice = 1; //! number of slices used for the application of space charge
+        amrex::ParticleReal m_ds = 0.0;  //! segment length in m
+        int m_nslice = DEFAULT_nslice;  //! number of slices used for the application of space charge
 
         /** Allow threading via OpenMP for the particle iterator loop
          *
@@ -138,10 +140,10 @@ namespace impactx::elements
          */
         bool m_threadsafe = false;
 
-        std::function<void(ImpactXParticleContainer *, int, int)> m_push; //! hook for push of whole container (pc, step, period)
-        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles (pti, ref)
-        std::function<void(RefPart &)> m_ref_particle; //! hook for reference particle
-        std::function<void()> m_finalize; //! hook for finalize cleanup
+        std::function<void(ImpactXParticleContainer *, int, int)> m_push;  //! hook for push of whole container (pc, step, period)
+        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles;  //! hook for beam particles (pti, ref)
+        std::function<void(RefPart &)> m_ref_particle;  //! hook for reference particle
+        std::function<void()> m_finalize;  //! hook for finalize cleanup
     };
 
 } // namespace impactx

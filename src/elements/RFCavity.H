@@ -38,7 +38,6 @@
 #include <tuple>
 #include <vector>
 
-
 namespace impactx::elements
 {
     /** Default Fourier coefficients
@@ -114,6 +113,8 @@ namespace impactx::elements
 
         using DynamicData = mixin::GPUDataRegistry<CavityFourierCoefficients>;
 
+        static constexpr int DEFAULT_mapsteps = 10;
+
         /** An RF cavity
          *
          * @param ds Segment length in m
@@ -139,14 +140,14 @@ namespace impactx::elements
             amrex::ParticleReal phase,
             std::vector<amrex::ParticleReal> cos_coef,
             std::vector<amrex::ParticleReal> sin_coef,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int mapsteps = 10,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
           : Named(std::move(name)),
             Thick(ds, nslice),
@@ -330,7 +331,6 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -388,7 +388,6 @@ namespace impactx::elements
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

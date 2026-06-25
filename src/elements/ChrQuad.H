@@ -28,7 +28,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ChrQuad
@@ -44,6 +43,8 @@ namespace impactx::elements
     {
         static constexpr auto type = "ChrQuad";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr int DEFAULT_unit = 0;
 
         /** A Quadrupole magnet with chromatic focusing
          *
@@ -70,14 +71,14 @@ namespace impactx::elements
         ChrQuad (
             amrex::ParticleReal ds,
             amrex::ParticleReal k,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Thick(ds, nslice),
@@ -92,7 +93,6 @@ namespace impactx::elements
 
         /** Push all particles */
         using BeamOptic::operator();
-
 
         /** Compute and cache the constants for the push.
          *
@@ -208,7 +208,6 @@ namespace impactx::elements
                // pyout = py;
             }
 
-
             // advance longitudinal position and momentum
 
             if (m_g == 0.0)
@@ -283,8 +282,6 @@ namespace impactx::elements
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
-
-
 
         /** This operator pushes the particle spin.
          *
@@ -379,7 +376,6 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

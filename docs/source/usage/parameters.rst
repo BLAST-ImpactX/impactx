@@ -343,7 +343,7 @@ This element requires these additional parameters:
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
 * ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2, 4, or 6) (default: ``2``)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``5``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
@@ -560,7 +560,7 @@ This requires these additional parameters:
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
 * ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2, 4, or 6) (default: ``2``)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``5``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 
@@ -714,7 +714,7 @@ This requires these additional parameters:
 * ``<element_name>.aperture_x`` (``float``, in meters) horizontal half-aperture (elliptical)
 * ``<element_name>.aperture_y`` (``float``, in meters) vertical half-aperture (elliptical)
 * ``<element_name>.int_order`` (``integer``) the order used for symplectic integration (2, 4, or 6) (default: ``2``)
-* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``5``)
+* ``<element_name>.mapsteps`` (``integer``) number of integration steps per slice used for symplectic integration (default: ``10``)
 * ``<element_name>.nslice`` (``integer``) number of slices used for the application of space charge (default: ``1``)
 
 

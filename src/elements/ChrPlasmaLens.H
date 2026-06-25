@@ -28,7 +28,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ChrPlasmaLens
@@ -44,6 +43,8 @@ namespace impactx::elements
     {
         static constexpr auto type = "ChrPlasmaLens";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr int DEFAULT_unit = 0;
 
         /** An active cylindrically symmetric plasma lens with chromatic focusing
          *
@@ -68,14 +69,14 @@ namespace impactx::elements
         ChrPlasmaLens (
             amrex::ParticleReal ds,
             amrex::ParticleReal k,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Thick(ds, nslice),
@@ -242,7 +243,6 @@ namespace impactx::elements
                 tout = t - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
             }
             // advance longitudinal position and momentum
-
 
             // assign updated position & momenta
             x = xout;

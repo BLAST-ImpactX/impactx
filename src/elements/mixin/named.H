@@ -27,6 +27,8 @@ namespace impactx::elements::mixin
      */
     struct Named
     {
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** Overwrite the name of the element
          *
          * @param new_name set a new name on the element

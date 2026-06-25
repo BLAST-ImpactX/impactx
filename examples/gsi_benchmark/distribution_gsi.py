@@ -1,4 +1,4 @@
-from impactx import ImpactX, distribution, twiss
+from impactx import distribution, twiss
 
 # beam parameters
 kin_energy_MeV = 11.4  # reference kinetic energy

@@ -8,12 +8,10 @@
 
 import numpy as np
 import pandas as pd
+from distribution_gsi import *
 
 import amrex.space3d as amr
-from impactx import ImpactX, distribution, elements, twiss
-
-import distribution_gsi
-from distribution_gsi import *
+from impactx import ImpactX, elements
 
 sim = ImpactX()
 

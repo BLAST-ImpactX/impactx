@@ -7,10 +7,9 @@
 # -*- coding: utf-8 -*-
 
 
-from impactx import ImpactX, elements
-
-import distribution_gsi
 from distribution_gsi import *
+
+from impactx import ImpactX, elements
 
 sim = ImpactX()
 

@@ -1,4 +1,3 @@
-import numpy as np
 import openpmd_api as io  # install with python3 -m pip install openpmd-api
 
 # open the data series
@@ -20,7 +19,7 @@ for it in steps:
     px = beam["momentum_x"] * mm_scale
 
     # Example: Plot x vs. px as a scatter
-    plt.scatter(x, px, c='red', s=3)
+    plt.scatter(x, px, c="red", s=3)
 
 plt.xlabel("x [mm]", fontsize=12)
 plt.ylabel("px/p0 [mrad]", fontsize=12)

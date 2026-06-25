@@ -1,5 +1,6 @@
 ! TITLE,'GSI.MADX -- SIS18 with a sextupole --';
-BEAM, PARTICLE=PROTON,ENERGY=11.4e-3;
+! ENERGY = 0.93827208943 GeV + 11.4e-3 GeV
+BEAM, PARTICLE=PROTON,  ENERGY=0.94967208943;
 
 !---------------------  DRIFT SPACES DEFINITION  ---------------------
 DR1: DRIFT, TYPE=DRIF, L=0.6450000;
@@ -24,8 +25,7 @@ QS3T:  QUADRUPOLE, TYPE= QD3, L= 0.4804000,  K1=  0.62221964;
 
 
 ! ------------------- normal sextupole ---------------------------------
-S:     MULTIPOLE, K2L = 0.2;
-
+S:     MULTIPOLE, KNL = {0, 0, 0.2};
 
 ! ---------------------------  LINE DEFINITION -------------------------
 CELL:  LINE=(DR1,RB,DR2,RB,DR3,QS1F,DR4,QS2D,DR5,QS3T,DR6);
@@ -33,3 +33,7 @@ CELL:  LINE=(DR1,RB,DR2,RB,DR3,QS1F,DR4,QS2D,DR5,QS3T,DR6);
 MACHINE: LINE=(CELL, S, 11*CELL);
 
 USE, SEQUENCE = MACHINE;
+
+select,flag=twiss,clear;
+select,flag="twiss",column=name,keyword,s,alfx,betx,alfy,bety,dx,dpx,dy,dpy;
+twiss, line=MACHINE, file=optics;

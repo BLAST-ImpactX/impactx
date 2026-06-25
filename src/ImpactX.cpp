@@ -16,6 +16,8 @@
 #include "particles/Push.H"
 #include "particles/wakefields/HandleWakefield.H"
 
+#include <ablastr/utils/UsedInputsFile.H>
+
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
 #include <AMReX_BLProfiler.H>
@@ -119,6 +121,15 @@ namespace impactx {
                 std::cout << "\nGrids Summary:\n";
                 amr_data->printGridSummary(std::cout, 0, amr_data->finestLevel());
             }
+        }
+
+        // write parameters
+        {
+            std::string filename = "impactx_used_inputs";
+            amrex::ParmParse pp_impactx("impactx");
+            pp_impactx.queryAdd("used_inputs_file", filename);
+
+            ablastr::utils::write_used_inputs_file(filename);
         }
 
         // keep track that init is done

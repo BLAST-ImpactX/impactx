@@ -33,6 +33,8 @@ namespace impactx::particles::spacecharge
         amrex::Real slice_ds
     )
     {
+        if (slice_ds == 0.0) { return; }
+
         BL_PROFILE("impactx::particles::wakefields::HandleSpacecharge")
 
         auto space_charge = get_space_charge_algo();

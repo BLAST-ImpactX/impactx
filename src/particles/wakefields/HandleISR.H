@@ -22,6 +22,8 @@ namespace impactx::particles::wakefields
 {
     /** Function to handle ISR in bending dipoles.
      *
+     * Returns immediately if slice_ds is zero.
+     *
      * @param[in] particle_container the particle species container
      * @param[in] element_variant variant type of the lattice element
      * @param[in] slice_ds slice spacing along s
@@ -33,6 +35,8 @@ namespace impactx::particles::wakefields
         amrex::Real slice_ds
     )
     {
+        if (slice_ds == 0.0) { return; }
+
         BL_PROFILE("impactx::particles::wakefields::HandleISR")
 
         amrex::ParmParse pp_algo("algo");

@@ -23,6 +23,8 @@ namespace impactx::particles::spacecharge
     /** Function to handle space charge including charge deposition, Poisson solve,
      * field calculation, interpolation, and particle push.
      *
+     * Returns immediately if slice_ds is zero.
+     *
      * @param[in,out] amr_data AMR data like particle container and fields
      * @param[in] ResizeMesh function to call to resize the mesh
      * @param[in] slice_ds slice spacing along s

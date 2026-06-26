@@ -125,32 +125,32 @@ particle_ids = df["idcpu"].unique().tolist()
 # matched Twiss functions
 alpha_x = 1.29174698
 beta_x = 12.79711091
-sqrt_beta = np.sqrt(beta_x)              # hoist out of the loop
+sqrt_beta = np.sqrt(beta_x)  # hoist out of the loop
 
-x0_mm, tunes = [], []                    # accumulate, plot once
+x0_mm, tunes = [], []  # accumulate, plot once
 for idcpu, track in grouped_by_idcpu:
-    xarr  = track["x"].to_numpy()        # cheaper than np.array(track["x"])
+    xarr = track["x"].to_numpy()  # cheaper than np.array(track["x"])
     pxarr = track["px"].to_numpy()
-    
-    xn  = xarr / sqrt_beta
+
+    xn = xarr / sqrt_beta
     pxn = pxarr * sqrt_beta + xarr * alpha_x / sqrt_beta
-    z   = xn - 1j * pxn
-    z  -= z.mean()                        # remove closed-orbit / DC line
-    
+    z = xn - 1j * pxn
+    z -= z.mean()  # remove closed-orbit / DC line
+
     out = pnf.naff(
         z,
-        turns=len(z) - 1,                 # FIX: turns+1 must be <= len(z)
-        nterms=1,                         # FIX: you only use term 0  -> 3.4x faster
-        getFullSpectrum=True,             # required: z is complex
+        turns=len(z) - 1,  # FIX: turns+1 must be <= len(z)
+        nterms=1,  # FIX: you only use term 0  -> 3.4x faster
+        getFullSpectrum=True,  # required: z is complex
         window=1,
         warnings=False,
     )
-    if len(out) == 0:                     # no line (e.g. lost/clipped particle)
+    if len(out) == 0:  # no line (e.g. lost/clipped particle)
         continue
     x0_mm.append(xarr[0] * mm_scale)
     tunes.append(out[0, 1])
 
-plt.scatter(x0_mm, tunes, s=5)            # single draw call (was 1 per particle)
+plt.scatter(x0_mm, tunes, s=5)  # single draw call (was 1 per particle)
 plt.xlabel("x [mm]", fontsize=12)
 plt.ylabel("tune", fontsize=12)
 plt.title("Tune vs. Horizontal Position")

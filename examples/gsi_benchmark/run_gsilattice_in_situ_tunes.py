@@ -6,16 +6,14 @@
 #
 # -*- coding: utf-8 -*-
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import PyNAFF as pnf
-import matplotlib.pyplot as plt
+from distribution_gsi import *
 
 import amrex.space3d as amr
-from impactx import ImpactX, distribution, elements, twiss
-
-import distribution_gsi
-from distribution_gsi import *
+from impactx import ImpactX, elements
 
 sim = ImpactX()
 
@@ -31,9 +29,9 @@ ref = sim.beam.ref
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 qm_eev = ref.charge_qe / (ref.mass_MeV * 1.0e6)  # electron charge/mass in e / eV
 
-sigx = 5.0e-3 #rms horizontal/vertical beam size in m
-xmin = 0.01*sigx
-xmax = 5.0*sigx #maximum x-coordinate of test particles sampled
+sigx = 5.0e-3  # rms horizontal/vertical beam size in m
+xmin = 0.01 * sigx
+xmax = 5.0 * sigx  # maximum x-coordinate of test particles sampled
 
 # set test particles
 pc = sim.particle_container()
@@ -86,7 +84,7 @@ chain = 11 * cell
 sim.lattice.append(monitor)
 sim.lattice.append(rf)
 sim.lattice.extend(cell)
-#sim.lattice.append(sextupole)
+# sim.lattice.append(sextupole)
 sim.lattice.extend(chain)
 sim.lattice.append(rf)
 
@@ -97,6 +95,7 @@ turn_arr = []
 test_data = []
 mm_scale = 1.0e3
 
+
 def hook_before_period(sim):
     turn = sim.tracking_period
     turn_arr.append(turn)
@@ -104,9 +103,8 @@ def hook_before_period(sim):
     # Filter on particle weight (collect test particles only)
     for row in beam[beam["weighting"] == 0.0].itertuples():
         # collect test particle data
-        test_data.append(
-            [turn, row.idcpu, row.position_x, row.momentum_x]
-        )
+        test_data.append([turn, row.idcpu, row.position_x, row.momentum_x])
+
 
 sim.hook["before_period"] = hook_before_period
 
@@ -122,8 +120,8 @@ sorted_df = df.sort_values(by="id")
 
 # matched Twiss functions
 alpha_x = 1.29174698
-beta_x=12.79711091
-mm_scale=1.0e3
+beta_x = 12.79711091
+mm_scale = 1.0e3
 
 n = len(turn_arr)
 for i in range(0, len(df), n):
@@ -134,12 +132,10 @@ for i in range(0, len(df), n):
     pxn = pxarr * np.sqrt(beta_x) + xarr * alpha_x / np.sqrt(beta_x)
     z = xn + 1j * pxn
     # To plot this data:
-    #plt.scatter(xarr, pxarr, s=5)
-    output = pnf.naff(
-        z, turns=n, nterms=4, skipTurns=0, getFullSpectrum=True, window=1
-    )
+    # plt.scatter(xarr, pxarr, s=5)
+    output = pnf.naff(z, turns=n, nterms=4, skipTurns=0, getFullSpectrum=True, window=1)
     tune = output[0, 1]
-    plt.scatter(xarr[0]*mm_scale,tune)
+    plt.scatter(xarr[0] * mm_scale, tune)
 
 plt.xlabel("x [mm]", fontsize=12)
 plt.ylabel("tune", fontsize=12)

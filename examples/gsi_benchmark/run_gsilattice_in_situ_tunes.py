@@ -114,19 +114,23 @@ sim.track_particles()
 # clean shutdown
 sim.finalize()
 
-df = pd.DataFrame(test_data, columns=["turn", "id", "x", "px"])
-sorted_df = df.sort_values(by="id")
+df = pd.DataFrame(test_data, columns=["turn", "idcpu", "x", "px"])
+
+# Group by particle ids, without changing their relative order
+grouped_by_idcpu = df.groupby('idcpu', sort=False)
+
+# all particle ids (once)
+particle_ids = df['idcpu'].unique().tolist()
 
 # matched Twiss functions
 alpha_x = 1.29174698
 beta_x = 12.79711091
-mm_scale = 1.0e3
 
 n = len(turn_arr)
-for i in range(0, len(df), n):
-    subset = sorted_df.iloc[i : i + n]
-    xarr = np.array(subset["x"])
-    pxarr = np.array(subset["px"])
+# loop over one particle track at a time
+for idcpu, particle_track in grouped_by_idcpu:
+    xarr = np.array(particle_track["x"])
+    pxarr = np.array(particle_track["px"])
     xn = xarr / np.sqrt(beta_x)
     pxn = pxarr * np.sqrt(beta_x) + xarr * alpha_x / np.sqrt(beta_x)
     z = xn - 1j * pxn
@@ -134,7 +138,6 @@ for i in range(0, len(df), n):
     # plt.scatter(xn, pxn, s=5)
     output = pnf.naff(z, turns=n, nterms=4, skipTurns=0, getFullSpectrum=True, window=1)
     tune = output[0, 1]
-    print(xarr[0])
     plt.scatter(xarr[0] * mm_scale, tune)
 
 plt.xlabel("x [mm]", fontsize=12)

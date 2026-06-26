@@ -84,7 +84,7 @@ chain = 11 * cell
 sim.lattice.append(monitor)
 sim.lattice.append(rf)
 sim.lattice.extend(cell)
-#sim.lattice.append(sextupole) # comment this line to track in linear lattice
+# sim.lattice.append(sextupole) # comment this line to track in linear lattice
 sim.lattice.extend(chain)
 sim.lattice.append(rf)
 
@@ -131,13 +131,11 @@ for i in range(0, len(df), n):
     pxn = pxarr * np.sqrt(beta_x) + xarr * alpha_x / np.sqrt(beta_x)
     z = xn - 1j * pxn
     # To plot the normalized data:
-    #plt.scatter(xn, pxn, s=5)
-    output = pnf.naff(
-        z, turns=n, nterms=4, skipTurns=0, getFullSpectrum=True, window=1
-    )
+    # plt.scatter(xn, pxn, s=5)
+    output = pnf.naff(z, turns=n, nterms=4, skipTurns=0, getFullSpectrum=True, window=1)
     tune = output[0, 1]
     print(xarr[0])
-    plt.scatter(xarr[0]*mm_scale,tune)
+    plt.scatter(xarr[0] * mm_scale, tune)
 
 plt.xlabel("x [mm]", fontsize=12)
 plt.ylabel("tune", fontsize=12)

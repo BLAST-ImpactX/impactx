@@ -84,7 +84,7 @@ chain = 11 * cell
 sim.lattice.append(monitor)
 sim.lattice.append(rf)
 sim.lattice.extend(cell)
-sim.lattice.append(sextupole) # comment this line to track in linear lattice
+sim.lattice.append(sextupole)  # comment this line to track in linear lattice
 sim.lattice.extend(chain)
 sim.lattice.append(rf)
 
@@ -94,6 +94,7 @@ sim.periods = 1000
 turn_arr = []
 test_data = []
 mm_scale = 1.0e3
+
 
 def hook_before_period(sim):
     turn = sim.tracking_period

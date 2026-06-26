@@ -18,6 +18,7 @@
 
 #include <AMReX_GpuContainers.H>
 #include <AMReX_GpuDevice.H>
+#include <AMReX_GpuParallelReduce.H>
 
 #include <cmath>
 #include <stdexcept>
@@ -103,10 +104,18 @@ namespace impactx::particles::wakefields
 
             // Sum up all partial charge histograms to one MPI process to calculate the global wakefield.
             // Once calculated, we will distribute convolved_wakefield back to every MPI process.
-            // (handles GPU-aware vs. host-staged MPI for the device-resident histogram)
-            ReduceSum1D(charge_distribution, amrex::ParallelDescriptor::IOProcessorNumber());
+            // (AMReX handles GPU-aware vs. host-staged MPI for the device-resident histogram)
+            amrex::ParallelReduce::Sum(
+                charge_distribution,
+                amrex::ParallelDescriptor::IOProcessorNumber(),
+                amrex::ParallelDescriptor::Communicator()
+            );
 
-            amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield;
+            // Pre-size on every rank to the (globally known) wake length so the
+            // broadcast below avoids the extra length broadcast (see
+            // ParallelDescriptor::Bcast(Gpu::DeviceVector)). On the IO processor
+            // this is overwritten by the convolution result of the same length.
+            amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield(num_bins, 0.0);
             if (amrex::ParallelDescriptor::IOProcessor()) {
                 // Call the mean transverse position function
                 impactx::particles::wakefields::MeanTransversePosition(particle_container, mean_x, mean_y, bin_min,
@@ -137,9 +146,14 @@ namespace impactx::particles::wakefields
             }
 
             // Broadcast the global wakefield from the IO processor (which alone
-            // computed it) to every MPI rank, resizing the receivers and handling
-            // GPU-aware vs. host-staged MPI for the device-resident histogram.
-            BcastFromIOProc1D(convolved_wakefield);
+            // computed it) to every MPI rank. Receivers are pre-sized above, so
+            // this is a single broadcast (AMReX handles GPU-aware vs. host-staged
+            // MPI for the device-resident histogram).
+            amrex::ParallelDescriptor::Bcast(
+                convolved_wakefield,
+                amrex::ParallelDescriptor::IOProcessorNumber(),
+                amrex::ParallelDescriptor::Communicator()
+            );
 
             // Check convolution output
             if (print_wakefield && amrex::ParallelDescriptor::IOProcessor())

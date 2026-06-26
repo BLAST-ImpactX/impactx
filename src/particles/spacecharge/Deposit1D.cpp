@@ -15,6 +15,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_GpuContainers.H>
+#include <AMReX_GpuParallelReduce.H>
 #include <AMReX_ParmParse.H>
 
 #include <cmath>
@@ -44,9 +45,12 @@ namespace impactx::particles::spacecharge
         // Call charge deposition function
         impactx::particles::wakefields::DepositCharge1D(pc, charge_distribution, bin_min, bin_size, is_unity_particle_weight);
 
-        // Sum up all partial charge histograms to each MPI process to calculate
-        // the global charge slope.
-        impactx::particles::wakefields::AllReduceSum1D(charge_distribution);
+        // Sum up all partial charge histograms across MPI ranks so each rank
+        // has the global profile (AMReX handles GPU-aware vs. host-staged MPI).
+        amrex::ParallelAllReduce::Sum(
+            charge_distribution,
+            amrex::ParallelDescriptor::Communicator()
+        );
 
         return charge_distribution;
     }

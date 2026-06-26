@@ -42,6 +42,7 @@ namespace impactx::elements
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Quad";
+        static constexpr bool is_constant_field_flow = true;  // drift-outer (MKM) split eligible
         using PType = ImpactXParticleContainer::ParticleType;
 
         // The light no-spin push in double precision does not benefit from SIMD,

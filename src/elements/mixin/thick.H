@@ -22,6 +22,21 @@ namespace impactx::elements::mixin
      */
     struct Thick
     {
+        /** Whether the element's external-field transport map is an exact constant-field,
+         *  one-parameter flow in the slice length, i.e. ``M(ds/2) M(ds/2) == M(ds)`` exactly
+         *  and independent of how the element is sliced (closed-form map, constant field,
+         *  no acceleration).
+         *
+         *  Only such elements are eligible for the cheaper drift-outer (MKM) Strang split
+         *  of the collective effects (\see impactx::track_lattice_particles), which realizes
+         *  the half-slice transports by temporarily doubling ``nslice``. Elements whose map
+         *  is s-dependent / numerically integrated (soft, ``Exact{Quad,Multipole,CFbend}``,
+         *  ``RFCavity``) or accelerating (``ChrAcc``) must keep this ``false``, as doubling
+         *  ``nslice`` would refine their field integration. Eligible elements opt in by
+         *  shadowing this with ``static constexpr bool is_constant_field_flow = true;``.
+         */
+        static constexpr bool is_constant_field_flow = false;
+
         /** A finite-length element
          *
          * @param ds Segment length in m

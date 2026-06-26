@@ -3,6 +3,7 @@ from impactx import distribution, twiss
 # beam parameters
 kin_energy_MeV = 11.4  # reference kinetic energy
 bunch_charge_C = 1.0e-9  # used with space charge
+beam_current_A = 1.5  # used with 2D space charge
 charge_qe = -1.0  # particle charge
 
 # particle distribution

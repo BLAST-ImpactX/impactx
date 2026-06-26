@@ -117,10 +117,10 @@ sim.finalize()
 df = pd.DataFrame(test_data, columns=["turn", "idcpu", "x", "px"])
 
 # Group by particle ids, without changing their relative order
-grouped_by_idcpu = df.groupby('idcpu', sort=False)
+grouped_by_idcpu = df.groupby("idcpu", sort=False)
 
 # all particle ids (once)
-particle_ids = df['idcpu'].unique().tolist()
+particle_ids = df["idcpu"].unique().tolist()
 
 # matched Twiss functions
 alpha_x = 1.29174698

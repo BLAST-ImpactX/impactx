@@ -20,7 +20,7 @@ sigr = 500e-6
 sigpx = 10
 sigpy = 10
 # fixed seed for deterministic test results
-rng = np.random.default_rng()
+rng = np.random.default_rng(seed=42)
 px = rng.normal(0, sigpx, N_part)
 py = rng.normal(0, sigpy, N_part)
 theta = 2 * np.pi * rng.random(N_part)

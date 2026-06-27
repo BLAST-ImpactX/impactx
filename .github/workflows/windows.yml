@@ -41,7 +41,8 @@ jobs:
       env:
         # Work-around for windows-latest GH runner issue, see
         # https://github.com/actions/runner-images/issues/10004
-        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
+        CFLAGS: "/arch:AVX2"
+        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR /arch:AVX2"
       run: |
         cmake -S fftw-3.3.11                     `
               -B build_fftw                      `
@@ -92,7 +93,8 @@ jobs:
       env:
         # Work-around for windows-latest GH runner issue, see
         # https://github.com/actions/runner-images/issues/10004
-        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
+        CFLAGS: "/arch:AVX2"
+        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR /arch:AVX2"
         # FFTW3 install prefix path
         FFTW3_DIR: "C:/Program Files (x86)/fftw/"
         FFTW3f_DIR: "C:/Program Files (x86)/fftw/"

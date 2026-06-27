@@ -222,12 +222,20 @@ ImpactX_pyamrex_branch = os.environ.get("IMPACTX_PYAMREX_BRANCH")
 
 # extra CMake arguments
 extra_cmake_args = []
+# Pass IMPACTX_CMAKE_<CMakeVar>=<value> environment variables through as -D
+# flags. Windows upper-cases env var names; CMake option names are
+# case-sensitive, so restore the mixed-case "openPMD_" prefix that upper-casing
+# destroys (our other forwarded options are ALL_CAPS anyway). openPMD-api#1896.
+extra_cmake_args_prefix = "IMPACTX_CMAKE_"
 for k, v in os.environ.items():
-    extra_cmake_args_prefix = "IMPACTX_CMAKE_"
-    if k.startswith(extra_cmake_args_prefix) and len(k) > len(extra_cmake_args_prefix):
-        extra_cmake_args.append(
-            "-D{0}={1}".format(k[len(extra_cmake_args_prefix) :], v)
-        )
+    if not k.startswith(extra_cmake_args_prefix) or len(k) == len(
+        extra_cmake_args_prefix
+    ):
+        continue
+    cmake_var = k[len(extra_cmake_args_prefix) :]
+    if cmake_var.startswith("OPENPMD_"):
+        cmake_var = "openPMD_" + cmake_var[len("openPMD_") :]
+    extra_cmake_args.append("-D{0}={1}".format(cmake_var, v))
 
 # https://cmake.org/cmake/help/v3.0/command/if.html
 if ImpactX_MPI.upper() in ["1", "ON", "TRUE", "YES"]:

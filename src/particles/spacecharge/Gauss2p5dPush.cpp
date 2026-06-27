@@ -219,8 +219,8 @@ namespace impactx::particles::spacecharge
         // Call charge deposition function
         impactx::particles::wakefields::DepositCharge1D(pc, charge_distribution, bin_min, bin_size, is_unity_particle_weight);
 
-        // Sum up all partial charge histograms across MPI ranks so each rank
-        // has the global profile (AMReX handles GPU-aware vs. host-staged MPI).
+        // Sum up all partial charge histograms to each MPI process to calculate
+        // the global charge slope.
         amrex::ParallelAllReduce::Sum(
             charge_distribution,
             amrex::ParallelDescriptor::Communicator()

@@ -53,7 +53,7 @@ We run the following script to analyze correctness:
 
 Benchmark a single sextupole kick
 ==================================
-      
+
 This test tracks a set of ... initial conditions through a single, thin sextupole, and compares the result against the kick described in the MAD-X documentation, checking the strength definitions for consistency.
 
 We use a 2 GeV electron beam.  The initial conditions form an increasing sequence of horizontal coordinates x, with y = px = py = pt = 0.
@@ -63,29 +63,28 @@ The final momenta (px,py) for each initial condition is compared against its pre
 
 Run
 ---
-          
+
 This example can be run as:
 
 * **Python** script: ``python3 run_multipole.py``
-   
+
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
-   
+
 .. tab-set::
 
    .. tab-item:: Python: Script
-      
+
        .. literalinclude:: run_multipole.py
           :language: python3
           :caption: You can copy this file from ``examples/multipole/run_multipole.py``.
 
-Analyze   
+Analyze
 -------
 
-We run the following script to analyze correctness: 
+We run the following script to analyze correctness:
 
 .. dropdown:: Script ``analysis_sextupole_kick.py``
 
    .. literalinclude:: analysis_sextupole_kick.py
       :language: python3
       :caption: You can copy this file from ``examples/multipole/analysis_sextupole_kick.py``.
-

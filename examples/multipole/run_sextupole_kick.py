@@ -7,8 +7,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+
 import amrex.space3d as amr
-from impactx import ImpactX, distribution, elements
+from impactx import ImpactX, elements
 
 sim = ImpactX()
 
@@ -48,9 +49,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice
 multipole = [
     monitor,
-    elements.Multipole(
-        name="thin_sextupole", multipole=3, K_normal=10.0, K_skew=-2.0
-    ),
+    elements.Multipole(name="thin_sextupole", multipole=3, K_normal=10.0, K_skew=-2.0),
     monitor,
 ]
 # assign a fodo segment

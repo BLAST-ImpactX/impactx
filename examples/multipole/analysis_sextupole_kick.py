@@ -7,8 +7,6 @@
 
 import numpy as np
 import openpmd_api as io
-import scipy.constants as sc
-from scipy.special import expi
 
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -33,8 +31,8 @@ pti = initial_sort["momentum_t"]
 
 # Predicted momentum kick, from MAD-X user guide
 
-px_predicted = K_normal/2.0 * (yi**2 - xi**2) + K_skew * xi * yi
-py_predicted = K_skew/2.0 * (xi**2 - yi**2) + K_normal * xi * yi
+px_predicted = K_normal / 2.0 * (yi**2 - xi**2) + K_skew * xi * yi
+py_predicted = K_skew / 2.0 * (xi**2 - yi**2) + K_normal * xi * yi
 
 # Maximum momentum kick
 px_max = px_predicted.abs().max()

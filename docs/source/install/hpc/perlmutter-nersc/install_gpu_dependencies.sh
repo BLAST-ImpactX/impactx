@@ -20,9 +20,9 @@ if [ -z ${proj-} ]; then echo "WARNING: The 'proj' variable is not yet set in yo
 
 # Check $proj variable is correct and has a corresponding CFS directory #######
 #
-if [ ! -d "${CFS}/${proj%_g}/" ]
+if [ ! -d "${CFS}/${proj}/" ]
 then
-    echo "WARNING: The directory ${CFS}/${proj%_g}/ does not exist!"
+    echo "WARNING: The directory ${CFS}/${proj}/ does not exist!"
     echo "Is the \$proj environment variable of value \"$proj\" correctly set? "
     echo "Please edit line 2 of your perlmutter_gpu_impactx.profile file to continue!"
     exit
@@ -31,7 +31,7 @@ fi
 
 # Remove old dependencies #####################################################
 #
-SW_DIR="${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu"
+SW_DIR="${CFS}/${proj}/${USER}/sw/perlmutter/gpu"
 rm -rf ${SW_DIR}
 mkdir -p ${SW_DIR}
 

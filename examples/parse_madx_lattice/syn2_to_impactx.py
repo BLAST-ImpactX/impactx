@@ -75,7 +75,7 @@ def cnv_dipedge(elem, order):
     # sneaky, MAD-X dipedge uses HGAP or half-gap while ImpactX uses
     # g for full gap
     tilt = elem.get_double_attribute("tilt", 0.0)
-    rot = 180 * tilt/np.pi
+    rot = 180 * tilt / np.pi
     model = " "
     if order == Order.linear:
         model = "linear"
@@ -85,8 +85,14 @@ def cnv_dipedge(elem, order):
     ## ImpactX has the location= argument which can be either 'entry' or 'exit'
     ## but MAD-X doesn't. How do we resolve this?
     ix_elem = impactx.elements.DipEdge(
-        psi=e1, rc=rc, g=hgap * 2, K2=fint, model=model, name=elem.get_name(),
-        rotation=rot)
+        psi=e1,
+        rc=rc,
+        g=hgap * 2,
+        K2=fint,
+        model=model,
+        name=elem.get_name(),
+        rotation=rot,
+    )
     return ix_elem
 
 
@@ -104,7 +110,7 @@ def cnv_sbend(elem, order):
     fint = elem.get_double_attribute("fint", 0.0)
     hgap = elem.get_double_attribute("hgap", 0.0)
     tilt = elem.get_double_attribute("tilt", 0.0)
-    rot = 180 * tilt/np.pi
+    rot = 180 * tilt / np.pi
 
     model = " "
     us_dipedge = None
@@ -128,7 +134,7 @@ def cnv_sbend(elem, order):
             location="entry",
             model=de_model,
             name=nm + "_usedge",
-            rotation = rot,
+            rotation=rot,
         )
         pass
     if e2 != 0.0:
@@ -158,20 +164,19 @@ def cnv_sbend(elem, order):
 
         if order == Order.linear:
             main_bend_elem = impactx.elements.Sbend(
-                ds, radius_of_curvature, name=nm, nslice=ns,
-                rotation=rot
+                ds, radius_of_curvature, name=nm, nslice=ns, rotation=rot
             )
         else:
             phi = bendangle * 180 / np.pi
-            main_bend_elem = impactx.elements.ExactSbend(ds, phi, nslice=ns,
-                                                         rotation=rot, name=nm)
+            main_bend_elem = impactx.elements.ExactSbend(
+                ds, phi, nslice=ns, rotation=rot, name=nm
+            )
         pass
     else:
         if order == Order.linear:
             # only do first order bend
             main_bend_elem = impactx.elements.CFbend(
-                ds, radius_of_curvature, k1, nslice=ns, name=nm,
-                rotation=rot
+                ds, radius_of_curvature, k1, nslice=ns, name=nm, rotation=rot
             )
         else:
             # CF bend
@@ -190,7 +195,7 @@ def cnv_sbend(elem, order):
                 mapsteps=6,
                 nslice=ns,
                 name=nm,
-                rotation=rot
+                rotation=rot,
             )
             pass
         pass
@@ -227,7 +232,7 @@ def cnv_rbend(elem, order):
     fint = elem.get_double_attribute("fint", 0.0)
     hgap = elem.get_double_attribute("hgap", 0.0)
     tilt = elem.get_double_attribute("tilt", 0.0)
-    rot = 180 * tilt/np.pi
+    rot = 180 * tilt / np.pi
     us_dipedge = None
     ds_dipedge = None
     cf = (k1 != 0.0) or (k2 != 0.0) or (k1s != 0.0)
@@ -257,7 +262,7 @@ def cnv_rbend(elem, order):
             K2=fint,
             model=de_model,
             name=nm + "_usedge",
-            rotation=rot
+            rotation=rot,
         )
 
     if e2 != 0.0:
@@ -268,7 +273,7 @@ def cnv_rbend(elem, order):
             K2=fint,
             model=de_model,
             name=nm + "_dsedge",
-            rotation=rot
+            rotation=rot,
         )
 
     if elem.get_double_attribute("h1", 0.0) != 0.0:
@@ -285,15 +290,13 @@ def cnv_rbend(elem, order):
 
         if order == Order.linear:
             main_bend_elem = impactx.elements.Sbend(
-                ds, radius_of_curvature, name=nm, nslice=ns,
-                rotation=rot
+                ds, radius_of_curvature, name=nm, nslice=ns, rotation=rot
             )
         else:
             phi = bendangle * 180 / np.pi
-            main_bend_elem = impactx.elements.ExactSbend(ds, phi,
-                                                         nslice=ns,
-                                                         name=nm,
-                                                         rotation=rot)
+            main_bend_elem = impactx.elements.ExactSbend(
+                ds, phi, nslice=ns, name=nm, rotation=rot
+            )
         pass
 
     else:
@@ -320,7 +323,7 @@ def cnv_rbend(elem, order):
                 int_order=2,
                 nslice=ns,
                 name=nm,
-                rotation=rot
+                rotation=rot,
             )
             pass
         pass
@@ -344,16 +347,14 @@ def cnv_quadrupole(elem, order):
     k1 = elem.get_double_attribute("k1", 0.0)
     nm = elem.get_name()
     tilt = elem.get_double_attribute("tilt", 0.0)
-    rot = 180 * tilt/np.pi
+    rot = 180 * tilt / np.pi
     if order == Order.linear:
         ix_elem = impactx.elements.Quad(
-            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm,
-            rotation=rot
+            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm, rotation=rot
         )
     elif order == Order.chr:
         ix_elem = impactx.elements.ChrQuad(
-            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm,
-            rotation=rot
+            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm, rotation=rot
         )
     elif order == Order.exact:
         ix_elem = impactx.elements.ExactQuad(
@@ -363,7 +364,7 @@ def cnv_quadrupole(elem, order):
             mapsteps=6,
             int_order=6,
             name=nm,
-            rotation=rot
+            rotation=rot,
         )
     else:
         raise RuntimeError(f"error, unknown order: {order}")
@@ -382,7 +383,7 @@ def cnv_multipole(elem, order):
     slen = len(kslvect)
     maxlen = max(nlen, slen)
     tilt = elem.get_double_attribute("tilt", 0.0)
-    rot = 180 * tilt/np.pi
+    rot = 180 * tilt / np.pi
     if order == Order.linear:
         # truncate at order 1
         maxlen = max(maxlen, 2)  # 2 means dipole+quadrupole
@@ -397,8 +398,7 @@ def cnv_multipole(elem, order):
             pass
         elem_list.append(
             impactx.elements.Multipole(
-                i + 1, norm_mom[i], skew_mom[i], name=f"{nm}_{order}",
-                rotation=rot
+                i + 1, norm_mom[i], skew_mom[i], name=f"{nm}_{order}", rotation=rot
             )
         )
     return elem_list
@@ -575,14 +575,17 @@ def cnv_octupole(elem, order):
 
     return ocelem
 
+
 def cnv_monitor(elem):
     fname = elem.get_string_attribute("file", "monitor")
     ix_elem = impactx.elements.BeamMonitor(name=fname, backend="h5")
     return ix_elem
 
+
 def cnv_marker(elem):
     ix_elem = impactx.elements.Drift(ds=0.0, name=elem.get_name())
     return ix_elem
+
 
 def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.exact):
     # lattice must have a reference particle
@@ -1496,11 +1499,11 @@ def test_exact(lattice, line):
 
 
 if __name__ == "__main__":
-    #test_linear(__misc_txt, "misc")
+    # test_linear(__misc_txt, "misc")
     test_exact(__misc_txt, "misc")
 
-    #test_linear(__simple_booster_txt, "booster")
-    #test_exact(__simple_booster_txt, "booster")
+    # test_linear(__simple_booster_txt, "booster")
+    # test_exact(__simple_booster_txt, "booster")
 
-    #test_linear(__iota_txt, "iota")
-    #test_exact(__iota_txt, "iota")
+    # test_linear(__iota_txt, "iota")
+    # test_exact(__iota_txt, "iota")

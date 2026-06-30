@@ -72,6 +72,7 @@ option(ImpactX_MPI           "Multi-node support (message-passing)"         ON)
 option(ImpactX_SIMD          "CPU SIMD Acceleration"                        OFF)
 option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
+option(ImpactX_SYNMADX       "Standalone MAD-X lattice parser (synmadx)"    OFF)
 
 # Specialize the particle push into branch-free paths for aligned vs. misaligned
 # elements (selected at runtime). This doubles the compile time of the element
@@ -455,7 +456,7 @@ if(ImpactX_PYTHON)
         WORKING_DIRECTORY
             ${ImpactX_BINARY_DIR}
         DEPENDS
-            pyImpactX
+            pyImpactX $<$<BOOL:${ImpactX_SYNMADX}>:pysynmadx>
             pyImpactX_python_sources
     )
 
@@ -519,6 +520,9 @@ if(ImpactX_PYTHON)
         VERBATIM
     )
     add_dependencies(pyImpactX_python_sources pyImpactX)
+    add_dependencies(${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
+        pyImpactX_python_sources
+    )
 endif()
 
 

@@ -18,6 +18,7 @@
 #include "particles/spacecharge/HandleSpacecharge.H"
 #include "particles/wakefields/HandleISR.H"
 #include "particles/wakefields/HandleWakefield.H"
+#include "tracking/particles.H"
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
@@ -42,14 +43,12 @@ namespace impactx
         int verbose = 1;
         pp_impactx.queryAddWithParser("verbose", verbose);
 
-        // a global step for diagnostics including space charge slice steps in elements
+        // book-keeping:
+        //   a global step for diagnostics including space charge slice steps in elements
         //   before we start the tracking loop, we are in "step 0" (initial state)
         int & step = m_tracking_state.m_step;
         step = 0;
-
-        // period in the lattice (e.g., turns)
-        int & period = m_tracking_state.m_period;
-        period = 0;
+        m_tracking_state.m_direction = TrackingDirection::Forward;
 
         // check typos in inputs after step 1
         bool early_params_checked = false;
@@ -111,106 +110,80 @@ namespace impactx
             amrex::Print() << " Spin tracking: " << spin << "\n";
         }
 
-        // periods through the lattice
-        int num_periods = 1;
-        amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
+        // collective effect kicks applied per element slice:
+        // space charge, coherent and incoherent synchrotron radiation, etc.
+        auto collective_kicks = [this, &pc] (
+            elements::KnownElements & element_variant,
+            amrex::ParticleReal slice_ds
+        )
+        {
+            // Wakefield calculation: call wakefield function to apply wake effects
+            particles::wakefields::HandleWakefield(*pc, element_variant, slice_ds);
 
-        for (period=0; period < num_periods; ++period) {
-            // optional, user-defined function call
-            m_tracking_state.m_element = &m_lattice.front();
-            call_hook("before_period");
+            // ISR calculation: call ISR function to apply incoherent synchrotron radiation effects
+            particles::wakefields::HandleISR(*pc, element_variant, slice_ds);
 
-            // loop over all beamline elements
-            for (auto &element_variant: m_lattice) {
-                // update element edge of the reference particle
-                amr_data->track_particles.m_particle_container->SetRefParticleEdge();
+            // Space-charge calculation
+            particles::spacecharge::HandleSpacecharge(amr_data, [this](){ this->ResizeMesh(); }, slice_ds);
+        };
 
-                // optional, user-defined function call
-                m_tracking_state.m_element = &element_variant;
-                call_hook("before_element");
+        // the per-slice external-field transport map and per-slice housekeeping
+        auto element_push = [this, &pc, verbose, &pp_diag, diag_enable, &early_params_checked] (
+            elements::KnownElements & element_variant,
+            int step_,
+            int period_
+        )
+        {
+            // push all particles with external maps
+            push(*pc, element_variant, step_, period_);
 
-                // number of slices used for the application of space charge
-                int nslice = 1;
-                amrex::ParticleReal slice_ds; // in meters
-                std::visit([&nslice, &slice_ds](auto &&element) {
-                    nslice = element.nslice();
-                    slice_ds = element.ds() / nslice;
-                }, element_variant);
+            // Apply optional particle boundary conditions
+            particles::ParticleBoundary(*pc);
 
-                // sub-steps for space charge within the element
-                for (int slice_step = 0; slice_step < nslice; ++slice_step) {
-                    BL_PROFILE("ImpactX::evolve::slice_step");
-                    step++;
-                    if (verbose > 0) {
-                        amrex::Print() << "\n++++ Starting step=" << step
-                                       << " slice_step=" << slice_step;
-                    }
+            // move "lost" particles to another particle container
+            collect_lost_particles(*pc);
 
-                    // optional, user-defined function call
-                    call_hook("before_slice");
+            // just prints an empty newline at the end of the slice_step
+            if (verbose > 0) {
+                amrex::Print() << "\n";
+            }
 
-                    // Wakefield calculation: call wakefield function to apply wake effects
-                    particles::wakefields::HandleWakefield(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
+            // slice-step diagnostics
+            bool slice_step_diagnostics = false;
+            pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
 
-                    // ISR calculation: call ISR function to apply incoherent synchrotron radiation effects
-                    particles::wakefields::HandleISR(*amr_data->track_particles.m_particle_container, element_variant, slice_ds);
+            if (pc->store_beam_moments) {
+                pc->record_beam_moments();
+            }
 
-                    // Space-charge calculation
-                    particles::spacecharge::HandleSpacecharge(amr_data, [this](){ this->ResizeMesh(); }, slice_ds);
+            if (diag_enable && slice_step_diagnostics) {
+                // print slice step reference particle to file
+                diagnostics::DiagnosticOutput(pc->GetRefParticle(),
+                                              "ref_particle",
+                                              step_,
+                                              true);
 
-                    // push all particles with external maps
-                    push(*amr_data->track_particles.m_particle_container, element_variant, step, period);
+                // print slice step reduced beam characteristics to file
+                diagnostics::DiagnosticOutput(*pc,
+                                              "reduced_beam_characteristics",
+                                              step_,
+                                              true);
+            }
 
-                    // Apply optional particle boundary conditions
-                    particles::ParticleBoundary(*amr_data->track_particles.m_particle_container);
+            // inputs: unused parameters (e.g. typos) check after step 1 has finished
+            if (!early_params_checked) { early_params_checked = early_param_check(); }
+        };
 
-                    // move "lost" particles to another particle container
-                    collect_lost_particles(*amr_data->track_particles.m_particle_container);
-
-                    // just prints an empty newline at the end of the slice_step
-                    if (verbose > 0) {
-                        amrex::Print() << "\n";
-                    }
-
-                    // slice-step diagnostics
-                    bool slice_step_diagnostics = false;
-                    pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
-
-                    if (amr_data->track_particles.m_particle_container->store_beam_moments) {
-                        amr_data->track_particles.m_particle_container->record_beam_moments();
-                    }
-
-                    if (diag_enable && slice_step_diagnostics) {
-                        // print slice step reference particle to file
-                        diagnostics::DiagnosticOutput(amr_data->track_particles.m_particle_container->GetRefParticle(),
-                                                      "ref_particle",
-                                                      step,
-                                                      true);
-
-                        // print slice step reduced beam characteristics to file
-                        diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
-                                                      "reduced_beam_characteristics",
-                                                      step,
-                                                      true);
-
-                    }
-
-                    // inputs: unused parameters (e.g. typos) check after step 1 has finished
-                    if (!early_params_checked) { early_params_checked = early_param_check(); }
-
-                } // end in-element space-charge slice-step loop
-
-                // optional, user-defined function call
-                call_hook("after_element");
-
-            } // end beamline element loop
-
-            // optional, user-defined function call
-            call_hook("after_period");
-        } // end periods though the lattice loop
-
-        // avoid dangling references if users manipulate the lattice
-        m_tracking_state.set_no_element();
+        // traverse the lattice, applying the collective kick and the
+        // element transport per element slice (\see track_lattice_particles)
+        track_lattice_particles(
+            m_lattice,
+            *pc,
+            m_tracking_state,
+            [this](std::string const & name) { call_hook(name); },
+            collective_kicks,
+            element_push
+        );
 
         if (diag_enable)
         {

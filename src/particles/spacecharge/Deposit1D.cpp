@@ -15,6 +15,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_GpuContainers.H>
+#include <AMReX_GpuParallelReduce.H>
 #include <AMReX_ParmParse.H>
 
 #include <cmath>
@@ -47,8 +48,7 @@ namespace impactx::particles::spacecharge
         // Sum up all partial charge histograms to each MPI process to calculate
         // the global charge slope.
         amrex::ParallelAllReduce::Sum(
-            charge_distribution.data(),
-            charge_distribution.size(),
+            charge_distribution,
             amrex::ParallelDescriptor::Communicator()
         );
 

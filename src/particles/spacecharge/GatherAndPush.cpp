@@ -20,6 +20,7 @@
 #include <AMReX_SPACE.H>      // for AMREX_D_DECL
 #include <AMReX_GpuContainers.H>
 #include <AMReX_ParmParse.H>
+#include <AMReX_Reduce.H>
 
 namespace impactx::particles::spacecharge
 {
@@ -62,7 +63,7 @@ namespace impactx::particles::spacecharge
             charge_distribution = Deposit1D( pc, bin_min, bin_max, num_bins);
             bool const GetNumberDensity = true;
             impactx::particles::wakefields::DerivativeCharge1D(charge_distribution, charge_distribution_slope, bin_size, GetNumberDensity);
-            Qb_abs = bin_size * std::accumulate(charge_distribution.begin(), charge_distribution.end(), 0.0_rt);
+            Qb_abs = bin_size * amrex::Reduce::Sum(charge_distribution.size(), charge_distribution.data());
         }
 
         amrex::Real const * const beam_profile = charge_distribution.data();

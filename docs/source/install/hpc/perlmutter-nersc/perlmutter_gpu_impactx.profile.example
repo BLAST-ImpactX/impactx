@@ -1,5 +1,6 @@
 # please set your project account
-export proj=""  # change me! GPU projects must end in "..._g"
+export proj=""  # change me!
+# When you submit a GPU job, the account name will end in "..._g"
 
 # remembers the location of this script
 export MY_PROFILE=$(cd $(dirname $BASH_SOURCE) && pwd)"/"$(basename $BASH_SOURCE)
@@ -13,31 +14,31 @@ module load cmake/3.30.2
 
 # optional: for openPMD support
 module load cray-hdf5-parallel/1.12.2.9
-export CMAKE_PREFIX_PATH=${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/c-blosc-1.21.1:$CMAKE_PREFIX_PATH
-export CMAKE_PREFIX_PATH=${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/adios2-2.10.2:$CMAKE_PREFIX_PATH
+export CMAKE_PREFIX_PATH=${CFS}/${proj}/${USER}/sw/perlmutter/gpu/c-blosc-1.21.1:$CMAKE_PREFIX_PATH
+export CMAKE_PREFIX_PATH=${CFS}/${proj}/${USER}/sw/perlmutter/gpu/adios2-2.10.2:$CMAKE_PREFIX_PATH
 
-export LD_LIBRARY_PATH=${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/c-blosc-1.21.1/lib64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/adios2-2.10.2/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${CFS}/${proj}/${USER}/sw/perlmutter/gpu/c-blosc-1.21.1/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${CFS}/${proj}/${USER}/sw/perlmutter/gpu/adios2-2.10.2/lib64:$LD_LIBRARY_PATH
 
-export PATH=${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/adios2-2.10.2/bin:${PATH}
+export PATH=${CFS}/${proj}/${USER}/sw/perlmutter/gpu/adios2-2.10.2/bin:${PATH}
 
 # optional: CCache
-export PATH=${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/ccache-4.10.2:$PATH
+export PATH=${CFS}/${proj}/${USER}/sw/perlmutter/gpu/ccache-4.10.2:$PATH
 
 # optional: for Python bindings or libEnsemble
 module load cray-python/3.11.5
 
-if [ -d "${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/venvs/impactx" ]
+if [ -d "${CFS}/${proj}/${USER}/sw/perlmutter/gpu/venvs/impactx" ]
 then
-  source ${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/venvs/impactx/bin/activate
+  source ${CFS}/${proj}/${USER}/sw/perlmutter/gpu/venvs/impactx/bin/activate
 fi
 
 # an alias to request an interactive batch node for one hour
 #   for parallel execution, start on the batch node: srun <command>
-alias getNode="salloc -N 1 --ntasks-per-node=4 -t 1:00:00 -q interactive -C gpu --gpu-bind=none -c 32 -G 4 -A $proj"
+alias getNode="salloc -N 1 --ntasks-per-node=4 -t 1:00:00 -q interactive -C gpu --gpu-bind=none -c 32 -G 4 -A ${proj}_g"
 # an alias to run a command on a batch node for up to 30min
 #   usage: runNode <command>
-alias runNode="srun -N 1 --ntasks-per-node=4 -t 0:30:00 -q interactive -C gpu --gpu-bind=none -c 32 -G 4 -A $proj"
+alias runNode="srun -N 1 --ntasks-per-node=4 -t 0:30:00 -q interactive -C gpu --gpu-bind=none -c 32 -G 4 -A ${proj}_g"
 
 # necessary to use CUDA-Aware MPI and run a job
 export CRAY_ACCEL_TARGET=nvidia80

@@ -54,14 +54,16 @@ On Perlmutter, you can run either on GPU nodes with fast A100 GPUs (recommended)
             :language: bash
 
       Edit the 2nd line of this script, which sets the ``export proj=""`` variable.
-      Perlmutter GPU projects must end in ``..._g``.
       For example, if you are member of the project ``m3239``, then run ``nano $HOME/perlmutter_gpu_impactx.profile`` and edit line 2 to read:
 
       .. code-block:: bash
 
-         export proj="m3239_g"
+         export proj="m3239"
 
       Exit the ``nano`` editor with ``Ctrl`` + ``O`` (save) and then ``Ctrl`` + ``X`` (exit).
+      With that setting, ImpactX will be built and installed under ``$CFS/m3239/$USER/sw/perlmutter/gpu``.
+      Note that for running on GPUs, you will specify the project in run scripts (``-A`` argument) with
+      a ``_g`` suffix, like ``m3239_g``.
 
       .. important::
 
@@ -76,7 +78,7 @@ On Perlmutter, you can run either on GPU nodes with fast A100 GPUs (recommended)
       .. code-block:: bash
 
          bash $HOME/src/impactx/docs/source/install/hpc/perlmutter-nersc/install_gpu_dependencies.sh
-         source ${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/venvs/impactx/bin/activate
+         source ${CFS}/${proj}/${USER}/sw/perlmutter/gpu/venvs/impactx/bin/activate
 
       .. dropdown:: Script Details
          :color: light
@@ -106,6 +108,7 @@ On Perlmutter, you can run either on GPU nodes with fast A100 GPUs (recommended)
 
       Edit the 2nd line of this script, which sets the ``export proj=""`` variable.
       For example, if you are member of the project ``m3239``, then run ``nano $HOME/perlmutter_cpu_impactx.profile`` and edit line 2 to read:
+      With that setting, ImpactX will be built and installed under ``$CFS/m3239/$USER/sw/perlmutter/cpu``.
 
       .. code-block:: bash
 

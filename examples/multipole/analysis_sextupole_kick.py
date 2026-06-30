@@ -29,7 +29,7 @@ pyi = initial_sort["momentum_y"]
 ti = initial_sort["position_t"]
 pti = initial_sort["momentum_t"]
 
-# Predicted momentum kick, from MAD-X user guide
+# Predicted momentum kick, from MAD-X user guide (equation 1.15)
 
 px_predicted = K_normal / 2.0 * (yi**2 - xi**2) + K_skew * xi * yi
 py_predicted = K_skew / 2.0 * (xi**2 - yi**2) + K_normal * xi * yi

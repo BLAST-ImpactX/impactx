@@ -2140,3 +2140,11 @@ add_impactx_test(exact-cfbend-spin-scaling.py
     examples/spin_tracking/analysis_cfbend_spin_scaling.py
     OFF  # no plot script yet
 )
+
+# Benchmark a Single Sextupole Kick ###################
+add_impactx_test(sextupole-kick.py
+    examples/multipole/run_sextupole_kick.py
+    ON    # ImpactX MPI-parallel
+    examples/multipole/analysis_sextupole_kick.py
+    OFF  # no plot script yet
+)

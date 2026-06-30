@@ -54,7 +54,7 @@ We run the following script to analyze correctness:
 Benchmark a single sextupole kick
 ==================================
 
-This test tracks a set of ... initial conditions through a single, thin sextupole, and compares the result against the kick described in the MAD-X documentation, checking the strength definitions for consistency.
+This test tracks a set of 30 initial conditions through a single, thin sextupole, and compares the result against the kick described in the MAD-X documentation, checking the strength definitions for consistency.
 
 We use a 2 GeV electron beam.  The initial conditions form an increasing sequence of horizontal coordinates x, with y = px = py = pt = 0.
 

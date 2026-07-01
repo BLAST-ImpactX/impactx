@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import PyNAFF as pnf
-from distribution_gsi import get_reference_params, get_distribution
+from distribution_gsi import get_distribution, get_reference_params
 
 import amrex.space3d as amr
 from impactx import ImpactX, elements

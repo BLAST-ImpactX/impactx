@@ -1,11 +1,12 @@
 from impactx import distribution, twiss
 
+
 def get_reference_params():
     # beam parameters
     kin_energy_MeV = 11.4  # reference kinetic energy
-    #bunch_charge_C = 4.4e-9  #This works with 10K particles.  With 100K particles, it is too high.
-    #bunch_charge_C = 3.7e-9  #4 nC = 0.24, 3.5 nC = 0.26..)
-    bunch_charge_C = 4.2e-9  #Try this with 100K particles. 3.7 nC gives 0.26, increase. 4 nC gives 2.55, increase
+    # bunch_charge_C = 4.4e-9  #This works with 10K particles.  With 100K particles, it is too high.
+    # bunch_charge_C = 3.7e-9  #4 nC = 0.24, 3.5 nC = 0.26..)
+    bunch_charge_C = 4.2e-9  # Try this with 100K particles. 3.7 nC gives 0.26, increase. 4 nC gives 2.55, increase
     beam_current_A = 1.5  # used with 2D space charge
     charge_qe = 1.0  # particle charge
 
@@ -35,11 +36,11 @@ def get_distribution():
             alpha_y=0.4270522414,
             alpha_t=0.0,
             dispersion_x=12.59966194,
-            dispersion_px=-2.106017322
-        )
-       ,cutX=5.5,
+            dispersion_px=-2.106017322,
+        ),
+        cutX=5.5,
         cutY=5.5,
-        cutT=5.5
+        cutT=5.5,
     )
 
     return distr

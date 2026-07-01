@@ -21,10 +21,10 @@ sim = ImpactX()
 sim.particle_shape = 2  # B-spline order
 
 # to use 2.5D Gaussian solver
-#sim.space_charge = "Gauss2p5D"
-#sim.space_charge_gauss_nint = 101
-#sim.space_charge_gauss_charge_z_bins = 129
-#sim.space_charge_gauss_taylor_delta = 0.01
+# sim.space_charge = "Gauss2p5D"
+# sim.space_charge_gauss_nint = 101
+# sim.space_charge_gauss_charge_z_bins = 129
+# sim.space_charge_gauss_taylor_delta = 0.01
 
 # to use 2.5D PIC solver
 sim.max_level = 0
@@ -54,7 +54,7 @@ xmin = 0.01 * sigx
 xmax = 5.0 * sigx  # maximum x-coordinate of test particles sampled
 
 #   particle bunch
-#npart = 100000
+# npart = 100000
 npart = 10000
 sim.add_particles(bunch_charge_C, distr, npart)
 
@@ -99,7 +99,7 @@ sextupole = elements.Multipole(name="sextupole", multipole=3, K_normal=K2L, K_sk
 rf = elements.ShortRF(name="rf", V=2.3184782e-8, freq=1.0e4, phase=-90.0)
 
 # Aperture to catch large-amplitude particles
-#apert = elements.Aperture(name="apert", aperture_x=1.0, aperture_y=1.0)
+# apert = elements.Aperture(name="apert", aperture_x=1.0, aperture_y=1.0)
 apert = elements.Aperture(name="apert", aperture_x=0.1, aperture_y=0.1)
 
 # add beam diagnostics
@@ -110,21 +110,22 @@ cell = [dr1, e1, sbend1, e2, dr2, e1, sbend1, e2, dr3, qs1f, dr4, qs2d, dr5, qs3
 chain = 11 * cell
 
 # Construct lattice
-#sim.lattice.append(monitor)  # no monitor to reduce I/O
+# sim.lattice.append(monitor)  # no monitor to reduce I/O
 sim.lattice.append(rf)
 sim.lattice.extend(cell)
-#sim.lattice.append(sextupole) # comment this line to track in linear lattice
+# sim.lattice.append(sextupole) # comment this line to track in linear lattice
 sim.lattice.extend(chain)
 sim.lattice.append(rf)
 sim.lattice.append(apert)
 
 # number of turns in the ring
-#sim.periods = 1024
+# sim.periods = 1024
 sim.periods = 500
 
 turn_arr = []
 test_data = []
 mm_scale = 1.0e3
+
 
 def hook_before_period(sim):
     turn = sim.tracking_period
@@ -179,7 +180,7 @@ for idcpu, track in grouped_by_idcpu:
         continue
     x0_mm.append(xarr[0] * mm_scale)
     tunes.append(out[0, 1])
-    #plt.scatter(xarr, pxarr, s=5)
+    # plt.scatter(xarr, pxarr, s=5)
 
 
 plt.scatter(x0_mm, tunes, s=5)  # single draw call (was 1 per particle)

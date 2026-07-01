@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import PyNAFF as pnf
-from distribution_gsi import *
+from distribution_gsi import get_reference_params, get_distribution
 
 import amrex.space3d as amr
 from impactx import ImpactX, elements
@@ -46,6 +46,7 @@ sim.init_grids()
 
 #  set reference particle
 ref = sim.beam.ref
+kin_energy_MeV, bunch_charge_C, charge_qe = get_reference_params()
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 qm_eev = ref.charge_qe / (ref.mass_MeV * 1.0e6)  # electron charge/mass in e / eV
 
@@ -56,7 +57,7 @@ xmax = 5.0 * sigx  # maximum x-coordinate of test particles sampled
 #   particle bunch
 # npart = 100000
 npart = 10000
-sim.add_particles(bunch_charge_C, distr, npart)
+sim.add_particles(bunch_charge_C, get_distribution(), npart)
 
 # set test particles
 pc = sim.particle_container()

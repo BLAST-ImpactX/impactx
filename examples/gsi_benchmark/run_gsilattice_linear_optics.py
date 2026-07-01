@@ -7,7 +7,7 @@
 # -*- coding: utf-8 -*-
 
 
-from distribution_gsi import *
+from distribution_gsi import get_reference_params, get_distribution
 
 from impactx import ImpactX, elements
 
@@ -22,10 +22,11 @@ sim.init_grids()
 
 # set reference particle
 ref = sim.beam.ref
+kin_energy_MeV, bunch_charge_C, charge_qe = get_reference_params()
 ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 # initialize the beam envelope
-sim.init_envelope(ref, distr, bunch_charge_C)
+sim.init_envelope(ref, get_distribution(), bunch_charge_C)
 
 # initialize accelerator lattice
 ns = 10  # number of slices per ds in the element

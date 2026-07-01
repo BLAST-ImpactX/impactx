@@ -7,7 +7,6 @@ def get_reference_params():
     # bunch_charge_C = 4.4e-9  #This works with 10K particles.  With 100K particles, it is too high.
     # bunch_charge_C = 3.7e-9  #4 nC = 0.24, 3.5 nC = 0.26..)
     bunch_charge_C = 4.2e-9  # Try this with 100K particles. 3.7 nC gives 0.26, increase. 4 nC gives 2.55, increase
-    beam_current_A = 1.5  # used with 2D space charge
     charge_qe = 1.0  # particle charge
 
     return kin_energy_MeV, bunch_charge_C, charge_qe

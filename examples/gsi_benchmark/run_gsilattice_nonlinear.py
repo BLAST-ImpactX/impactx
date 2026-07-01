@@ -8,7 +8,7 @@
 
 import numpy as np
 import pandas as pd
-from distribution_gsi import get_reference_params, get_distribution
+from distribution_gsi import get_reference_params
 
 import amrex.space3d as amr
 from impactx import ImpactX, elements

@@ -7,7 +7,7 @@
 # -*- coding: utf-8 -*-
 
 
-from distribution_gsi import get_reference_params, get_distribution
+from distribution_gsi import get_distribution, get_reference_params
 
 from impactx import ImpactX, elements
 

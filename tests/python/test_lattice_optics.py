@@ -68,3 +68,53 @@ def test_lattice_linear_map():
     # Now the user explicitly assumes that undefined maps are identity maps
     R = lattice.transfer_map(ref, fallback_identity_map=True)
     assert np.allclose(R.to_numpy(), R_expected, rtol=rtol, atol=atol)
+
+
+def test_programmable_linear_hook():
+    """When Programmable.linear_map hook is set, it must be used by
+    transfer_map. When it is unset, transfer_map must raise."""
+    from impactx import Map6x6
+
+    ref = RefPart()
+    ref.set_species("electron").set_kin_energy_MeV(100.0)
+
+    # A user-supplied linear map: a thin quad kick with strength k_user.
+    k_user = 0.7
+    R_user = np.eye(6)
+    R_user[1, 0] = -k_user
+    R_user[3, 2] = -k_user
+
+    def my_map(_refpart):
+        out = Map6x6()
+        for i in range(6):
+            for j in range(6):
+                out[i + 1, j + 1] = float(R_user[i, j])
+        return out
+
+    # Without hook: must raise. (extend() copies the element into the
+    # lattice's variant, so any subsequent modification of the local
+    # Python handle does not propagate into the lattice.)
+    lattice_no_hook = elements.KnownElementsList()
+    lattice_no_hook.extend(
+        [elements.Drift(ds=0.1), elements.Programmable(), elements.Drift(ds=0.1)]
+    )
+    with pytest.raises(RuntimeError):
+        lattice_no_hook.transfer_map(ref)
+
+    # With hook set before insertion: drift(0.1) * R_user * drift(0.1).
+    prog = elements.Programmable()
+    prog.linear_map = my_map
+    lattice = elements.KnownElementsList()
+    lattice.extend([elements.Drift(ds=0.1), prog, elements.Drift(ds=0.1)])
+    R = lattice.transfer_map(ref).to_numpy()
+
+    pt = ref.pt
+    bg2 = pt * pt - 1.0
+    D = np.eye(6)
+    D[0, 1] = 0.1
+    D[2, 3] = 0.1
+    D[4, 5] = 0.1 / bg2
+    R_expected = D @ R_user @ D
+
+    tol = 1.0e-4 if Config.precision == "SINGLE" else 1.0e-10
+    assert np.max(np.abs(R - R_expected)) < tol

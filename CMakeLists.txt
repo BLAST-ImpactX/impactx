@@ -250,21 +250,13 @@ if(ImpactX_PYTHON)
     # openPMD/HDF5), the duplicate exported symbols cross-bind, one has two
     # HDF5/openPMD instances in one process, UBs and crashes.
     # Export only the module init symbol so each extension keeps its
-    # dependencies private. Windows does not auto-export, so it needs nothing.
-    # Emscripten needs -sSIDE_MODULE=2 (Pyodide's default -sSIDE_MODULE=1 whole-
-    # archives and re-exports every symbol, so hidden visibility alone cannot
-    # hide HDF5) together with the static deps built -fvisibility=hidden (see the
-    # wheels builder). AMReX is deliberately NOT exported: it stays shared
-    # because it is built default-visible and pyImpactX imports pyAMReX first, so
-    # our GOT references bind to pyAMReX's exported AMReX.
+    # dependencies private.
+    # Windows does not auto-export and Emscripten links a single namespace, so
+    # neither needs this.
     if(APPLE)
         target_link_options(pyImpactX PRIVATE
             "LINKER:-exported_symbol,_PyInit_impactx_pybind")
-    elseif(EMSCRIPTEN)
-        target_link_options(pyImpactX PRIVATE
-            "SHELL:-sSIDE_MODULE=2"
-            "SHELL:-sEXPORTED_FUNCTIONS=_PyInit_impactx_pybind")
-    elseif(NOT WIN32)
+    elseif(NOT WIN32 AND NOT EMSCRIPTEN)
         target_link_options(pyImpactX PRIVATE "LINKER:--exclude-libs,ALL")
     endif()
 

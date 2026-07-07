@@ -58,3 +58,13 @@ We run the following script to analyze correctness:
       .. literalinclude:: run_sc_kick_PIC2p5D.py
          :language: python3
          :caption: You can copy this file from ``examples/space_charge_gaussian_kick/analysis_sc_kick_PIC2p5D.py``.
+
+
+.. _examples-kick-Gauss2p5D-long-kick-off:
+
+Turning Off the Longitudinal Kick in the 2.5D Gaussian Space Charge Model
+=========================================================================
+
+This test is identical to the test examples-kick-Gauss2p5D, except that the longitudinal space charge kick is turned off.
+
+The initial and final values of pt should agree to within a small tolerance.

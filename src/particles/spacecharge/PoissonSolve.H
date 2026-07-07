@@ -26,12 +26,15 @@ namespace impactx::particles::spacecharge
      *
      * @param[in] pc container of the particles that deposited rho
      * @param[in] rho charge per level
+     * @param[out] rho_2d the x-y projected charge per level (populated for the
+     *                    2D space-charge models, e.g. to expose via ``sim.rho``)
      * @param[inout] phi scalar potential per level
      * @param[in] rel_ref_ratio mesh refinement ratio between levels
      */
     void PoissonSolve (
         ImpactXParticleContainer const & pc,
         std::unordered_map<int, amrex::MultiFab> & rho,
+        std::unordered_map<int, amrex::MultiFab> & rho_2d,
         std::unordered_map<int, amrex::MultiFab> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     );

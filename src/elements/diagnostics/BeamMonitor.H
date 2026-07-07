@@ -35,7 +35,7 @@ namespace detail
 
         ImpactXParticleCounter (ParticleContainer & pc);
 
-        unsigned long GetTotalNumParticles () { return m_Total; }
+        unsigned long long GetTotalNumParticles () { return m_Total; }
 
         std::vector<unsigned long long> m_ParticleOffsetAtRank;
         std::vector<unsigned long long> m_ParticleSizeAtRank;
@@ -46,7 +46,7 @@ namespace detail
         * @param[out] offset particle offset over all, mpi-global amrex fabs
         * @param[out] sum number of all particles from all amrex fabs
         */
-        void GetParticleOffsetOfProcessor (const long &numParticles,
+        void GetParticleOffsetOfProcessor (amrex::Long const &numParticles,
                                            unsigned long long &offset,
                                            unsigned long long &sum) const;
 

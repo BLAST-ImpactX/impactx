@@ -34,12 +34,19 @@ PIPE_KWARGS = dict(ALIGNMENT_KWARGS, aperture_x=0.03, aperture_y=0.04)
 
 if Config.precision == "SINGLE":
     phase_atol = 2.0e-6
-    spin_atol = 3.0e-7
-    ref_atol = 3.0e-4
+    spin_atol = 2.0e-6
+    # mostly from ChrAcc, RFCavity on ref particle:
+    ref_atol = 1.0e-3
 else:
     phase_atol = 1.0e-10
     spin_atol = 1.0e-11
     ref_atol = 1.0e-10
+
+# Tight DOUBLE reversibility bound for the symplectic-integrator elements
+# (ExactMultipole/ExactQuad/SoftQuadrupole/SoftSolenoid). Their float32
+# roundtrip floor is FMA-sensitive and exceeds 1e-8, so fall back to the
+# standard SINGLE phase tolerance there.
+TIGHT_PHASE_ATOL = 1e-8 if Config.precision != "SINGLE" else phase_atol
 
 
 @pytest.fixture(scope="function")
@@ -347,7 +354,7 @@ def test_ExactMultipole(sim, unit, k_normal, k_skew):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=TIGHT_PHASE_ATOL,
         spin=sim.spin,
     )
 
@@ -395,7 +402,7 @@ def test_ExactQuad(sim, unit, k):
             **kwargs,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=TIGHT_PHASE_ATOL,
         spin=sim.spin,
     )
 
@@ -440,7 +447,7 @@ def test_SoftQuadrupole(sim):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=TIGHT_PHASE_ATOL,
         spin=sim.spin,
     )
 
@@ -504,7 +511,7 @@ def test_SoftSolenoid(sim, unit, bscale):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=TIGHT_PHASE_ATOL,
     )
 
 

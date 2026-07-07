@@ -75,6 +75,9 @@ namespace impactx::initialization
 
             /** charge density per level */
             std::unordered_map<int, amrex::MultiFab> m_rho;
+            /** charge density projected to 2D (x-y) per level, for the 2D
+             *  space-charge models; (re)derived from m_rho on access */
+            std::unordered_map<int, amrex::MultiFab> m_rho_2d;
             /** scalar potential per level */
             std::unordered_map<int, amrex::MultiFab> m_phi;
             /** space charge field (vector) per level */

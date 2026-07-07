@@ -30,14 +30,15 @@ namespace impactx
      *  depending on whether the element type T_Element is vectorized.
      *
      * @tparam T_Element the element type
+     * @tparam UseSimd default-on if AMREX_USE_SIMD is set, allows disabling SIMD for performance corner cases
      * @tparam F the functor type
      * @param n the number of items to iterate over
      * @param f the functor to execute
      */
-    template <typename T_Element, typename F>
+    template <typename T_Element, bool UseSimd = true, typename F>
     void ParallelFor (int n, F&& f) {
 #ifdef AMREX_USE_SIMD
-        if constexpr (amrex::simd::is_vectorized<T_Element>) {
+        if constexpr (UseSimd && amrex::simd::is_vectorized<T_Element>) {
             amrex::ParallelForSIMD<T_Element::simd_width>(n, std::forward<F>(f));
         } else
 #endif
@@ -51,6 +52,30 @@ namespace impactx::elements::mixin
 {
 namespace detail
 {
+    /** Per-push SIMD policy.
+     *
+     * Whether an element's phase space push (`operator()`) or spin
+     * (`spin_and_phasespace_push`) push should be vectorized on CPU.
+     *
+     * By default a push follows the element's overall vectorization
+     * (@see amrex::simd::is_vectorized). An element may override the choice
+     * independently per push kind by declaring a `static constexpr bool`
+     * member `simd_ps` and/or `simd_spin`. This allows, e.g., vectorizing
+     * the heavy spin push while keeping a light no-spin push
+     * scalar in double precision (where SIMD has a small overhead).
+     */
+    template <typename T, typename = void>
+    struct push_simd_ps : std::bool_constant<amrex::simd::is_vectorized<T>> {};
+    template <typename T>
+    struct push_simd_ps<T, std::void_t<decltype(T::simd_ps)>>
+        : std::bool_constant<T::simd_ps> {};
+
+    template <typename T, typename = void>
+    struct push_simd_spin : std::bool_constant<amrex::simd::is_vectorized<T>> {};
+    template <typename T>
+    struct push_simd_spin<T, std::void_t<decltype(T::simd_spin)>>
+        : std::bool_constant<T::simd_spin> {};
+
     /** Load particle data from array pointers
      *
      * On GPU and CPU w/o SIMD, this dereferences a particle property at the
@@ -137,7 +162,10 @@ namespace detail
     )
     {
 #ifdef AMREX_USE_SIMD
-        if constexpr (!std::is_integral_v<IndexType>) {
+        // a non-integral index means a SIMD lane-batch was loaded into registers
+        constexpr bool is_simd = !std::is_integral_v<IndexType>;
+
+        if constexpr (is_simd) {
             if constexpr (ForceWriteback || amrex::simd::is_nth_arg_non_const(P_Method, N)) {
                 // write back to memory
                 // TODO stdx::vector_aligned needs alignment guarantees
@@ -238,6 +266,11 @@ namespace detail
             decltype(auto) sz = load_pdata(m_part_sz, i);
             decltype(auto) idcpu = load_pdata(m_part_idcpu, i);
 
+#ifdef AMREX_USE_SIMD
+            // a non-integral index means a SIMD lane-batch was loaded into registers
+            constexpr bool is_simd = !std::is_integral_v<IndexType>;
+#endif
+
             // pre/post-push functionality declared by mixin classes
             constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
             constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
@@ -264,7 +297,7 @@ namespace detail
 
             // SIMD: write back to memory
 #ifdef AMREX_USE_SIMD
-            if constexpr (amrex::simd::is_vectorized<T_Element>)
+            if constexpr (is_simd)
             {
                 using RealType = std::decay_t<decltype(x)>;
                 using IdCpuType = std::decay_t<decltype(idcpu)>;
@@ -384,6 +417,11 @@ namespace detail
             decltype(auto) pt = load_pdata(m_part_pt, i);
             decltype(auto) idcpu = load_pdata(m_part_idcpu, i);
 
+#ifdef AMREX_USE_SIMD
+            // a non-integral index means a SIMD lane-batch was loaded into registers
+            constexpr bool is_simd = !std::is_integral_v<IndexType>;
+#endif
+
             // pre/post-push functionality declared by mixin classes
             constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
             constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
@@ -408,7 +446,7 @@ namespace detail
 
             // write back to memory
 #ifdef AMREX_USE_SIMD
-            if constexpr (amrex::simd::is_vectorized<T_Element>)
+            if constexpr (is_simd)
             {
                 using RealType = std::decay_t<decltype(x)>;
                 using IdCpuType = std::decay_t<decltype(idcpu)>;
@@ -502,7 +540,7 @@ namespace detail
                 dispatch_misalignment(element, [&](auto do_alignment) {
                     detail::PushSingleParticleSpin<T_Element, decltype(do_alignment)::value> const pushSingleParticle(
                         element, part_x, part_y, part_t, part_px, part_py, part_pt, part_sx, part_sy, part_sz, part_idcpu, ref_part);
-                    impactx::ParallelFor<T_Element>(np, pushSingleParticle);
+                    impactx::ParallelFor<T_Element, detail::push_simd_spin<T_Element>::value>(np, pushSingleParticle);
                 });
             } else {
                 throw std::runtime_error("Spin transport requested but element does not implement the `SpinTransport` interface class!");
@@ -513,7 +551,7 @@ namespace detail
             dispatch_misalignment(element, [&](auto do_alignment) {
                 detail::PushSingleParticle<T_Element, decltype(do_alignment)::value> const pushSingleParticle(
                     element, part_x, part_y, part_t, part_px, part_py, part_pt, part_idcpu, ref_part);
-                impactx::ParallelFor<T_Element>(np, pushSingleParticle);
+                impactx::ParallelFor<T_Element, detail::push_simd_ps<T_Element>::value>(np, pushSingleParticle);
             });
         }
     }

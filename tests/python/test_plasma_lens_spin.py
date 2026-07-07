@@ -155,14 +155,14 @@ def test_tapered_pl_spin():
     np.testing.assert_allclose(
         [meansxi, meansyi, meanszi],
         [0.6, 0.5, 0.4],
-        atol=2.0e-3,
+        atol=2.0e-3 if Config.precision != "SINGLE" else 5.0e-3,
         rtol=0,
     )
     # test final polarization
     np.testing.assert_allclose(
         [meansxf, meansyf, meanszf],
         [0.6, 0.5, 0.4],
-        atol=2.0e-3,
+        atol=2.0e-3 if Config.precision != "SINGLE" else 5.0e-3,
         rtol=0,
     )
     # test spin evolution

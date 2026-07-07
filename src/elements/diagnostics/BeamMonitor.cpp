@@ -47,10 +47,10 @@ namespace detail {
 
         for (auto currentLevel = 0; currentLevel <= pc.finestLevel(); currentLevel++)
         {
-            long numParticles = 0; // numParticles in this processor
+            amrex::Long numParticles = 0;  // numParticles on this MPI rank
 
             for (ParticleIter pti(pc, currentLevel); pti.isValid(); ++pti) {
-                auto numParticleOnTile = pti.numParticles();
+                amrex::Long const numParticleOnTile = pti.numParticles();
                 numParticles += numParticleOnTile;
             }
 
@@ -83,14 +83,14 @@ namespace detail {
     //
     void
     ImpactXParticleCounter::GetParticleOffsetOfProcessor (
-            const long& numParticles,
+            amrex::Long const & numParticles,
             unsigned long long& offset,
             unsigned long long& sum
     ) const
     {
         offset = 0;
 #if defined(AMREX_USE_MPI)
-        std::vector<long> result(m_MPISize, 0);
+        std::vector<amrex::Long> result(m_MPISize, 0);
     amrex::ParallelGather::Gather (numParticles, result.data(), -1, amrex::ParallelDescriptor::Communicator());
 
     sum = 0;

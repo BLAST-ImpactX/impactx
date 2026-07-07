@@ -26,6 +26,8 @@ namespace impactx::particles::wakefields
     /** Function to handle CSR bending process including charge deposition,
      * mean transverse position calculation, wakefield generation, and convolution.
      *
+     * Returns immediately if slice_ds is zero.
+     *
      * @param[in] particle_container the particle species container
      * @param[in] element_variant variant type of the lattice element
      * @param[in] slice_ds slice spacing along s
@@ -39,6 +41,8 @@ namespace impactx::particles::wakefields
         bool print_wakefield = false
     )
     {
+        if (slice_ds == 0.0) { return; }
+
         BL_PROFILE("impactx::particles::wakefields::HandleWakefield")
 
         amrex::ParmParse pp_algo("algo");

@@ -105,9 +105,13 @@ Collective Effects & Overall Simulation Parameters
 
       Longitudinal space charge scale for the Gauss2p5D space charge model.
       This is an approximation that only influences the longitudinal momentum (``pt``) kick.
-      If not set, it defaults to :math:`6 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      If not set, it defaults to :math:`1.103 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
       current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
-      typical value when comparing to a 3D model.
+      typical value when comparing to a 3D model.  This value minimizes the L2-norm of the error in
+      the on-axis field Ez in the case of a long 3D Gaussian bunch.
+      In a perfectly conducting pipe with a long bunch, where the bunch length in the
+      rest frame is significantly larger than the pipe radius, it is recommended to set
+      the longitudinal scale length to the pipe radius in the input file.
 
    .. py:property:: space_charge_num_longitudinal_bins
 
@@ -596,12 +600,24 @@ For step-by-step recipes on how to access particle data live during a simulation
 
       Add new particles to the container for fixed s.
 
-      Either the total charge (bunch_charge) or the weight of each
+      Either the charge (bunch_charge) of the particles added in this call, or the weight of each
       particle (w) must be provided.
 
-      Note: This can only be used *after* the initialization (grids) have
-            been created, meaning after the call to :py:meth:`ImpactX.init_grids`
-            has been made in the ImpactX class.
+      .. note::
+
+         This can only be used *after* the initialization (grids) have
+         been created, meaning after the call to :py:meth:`ImpactX.init_grids`
+         has been made in the ImpactX class.
+
+      .. attention::
+
+         In MPI-parallel simulations, ``beam.add_n_particles(...)`` is local to the MPI rank, spatial locality does not matter.
+         Thus, you can add particles at any MPI rank, e.g., equally chuncked up for perfect load balancing.
+
+         You do NOT want to add the same unique particle at multiple MPI ranks.
+         If you use the ``bunch_charge`` argument, then it will be interpreted as the charge of particles on the current rank.
+
+         When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
 
       :param x: positions in x
       :param y: positions in y

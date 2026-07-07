@@ -28,6 +28,7 @@ namespace impactx::particles::spacecharge
     void PoissonSolve (
         ImpactXParticleContainer const & pc,
         std::unordered_map<int, amrex::MultiFab> & rho,
+        std::unordered_map<int, amrex::MultiFab> & rho_2d_out,
         std::unordered_map<int, amrex::MultiFab> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     )
@@ -90,12 +91,12 @@ namespace impactx::particles::spacecharge
         pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_max_iters);
         pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
 
-        // flatten rho to 2D
-        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
+        // flatten rho to 2D; store it in the output so it can be accessed after
+        // the solve (e.g. via sim.rho), like the solved potential phi
         if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
             auto geom_3d = pc.GetParGDB()->Geom();
             amrex::Box domain_3d = geom_3d[0].Domain();  // whole simulation index space (level 0)
-            rho_2d = flatten_charge_to_2D(rho, domain_3d);
+            rho_2d_out = project_charge_to_2D(rho, domain_3d);
         }
 
         // create a vector to our fields, sorted by level
@@ -112,14 +113,14 @@ namespace impactx::particles::spacecharge
                     sorted_phi.emplace_back(&phi[lev]);
                 } else {
                     // 2D phi
-                    auto & r2d = rho_2d[lev].second;
+                    auto & r2d = rho_2d_out[lev];
                     auto nGrow = phi[lev].nGrowVect();
                     nGrow[2] = 0;
                     phi_2d[lev].define(r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow);
                     sorted_phi.emplace_back(&phi_2d[lev]);
                 }
 
-                sorted_rho.emplace_back(&rho_2d[lev].second);
+                sorted_rho.emplace_back(&rho_2d_out[lev]);
             }
             else if (space_charge == SpaceChargeAlgo::True_3D) {
                 sorted_rho.emplace_back(&rho[lev]);

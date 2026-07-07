@@ -33,6 +33,8 @@ namespace impactx::particles::spacecharge
         amrex::Real slice_ds
     )
     {
+        if (slice_ds == 0.0) { return; }
+
         BL_PROFILE("impactx::particles::wakefields::HandleSpacecharge")
 
         auto space_charge = get_space_charge_algo();
@@ -43,7 +45,7 @@ namespace impactx::particles::spacecharge
         // turn off if less than 2 particles
         if (amr_data->track_particles.m_particle_container->TotalNumberOfParticles(true, false) < 2) { return; }
 
-        if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D)
+        if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D && space_charge != SpaceChargeAlgo::Gauss2p5D)
         {
             // transform from x',y',t to x,y,z
             transformation::CoordinateTransformation(
@@ -83,6 +85,7 @@ namespace impactx::particles::spacecharge
             spacecharge::PoissonSolve(
                 *amr_data->track_particles.m_particle_container,
                 amr_data->track_particles.m_rho,
+                amr_data->track_particles.m_rho_2d,
                 amr_data->track_particles.m_phi,
                 amr_data->refRatio()
             );
@@ -106,7 +109,7 @@ namespace impactx::particles::spacecharge
             );
         }
 
-        if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D)
+        if (space_charge != SpaceChargeAlgo::True_2D && space_charge != SpaceChargeAlgo::True_2p5D && space_charge != SpaceChargeAlgo::Gauss2p5D)
         {
             // transform from x,y,z to x',y',t
             transformation::CoordinateTransformation(

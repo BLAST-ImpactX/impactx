@@ -1807,7 +1807,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
 
       Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
 
-.. py:class:: impactx.elements.Source(distribution, openpmd_path, name)
+.. py:class:: impactx.elements.Source(distribution, openpmd_path, active_once=True, name=None)
 
    A particle source.
    Currently, this only supports openPMD files from our :py:class:`impactx.elements.BeamMonitor`
@@ -1816,6 +1816,14 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param openpmd_path: path to the openPMD series
    :param active_once: Inject particles only for the first lattice period. Default: ``True``
    :param name: an optional name for the element
+
+   .. attention::
+
+      In MPI-parallel simulations, reading the particles in the source file is distributed over all MPI ranks:
+      each of the N ranks reads a contiguous chunk of 1/N-th of the particles, independent of their position.
+      This balances the I/O and memory load between the ranks.
+
+      When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
 
 .. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)
 

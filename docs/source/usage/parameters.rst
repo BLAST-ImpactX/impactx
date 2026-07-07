@@ -905,6 +905,10 @@ Typically at the beginning of a beam line.
 
 Currently, this only supports openPMD files from our ``beam_monitor``.
 
+In `MPI-parallel <https://www.mpi-forum.org>`__ runs, reading the particles in the source file is distributed over all MPI ranks:
+each of the :math:`N` ranks reads a contiguous chunk of :math:`1/N`-th of the particles, independent of their position.
+When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
+
 * ``<element_name>.distribution`` (``string``)
   Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
 * ``<element_name>.openpmd_path`` (``string``)

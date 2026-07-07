@@ -22,6 +22,7 @@ This example can be run **either** as:
 * ImpactX **executable** using an input file: ``impactx input_solenoid.in``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+In MPI-parallel runs, the ``source`` element distributes reading of the particles in the openPMD file over all MPI ranks (each rank reads :math:`1/N`-th of the particles).
 
 .. tab-set::
 

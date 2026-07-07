@@ -62,8 +62,6 @@ On Perlmutter, you can run either on GPU nodes with fast A100 GPUs (recommended)
 
       Exit the ``nano`` editor with ``Ctrl`` + ``O`` (save) and then ``Ctrl`` + ``X`` (exit).
       With that setting, ImpactX will be built and installed under ``$CFS/m3239/$USER/sw/perlmutter/gpu``.
-      Note that for running on GPUs, you will specify the project in run scripts (``-A`` argument) with
-      a ``_g`` suffix, like ``m3239_g``.
 
       .. important::
 

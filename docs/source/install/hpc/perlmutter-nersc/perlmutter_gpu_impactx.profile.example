@@ -1,6 +1,5 @@
 # please set your project account
 export proj=""  # change me!
-# When you submit a GPU job, the account name will end in "..._g"
 
 # remembers the location of this script
 export MY_PROFILE=$(cd $(dirname $BASH_SOURCE) && pwd)"/"$(basename $BASH_SOURCE)

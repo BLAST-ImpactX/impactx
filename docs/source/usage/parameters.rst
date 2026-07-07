@@ -331,49 +331,49 @@ Lattice Elements
 ^^^^^^^^^^^^
 
 ``aperture`` for a thin collimator element applying a transverse aperture boundary,
-e.g. for an element ``my_aperture.type = aperture``.
+e.g. for an element ``<aperture_name>.type = aperture``.
 This requires these additional parameters:
 
-.. pp:param:: my_aperture.aperture_x/y
-    :link_aliases: my_aperture.aperture_x my_aperture.aperture_y
+.. pp:param:: <aperture_name>.aperture_x/y
+    :link_aliases: <aperture_name>.aperture_x <aperture_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical or rectangular).
 
-.. pp:param:: my_aperture.repeat_x/y
-    :link_aliases: my_aperture.repeat_x my_aperture.repeat_y
+.. pp:param:: <aperture_name>.repeat_x/y
+    :link_aliases: <aperture_name>.repeat_x <aperture_name>.repeat_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical period for repeated aperture masking (inactive by default).
 
-.. pp:param:: my_aperture.shift_odd_x
+.. pp:param:: <aperture_name>.shift_odd_x
     :type: ``boolean``
 
     For hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by ``repeat_x / 2``.
     Use alignment offsets ``dx``, ``dy`` to move the whole mask as needed.
 
-.. pp:param:: my_aperture.shape
+.. pp:param:: <aperture_name>.shape
     :type: ``string``
     :default: ``rectangular``
 
     Shape of the aperture boundary: ``rectangular`` (default) or ``elliptical``.
 
-.. pp:param:: my_aperture.action
+.. pp:param:: <aperture_name>.action
     :type: ``string``
     :default: ``transmit``
 
     Action of the aperture domain: ``transmit`` (default) or ``absorb``.
 
-.. pp:param:: my_aperture.dx/dy
-    :link_aliases: my_aperture.dx my_aperture.dy
+.. pp:param:: <aperture_name>.dx/dy
+    :link_aliases: <aperture_name>.dx <aperture_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_aperture.rotation
+.. pp:param:: <aperture_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -384,17 +384,17 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^
 
 ``beam_monitor`` a beam monitor, writing all beam particles at fixed ``s`` to openPMD files,
-e.g. for an element ``my_monitor.type = beam_monitor``.
+e.g. for an element ``<monitor_name>.type = beam_monitor``.
 If the same element name is used multiple times, then an output series is created with multiple outputs.
 
-.. pp:param:: my_monitor.name
+.. pp:param:: <monitor_name>.name
     :type: ``string``
-    :default: ``my_monitor``
+    :default: ``<monitor_name>``
 
     The output series name to use.
-    By default, output is created under ``<diag.file_prefix>/openPMD/my_monitor.<backend>``.
+    By default, output is created under ``<diag.file_prefix>/openPMD/<monitor_name>.<backend>``.
 
-.. pp:param:: my_monitor.backend
+.. pp:param:: <monitor_name>.backend
     :type: ``string``
     :default: ``default``
 
@@ -403,48 +403,48 @@ If the same element name is used multiple times, then an output series is create
     ``json`` only works with serial/single-rank jobs.
     By default, the first available backend in the order given above is taken.
 
-.. pp:param:: my_monitor.encoding
+.. pp:param:: <monitor_name>.encoding
     :type: ``string``
     :default: ``g``
 
     openPMD `iteration encoding <https://openpmd-api.readthedocs.io/en/0.14.0/usage/concepts.html#iteration-and-series>`__: (v)ariable based, (f)ile based, (g)roup based (default)
     variable based is an `experimental feature with ADIOS2 <https://openpmd-api.readthedocs.io/en/0.14.0/backends/adios2.html#experimental-new-adios2-schema>`__.
 
-.. pp:param:: my_monitor.period_sample_intervals
+.. pp:param:: <monitor_name>.period_sample_intervals
     :type: ``integer``
     :default: ``1``
 
     For periodic lattice, only output every Nth period (turn).
     By default, diagnostics are returned every cycle.
 
-.. pp:param:: my_monitor.nonlinear_lens_invariants
+.. pp:param:: <monitor_name>.nonlinear_lens_invariants
     :type: ``boolean``
     :default: ``false``
 
     Compute and output the invariants H and I within the nonlinear magnetic insert element (see: ``nonlinear_lens``).
     Invariants associated with the nonlinear magnetic insert described by V. Danilov and S. Nagaitsev, PRSTAB 13, 084002 (2010), Sect. V.A.
 
-    .. pp:param:: my_monitor.alpha
+    .. pp:param:: <monitor_name>.alpha
         :type: ``float``
         :unit: dimensionless
 
         Twiss alpha of the bare linear lattice at the location of output for the nonlinear IOTA invariants H and I.
         Horizontal and vertical values must be equal.
 
-    .. pp:param:: my_monitor.beta
+    .. pp:param:: <monitor_name>.beta
         :type: ``float``
         :unit: m
 
         Twiss beta of the bare linear lattice at the location of output for the nonlinear IOTA invariants H and I.
         Horizontal and vertical values must be equal.
 
-    .. pp:param:: my_monitor.tn
+    .. pp:param:: <monitor_name>.tn
         :type: ``float``
         :unit: dimensionless
 
         Dimensionless strength of the IOTA nonlinear magnetic insert element used for computing H and I.
 
-    .. pp:param:: my_monitor.cn
+    .. pp:param:: <monitor_name>.cn
         :type: ``float``
         :unit: m^(1/2)
 
@@ -455,30 +455,30 @@ If the same element name is used multiple times, then an output series is create
 ^^^^^^^^^^^
 
 ``buncher`` for a short RF cavity (linear) bunching element,
-e.g. for an element ``my_buncher.type = buncher``.
+e.g. for an element ``<buncher_name>.type = buncher``.
 This requires these additional parameters:
 
-.. pp:param:: my_buncher.V
+.. pp:param:: <buncher_name>.V
     :type: ``float``
     :unit: dimensionless
 
     Normalized voltage drop across the cavity
     = (maximum voltage drop in Volts) / (speed of light in m/s * magnetic rigidity in T-m).
 
-.. pp:param:: my_buncher.k
+.. pp:param:: <buncher_name>.k
     :type: ``float``
     :unit: 1/m
 
     The RF wavenumber = 2*pi/(RF wavelength in m).
 
-.. pp:param:: my_buncher.dx/dy
-    :link_aliases: my_buncher.dx my_buncher.dy
+.. pp:param:: <buncher_name>.dx/dy
+    :link_aliases: <buncher_name>.dx <buncher_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_buncher.rotation
+.. pp:param:: <buncher_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -489,22 +489,22 @@ This requires these additional parameters:
 ^^^^^^^^^^
 
 ``cfbend`` for a combined function bending magnet,
-e.g. for an element ``my_cfbend.type = cfbend``.
+e.g. for an element ``<cfbend_name>.type = cfbend``.
 This requires these additional parameters:
 
-.. pp:param:: my_cfbend.ds
+.. pp:param:: <cfbend_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_cfbend.rc
+.. pp:param:: <cfbend_name>.rc
     :type: ``float``
     :unit: m
 
     The bend radius.
 
-.. pp:param:: my_cfbend.k
+.. pp:param:: <cfbend_name>.k
     :type: ``float``
     :unit: 1/m^2
 
@@ -513,27 +513,27 @@ This requires these additional parameters:
     * ``k > 0`` horizontal focusing
     * ``k < 0`` horizontal defocusing
 
-.. pp:param:: my_cfbend.dx/dy
-    :link_aliases: my_cfbend.dx my_cfbend.dy
+.. pp:param:: <cfbend_name>.dx/dy
+    :link_aliases: <cfbend_name>.dx <cfbend_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_cfbend.rotation
+.. pp:param:: <cfbend_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_cfbend.aperture_x/y
-    :link_aliases: my_cfbend.aperture_x my_cfbend.aperture_y
+.. pp:param:: <cfbend_name>.aperture_x/y
+    :link_aliases: <cfbend_name>.aperture_x <cfbend_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_cfbend.nslice
+.. pp:param:: <cfbend_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -560,64 +560,64 @@ and :math:`H_2` is the term containing the vector potential, which is a superpos
 
 The vector potential is obtained from Table XI of the above-cited reference.
 
-This element is defined via ``my_cfbend_exact.type = cfbend_exact`` and requires these additional parameters:
+This element is defined via ``<cfbend_exact_name>.type = cfbend_exact`` and requires these additional parameters:
 
-.. pp:param:: my_cfbend_exact.ds
+.. pp:param:: <cfbend_exact_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_cfbend_exact.k_normal
+.. pp:param:: <cfbend_exact_name>.k_normal
     :type: ``array of float``
 
     Array of normal multipole coefficients (in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`).
 
-.. pp:param:: my_cfbend_exact.k_skew
+.. pp:param:: <cfbend_exact_name>.k_skew
     :type: ``array of float``
 
     Array of skew multipole coefficients (in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`).
 
-.. pp:param:: my_cfbend_exact.unit
+.. pp:param:: <cfbend_exact_name>.unit
     :type: ``integer``
     :default: ``0``
 
     Specification of units for the multipole coefficients.
     By default, the multipole coefficients are normalized by magnetic rigidity. Use ``unit=1`` to specify using SI units.
 
-.. pp:param:: my_cfbend_exact.dx/dy
-    :link_aliases: my_cfbend_exact.dx my_cfbend_exact.dy
+.. pp:param:: <cfbend_exact_name>.dx/dy
+    :link_aliases: <cfbend_exact_name>.dx <cfbend_exact_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_cfbend_exact.rotation
+.. pp:param:: <cfbend_exact_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_cfbend_exact.aperture_x/y
-    :link_aliases: my_cfbend_exact.aperture_x my_cfbend_exact.aperture_y
+.. pp:param:: <cfbend_exact_name>.aperture_x/y
+    :link_aliases: <cfbend_exact_name>.aperture_x <cfbend_exact_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_cfbend_exact.int_order
+.. pp:param:: <cfbend_exact_name>.int_order
     :type: ``integer``
     :default: ``2``
 
     The order used for symplectic integration (2, 4, or 6).
 
-.. pp:param:: my_cfbend_exact.mapsteps
+.. pp:param:: <cfbend_exact_name>.mapsteps
     :type: ``integer``
     :default: ``5``
 
     Number of integration steps per slice used for symplectic integration.
 
-.. pp:param:: my_cfbend_exact.nslice
+.. pp:param:: <cfbend_exact_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -628,54 +628,54 @@ This element is defined via ``my_cfbend_exact.type = cfbend_exact`` and requires
 ^^^^^^^^^^
 
 ``constf`` for a constant focusing element,
-e.g. for an element ``my_constf.type = constf``.
+e.g. for an element ``<constf_name>.type = constf``.
 This requires these additional parameters:
 
-.. pp:param:: my_constf.ds
+.. pp:param:: <constf_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_constf.kx
+.. pp:param:: <constf_name>.kx
     :type: ``float``
     :unit: 1/m
 
     The horizontal focusing strength.
 
-.. pp:param:: my_constf.ky
+.. pp:param:: <constf_name>.ky
     :type: ``float``
     :unit: 1/m
 
     The vertical focusing strength.
 
-.. pp:param:: my_constf.kt
+.. pp:param:: <constf_name>.kt
     :type: ``float``
     :unit: 1/m
 
     The longitudinal focusing strength.
 
-.. pp:param:: my_constf.dx/dy
-    :link_aliases: my_constf.dx my_constf.dy
+.. pp:param:: <constf_name>.dx/dy
+    :link_aliases: <constf_name>.dx <constf_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_constf.rotation
+.. pp:param:: <constf_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_constf.aperture_x/y
-    :link_aliases: my_constf.aperture_x my_constf.aperture_y
+.. pp:param:: <constf_name>.aperture_x/y
+    :link_aliases: <constf_name>.aperture_x <constf_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_constf.nslice
+.. pp:param:: <constf_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -715,108 +715,108 @@ To model this correction, we allow two options in the dipedge model:
 * the option ``modify_ref_part = True`` in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
   this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
 
-This element is defined via ``my_dipedge.type = dipedge`` and requires these additional parameters:
+This element is defined via ``<dipedge_name>.type = dipedge`` and requires these additional parameters:
 
-.. pp:param:: my_dipedge.psi
+.. pp:param:: <dipedge_name>.psi
     :type: ``float``
     :unit: rad
 
     The pole face rotation angle.
 
-.. pp:param:: my_dipedge.rc
+.. pp:param:: <dipedge_name>.rc
     :type: ``float``
     :unit: m
 
     The bend radius.
 
-.. pp:param:: my_dipedge.g
+.. pp:param:: <dipedge_name>.g
     :type: ``float``
     :unit: m
 
     The full magnetic gap size.
 
-.. pp:param:: my_dipedge.R
+.. pp:param:: <dipedge_name>.R
     :type: ``float``
     :unit: m
     :default: ``1``
 
     Scale length for the field integrals.
 
-.. pp:param:: my_dipedge.K0
+.. pp:param:: <dipedge_name>.K0
     :type: ``float``
     :unit: dimensionless
     :default: ``pi**2/6``
 
     Normalized field integral for fringe field.
 
-.. pp:param:: my_dipedge.K1
+.. pp:param:: <dipedge_name>.K1
     :type: ``float``
     :unit: dimensionless
     :default: ``0``
 
     Normalized field integral for fringe field.
 
-.. pp:param:: my_dipedge.K2
+.. pp:param:: <dipedge_name>.K2
     :type: ``float``
     :unit: dimensionless
     :default: ``1``
 
     Normalized field integral for fringe field (FINT).
 
-.. pp:param:: my_dipedge.K3
+.. pp:param:: <dipedge_name>.K3
     :type: ``float``
     :unit: dimensionless
     :default: ``1/6``
 
     Normalized field integral for fringe field.
 
-.. pp:param:: my_dipedge.K4
+.. pp:param:: <dipedge_name>.K4
     :type: ``float``
     :unit: dimensionless
     :default: ``0``
 
     Normalized field integral for fringe field.
 
-.. pp:param:: my_dipedge.K5
+.. pp:param:: <dipedge_name>.K5
     :type: ``float``
     :unit: dimensionless
     :default: ``0``
 
     Normalized field integral for fringe field.
 
-.. pp:param:: my_dipedge.K6
+.. pp:param:: <dipedge_name>.K6
     :type: ``float``
     :unit: dimensionless
     :default: ``0``
 
     Normalized field integral for fringe field.
 
-.. pp:param:: my_dipedge.model
+.. pp:param:: <dipedge_name>.model
     :type: ``string``
     :default: ``linear``
 
     The fringe field model: ``linear`` (default) or ``nonlinear``.
 
-.. pp:param:: my_dipedge.location
+.. pp:param:: <dipedge_name>.location
     :type: ``string``
     :default: ``entry``
 
     The fringe field edge location: ``entry`` (default) or ``exit``.
 
-.. pp:param:: my_dipedge.modify_ref_part
+.. pp:param:: <dipedge_name>.modify_ref_part
     :type: ``boolean``
     :default: ``false``
 
     Apply fringe field to the reference particle, ``true`` or ``false`` (default).
 
-.. pp:param:: my_dipedge.dx/dy
-    :link_aliases: my_dipedge.dx my_dipedge.dy
+.. pp:param:: <dipedge_name>.dx/dy
+    :link_aliases: <dipedge_name>.dx <dipedge_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_dipedge.rotation
+.. pp:param:: <dipedge_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -827,36 +827,36 @@ This element is defined via ``my_dipedge.type = dipedge`` and requires these add
 ^^^^^^^^^
 
 ``drift`` for a free drift,
-e.g. for an element ``my_drift.type = drift``.
+e.g. for an element ``<drift_name>.type = drift``.
 This requires these additional parameters:
 
-.. pp:param:: my_drift.ds
+.. pp:param:: <drift_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_drift.dx/dy
-    :link_aliases: my_drift.dx my_drift.dy
+.. pp:param:: <drift_name>.dx/dy
+    :link_aliases: <drift_name>.dx <drift_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_drift.rotation
+.. pp:param:: <drift_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_drift.aperture_x/y
-    :link_aliases: my_drift.aperture_x my_drift.aperture_y
+.. pp:param:: <drift_name>.aperture_x/y
+    :link_aliases: <drift_name>.aperture_x <drift_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_drift.nslice
+.. pp:param:: <drift_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -867,37 +867,37 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^^^^
 
 ``drift_chromatic`` for a free drift, with chromatic effects included,
-e.g. for an element ``my_drift_chromatic.type = drift_chromatic``.
+e.g. for an element ``<drift_chromatic_name>.type = drift_chromatic``.
 The Hamiltonian is expanded through second order in the transverse variables (x,px,y,py), with the exact pt dependence retained.
 This requires these additional parameters:
 
-.. pp:param:: my_drift_chromatic.ds
+.. pp:param:: <drift_chromatic_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_drift_chromatic.dx/dy
-    :link_aliases: my_drift_chromatic.dx my_drift_chromatic.dy
+.. pp:param:: <drift_chromatic_name>.dx/dy
+    :link_aliases: <drift_chromatic_name>.dx <drift_chromatic_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_drift_chromatic.rotation
+.. pp:param:: <drift_chromatic_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_drift_chromatic.aperture_x/y
-    :link_aliases: my_drift_chromatic.aperture_x my_drift_chromatic.aperture_y
+.. pp:param:: <drift_chromatic_name>.aperture_x/y
+    :link_aliases: <drift_chromatic_name>.aperture_x <drift_chromatic_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_drift_chromatic.nslice
+.. pp:param:: <drift_chromatic_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -908,36 +908,36 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^
 
 ``drift_exact`` for a free drift, using the exact nonlinear map,
-e.g. for an element ``my_drift_exact.type = drift_exact``.
+e.g. for an element ``<drift_exact_name>.type = drift_exact``.
 This requires these additional parameters:
 
-.. pp:param:: my_drift_exact.ds
+.. pp:param:: <drift_exact_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_drift_exact.dx/dy
-    :link_aliases: my_drift_exact.dx my_drift_exact.dy
+.. pp:param:: <drift_exact_name>.dx/dy
+    :link_aliases: <drift_exact_name>.dx <drift_exact_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_drift_exact.rotation
+.. pp:param:: <drift_exact_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_drift_exact.aperture_x/y
-    :link_aliases: my_drift_exact.aperture_x my_drift_exact.aperture_y
+.. pp:param:: <drift_exact_name>.aperture_x/y
+    :link_aliases: <drift_exact_name>.aperture_x <drift_exact_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_drift_exact.nslice
+.. pp:param:: <drift_exact_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -948,30 +948,30 @@ This requires these additional parameters:
 ^^^^^^^^^^
 
 ``kicker`` for a thin transverse kicker,
-e.g. for an element ``my_kicker.type = kicker``.
+e.g. for an element ``<kicker_name>.type = kicker``.
 This requires these additional parameters:
 
-.. pp:param:: my_kicker.xkick/ykick
-    :link_aliases: my_kicker.xkick my_kicker.ykick
+.. pp:param:: <kicker_name>.xkick/ykick
+    :link_aliases: <kicker_name>.xkick <kicker_name>.ykick
     :type: ``float``
     :unit: dimensionless OR T-m
 
     The horizontal / vertical kick strength.
 
-.. pp:param:: my_kicker.unit
+.. pp:param:: <kicker_name>.unit
     :type: ``string``
     :default: ``dimensionless``
 
     Specification of units: ``dimensionless`` (default, in units of the magnetic rigidity of the reference particle) or ``T-m``.
 
-.. pp:param:: my_kicker.dx/dy
-    :link_aliases: my_kicker.dx my_kicker.dy
+.. pp:param:: <kicker_name>.dx/dy
+    :link_aliases: <kicker_name>.dx <kicker_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_kicker.rotation
+.. pp:param:: <kicker_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -982,29 +982,29 @@ This requires these additional parameters:
 ^^^^^^^^
 
 ``line`` a sub-lattice (line) of elements to append to the lattice,
-e.g. for an element ``my_line.type = line``.
+e.g. for an element ``<line_name>.type = line``.
 
-.. pp:param:: my_line.elements
+.. pp:param:: <line_name>.elements
     :type: ``list of strings``
     :optional:
     :default: no elements
 
     A list of names (one name per lattice element), in the order that they appear in the lattice.
 
-.. pp:param:: my_line.reverse
+.. pp:param:: <line_name>.reverse
     :type: ``boolean``
     :optional:
     :default: ``false``
 
     Reverse the list of elements in the line before appending to the lattice.
 
-.. pp:param:: my_line.repeat
+.. pp:param:: <line_name>.repeat
     :type: ``integer``
     :optional:
     :default: ``1``
 
     Repeat the line multiple times before appending to the lattice.
-    Note: If :pp:param:`my_line.reverse` and :pp:param:`my_line.repeat` both appear, then ``reverse`` is applied before ``repeat``.
+    Note: If :pp:param:`<line_name>.reverse` and :pp:param:`<line_name>.repeat` both appear, then ``reverse`` is applied before ``repeat``.
 
 
 ``linear_map``
@@ -1020,28 +1020,28 @@ and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1
 
 The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
 
-This element is defined via ``my_linear_map.type = linear_map`` and requires these additional parameters:
+This element is defined via ``<linear_map_name>.type = linear_map`` and requires these additional parameters:
 
-.. pp:param:: my_linear_map.R(i,j)
+.. pp:param:: <linear_map_name>.R(i,j)
     :type: ``float``
 
     Matrix entries: a 1-indexed, 6x6, linear transport map to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`.
 
-.. pp:param:: my_linear_map.ds
+.. pp:param:: <linear_map_name>.ds
     :type: ``float``
     :unit: m
     :default: ``0``
 
     Length associated with a user-defined linear element.
 
-.. pp:param:: my_linear_map.dx/dy
-    :link_aliases: my_linear_map.dx my_linear_map.dy
+.. pp:param:: <linear_map_name>.dx/dy
+    :link_aliases: <linear_map_name>.dx <linear_map_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_linear_map.rotation
+.. pp:param:: <linear_map_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -1052,34 +1052,34 @@ This element is defined via ``my_linear_map.type = linear_map`` and requires the
 ^^^^^^^^^^^^^
 
 ``multipole`` for a thin multipole element,
-e.g. for an element ``my_multipole.type = multipole``.
+e.g. for an element ``<multipole_name>.type = multipole``.
 This requires these additional parameters:
 
-.. pp:param:: my_multipole.multipole
+.. pp:param:: <multipole_name>.multipole
     :type: ``integer``
     :unit: dimensionless
 
     Order of multipole: (m = 1) dipole, (m = 2) quadrupole, (m = 3) sextupole, etc.
 
-.. pp:param:: my_multipole.k_normal
+.. pp:param:: <multipole_name>.k_normal
     :type: ``float``
 
     Integrated normal multipole coefficient (MAD-X convention), in meters^(-m+1)
     = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`).
 
-.. pp:param:: my_multipole.k_skew
+.. pp:param:: <multipole_name>.k_skew
     :type: ``float``
 
     Integrated skew multipole strength (MAD-X convention), in 1/meters^(-m+1).
 
-.. pp:param:: my_multipole.dx/dy
-    :link_aliases: my_multipole.dx my_multipole.dy
+.. pp:param:: <multipole_name>.dx/dy
+    :link_aliases: <multipole_name>.dx <multipole_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_multipole.rotation
+.. pp:param:: <multipole_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -1102,64 +1102,64 @@ Particle tracking is performed using symplectic integration based on the Hamilto
 Here :math:`H_1` is the nonlinear Hamiltonian for a drift (including the kinematic square root),
 and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
 
-This element is defined via ``my_multipole_exact.type = multipole_exact`` and requires these additional parameters:
+This element is defined via ``<multipole_exact_name>.type = multipole_exact`` and requires these additional parameters:
 
-.. pp:param:: my_multipole_exact.ds
+.. pp:param:: <multipole_exact_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_multipole_exact.k_normal
+.. pp:param:: <multipole_exact_name>.k_normal
     :type: ``array of float``
 
     Array of normal multipole coefficients (in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`).
 
-.. pp:param:: my_multipole_exact.k_skew
+.. pp:param:: <multipole_exact_name>.k_skew
     :type: ``array of float``
 
     Array of skew multipole coefficients (in meters^(-m) OR in T/meters^(m-1) for :math:`m=1,2,3,...`).
 
-.. pp:param:: my_multipole_exact.unit
+.. pp:param:: <multipole_exact_name>.unit
     :type: ``integer``
     :default: ``0``
 
     Specification of units for the multipole coefficients.
     By default, the multipole coefficients are normalized by magnetic rigidity. Use ``unit=1`` to specify using SI units.
 
-.. pp:param:: my_multipole_exact.dx/dy
-    :link_aliases: my_multipole_exact.dx my_multipole_exact.dy
+.. pp:param:: <multipole_exact_name>.dx/dy
+    :link_aliases: <multipole_exact_name>.dx <multipole_exact_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_multipole_exact.rotation
+.. pp:param:: <multipole_exact_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_multipole_exact.aperture_x/y
-    :link_aliases: my_multipole_exact.aperture_x my_multipole_exact.aperture_y
+.. pp:param:: <multipole_exact_name>.aperture_x/y
+    :link_aliases: <multipole_exact_name>.aperture_x <multipole_exact_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_multipole_exact.int_order
+.. pp:param:: <multipole_exact_name>.int_order
     :type: ``integer``
     :default: ``2``
 
     The order used for symplectic integration (2, 4, or 6).
 
-.. pp:param:: my_multipole_exact.mapsteps
+.. pp:param:: <multipole_exact_name>.mapsteps
     :type: ``integer``
     :default: ``5``
 
     Number of integration steps per slice used for symplectic integration.
 
-.. pp:param:: my_multipole_exact.nslice
+.. pp:param:: <multipole_exact_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1170,31 +1170,31 @@ This element is defined via ``my_multipole_exact.type = multipole_exact`` and re
 ^^^^^^^^^^^^^^^^^^
 
 ``nonlinear_lens`` for a thin IOTA nonlinear lens element,
-e.g. for an element ``my_nonlinear_lens.type = nonlinear_lens``.
+e.g. for an element ``<nonlinear_lens_name>.type = nonlinear_lens``.
 This requires these additional parameters:
 
-.. pp:param:: my_nonlinear_lens.knll
+.. pp:param:: <nonlinear_lens_name>.knll
     :type: ``float``
     :unit: m
 
     Integrated strength of the lens segment (MAD-X convention)
     = dimensionless lens strength * c parameter**2 * length / Twiss beta.
 
-.. pp:param:: my_nonlinear_lens.cnll
+.. pp:param:: <nonlinear_lens_name>.cnll
     :type: ``float``
     :unit: m
 
     Distance of the singularities from the origin (MAD-X convention)
     = c parameter * sqrt(Twiss beta).
 
-.. pp:param:: my_nonlinear_lens.dx/dy
-    :link_aliases: my_nonlinear_lens.dx my_nonlinear_lens.dy
+.. pp:param:: <nonlinear_lens_name>.dx/dy
+    :link_aliases: <nonlinear_lens_name>.dx <nonlinear_lens_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_nonlinear_lens.rotation
+.. pp:param:: <nonlinear_lens_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -1205,23 +1205,23 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^^^^^
 
 ``plane_xyrotation`` for a rotation in the x-y plane (i.e., about the reference velocity vector),
-e.g. for an element ``my_plane_xyrotation.type = plane_xyrotation``.
+e.g. for an element ``<plane_xyrotation_name>.type = plane_xyrotation``.
 This requires these additional parameters:
 
-.. pp:param:: my_plane_xyrotation.angle
+.. pp:param:: <plane_xyrotation_name>.angle
     :type: ``float``
     :unit: degree
 
     Nominal angle of rotation.
 
-.. pp:param:: my_plane_xyrotation.dx/dy
-    :link_aliases: my_plane_xyrotation.dx my_plane_xyrotation.dy
+.. pp:param:: <plane_xyrotation_name>.dx/dy
+    :link_aliases: <plane_xyrotation_name>.dx <plane_xyrotation_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_plane_xyrotation.rotation
+.. pp:param:: <plane_xyrotation_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -1232,17 +1232,17 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``plasma_lens_chromatic`` for an active cylindrically-symmetric plasma lens, with chromatic effects included,
-e.g. for an element ``my_plasma_lens_chromatic.type = plasma_lens_chromatic``.
+e.g. for an element ``<plasma_lens_chromatic_name>.type = plasma_lens_chromatic``.
 The Hamiltonian is expanded through second order in the transverse variables :math:`(x,p_x,y,p_y)`, with the exact :math:`p_t` dependence retained.
 This requires these additional parameters:
 
-.. pp:param:: my_plasma_lens_chromatic.ds
+.. pp:param:: <plasma_lens_chromatic_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_plasma_lens_chromatic.k
+.. pp:param:: <plasma_lens_chromatic_name>.k
     :type: ``float``
     :unit: 1/m^2 OR T/m
 
@@ -1251,33 +1251,33 @@ This requires these additional parameters:
 
     OR = azimuthal magnetic field gradient in T/m - if ``unit = 1``.
 
-.. pp:param:: my_plasma_lens_chromatic.unit
+.. pp:param:: <plasma_lens_chromatic_name>.unit
     :type: ``integer``
     :default: ``0``
 
     Specification of units.
 
-.. pp:param:: my_plasma_lens_chromatic.dx/dy
-    :link_aliases: my_plasma_lens_chromatic.dx my_plasma_lens_chromatic.dy
+.. pp:param:: <plasma_lens_chromatic_name>.dx/dy
+    :link_aliases: <plasma_lens_chromatic_name>.dx <plasma_lens_chromatic_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_plasma_lens_chromatic.rotation
+.. pp:param:: <plasma_lens_chromatic_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_plasma_lens_chromatic.aperture_x/y
-    :link_aliases: my_plasma_lens_chromatic.aperture_x my_plasma_lens_chromatic.aperture_y
+.. pp:param:: <plasma_lens_chromatic_name>.aperture_x/y
+    :link_aliases: <plasma_lens_chromatic_name>.aperture_x <plasma_lens_chromatic_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_plasma_lens_chromatic.nslice
+.. pp:param:: <plasma_lens_chromatic_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1288,18 +1288,18 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^^^^^
 
 ``polygon_aperture`` for a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
-and optional radius below which all particles are transmitted, e.g. for an element ``my_polygon_aperture.type = polygon_aperture``.
+and optional radius below which all particles are transmitted, e.g. for an element ``<polygon_aperture_name>.type = polygon_aperture``.
 The vertices must define a closed curve and be ordered in the counter-clockwise direction.
 The first and last vertices must be identical. These parameters define the element:
 
-.. pp:param:: my_polygon_aperture.vertices_x/y
-    :link_aliases: my_polygon_aperture.vertices_x my_polygon_aperture.vertices_y
+.. pp:param:: <polygon_aperture_name>.vertices_x/y
+    :link_aliases: <polygon_aperture_name>.vertices_x <polygon_aperture_name>.vertices_y
     :type: ``array of float``
     :unit: m
 
     Array of horizontal / vertical locations of aperture vertices.
 
-.. pp:param:: my_polygon_aperture.min_radius2
+.. pp:param:: <polygon_aperture_name>.min_radius2
     :type: ``float``
     :unit: m^2
     :default: ``0``
@@ -1307,33 +1307,33 @@ The first and last vertices must be identical. These parameters define the eleme
     Optional minimum radius-squared of a circle fully inscribed within the polygon. Particles with
     radius-squared less than this value are transmitted by the aperture and the polygon calculation is skipped.
 
-.. pp:param:: my_polygon_aperture.repeat_x/y
-    :link_aliases: my_polygon_aperture.repeat_x my_polygon_aperture.repeat_y
+.. pp:param:: <polygon_aperture_name>.repeat_x/y
+    :link_aliases: <polygon_aperture_name>.repeat_x <polygon_aperture_name>.repeat_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical period for repeated aperture masking (inactive by default).
 
-.. pp:param:: my_polygon_aperture.shift_odd_x
+.. pp:param:: <polygon_aperture_name>.shift_odd_x
     :type: ``boolean``
 
     For hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by ``repeat_x / 2``.
     Use alignment offsets ``dx``, ``dy`` to move the whole mask as needed.
 
-.. pp:param:: my_polygon_aperture.action
+.. pp:param:: <polygon_aperture_name>.action
     :type: ``string``
     :default: ``transmit``
 
     Action of the aperture domain: ``transmit`` (default) or ``absorb``.
 
-.. pp:param:: my_polygon_aperture.dx/dy
-    :link_aliases: my_polygon_aperture.dx my_polygon_aperture.dy
+.. pp:param:: <polygon_aperture_name>.dx/dy
+    :link_aliases: <polygon_aperture_name>.dx <polygon_aperture_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_polygon_aperture.rotation
+.. pp:param:: <polygon_aperture_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -1343,16 +1343,16 @@ The first and last vertices must be identical. These parameters define the eleme
 ^^^^^^^^
 
 ``prot`` for an exact pole-face rotation in the x-z plane,
-e.g. for an element ``my_prot.type = prot``.
+e.g. for an element ``<prot_name>.type = prot``.
 This requires these additional parameters:
 
-.. pp:param:: my_prot.phi_in
+.. pp:param:: <prot_name>.phi_in
     :type: ``float``
     :unit: degree
 
     Angle of the reference particle with respect to the longitudinal (z) axis in the original frame.
 
-.. pp:param:: my_prot.phi_out
+.. pp:param:: <prot_name>.phi_out
     :type: ``float``
     :unit: degree
 
@@ -1363,16 +1363,16 @@ This requires these additional parameters:
 ^^^^^^^^
 
 ``quad`` for a quadrupole,
-e.g. for an element ``my_quad.type = quad``.
+e.g. for an element ``<quad_name>.type = quad``.
 This requires these additional parameters:
 
-.. pp:param:: my_quad.ds
+.. pp:param:: <quad_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_quad.k
+.. pp:param:: <quad_name>.k
     :type: ``float``
     :unit: 1/m^2
 
@@ -1381,27 +1381,27 @@ This requires these additional parameters:
     * ``k > 0`` horizontal focusing
     * ``k < 0`` horizontal defocusing
 
-.. pp:param:: my_quad.dx/dy
-    :link_aliases: my_quad.dx my_quad.dy
+.. pp:param:: <quad_name>.dx/dy
+    :link_aliases: <quad_name>.dx <quad_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_quad.rotation
+.. pp:param:: <quad_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_quad.aperture_x/y
-    :link_aliases: my_quad.aperture_x my_quad.aperture_y
+.. pp:param:: <quad_name>.aperture_x/y
+    :link_aliases: <quad_name>.aperture_x <quad_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_quad.nslice
+.. pp:param:: <quad_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1412,17 +1412,17 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^^^
 
 ``quad_chromatic`` for a Quadrupole magnet, with chromatic effects included,
-e.g. for an element ``my_quad_chromatic.type = quad_chromatic``.
+e.g. for an element ``<quad_chromatic_name>.type = quad_chromatic``.
 The Hamiltonian is expanded through second order in the transverse variables :math:`(x,p_x,y,p_y)`, with the exact :math:`p_t` dependence retained.
 This requires these additional parameters:
 
-.. pp:param:: my_quad_chromatic.ds
+.. pp:param:: <quad_chromatic_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_quad_chromatic.k
+.. pp:param:: <quad_chromatic_name>.k
     :type: ``float``
     :unit: 1/m^2 OR T/m
 
@@ -1433,33 +1433,33 @@ This requires these additional parameters:
     * ``k > 0`` horizontal focusing
     * ``k < 0`` horizontal defocusing
 
-.. pp:param:: my_quad_chromatic.unit
+.. pp:param:: <quad_chromatic_name>.unit
     :type: ``integer``
     :default: ``0``
 
     Specification of units.
 
-.. pp:param:: my_quad_chromatic.dx/dy
-    :link_aliases: my_quad_chromatic.dx my_quad_chromatic.dy
+.. pp:param:: <quad_chromatic_name>.dx/dy
+    :link_aliases: <quad_chromatic_name>.dx <quad_chromatic_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_quad_chromatic.rotation
+.. pp:param:: <quad_chromatic_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_quad_chromatic.aperture_x/y
-    :link_aliases: my_quad_chromatic.aperture_x my_quad_chromatic.aperture_y
+.. pp:param:: <quad_chromatic_name>.aperture_x/y
+    :link_aliases: <quad_chromatic_name>.aperture_x <quad_chromatic_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_quad_chromatic.nslice
+.. pp:param:: <quad_chromatic_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1477,15 +1477,15 @@ and :math:`H_2` is the remainder (including the kinematic square root).  This su
 * D. L. Bruhwiler et al, in Proc. of EPAC 98, pp. 1171-1173 (1998).
 * E. Forest, J. Phys. A: Math. Gen. 39, 5321 (2006).
 
-This element is defined via ``my_quad_exact.type = quad_exact`` and requires these additional parameters:
+This element is defined via ``<quad_exact_name>.type = quad_exact`` and requires these additional parameters:
 
-.. pp:param:: my_quad_exact.ds
+.. pp:param:: <quad_exact_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_quad_exact.k
+.. pp:param:: <quad_exact_name>.k
     :type: ``float``
     :unit: 1/m^2 OR T/m
 
@@ -1496,45 +1496,45 @@ This element is defined via ``my_quad_exact.type = quad_exact`` and requires the
     * ``k > 0`` horizontal focusing
     * ``k < 0`` horizontal defocusing
 
-.. pp:param:: my_quad_exact.unit
+.. pp:param:: <quad_exact_name>.unit
     :type: ``integer``
     :default: ``0``
 
     Specification of units.
 
-.. pp:param:: my_quad_exact.dx/dy
-    :link_aliases: my_quad_exact.dx my_quad_exact.dy
+.. pp:param:: <quad_exact_name>.dx/dy
+    :link_aliases: <quad_exact_name>.dx <quad_exact_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_quad_exact.rotation
+.. pp:param:: <quad_exact_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_quad_exact.aperture_x/y
-    :link_aliases: my_quad_exact.aperture_x my_quad_exact.aperture_y
+.. pp:param:: <quad_exact_name>.aperture_x/y
+    :link_aliases: <quad_exact_name>.aperture_x <quad_exact_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_quad_exact.int_order
+.. pp:param:: <quad_exact_name>.int_order
     :type: ``integer``
     :default: ``2``
 
     The order used for symplectic integration (2, 4, or 6).
 
-.. pp:param:: my_quad_exact.mapsteps
+.. pp:param:: <quad_exact_name>.mapsteps
     :type: ``integer``
     :default: ``5``
 
     Number of integration steps per slice used for symplectic integration.
 
-.. pp:param:: my_quad_exact.nslice
+.. pp:param:: <quad_exact_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1551,61 +1551,61 @@ describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coeffi
 ``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``
 has units of inverse meters squared.
 
-This element is defined via ``my_quadrupole_softedge.type = quadrupole_softedge`` and requires these additional parameters:
+This element is defined via ``<quadrupole_softedge_name>.type = quadrupole_softedge`` and requires these additional parameters:
 
-.. pp:param:: my_quadrupole_softedge.ds
+.. pp:param:: <quadrupole_softedge_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_quadrupole_softedge.gscale
+.. pp:param:: <quadrupole_softedge_name>.gscale
     :type: ``float``
     :unit: 1/m^2
 
     Scaling factor for on-axis magnetic field gradient.
 
-.. pp:param:: my_quadrupole_softedge.cos_coefficients
+.. pp:param:: <quadrupole_softedge_name>.cos_coefficients
     :type: ``array of float``
     :optional:
 
     Cos coefficients in Fourier expansion of the on-axis field gradient.
     Default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__.
 
-.. pp:param:: my_quadrupole_softedge.sin_coefficients
+.. pp:param:: <quadrupole_softedge_name>.sin_coefficients
     :type: ``array of float``
     :optional:
 
     Sin coefficients in Fourier expansion of the on-axis field gradient.
     Default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__.
 
-.. pp:param:: my_quadrupole_softedge.dx/dy
-    :link_aliases: my_quadrupole_softedge.dx my_quadrupole_softedge.dy
+.. pp:param:: <quadrupole_softedge_name>.dx/dy
+    :link_aliases: <quadrupole_softedge_name>.dx <quadrupole_softedge_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_quadrupole_softedge.rotation
+.. pp:param:: <quadrupole_softedge_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_quadrupole_softedge.aperture_x/y
-    :link_aliases: my_quadrupole_softedge.aperture_x my_quadrupole_softedge.aperture_y
+.. pp:param:: <quadrupole_softedge_name>.aperture_x/y
+    :link_aliases: <quadrupole_softedge_name>.aperture_x <quadrupole_softedge_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_quadrupole_softedge.mapsteps
+.. pp:param:: <quadrupole_softedge_name>.mapsteps
     :type: ``integer``
     :default: ``10``
 
     Number of integration steps per slice used for map and reference particle push in applied fields.
 
-.. pp:param:: my_quadrupole_softedge.nslice
+.. pp:param:: <quadrupole_softedge_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1617,9 +1617,9 @@ This element is defined via ``my_quadrupole_softedge.type = quadrupole_softedge`
 ``quadedge`` for quadrupole edge focusing.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing the effect
 of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq (28) of:
 E. Forest and J. Milutinovic, Nucl. Instrum. and Methods in Phys. Res. A 269, 474-482 (1988).
-This element is defined via ``my_quadedge.type = quadedge`` and requires these additional parameters:
+This element is defined via ``<quadedge_name>.type = quadedge`` and requires these additional parameters:
 
-.. pp:param:: my_quadedge.k
+.. pp:param:: <quadedge_name>.k
     :type: ``float``
     :unit: 1/m^2 OR T/m
 
@@ -1630,26 +1630,26 @@ This element is defined via ``my_quadedge.type = quadedge`` and requires these a
     * ``k > 0`` horizontal focusing
     * ``k < 0`` horizontal defocusing
 
-.. pp:param:: my_quadedge.unit
+.. pp:param:: <quadedge_name>.unit
     :type: ``integer``
     :default: ``0``
 
     Specification of units.
 
-.. pp:param:: my_quadedge.flag
+.. pp:param:: <quadedge_name>.flag
     :type: ``string``
     :default: ``entry``
 
     Specification of edge location: ``entry`` (default) or ``exit``.
 
-.. pp:param:: my_quadedge.dx/dy
-    :link_aliases: my_quadedge.dx my_quadedge.dy
+.. pp:param:: <quadedge_name>.dx/dy
+    :link_aliases: <quadedge_name>.dx <quadedge_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_quadedge.rotation
+.. pp:param:: <quadedge_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -1665,74 +1665,74 @@ describe the on-axis electric field (as specified in ``cos_coefficients``, ``sin
 ``escale``, which multiplies this profile, specifies the peak value of the longitudinal electric field gradient on-axis, divided by particle rest energy.  In this case,
 ``escale`` has units of inverse meters.
 
-This element is defined via ``my_rfcavity.type = rfcavity`` and requires these additional parameters:
+This element is defined via ``<rfcavity_name>.type = rfcavity`` and requires these additional parameters:
 
-.. pp:param:: my_rfcavity.ds
+.. pp:param:: <rfcavity_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_rfcavity.escale
+.. pp:param:: <rfcavity_name>.escale
     :type: ``float``
     :unit: 1/m
 
     Scaling factor for on-axis RF electric field
     = (peak on-axis electric field Ez in MV/m) / (particle rest energy in MeV).
 
-.. pp:param:: my_rfcavity.freq
+.. pp:param:: <rfcavity_name>.freq
     :type: ``float``
     :unit: Hz
 
     RF frequency.
 
-.. pp:param:: my_rfcavity.phase
+.. pp:param:: <rfcavity_name>.phase
     :type: ``float``
     :unit: degree
 
     RF driven phase.
 
-.. pp:param:: my_rfcavity.cos_coefficients
+.. pp:param:: <rfcavity_name>.cos_coefficients
     :type: ``array of float``
     :optional:
 
     Cosine coefficients in Fourier expansion of on-axis electric field Ez.
     Default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__.
 
-.. pp:param:: my_rfcavity.sin_coefficients
+.. pp:param:: <rfcavity_name>.sin_coefficients
     :type: ``array of float``
     :optional:
 
     Sine coefficients in Fourier expansion of on-axis electric field Ez.
     Default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__.
 
-.. pp:param:: my_rfcavity.dx/dy
-    :link_aliases: my_rfcavity.dx my_rfcavity.dy
+.. pp:param:: <rfcavity_name>.dx/dy
+    :link_aliases: <rfcavity_name>.dx <rfcavity_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_rfcavity.rotation
+.. pp:param:: <rfcavity_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_rfcavity.aperture_x/y
-    :link_aliases: my_rfcavity.aperture_x my_rfcavity.aperture_y
+.. pp:param:: <rfcavity_name>.aperture_x/y
+    :link_aliases: <rfcavity_name>.aperture_x <rfcavity_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_rfcavity.mapsteps
+.. pp:param:: <rfcavity_name>.mapsteps
     :type: ``integer``
     :default: ``10``
 
     Number of integration steps per slice used for map and reference particle push in applied fields.
 
-.. pp:param:: my_rfcavity.nslice
+.. pp:param:: <rfcavity_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1743,42 +1743,42 @@ This element is defined via ``my_rfcavity.type = rfcavity`` and requires these a
 ^^^^^^^^^
 
 ``sbend`` for a bending magnet,
-e.g. for an element ``my_sbend.type = sbend``.
+e.g. for an element ``<sbend_name>.type = sbend``.
 This requires these additional parameters:
 
-.. pp:param:: my_sbend.ds
+.. pp:param:: <sbend_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_sbend.rc
+.. pp:param:: <sbend_name>.rc
     :type: ``float``
     :unit: m
 
     The bend radius.
 
-.. pp:param:: my_sbend.dx/dy
-    :link_aliases: my_sbend.dx my_sbend.dy
+.. pp:param:: <sbend_name>.dx/dy
+    :link_aliases: <sbend_name>.dx <sbend_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_sbend.rotation
+.. pp:param:: <sbend_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_sbend.aperture_x/y
-    :link_aliases: my_sbend.aperture_x my_sbend.aperture_y
+.. pp:param:: <sbend_name>.aperture_x/y
+    :link_aliases: <sbend_name>.aperture_x <sbend_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_sbend.nslice
+.. pp:param:: <sbend_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1792,48 +1792,48 @@ This requires these additional parameters:
 D. L. Bruhwiler et al., in Proc. of EPAC 98, pp. 1171-1173 (1998), E. Forest et al., Part. Accel. 45, pp. 65-94 (1994).  The model
 consists of a uniform bending field B_y with a hard edge.  Pole faces are normal to the entry and exit velocity of the reference
 particle.
-This element is defined via ``my_sbend_exact.type = sbend_exact`` and requires these additional parameters:
+This element is defined via ``<sbend_exact_name>.type = sbend_exact`` and requires these additional parameters:
 
-.. pp:param:: my_sbend_exact.ds
+.. pp:param:: <sbend_exact_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_sbend_exact.phi
+.. pp:param:: <sbend_exact_name>.phi
     :type: ``float``
     :unit: degree
 
     The bend angle.
 
-.. pp:param:: my_sbend_exact.B
+.. pp:param:: <sbend_exact_name>.B
     :type: ``float``
     :unit: T
     :default: ``0``
 
     The bend magnetic field; when ``B = 0`` (default), the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B.
 
-.. pp:param:: my_sbend_exact.dx/dy
-    :link_aliases: my_sbend_exact.dx my_sbend_exact.dy
+.. pp:param:: <sbend_exact_name>.dx/dy
+    :link_aliases: <sbend_exact_name>.dx <sbend_exact_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_sbend_exact.rotation
+.. pp:param:: <sbend_exact_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_sbend_exact.aperture_x/y
-    :link_aliases: my_sbend_exact.aperture_x my_sbend_exact.aperture_y
+.. pp:param:: <sbend_exact_name>.aperture_x/y
+    :link_aliases: <sbend_exact_name>.aperture_x <sbend_exact_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_sbend_exact.nslice
+.. pp:param:: <sbend_exact_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1844,23 +1844,23 @@ This element is defined via ``my_sbend_exact.type = sbend_exact`` and requires t
 ^^^^^^^^^^^
 
 ``shortrf`` for a short RF cavity element,
-e.g. for an element ``my_shortrf.type = shortrf``.
+e.g. for an element ``<shortrf_name>.type = shortrf``.
 This requires these additional parameters:
 
-.. pp:param:: my_shortrf.V
+.. pp:param:: <shortrf_name>.V
     :type: ``float``
     :unit: dimensionless
 
     Normalized voltage drop across the cavity
     = (maximum energy gain in MeV) / (particle rest energy in MeV).
 
-.. pp:param:: my_shortrf.freq
+.. pp:param:: <shortrf_name>.freq
     :type: ``float``
     :unit: Hz
 
     The RF frequency.
 
-.. pp:param:: my_shortrf.phase
+.. pp:param:: <shortrf_name>.phase
     :type: ``float``
     :unit: degree
 
@@ -1870,14 +1870,14 @@ This requires these additional parameters:
     * ``phase = -90 deg``: zero energy gain for bunching
     * ``phase = 90 deg``: zero energy gain for debunching
 
-.. pp:param:: my_shortrf.dx/dy
-    :link_aliases: my_shortrf.dx my_shortrf.dy
+.. pp:param:: <shortrf_name>.dx/dy
+    :link_aliases: <shortrf_name>.dx <shortrf_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_shortrf.rotation
+.. pp:param:: <shortrf_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -1888,42 +1888,42 @@ This requires these additional parameters:
 ^^^^^^^^^^^^
 
 ``solenoid`` for an ideal hard-edge solenoid magnet,
-e.g. for an element ``my_solenoid.type = solenoid``.
+e.g. for an element ``<solenoid_name>.type = solenoid``.
 This requires these additional parameters:
 
-.. pp:param:: my_solenoid.ds
+.. pp:param:: <solenoid_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_solenoid.ks
+.. pp:param:: <solenoid_name>.ks
     :type: ``float``
     :unit: 1/m
 
     Solenoid strength in m^(-1) (MADX convention) = (magnetic field Bz in T) / (rigidity in T-m).
 
-.. pp:param:: my_solenoid.dx/dy
-    :link_aliases: my_solenoid.dx my_solenoid.dy
+.. pp:param:: <solenoid_name>.dx/dy
+    :link_aliases: <solenoid_name>.dx <solenoid_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_solenoid.rotation
+.. pp:param:: <solenoid_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_solenoid.aperture_x/y
-    :link_aliases: my_solenoid.aperture_x my_solenoid.aperture_y
+.. pp:param:: <solenoid_name>.aperture_x/y
+    :link_aliases: <solenoid_name>.aperture_x <solenoid_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_solenoid.nslice
+.. pp:param:: <solenoid_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -1940,15 +1940,15 @@ describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coeffi
 ``bscale``, which multiplies this profile, specifies the peak value of the longitudinal magnetic field gradient on-axis.  If ``unit=0``, this is normalized by the magnetic
 rigidity.
 
-This element is defined via ``my_solenoid_softedge.type = solenoid_softedge`` and requires these additional parameters:
+This element is defined via ``<solenoid_softedge_name>.type = solenoid_softedge`` and requires these additional parameters:
 
-.. pp:param:: my_solenoid_softedge.ds
+.. pp:param:: <solenoid_softedge_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_solenoid_softedge.bscale
+.. pp:param:: <solenoid_softedge_name>.bscale
     :type: ``float``
     :unit: 1/m
 
@@ -1957,53 +1957,53 @@ This element is defined via ``my_solenoid_softedge.type = solenoid_softedge`` an
 
     OR = magnetic field Bz in T - if ``unit = 1``.
 
-.. pp:param:: my_solenoid_softedge.cos_coefficients
+.. pp:param:: <solenoid_softedge_name>.cos_coefficients
     :type: ``array of float``
     :optional:
 
     Cos coefficients in Fourier expansion of the on-axis magnetic field Bz.
     Default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__.
 
-.. pp:param:: my_solenoid_softedge.sin_coefficients
+.. pp:param:: <solenoid_softedge_name>.sin_coefficients
     :type: ``array of float``
     :optional:
 
     Sin coefficients in Fourier expansion of the on-axis magnetic field Bz.
     Default is a thin-shell model from `DOI:10.1016/J.NIMA.2022.166706 <https://doi.org/10.1016/j.nima.2022.166706>`__.
 
-.. pp:param:: my_solenoid_softedge.unit
+.. pp:param:: <solenoid_softedge_name>.unit
     :type: ``integer``
     :default: ``0``
 
     Specification of units.
 
-.. pp:param:: my_solenoid_softedge.dx/dy
-    :link_aliases: my_solenoid_softedge.dx my_solenoid_softedge.dy
+.. pp:param:: <solenoid_softedge_name>.dx/dy
+    :link_aliases: <solenoid_softedge_name>.dx <solenoid_softedge_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_solenoid_softedge.rotation
+.. pp:param:: <solenoid_softedge_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_solenoid_softedge.aperture_x/y
-    :link_aliases: my_solenoid_softedge.aperture_x my_solenoid_softedge.aperture_y
+.. pp:param:: <solenoid_softedge_name>.aperture_x/y
+    :link_aliases: <solenoid_softedge_name>.aperture_x <solenoid_softedge_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_solenoid_softedge.mapsteps
+.. pp:param:: <solenoid_softedge_name>.mapsteps
     :type: ``integer``
     :default: ``10``
 
     Number of integration steps per slice used for map and reference particle push in applied fields.
 
-.. pp:param:: my_solenoid_softedge.nslice
+.. pp:param:: <solenoid_softedge_name>.nslice
     :type: ``integer``
     :default: ``1``
 
@@ -2014,22 +2014,22 @@ This element is defined via ``my_solenoid_softedge.type = solenoid_softedge`` an
 ^^^^^^^^^^^
 
 ``source`` for a particle source,
-e.g. for an element ``my_source.type = source``.
+e.g. for an element ``<source_name>.type = source``.
 Typically at the beginning of a beam line.
 
 Currently, this only supports openPMD files from our ``beam_monitor``.
 
-.. pp:param:: my_source.distribution
+.. pp:param:: <source_name>.distribution
     :type: ``string``
 
     Distribution type of particles in the source. Currently, only ``openPMD`` is supported.
 
-.. pp:param:: my_source.openpmd_path
+.. pp:param:: <source_name>.openpmd_path
     :type: ``string``
 
     Path to the openPMD series.
 
-.. pp:param:: my_source.active_once
+.. pp:param:: <source_name>.active_once
     :type: ``boolean``
     :default: ``true``
 
@@ -2057,34 +2057,34 @@ The matrix :math:`A` multiplies the phase space vector :math:`(x,p_x,y,p_y,t,p_t
 and momenta :math:`(p_x,p_y,p_t)` are dimensionless.  The three components output are dimensionless.  So, for example, :math:`A(1,1)` has units of 1/m, and :math:`A(1,2)` is dimensionless.
 All three components of :math:`v` are dimensionless.
 
-This element is defined via ``my_spin_map.type = spin_map`` and requires these additional parameters:
+This element is defined via ``<spin_map_name>.type = spin_map`` and requires these additional parameters:
 
-.. pp:param:: my_spin_map.v(i)
+.. pp:param:: <spin_map_name>.v(i)
     :type: ``float``
 
     Vector entries: a 1-indexed, 3x1, axis-angle vector that defines the spin rotation at the phase space design point.
 
-.. pp:param:: my_spin_map.A(i,j)
+.. pp:param:: <spin_map_name>.A(i,j)
     :type: ``float``
 
     Matrix entries: a 1-indexed, 3x6, spin-orbit coupling matrix to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)` that defines the spin rotation for off-design particles.
 
-.. pp:param:: my_spin_map.ds
+.. pp:param:: <spin_map_name>.ds
     :type: ``float``
     :unit: m
     :default: ``0``
 
     Length associated with a user-defined spin map element.
 
-.. pp:param:: my_spin_map.dx/dy
-    :link_aliases: my_spin_map.dx my_spin_map.dy
+.. pp:param:: <spin_map_name>.dx/dy
+    :link_aliases: <spin_map_name>.dx <spin_map_name>.dy
     :type: ``float``
     :unit: m
     :default: ``0``
 
     Horizontal / vertical translation error (not used, defaults to 0).
 
-.. pp:param:: my_spin_map.rotation
+.. pp:param:: <spin_map_name>.rotation
     :type: ``float``
     :unit: degree
     :default: ``0``
@@ -2103,9 +2103,9 @@ This element is defined via ``my_spin_map.type = spin_map`` and requires these a
 
 where :math:`g` is the (linear) field gradient in T/m and :math:`D_x` is the targeted horizontal dispersion in m.
 
-This element is defined via ``my_tapered_pl.type = tapered_pl`` and requires these additional parameters:
+This element is defined via ``<tapered_pl_name>.type = tapered_pl`` and requires these additional parameters:
 
-.. pp:param:: my_tapered_pl.k
+.. pp:param:: <tapered_pl_name>.k
     :type: ``float``
     :unit: 1/m OR T
 
@@ -2114,26 +2114,26 @@ This element is defined via ``my_tapered_pl.type = tapered_pl`` and requires the
 
     OR = (length in m) * (magnetic field gradient :math:`g` in T/m) - if ``unit = 1``.
 
-.. pp:param:: my_tapered_pl.unit
+.. pp:param:: <tapered_pl_name>.unit
     :type: ``integer``
     :default: ``0``
 
     Specification of units.
 
-.. pp:param:: my_tapered_pl.taper
+.. pp:param:: <tapered_pl_name>.taper
     :type: ``float``
     :unit: 1/m
 
     Horizontal taper parameter = 1 / (target horizontal dispersion :math:`D_x` in m).
 
-.. pp:param:: my_tapered_pl.dx/dy
-    :link_aliases: my_tapered_pl.dx my_tapered_pl.dy
+.. pp:param:: <tapered_pl_name>.dx/dy
+    :link_aliases: <tapered_pl_name>.dx <tapered_pl_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_tapered_pl.rotation
+.. pp:param:: <tapered_pl_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -2144,29 +2144,29 @@ This element is defined via ``my_tapered_pl.type = tapered_pl`` and requires the
 ^^^^^^^^^^^^^^^
 
 ``thin_dipole`` for a thin dipole element,
-e.g. for an element ``my_thin_dipole.type = thin_dipole``.
+e.g. for an element ``<thin_dipole_name>.type = thin_dipole``.
 This requires these additional parameters:
 
-.. pp:param:: my_thin_dipole.theta
+.. pp:param:: <thin_dipole_name>.theta
     :type: ``float``
     :unit: degree
 
     Dipole bend angle.
 
-.. pp:param:: my_thin_dipole.rc
+.. pp:param:: <thin_dipole_name>.rc
     :type: ``float``
     :unit: m
 
     Effective radius of curvature.
 
-.. pp:param:: my_thin_dipole.dx/dy
-    :link_aliases: my_thin_dipole.dx my_thin_dipole.dy
+.. pp:param:: <thin_dipole_name>.dx/dy
+    :link_aliases: <thin_dipole_name>.dx <thin_dipole_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_thin_dipole.rotation
+.. pp:param:: <thin_dipole_name>.rotation
     :type: ``float``
     :unit: degree
 
@@ -2177,51 +2177,51 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``uniform_acc_chromatic`` for a region of uniform acceleration, with chromatic effects included,
-e.g. for an element ``my_uniform_acc_chromatic.type = uniform_acc_chromatic``.
+e.g. for an element ``<uniform_acc_chromatic_name>.type = uniform_acc_chromatic``.
 The Hamiltonian is expanded through second order in the transverse variables (x,px,y,py), with the exact pt dependence retained.
 This requires these additional parameters:
 
-.. pp:param:: my_uniform_acc_chromatic.ds
+.. pp:param:: <uniform_acc_chromatic_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
 
-.. pp:param:: my_uniform_acc_chromatic.ez
+.. pp:param:: <uniform_acc_chromatic_name>.ez
     :type: ``float``
     :unit: 1/m
 
     The electric field strength
     = (particle charge in C * electric field Ez in V/m) / (particle mass in kg * (speed of light in m/s)^2).
 
-.. pp:param:: my_uniform_acc_chromatic.bz
+.. pp:param:: <uniform_acc_chromatic_name>.bz
     :type: ``float``
     :unit: 1/m
 
     The magnetic field strength
     = (particle charge in C * magnetic field Bz in T) / (particle mass in kg * speed of light in m/s).
 
-.. pp:param:: my_uniform_acc_chromatic.dx/dy
-    :link_aliases: my_uniform_acc_chromatic.dx my_uniform_acc_chromatic.dy
+.. pp:param:: <uniform_acc_chromatic_name>.dx/dy
+    :link_aliases: <uniform_acc_chromatic_name>.dx <uniform_acc_chromatic_name>.dy
     :type: ``float``
     :unit: m
 
     Horizontal / vertical translation error.
 
-.. pp:param:: my_uniform_acc_chromatic.rotation
+.. pp:param:: <uniform_acc_chromatic_name>.rotation
     :type: ``float``
     :unit: degree
 
     Rotation error in the transverse plane.
 
-.. pp:param:: my_uniform_acc_chromatic.aperture_x/y
-    :link_aliases: my_uniform_acc_chromatic.aperture_x my_uniform_acc_chromatic.aperture_y
+.. pp:param:: <uniform_acc_chromatic_name>.aperture_x/y
+    :link_aliases: <uniform_acc_chromatic_name>.aperture_x <uniform_acc_chromatic_name>.aperture_y
     :type: ``float``
     :unit: m
 
     Horizontal / vertical half-aperture (elliptical).
 
-.. pp:param:: my_uniform_acc_chromatic.nslice
+.. pp:param:: <uniform_acc_chromatic_name>.nslice
     :type: ``integer``
     :default: ``1``
 

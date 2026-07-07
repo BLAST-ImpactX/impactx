@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2021-2025 The Regents of the University of California, through Lawrence
+# Copyright 2022-2026 The Regents of the University of California, through Lawrence
 #           Berkeley National Laboratory (subject to receipt of any required
 #           approvals from the U.S. Dept. of Energy). All rights reserved.
 #
@@ -88,7 +88,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "ImpactX"
-copyright = "2021-2025, ImpactX collaboration"
+copyright = "2022-2026, ImpactX collaboration"
 author = "ImpactX collaboration"
 
 # The version info for the project you're documenting, acts as replacement for

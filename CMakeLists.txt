@@ -256,7 +256,11 @@ if(ImpactX_PYTHON)
     if(APPLE)
         target_link_options(pyImpactX PRIVATE
             "LINKER:-exported_symbol,_PyInit_impactx_pybind")
-    elseif(NOT WIN32 AND NOT EMSCRIPTEN)
+    elseif(EMSCRIPTEN)
+        target_link_options(pyImpactX PRIVATE
+            "SHELL:-sSIDE_MODULE=1"
+            "SHELL:-sEXPORTED_FUNCTIONS=_PyInit_impactx_pybind")
+    elseif(NOT WIN32)
         target_link_options(pyImpactX PRIVATE "LINKER:--exclude-libs,ALL")
     endif()
 

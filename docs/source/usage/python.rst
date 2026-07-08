@@ -1820,7 +1820,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    .. attention::
 
       In MPI-parallel simulations, reading the particles in the source file is distributed over all MPI ranks:
-      each of the N ranks reads a contiguous chunk of 1/N-th of the particles, independent of their position.
+      each of the :math:`N` ranks reads a different contiguous chunk of :math:`1/N`-th of the particles, independent of their position.
       This balances the I/O and memory load between the ranks.
 
       When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.

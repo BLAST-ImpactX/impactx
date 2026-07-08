@@ -28,7 +28,7 @@ docs/impactx-doxygen-web.tag.xml
 docs/openpmd-api-doxygen-web.tag.xml
 docs/doxyhtml/
 docs/doxyxml/
-docs/source/_static/
+docs/source/_static/doxyhtml/
 
 ####################
 # Package Managers #

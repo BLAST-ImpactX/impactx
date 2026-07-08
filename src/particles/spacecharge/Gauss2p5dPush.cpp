@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -15,6 +15,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_GpuContainers.H>
+#include <AMReX_GpuParallelReduce.H>
 #include <AMReX_ParmParse.H>
 #include <ablastr/warn_manager/WarnManager.H>
 
@@ -224,8 +225,7 @@ namespace impactx::particles::spacecharge
         // Sum up all partial charge histograms to each MPI process to calculate
         // the global charge slope.
         amrex::ParallelAllReduce::Sum(
-            charge_distribution.data(),
-            charge_distribution.size(),
+            charge_distribution,
             amrex::ParallelDescriptor::Communicator()
         );
 

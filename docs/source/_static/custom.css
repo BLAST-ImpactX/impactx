@@ -1,0 +1,4 @@
+.rst-content code.xref.literal {
+    /* Use the same color for cross references as regular literals */
+    color: #e74c3c
+}

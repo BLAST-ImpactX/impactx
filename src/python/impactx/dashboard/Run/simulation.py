@@ -69,7 +69,12 @@ def build_lattice_list() -> str:
             param_value = param["sim_input"]
             param_type = param["parameter_type"]
 
-            formatted_value = f'"{param_value}"' if param_type == "str" else param_value
+            if param_type == "str":
+                formatted_value = f'"{param_value}"'
+            elif param_type == "bool":
+                formatted_value = str(param_value).strip().capitalize()
+            else:
+                formatted_value = param_value
             parameter_strings.append(f"{param_name}={formatted_value}")
 
         element_string = f"elements.{name}(" + ", ".join(parameter_strings) + ")"

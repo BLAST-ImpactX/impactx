@@ -12,9 +12,10 @@ from typing import Union
 from ... import state
 from ..utils import GeneralFunctions
 
-ALLOWED_INPUT_TYPES = {"int", "float", "str"}
+ALLOWED_INPUT_TYPES = {"int", "float", "str", "bool"}
 INT_ERROR_MESSAGE = "Must be an integer"
 FLOAT_ERROR_MESSAGE = "Must be a float"
+BOOL_ERROR_MESSAGE = "Must be a boolean: True or False"
 NON_ZERO_ERROR = "Must be non-zero"
 POSITIVE_ERROR = "Must be positive"
 NEGATIVE_ERROR = "Must be negative"
@@ -63,7 +64,7 @@ class DashboardValidation:
         :param input_name: The name of the input to validate.
         :param input_value: The value to validate.
         :param category: The category of validation (e.g., 'distribution', 'lattice').
-        :param parameter_type: The explicit type to use ('int', 'float', 'str'). If provided, overrides type lookup.
+        :param parameter_type: The explicit type to use ('int', 'float', 'str', 'bool'). If provided, overrides type lookup.
         :return: A list of error messages. An empty list if there are no errors.
         """
         input_type = DashboardValidation._get_input_type(
@@ -77,6 +78,11 @@ class DashboardValidation:
             if not DashboardValidation.is_valid_input_name(str(input_value)):
                 return [PYTHON_IDENTIFIER_ERROR]
             return []
+
+        if input_type == "bool":
+            if str(input_value).strip() in ("True", "False", "true", "false"):
+                return []
+            return [BOOL_ERROR_MESSAGE]
 
         numeric_input = GeneralFunctions.convert_to_numeric(input_value)
         type_errors = DashboardValidation._validate_type(numeric_input, input_type)

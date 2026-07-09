@@ -92,6 +92,12 @@ namespace impactx
         pp_algo.query("csr", csr);
         bool isr = false;
         pp_algo.query("isr", isr);
+
+        // whether any collective effect (space charge, CSR, ISR) is active; only then do
+        // we Strang-split a thick element's transport around a mid-slice collective kick
+        bool const collective_effects =
+            (space_charge != SpaceChargeAlgo::False) || csr || isr;
+
         bool spin = false;
         pp_algo.query("spin", spin);
 
@@ -190,6 +196,7 @@ namespace impactx
             m_lattice,
             *pc,
             m_tracking_state,
+            collective_effects,
             [this](std::string const & name) { call_hook(name); },
             collective_kicks,
             element_transport,

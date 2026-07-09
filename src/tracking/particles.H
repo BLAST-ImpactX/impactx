@@ -12,8 +12,6 @@
 
 #include "elements/All.H"
 #include "elements/mixin/accessors.H"
-#include "elements/mixin/thick.H"
-#include "elements/mixin/traits.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "tracking/TrackingDirection.H"
 #include "tracking/TrackingState.H"
@@ -25,48 +23,44 @@
 
 #include <list>
 #include <string>
-#include <type_traits>
-#include <variant>
 
 
 namespace impactx
 {
-    /** Traverse the lattice for particle (beam + reference) tracking, applying the
-     *  per-slice physics as two composable operations.
+    /** Traverse the lattice for particle (beam + reference) tracking.
      *
      *  This function performs the nested lattice traversal (looping over periods,
      *  then over the beamline elements in each period, then over the
      *  collective-effect slices within each element). It also maintains the
      *  user-defined hooks, the reference-particle edge update and the global step
      *  counter.
+     *
      *  The caller supplies the per-slice physics as a @p collective_kicks K
      *  (space charge, CSR, ISR, ...), an @p element_transport M (the external-field
      *  map of one slice of an element) and a @p slice_diagnostics book-keeping step
      *  (boundary conditions, lost particles, slice diagnostics) run once per slice.
-     *  ``K`` and ``M`` are combined per element with a second-order Strang split, in
-     *  one of two equivalent forms:
      *
-     *   - kick-outer (KMK), the default and the only correct form for general elements:
-     *       ``K(ds/2) [M(ds) K(ds)]^(nslice-1) M(ds) K(ds/2)``
-     *     a half-length kick at each element edge, full-length interior kicks between
-     *     the per-slice transport maps. Costs ``nslice+1`` collective solves per element.
+     *  When collective effects are active (@p collective_effects), the kick ``K`` and
+     *  transport ``M`` of each finite-length (``Thick``) element are composed with a
+     *  second-order, time-symmetric drift-outer (MKM) Strang split per slice:
+     *      ``M(ds/2) K(ds) M(ds/2)``
+     *  half the slice transport, the full collective kick at the slice midpoint, then
+     *  the other half. The half-slice transports are realized by temporarily doubling
+     *  the element's ``nslice``; the reference-particle edge is set once per element, so
+     *  an s-dependent element map integrates continuously across the two half-maps (the
+     *  second half starts where the first ended). This applies the expensive collective
+     *  solve once per slice (``nslice`` per element).
      *
-     *   - drift-outer (MKM), used only where the transport is an exact constant-field
-     *     flow (\see elements::mixin::Thick::is_constant_field_flow, so
-     *     ``M(ds/2) M(ds/2) == M(ds)`` exactly):
-     *       ``M(ds/2) [K(ds) M(ds)]^(nslice-1) K(ds) M(ds/2)``
-     *     a half-length transport at each element edge, full-length interior transports
-     *     between the per-slice kicks. The two half-transports are realized by temporarily
-     *     doubling the element's ``nslice``. Same second order, but it keeps the expensive
-     *     collective solve at ``nslice`` (one fewer per element than KMK) by paying an
-     *     extra, cheap transport instead.
+     *  Thin (zero-length) elements, and all elements in pure-optics runs (no collective
+     *  effects), apply the element transport once per slice with no kick, unchanged.
      *
-     *  Both forms are second-order accurate in the slice step size and time-symmetric.
-     *
-     *  Hooks, the reference-particle edge update, the step counter and the
-     *  tracking-state element pointer are maintained on ``Forward`` tracking only.
-     *  The ``Backward`` pass is a bare mirrored traversal that applies the same
-     *  symmetric composition with the inverted, reversed element maps.
+     *  Hooks, the step counter and the tracking-state element pointer are maintained on
+     *  ``Forward`` tracking only. The reference-particle edge is set in both directions,
+     *  since s-dependent (soft-edge) element maps integrate their field profile relative to
+     *  it. ``Backward`` tracking mirrors the traversal (periods, elements and slices in
+     *  reverse) and applies the same MKM split with each element map reversed (``M -> M^-1``)
+     *  and each kick inverted (``K -> K^-1``, via the negated ``ds`` that makes ``slice_ds``
+     *  negative) — i.e. the exact time-reverse of forward tracking.
      *
      *  The number of periods (``lattice.periods``) and verbosity (``impactx.verbose``)
      *  are read from the inputs. The step counter is advanced from its current value,
@@ -85,6 +79,8 @@ namespace impactx
      *  @param[in,out] pc beam particle container (reference particle / edge update)
      *  @param[in,out] tracking_state tracking state shared with hooks (element, step, period);
      *                 its ``m_direction`` selects the traversal direction
+     *  @param[in] collective_effects whether any collective kick is active this run; only then
+     *                 are thick elements Strang-split around a mid-slice kick
      *  @param[in] call_hook registry for user-specified callback hooks
      *  @param[in] collective_kicks applied collective effect kicks (SC, CSR, ISR, etc.), per-slice
      *  @param[in] element_transport applies the external-field map of one element slice
@@ -95,6 +91,7 @@ namespace impactx
         std::list<elements::KnownElements> & lattice,
         ImpactXParticleContainer & pc,
         TrackingState & tracking_state,
+        bool collective_effects,
         HookFn const & call_hook,
         CollectiveKicks && collective_kicks,
         ElementTransport && element_transport,
@@ -111,31 +108,20 @@ namespace impactx
 
         int & step = tracking_state.m_step;
 
-        // is this element eligible for the cheaper drift-outer (MKM) Strang split?
-        //   (only finite-length ``Thick`` elements carry the is_constant_field_flow property)
-        auto mkm_eligible = [] (elements::KnownElements const & ev) -> bool
-        {
-            return std::visit([] (auto const & element) -> bool {
-                using E = std::remove_cv_t<std::remove_reference_t<decltype(element)>>;
-                if constexpr (elements::mixin::is_thick_v<E>) {
-                    return E::is_constant_field_flow;
-                } else {
-                    return false;
-                }
-            }, ev);
-        };
-
         // visit one element for all of its space-charge slices
         auto visit_element = [&] (
             elements::KnownElements & element_variant,
             int period
         )
         {
+            // Set the reference-particle edge at the entrance of this element. Needed in
+            // both directions by s-dependent (soft-edge) maps, which integrate their on-axis
+            // field profile relative to this edge; under ``Backward`` tracking the reversed
+            // map traverses that profile in the opposite z-direction (see the element reverse()).
+            pc.SetRefParticleEdge();
+
             if (forward)
             {
-                // update element edge of the reference particle
-                pc.SetRefParticleEdge();
-
                 // book-keeping: currently visited element reference
                 tracking_state.m_element = &element_variant;
 
@@ -145,7 +131,7 @@ namespace impactx
             else
             {
                 // back-tracking: invert this element's map in place so the element
-                // transport below applies the inverse map.
+                // transport below applies the inverse map M^-1.
                 elements::reverse(element_variant);
             }
 
@@ -153,21 +139,16 @@ namespace impactx
             int const nslice = elements::nslice(element_variant);
             amrex::ParticleReal const slice_ds = elements::slice_ds(element_variant); // in meters
 
-            // Second-order Strang split of the collective kick ``K`` and the per-slice
-            // transport ``M`` (#846 / #920). A kick of zero length (thin elements such as
-            // monitors) changes neither momenta nor the gathered positions, so it is
-            // skipped exactly (apply_kicks), avoiding redundant field solves.
-            bool const apply_kicks = slice_ds > amrex::ParticleReal(0);
-            amrex::ParticleReal const half_ds = slice_ds / amrex::ParticleReal(2);
-
-            // Where the transport is an exact constant-field flow (M(ds/2) M(ds/2)==M(ds)),
-            // use the drift-outer (MKM) form: it keeps the expensive collective solve at
-            // ``nslice`` per element instead of ``nslice+1``. Otherwise the uniform
-            // kick-outer (KMK) form, which never sub-divides the element transport.
-            bool const drift_outer = apply_kicks && mkm_eligible(element_variant);
-
-            // kick-outer (KMK) entrance half-kick K(ds/2)
-            if (apply_kicks && !drift_outer) { collective_kicks(element_variant, half_ds); }
+            // Strang-split a thick element's transport ``M`` around a mid-slice collective
+            // kick ``K`` (drift-outer / MKM, #846 / #920) only where it is meaningful: for
+            // finite-length elements while collective effects are active. This second-order,
+            // time-symmetric split applies the expensive collective solve once per slice.
+            // Under ``Backward`` tracking ``slice_ds`` is negative (the map is reversed), so
+            // the same composition is the exact inverse, M^-1(ds/2) K^-1(ds) M^-1(ds/2).
+            // Thin elements and pure-optics runs apply the transport once, unchanged.
+            bool const split = collective_effects
+                            && slice_ds != amrex::ParticleReal(0)
+                            && elements::is_thick(element_variant);
 
             // sub-steps for space charge within the element
             for (int s = 0; s < nslice; ++s)
@@ -187,12 +168,12 @@ namespace impactx
                     call_hook("before_slice");
                 }
 
-                if (drift_outer)
+                if (split)
                 {
-                    // drift-outer (MKM): M(ds/2) K(ds) M(ds/2). Doubling ``nslice`` makes
-                    // each element_transport advance ds/2; the half-transports of adjacent
-                    // slices merge into M(ds), so K is solved once per slice. The element is
-                    // reversed in place for back-tracking, applying M^-1 on ``Backward``.
+                    // drift-outer (MKM): M(ds/2) K(ds) M(ds/2). Doubling ``nslice`` makes each
+                    // element_transport advance ds/2; the reference-particle edge is fixed for
+                    // the element, so an s-dependent map continues across the two half-maps.
+                    // (The element is reversed in place for back-tracking, applying M^-1.)
                     elements::ScopedNslice const half_slices(element_variant, 2 * nslice);
                     element_transport(element_variant, step, period);
                     collective_kicks(element_variant, slice_ds);
@@ -200,18 +181,13 @@ namespace impactx
                 }
                 else
                 {
-                    // kick-outer (KMK): interior full kick K(ds) before each transport;
-                    // the entrance/exit half-kicks are applied outside the loop.
-                    if (apply_kicks && s > 0) { collective_kicks(element_variant, slice_ds); }
+                    // thin element or no collective effects: apply the transport once, no kick
                     element_transport(element_variant, step, period);
                 }
 
                 // once-per-slice book-keeping and diagnostics
                 slice_diagnostics(step);
             }
-
-            // kick-outer (KMK) exit half-kick K(ds/2)
-            if (apply_kicks && !drift_outer) { collective_kicks(element_variant, half_ds); }
 
             if (forward)
             {

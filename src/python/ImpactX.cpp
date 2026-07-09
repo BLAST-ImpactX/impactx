@@ -19,6 +19,10 @@
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_SIMD.H>
 
+#ifdef ImpactX_USE_OPENPMD
+#   include "openPMD/version.hpp"
+#endif
+
 #if defined(AMREX_DEBUG) || defined(DEBUG)
 #   include <cstdio>
 #endif
@@ -871,7 +875,8 @@ void init_ImpactX (py::module& m)
         )
     ;
 
-    py::class_<Config>(m, "Config")
+    py::class_<Config> pyImpactXConfig(m, "Config");
+    pyImpactXConfig
 //        .def_property_readonly_static(
 //            "impactx_version",
 //            [](py::object) { return Version(); },
@@ -930,6 +935,16 @@ void init_ImpactX (py::module& m)
                 return false;
 #endif
         })
+    ;
+    pyImpactXConfig
+        .attr("openpmd_backends") =
+#ifdef ImpactX_USE_OPENPMD
+            openPMD::getVariants()
+#else
+            py::none()
+#endif
+    ;
+    pyImpactXConfig
         .def_property_readonly_static(
             "simd_size",
             [](py::object const &){

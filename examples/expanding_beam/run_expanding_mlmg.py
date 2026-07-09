@@ -12,8 +12,6 @@ sim = ImpactX()
 
 # set numerical parameters and IO control
 sim.max_level = 1
-# n_cell resolves the multigrid (Dirichlet-BC) Poisson solve well enough to recover
-# the analytic expansion once the s-integration is 2nd-order accurate.
 sim.n_cell = [32, 32, 40]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]

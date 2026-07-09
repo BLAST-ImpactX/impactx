@@ -36,8 +36,10 @@ algo.space_charge = 3D
 algo.poisson_solver = "multigrid"
 
 # Space charge solver with one MR level
+#   n_cell resolves the multigrid (Dirichlet-BC) Poisson solve well enough to
+#   recover the analytic expansion once the s-integration is 2nd-order accurate.
 amr.max_level = 1
-amr.n_cell = 16 16 20
+amr.n_cell = 32 32 40
 amr.blocking_factor_x = 16
 amr.blocking_factor_y = 16
 amr.blocking_factor_z = 4

@@ -1,7 +1,7 @@
 """
 This file is part of ImpactX
 
-Copyright 2022-2025 ImpactX contributors
+Copyright 2022-2026 ImpactX contributors
 Authors: Chad Mitchell, Axel Huebl
 License: BSD-3-Clause-LBNL
 """

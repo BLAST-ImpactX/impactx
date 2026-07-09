@@ -597,11 +597,13 @@ class ImpactX:
         """
         Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.
         """
-    def rho(
-        self, lev: typing.SupportsInt | typing.SupportsIndex
-    ) -> amrex.space3d.amrex_3d_pybind.MultiFab:
+    def rho(self, lev: typing.SupportsInt | typing.SupportsIndex) -> typing.Any:
         """
-        charge density per level
+        charge density per level.
+
+        For the 2D space-charge models (``2D`` / ``2.5D``) this returns the
+        x-y projected (2D) charge density that is actually solved; for the
+        3D models it returns the 3D charge density.
         """
     def space_charge_field(
         self, lev: typing.SupportsInt | typing.SupportsIndex, comp: str
@@ -946,7 +948,7 @@ class ImpactX:
     @property
     def space_charge_gauss_long_scale(self) -> float:
         """
-        Longitudinal space charge scale for the Gauss2p5D space charge model. Approximation affecting only the longitudinal momentum (``pt``) kick. If not set, it defaults to ``6 * gamma * sigma_z``, estimated in-situ from the current reduced beam characteristics, which is a typical value when comparing to a 3D model.
+        Longitudinal space charge scale for the Gauss2p5D space charge model. Approximation affecting only the longitudinal momentum (``pt``) kick. If not set, it defaults to ``1.103 * gamma * sigma_z``, estimated in-situ from the current reduced beam characteristics, which is a typical value when comparing to a 3D model.
         """
     @space_charge_gauss_long_scale.setter
     def space_charge_gauss_long_scale(
@@ -1096,7 +1098,16 @@ class Config:
     have_gpu: typing.ClassVar[bool] = False
     have_mpi: typing.ClassVar[bool] = True
     have_omp: typing.ClassVar[bool] = True
+    have_openpmd: typing.ClassVar[bool] = True
     have_simd: typing.ClassVar[bool] = False
+    openpmd_backends: typing.ClassVar[dict] = {
+        "adios1": False,
+        "adios2": False,
+        "hdf5": True,
+        "json": True,
+        "mpi": True,
+        "toml": True,
+    }
     precision: typing.ClassVar[str] = "DOUBLE"
     precision_particles: typing.ClassVar[str] = "DOUBLE"
     simd_size: typing.ClassVar[int] = 1
@@ -1271,6 +1282,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.05"
+__version__: str = "26.06"
 s: CoordSystem
 t: CoordSystem

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Ji Qiang
 # License: BSD-3-Clause-LBNL
 #

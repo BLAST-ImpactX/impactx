@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -35,6 +35,7 @@ namespace impactx::envelope::spacecharge
 
         // skip calculations for trivial case
         if (current == 0_prt) { return; }
+        if (ds == 0_prt) { return; }
 
         // initialize the linear transport map
         Map6x6 R = Map6x6::Identity();
@@ -83,6 +84,7 @@ namespace impactx::envelope::spacecharge
 
         // skip calculations for trivial case
         if (bunch_charge == 0_prt) { return; }
+        if (ds == 0_prt) { return; }
 
         // initialize the linear transport map
         Map6x6 R = Map6x6::Identity();

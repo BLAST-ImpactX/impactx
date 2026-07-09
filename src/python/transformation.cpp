@@ -1,4 +1,4 @@
-/* Copyright 2021-2023 The ImpactX Community
+/* Copyright 2022-2026 The ImpactX Community
  *
  * Authors: Ryan Sandberg, Axel Huebl
  * License: BSD-3-Clause-LBNL

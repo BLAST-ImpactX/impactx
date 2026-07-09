@@ -139,7 +139,7 @@ macro(find_ablastr)
         set(COMPONENT_DIM 3D)
         set(COMPONENT_PRECISION ${ImpactX_PRECISION} P${ImpactX_PRECISION})
 
-        find_package(ABLASTR 26.05 CONFIG REQUIRED COMPONENTS ${COMPONENT_DIM})
+        find_package(ABLASTR 26.06 CONFIG REQUIRED COMPONENTS ${COMPONENT_DIM})
         message(STATUS "ABLASTR: Found version '${ABLASTR_VERSION}'")
     endif()
 
@@ -178,7 +178,7 @@ set(ImpactX_openpmd_src ""
 set(ImpactX_ablastr_repo "https://github.com/BLAST-WarpX/warpx.git"
     CACHE STRING
     "Repository URI to pull and build ABLASTR from if(ImpactX_ablastr_internal)")
-set(ImpactX_ablastr_branch "26.05"
+set(ImpactX_ablastr_branch "759c5cb11a417187edc764b853cfb68018b91fce"
     CACHE STRING
     "Repository branch for ImpactX_ablastr_repo if(ImpactX_ablastr_internal)")
 
@@ -186,7 +186,7 @@ set(ImpactX_ablastr_branch "26.05"
 set(ImpactX_amrex_repo "https://github.com/AMReX-Codes/amrex.git"
     CACHE STRING
     "Repository URI to pull and build AMReX from if(ImpactX_amrex_internal)")
-set(ImpactX_amrex_branch "26.05"
+set(ImpactX_amrex_branch "5fbc49bce6ccaaefd771c7594e24e0ef46d5e01c"
     CACHE STRING
     "Repository branch for ImpactX_amrex_repo if(ImpactX_amrex_internal)")
 
@@ -194,7 +194,7 @@ set(ImpactX_amrex_branch "26.05"
 set(ImpactX_openpmd_repo "https://github.com/openPMD/openPMD-api.git"
     CACHE STRING
     "Repository URI to pull and build openPMD-api from if(ImpactX_openpmd_internal)")
-set(ImpactX_openpmd_branch "0.17.0"
+set(ImpactX_openpmd_branch "0.17.1"
     CACHE STRING
     "Repository branch for ImpactX_openPMD_repo if(ImpactX_openpmd_internal)")
 

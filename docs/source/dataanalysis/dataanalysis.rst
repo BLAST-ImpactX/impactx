@@ -94,7 +94,7 @@ For computing beam moments (as elsewhere), positions and momenta are given as de
 
 The reduced beam characteristics are stored with the output of the beam monitor element.
 They are also calculated before, after, and during each step of the simulation.
-If ``diag.slice_step_diagnostics`` is enabled, they will also be calculated during each slice of each beamline element.
+If :pp:param:`diag.slice_step_diagnostics` is enabled, they will also be calculated during each slice of each beamline element.
 
 The code writes out the values in an ASCII file prefixed ``reduced_beam_characteristics`` containing the follow columns:
 

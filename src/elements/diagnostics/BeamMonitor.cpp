@@ -304,7 +304,7 @@ namespace detail {
         if (!int_soa_names.empty())
             throw std::runtime_error("BeamMonitor: int_soa_names output not yet implemented!");
 #else
-        amrex::ignore_unused(pc, step);
+        amrex::ignore_unused(pc, real_soa_names, int_soa_names, ref_part, step);
 #endif // ImpactX_USE_OPENPMD
     }
 
@@ -380,7 +380,7 @@ namespace detail {
         // close iteration
         iteration.close();
 #else
-        amrex::ignore_unused(pc, step);
+        amrex::ignore_unused(pc, step, period);
 #endif // ImpactX_USE_OPENPMD
     }
 
@@ -459,7 +459,7 @@ namespace detail {
         // TODO at that point, we could also close the iteration/step
         series.flush();
 #else
-        amrex::ignore_unused(pti, ref_part);
+        amrex::ignore_unused(pti, real_soa_names, int_soa_names, ref_part);
 #endif   // ImpactX_USE_OPENPMD
     }
 

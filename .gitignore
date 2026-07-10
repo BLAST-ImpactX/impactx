@@ -4,6 +4,11 @@ Backtrace.*
 *.vth
 *.sw[opqrs]
 
+######################
+# Benchmark results  #
+######################
+.benchmarks/
+
 ####################
 # AMReX data files #
 ####################

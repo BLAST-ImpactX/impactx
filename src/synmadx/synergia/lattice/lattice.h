@@ -53,6 +53,7 @@ public:
   /// Construct a Lattice object with a name and a reference particle
   /// Defaults to interpreting elements as Mad8 elements
   /// @param name an arbitrary name
+  /// @param ref the reference particle of the lattice
   Lattice(std::string const& name, Reference_particle const& ref);
 
   /// Construct a dynamic lattice object
@@ -83,7 +84,7 @@ public:
   }
 
   /// Set the Lattice reference particle
-  /// @param reference_particle a Reference_particle
+  /// @param ref a Reference_particle
   void
   set_reference_particle(Reference_particle const& ref)
   {

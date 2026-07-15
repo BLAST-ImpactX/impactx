@@ -162,6 +162,7 @@ public:
   /// Construct a Lattice_element.
   /// @param name name
   /// @param type type
+  /// @param format lattice language of the element (mad8 or madx)
   Lattice_element(std::string const& type,
                   std::string const& name,
                   element_format format = element_format::madx);
@@ -199,6 +200,7 @@ public:
   /// and the overwrite flag is false
   /// @param name name of the attribute to be duplicated
   /// @param new_name attribute name after the duplication
+  /// @param overwrite replace an existing attribute named new_name
   void duplicate_attribute(std::string const& name,
                            std::string const& new_name,
                            bool overwrite = false);

@@ -1,5 +1,6 @@
 # synmadx: standalone MadX lattice parser imported from Synergia
-# No external dependencies beyond C++ standard library and bundled Boost headers
+# Depends on header-only Boost libraries (Spirit, Phoenix, Fusion, ...),
+# found via find_package(Boost) in the top-level CMakeLists.txt
 
 add_library(synmadx SHARED
     synergia/lattice/mx_expr.cc
@@ -22,8 +23,10 @@ set_target_properties(synmadx PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(synmadx PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/synergia/utils
 )
+
+# Boost types (e.g., boost::variant in mx_expr.h) appear in public headers
+target_link_libraries(synmadx PUBLIC Boost::headers)
 
 target_compile_features(synmadx PUBLIC cxx_std_17)
 

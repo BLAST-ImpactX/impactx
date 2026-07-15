@@ -22,6 +22,7 @@ Optional dependencies include:
   - `ROCm 6.0+ <https://gpuopen.com/learn/amd-lab-notes/amd-lab-notes-rocm-installation-readme/>`__: for AMD GPU support or
   - `oneAPI <https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html>`__: for Intel GPU support
 - `vir::stdx::simd <https://github.com/mattkretz/vir-simd>`__: for SIMD-accelerated CPU acceleration, can be combined with OpenMP
+- `Boost 1.70.0+ <https://www.boost.org>`__: header-only libraries, for the standalone MAD-X lattice parser (``ImpactX_SYNMADX``)
 - `FFTW3 <http://www.fftw.org>`__: for algorithms such as IGF space charge solver or CSR when running on CPU or with SYCL
 
   - also needs the ``pkg-config`` tool on Unix

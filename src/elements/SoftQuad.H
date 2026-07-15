@@ -21,7 +21,6 @@
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
 #include "mixin/spintransport.H"
-#include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
 
@@ -31,13 +30,13 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 #include <AMReX_SmallMatrix.H>
+#include <AMReX_TrackedVector.H>
 
 #include <cmath>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
-
 
 namespace impactx::elements
 {
@@ -103,8 +102,8 @@ namespace impactx::elements
      */
     struct QuadrupoleFourierCoefficients
     {
-        mixin::TrackedVector<amrex::ParticleReal> cos;
-        mixin::TrackedVector<amrex::ParticleReal> sin;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> cos;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> sin;
     };
 
     struct SoftQuadrupole
@@ -122,6 +121,8 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         using DynamicData = mixin::GPUDataRegistry<QuadrupoleFourierCoefficients>;
+
+        static constexpr int DEFAULT_mapsteps = 10;
 
         /** A soft-edge quadrupole
          *
@@ -144,14 +145,14 @@ namespace impactx::elements
             amrex::ParticleReal gscale,
             std::vector<amrex::ParticleReal> cos_coef,
             std::vector<amrex::ParticleReal> sin_coef,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int mapsteps = 10,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
           : Named(std::move(name)),
             Thick(ds, nslice),
@@ -322,7 +323,6 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -380,7 +380,6 @@ namespace impactx::elements
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

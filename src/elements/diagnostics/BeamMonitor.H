@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -35,7 +35,7 @@ namespace detail
 
         ImpactXParticleCounter (ParticleContainer & pc);
 
-        unsigned long GetTotalNumParticles () { return m_Total; }
+        unsigned long long GetTotalNumParticles () { return m_Total; }
 
         std::vector<unsigned long long> m_ParticleOffsetAtRank;
         std::vector<unsigned long long> m_ParticleSizeAtRank;
@@ -46,7 +46,7 @@ namespace detail
         * @param[out] offset particle offset over all, mpi-global amrex fabs
         * @param[out] sum number of all particles from all amrex fabs
         */
-        void GetParticleOffsetOfProcessor (const long &numParticles,
+        void GetParticleOffsetOfProcessor (amrex::Long const &numParticles,
                                            unsigned long long &offset,
                                            unsigned long long &sum) const;
 
@@ -72,6 +72,10 @@ namespace detail
         using PType = typename ImpactXParticleContainer::ParticleType;
         using PinnedContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PolymorphicArenaAllocator>;
 
+        static constexpr char const * DEFAULT_backend = "default";
+        static constexpr char const * DEFAULT_encoding = "g";
+        static constexpr int DEFAULT_period_sample_intervals = 1;
+
         /** This element writes the particle beam out to openPMD data.
          *
          * Elements with the same series name are identical.
@@ -81,7 +85,12 @@ namespace detail
          * @param encoding openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
          * @param period_sample_intervals for periodic lattice, only output every Nth period (turn)
          */
-        BeamMonitor (std::string series_name, std::string backend="default", std::string encoding="g", int period_sample_intervals=1);
+        BeamMonitor (
+            std::string series_name,
+            std::string backend = DEFAULT_backend,
+            std::string encoding = DEFAULT_encoding,
+            int period_sample_intervals = DEFAULT_period_sample_intervals
+        );
 
         BeamMonitor (BeamMonitor const & other) = default;
         BeamMonitor (BeamMonitor && other) = default;

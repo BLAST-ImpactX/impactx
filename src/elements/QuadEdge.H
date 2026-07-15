@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -15,9 +15,11 @@
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
+#include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
+#include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
@@ -25,7 +27,6 @@
 
 #include <cmath>
 #include <stdexcept>
-
 
 namespace impactx::elements
 {
@@ -35,17 +36,20 @@ namespace impactx::elements
       public mixin::LinearTransport<QuadEdge>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "QuadEdge";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        enum Location
-        {
-            entry = 1, //! for leading (entry) fringe field
-            exit = -1  //! for trailing (exit) fringe field
-        };
+        AMREX_ENUM_IN_CLASS(Location,
+            entry = 1,  //! for leading (entry) fringe field
+            exit = -1,  //! for trailing (exit) fringe field
+        );
+
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr Location DEFAULT_flag = Location::entry;
 
         /** Quadrupole entry or exit fringe field effects.
          *
@@ -73,12 +77,12 @@ namespace impactx::elements
          */
         QuadEdge (
             amrex::ParticleReal k,
-            int unit,
-            Location flag,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            Location flag = DEFAULT_flag,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
@@ -190,6 +194,60 @@ namespace impactx::elements
 
         /** This pushes the reference particle. */
         using Thin::operator();
+
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index
+         * @param refpart reference particle
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // initialize the three components of the axis-angle vector
+            T_Real lambdax = 0_prt;
+            T_Real lambday = 0_prt;
+            T_Real lambdaz = 0_prt;
+
+            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
+
+            // The model used here for the rotation vector is taken from eq (41) of:
+            // D. T. Abell et al, "Accurate and efficient spin integration for particle accelerators,"
+            // Phys. Rev. Accel. Beams 18, 024001 (2015).
+
+            lambdaz = -static_cast<amrex::ParticleReal>(m_flag) * m_g * (1_prt + G) * x * y;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
+
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -15,9 +15,12 @@
 #include <AMReX_REAL.H>
 #include <AMReX_BLProfiler.H>
 #include <AMReX_GpuContainers.H>
+#include <AMReX_GpuParallelReduce.H>
 #include <AMReX_ParmParse.H>
+#include <ablastr/warn_manager/WarnManager.H>
 
 #include <cmath>
+#include <string>
 
 
 namespace impactx::particles::spacecharge
@@ -167,14 +170,29 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * c0_SI;
         amrex::ParticleReal const pz_ref_SI = pc.GetRefParticle().beta_gamma() * mc_SI;
         amrex::ParticleReal const gamma = pc.GetRefParticle().gamma();
+        amrex::ParticleReal const beta = pc.GetRefParticle().beta();
+        amrex::ParticleReal const beta_gamma = pc.GetRefParticle().beta_gamma();
         amrex::ParticleReal const inv_gamma2 = 1.0_prt / (gamma * gamma);
         amrex::ParticleReal const rfpiepslon = c0_SI * c0_SI * 1.0e-7_prt;
 
-        amrex::ParticleReal const dt = slice_ds / pc.GetRefParticle().beta() / c0_SI;
+        amrex::ParticleReal const dt = slice_ds / beta / c0_SI;
+        amrex::ParticleReal const aspect_ratio = std::sqrt(sigx*sigx + sigy*sigy) / (beta_gamma * sigt);
+
+        if (aspect_ratio > 1_rt) {
+            ablastr::warn_manager::WMRecordWarning(
+                "Impactx::particles::spacecharge::Gauss2p5dPush",
+                "Gauss2p5D model assumes a long bunch, but here "
+                "sigma_perp / (beta_gamma * sigmaz) = " +
+                std::to_string(aspect_ratio) + " > 1.",
+                ablastr::warn_manager::WarnPriority::medium
+            );
+        }
 
         int nint = 101;
         amrex::Real delta = 0.01_rt;
-        amrex::Real long_scale = 6.0_rt * gamma * sigt;
+        // note: the default value below is the optimal value minimizing the L2-norm
+        // of the error in the on-axis longitudinal field Ez for a 3D Gaussian bunch
+        amrex::Real long_scale = 1.103_rt * beta_gamma * sigt;
         amrex::ParmParse pp_algo("algo.space_charge");
         pp_algo.queryAddWithParser("gauss_nint", nint);
         pp_algo.queryAddWithParser("gauss_taylor_delta", delta);
@@ -184,6 +202,9 @@ namespace impactx::particles::spacecharge
 
         int tp5d_bins = 129;
         pp_algo.queryAddWithParser("gauss_charge_z_bins", tp5d_bins);
+
+        bool apply_longitudinal_kick = true;
+        pp_algo.queryAdd("apply_longitudinal_kick", apply_longitudinal_kick);
 
         // Measure beam size, extract the min, max of particle positions
         [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =
@@ -205,8 +226,7 @@ namespace impactx::particles::spacecharge
         // Sum up all partial charge histograms to each MPI process to calculate
         // the global charge slope.
         amrex::ParallelAllReduce::Sum(
-            charge_distribution.data(),
-            charge_distribution.size(),
+            charge_distribution,
             amrex::ParallelDescriptor::Communicator()
         );
 
@@ -218,7 +238,7 @@ namespace impactx::particles::spacecharge
         amrex::Real const * const beam_profile = charge_distribution.data();
 
         // group together constants for the momentum push
-        amrex::ParticleReal const push_consts = rfpiepslon * dt * charge * inv_gamma2 / pz_ref_SI;
+        amrex::ParticleReal const push_consts = rfpiepslon * dt * charge * inv_gamma2 / (beta * pz_ref_SI);
         amrex::ParticleReal const chargesign = charge / std::abs(charge);
         amrex::ParticleReal const log2n = -std::log(2.0_prt);
         amrex::ParticleReal const pz_push_const =
@@ -271,7 +291,7 @@ namespace impactx::particles::spacecharge
                     }
 #endif
                     amrex::ParticleReal const Fxy = beam_profile[idx] * chargesign;
-                    amrex::ParticleReal const Fz = beam_profile_slope[idx] * charge;
+                    amrex::ParticleReal const Fz = (apply_longitudinal_kick)? beam_profile_slope[idx] * charge : 0_prt;
 
                     // push momentum
                     px += eintx * Fxy * push_consts;

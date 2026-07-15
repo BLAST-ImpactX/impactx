@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -27,6 +27,8 @@ namespace impactx::elements::mixin
      */
     struct Named
     {
+        static constexpr std::nullopt_t DEFAULT_name = std::nullopt;
+
         /** Overwrite the name of the element
          *
          * @param new_name set a new name on the element

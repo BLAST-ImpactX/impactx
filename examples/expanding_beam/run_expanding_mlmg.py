@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -12,7 +12,7 @@ sim = ImpactX()
 
 # set numerical parameters and IO control
 sim.max_level = 1
-sim.n_cell = [16, 16, 20]
+sim.n_cell = [32, 32, 40]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [4]

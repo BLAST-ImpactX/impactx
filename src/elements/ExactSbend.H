@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -28,7 +28,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct ExactSbend
@@ -44,6 +43,8 @@ namespace impactx::elements
     {
         static constexpr auto type = "ExactSbend";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr amrex::ParticleReal DEFAULT_B = 0;
 
         /** The body of an ideal sector bend, using the exact nonlinear transfer map.
          *  The map corresponds to the map described in:
@@ -71,14 +72,14 @@ namespace impactx::elements
         ExactSbend (
             amrex::ParticleReal ds,
             amrex::ParticleReal phi,
-            amrex::ParticleReal B,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal B = DEFAULT_B,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Thick(ds, nslice),
@@ -102,7 +103,6 @@ namespace impactx::elements
 
         /** Push all particles */
         using BeamOptic::operator();
-
 
         /** Compute and cache the constants for the push.
          *
@@ -328,33 +328,37 @@ namespace impactx::elements
             amrex::ParticleReal const pt_ref = refpart.pt;
             amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
+            amrex::ParticleReal const inv_bet = 1_prt / bet;
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
             // treat the special case of zero field
-            if (m_rc==0.0_prt) {
+            if (m_phi == 0.0_prt && m_B == 0.0_prt)
+            {
                R(1,2) = slice_ds;
                R(3,4) = slice_ds;
                R(5,6) = slice_ds / betgam2;
-
-            } else {
+            } else
+            {
+               // reference particle's orbital radius
+               amrex::ParticleReal const rc = this->rc(refpart);
 
                // calculate expensive terms once
-               amrex::ParticleReal const theta = slice_ds/m_rc;
+               amrex::ParticleReal const theta = slice_ds / rc;
                auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
                // assign linear map matrix elements
                R(1,1) = cos_theta;
-               R(1,2) = m_rc * sin_theta;
-               R(1,6) = - ( m_rc / bet) * (1_prt - cos_theta);
-               R(2,1) = -sin_theta / m_rc;
+               R(1,2) = rc * sin_theta;
+               R(1,6) = -rc * inv_bet * (1_prt - cos_theta);
+               R(2,1) = -sin_theta / rc;
                R(2,2) = cos_theta;
-               R(2,6) = - sin_theta / bet;
-               R(3,4) = m_rc * theta;
-               R(5,1) = sin_theta / bet;
-               R(5,2) = m_rc / bet * (1_prt - cos_theta);
-               R(5,6) = m_rc * (-theta + sin_theta / (bet * bet));
+               R(2,6) = -sin_theta * inv_bet;
+               R(3,4) = rc * theta;
+               R(5,1) = sin_theta * inv_bet;
+               R(5,2) = rc * inv_bet * (1_prt - cos_theta);
+               R(5,6) = rc * (sin_theta * inv_bet * inv_bet - theta);
             }
 
             // apply the transverse rotation (roll) alignment error

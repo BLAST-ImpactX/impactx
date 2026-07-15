@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 26.05)
+project(ImpactX VERSION 26.06)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -242,6 +242,29 @@ if(ImpactX_PYTHON)
         PDB_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx
         COMPILE_PDB_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx
     )
+
+    # The CXX_VISIBILITY_PRESET above only hides pyImpactX's own objects, but
+    # statically-embedded dependencies (HDF5, openPMD, ADIOS2, and the ImpactX
+    # core archive) are compiled without hidden visibility and would otherwise
+    # be re-exported from this extension. If another extension loaded in the
+    # same process also statically embeds them (openpmd_api, WarpX, a second
+    # openPMD/HDF5), the duplicate exported symbols cross-bind, one has two
+    # HDF5/openPMD instances in one process, UBs and crashes.
+    # Export only the module init symbol so each extension keeps its
+    # dependencies private.
+    # Windows does not auto-export and Emscripten links a single namespace, so
+    # neither needs this.
+    if(APPLE)
+        target_link_options(pyImpactX PRIVATE
+            "LINKER:-exported_symbol,_PyInit_impactx_pybind")
+    elseif(EMSCRIPTEN)
+        target_link_options(pyImpactX PRIVATE
+            "SHELL:-sSIDE_MODULE=1"
+            "SHELL:-sEXPORTED_FUNCTIONS=_PyInit_impactx_pybind")
+    elseif(NOT WIN32)
+        target_link_options(pyImpactX PRIVATE "LINKER:--exclude-libs,ALL")
+    endif()
+
     get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(isMultiConfig)
         foreach(CFG IN LISTS CMAKE_CONFIGURATION_TYPES)

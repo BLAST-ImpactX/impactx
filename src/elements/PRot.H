@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -28,7 +28,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
     struct PRot
@@ -54,7 +53,7 @@ namespace impactx::elements
         PRot (
             amrex::ParticleReal phi_in,
             amrex::ParticleReal phi_out,
-            std::optional<std::string> name = std::nullopt
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           m_phi_in(phi_in * mixin::Alignment::degree2rad),

@@ -18,10 +18,10 @@ jobs:
       OMP_NUM_THREAD: 4
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       if: github.event_name != 'push' || github.repository != 'BLAST-ImpactX/impactx' || github.ref != 'refs/heads/development'
 
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       if: github.event_name == 'push' && github.repository == 'BLAST-ImpactX/impactx' && github.ref == 'refs/heads/development'
       with:
         token: ${{ secrets.IMPACTX_PUSH_TOKEN }}
@@ -41,7 +41,7 @@ jobs:
         python3 -m pip install -U git+https://github.com/ax3l/pybind11-stubgen@fix-module-prefix-recursive pre-commit
 
     - name: Set Up Cache
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: ~/.cache/ccache
         key: ccache-${{ github.workflow }}-${{ github.job }}-git-${{ github.sha }}

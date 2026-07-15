@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -24,6 +24,9 @@ namespace impactx::elements::mixin
      */
     struct PipeAperture
     {
+        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
+        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
+
         /** A finite-length element with a constant elliptical aperture over s.
          *
          * @param aperture_x horizontal half-aperture size [m]

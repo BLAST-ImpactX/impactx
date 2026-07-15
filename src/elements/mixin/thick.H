@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -22,6 +22,8 @@ namespace impactx::elements::mixin
      */
     struct Thick
     {
+        static constexpr int DEFAULT_nslice = 1;
+
         /** A finite-length element
          *
          * @param ds Segment length in m

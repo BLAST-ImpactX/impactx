@@ -49,7 +49,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: prob_relative
 
-      This is a list with ``amr.max_level`` + 1 entries.
+      This is a list with :pp:param:`amr.max_level` + 1 entries.
 
       By default, we dynamically extract the minimum and maximum of the particle positions in the beam.
       The field mesh spans, per direction, multiple times the maximum physical extent of beam particles, as given by this factor.
@@ -79,13 +79,13 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
-        When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
+        When running in envelope mode (when :pp:param:`algo.track = envelope`), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
       * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
 
       * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
-        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+        These models are supported only in particle tracking mode (when :pp:param:`algo.track = particles`).
         Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
 
@@ -105,9 +105,13 @@ Collective Effects & Overall Simulation Parameters
 
       Longitudinal space charge scale for the Gauss2p5D space charge model.
       This is an approximation that only influences the longitudinal momentum (``pt``) kick.
-      If not set, it defaults to :math:`6 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      If not set, it defaults to :math:`1.103 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
       current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
-      typical value when comparing to a 3D model.
+      typical value when comparing to a 3D model.  This value minimizes the L2-norm of the error in
+      the on-axis field Ez in the case of a long 3D Gaussian bunch.
+      In a perfectly conducting pipe with a long bunch, where the bunch length in the
+      rest frame is significantly larger than the pipe radius, it is recommended to set
+      the longitudinal scale length to the pipe radius in the input file.
 
    .. py:property:: space_charge_num_longitudinal_bins
 
@@ -197,7 +201,7 @@ Collective Effects & Overall Simulation Parameters
 
       `F. Niel et al., Phys. Rev. E 97, 043209 (2018), DOI:10.1103/PhysRevE.97.043209 <https://doi.org/10.1103/PhysRevE.97.043209>`__
 
-      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When ``algo.isr_order = 1``, the model is equivalent to that described in:
+      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When :pp:param:`algo.isr_order = 1`, the model is equivalent to that described in:
 
       `J. M. Jowett, "Introductory Statistical Mechanics for Electron Storage Rings", AIP Conf. Proc. 153, 864-970 (1987), DOI:10.1063/1.36374 <https://doi.org/10.1063/1.36374>`__
 
@@ -596,12 +600,24 @@ For step-by-step recipes on how to access particle data live during a simulation
 
       Add new particles to the container for fixed s.
 
-      Either the total charge (bunch_charge) or the weight of each
+      Either the charge (bunch_charge) of the particles added in this call, or the weight of each
       particle (w) must be provided.
 
-      Note: This can only be used *after* the initialization (grids) have
-            been created, meaning after the call to :py:meth:`ImpactX.init_grids`
-            has been made in the ImpactX class.
+      .. note::
+
+         This can only be used *after* the initialization (grids) have
+         been created, meaning after the call to :py:meth:`ImpactX.init_grids`
+         has been made in the ImpactX class.
+
+      .. attention::
+
+         In MPI-parallel simulations, ``beam.add_n_particles(...)`` is local to the MPI rank, spatial locality does not matter.
+         Thus, you can add particles at any MPI rank, e.g., equally chuncked up for perfect load balancing.
+
+         You do NOT want to add the same unique particle at multiple MPI ranks.
+         If you use the ``bunch_charge`` argument, then it will be interpreted as the charge of particles on the current rank.
+
+         When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
 
       :param x: positions in x
       :param y: positions in y
@@ -1637,7 +1653,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
@@ -1685,7 +1701,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
       number of integration steps per slice used for symplectic integration
 
 
-.. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
@@ -1791,7 +1807,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
 
       Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
 
-.. py:class:: impactx.elements.Source(distribution, openpmd_path, name)
+.. py:class:: impactx.elements.Source(distribution, openpmd_path, active_once=True, name=None)
 
    A particle source.
    Currently, this only supports openPMD files from our :py:class:`impactx.elements.BeamMonitor`
@@ -1800,6 +1816,14 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param openpmd_path: path to the openPMD series
    :param active_once: Inject particles only for the first lattice period. Default: ``True``
    :param name: an optional name for the element
+
+   .. attention::
+
+      In MPI-parallel simulations, reading the particles in the source file is distributed over all MPI ranks:
+      each of the :math:`N` ranks reads a different contiguous chunk of :math:`1/N`-th of the particles, independent of their position.
+      This balances the I/O and memory load between the ranks.
+
+      When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
 
 .. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)
 
@@ -1902,7 +1926,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
 
       unit specification for quad strength
 
-.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.

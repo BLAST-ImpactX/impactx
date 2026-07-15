@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -16,6 +16,10 @@
 #include "WakeConvolution.H"
 #include "WakePush.H"
 
+#include <AMReX_GpuContainers.H>
+#include <AMReX_GpuDevice.H>
+#include <AMReX_GpuParallelReduce.H>
+
 #include <cmath>
 #include <stdexcept>
 #include <vector>
@@ -25,6 +29,8 @@ namespace impactx::particles::wakefields
 {
     /** Function to handle CSR bending process including charge deposition,
      * mean transverse position calculation, wakefield generation, and convolution.
+     *
+     * Returns immediately if slice_ds is zero.
      *
      * @param[in] particle_container the particle species container
      * @param[in] element_variant variant type of the lattice element
@@ -39,6 +45,8 @@ namespace impactx::particles::wakefields
         bool print_wakefield = false
     )
     {
+        if (slice_ds == 0.0) { return; }
+
         BL_PROFILE("impactx::particles::wakefields::HandleWakefield")
 
         amrex::ParmParse pp_algo("algo");
@@ -101,13 +109,15 @@ namespace impactx::particles::wakefields
             // Sum up all partial charge histograms to one MPI process to calculate the global wakefield.
             // Once calculated, we will distribute convolved_wakefield back to every MPI process.
             amrex::ParallelReduce::Sum(
-                charge_distribution.data(),
-                charge_distribution.size(),
+                charge_distribution,
                 amrex::ParallelDescriptor::IOProcessorNumber(),
                 amrex::ParallelDescriptor::Communicator()
             );
 
-            amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield;
+            // Pre-size on every rank to the (global) wake length.  On the IO
+            // processor this is overwritten by the convolution result of the
+            // same length.
+            amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield(num_bins, 0.0);
             if (amrex::ParallelDescriptor::IOProcessor()) {
                 // Call the mean transverse position function
                 impactx::particles::wakefields::MeanTransversePosition(particle_container, mean_x, mean_y, bin_min,
@@ -137,23 +147,29 @@ namespace impactx::particles::wakefields
                 convolved_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
             }
 
-            // Broadcast the global wakefield to every MPI rank
+            // Broadcast the global wakefield from the IO processor (which alone
+            // computed it) to every MPI rank. Receivers are pre-sized above.
             amrex::ParallelDescriptor::Bcast(
-                convolved_wakefield.data(),
-                convolved_wakefield.size(),
-                amrex::ParallelDescriptor::IOProcessorNumber()
+                convolved_wakefield,
+                amrex::ParallelDescriptor::IOProcessorNumber(),
+                amrex::ParallelDescriptor::Communicator()
             );
 
             // Check convolution output
             if (print_wakefield && amrex::ParallelDescriptor::IOProcessor())
             {
+                // convolved_wakefield is in (non-managed) device memory. Copy it
+                // to the host before iterating it on the host for printing.
+                amrex::Gpu::HostVector<amrex::Real> h_wakefield(convolved_wakefield.size());
+                amrex::Gpu::dtoh_memcpy(h_wakefield.data(), convolved_wakefield.data(),
+                                        convolved_wakefield.size() * sizeof(amrex::Real));
                 std::cout << "Convolved wakefield: ";
                 std::ofstream outfile("convolved_wakefield.txt");
-                for (double const i : convolved_wakefield) {
-                    std::cout << i << " ";
-                    outfile << i << std::endl;
+                for (amrex::Real const val : h_wakefield) {
+                    std::cout << val << " ";
+                    outfile << val << "\n";
                 }
-                std::cout << std::endl;
+                std::cout << "\n";
                 outfile.close();
             }
 

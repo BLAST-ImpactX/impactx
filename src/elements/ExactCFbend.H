@@ -21,13 +21,13 @@
 #include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
-#include "mixin/TrackedVector.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Print.H>
 #include <AMReX_GpuComplex.H>
 #include <AMReX_Math.H>
+#include <AMReX_TrackedVector.H>
 
 #include <cmath>
 #include <memory>
@@ -44,8 +44,8 @@ namespace impactx::elements
      */
     struct CFbendCoefficients
     {
-        mixin::TrackedVector<amrex::ParticleReal> k_normal;
-        mixin::TrackedVector<amrex::ParticleReal> k_skew;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> k_normal;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> k_skew;
     };
 
     struct ExactCFbend
@@ -62,6 +62,10 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         using DynamicData = mixin::GPUDataRegistry<CFbendCoefficients>;
+
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr int DEFAULT_int_order = 2;
+        static constexpr int DEFAULT_mapsteps = 10;
 
         /** A general (thick) combined-function sector dipole whose field consists
          *  of a superposition of ideal curvilinear hard-edge multipoles.
@@ -92,16 +96,16 @@ namespace impactx::elements
             amrex::ParticleReal ds,
             std::vector<amrex::ParticleReal> k_normal,
             std::vector<amrex::ParticleReal> k_skew,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int int_order = 2,
-            int mapsteps = 1,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int int_order = DEFAULT_int_order,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice,
+            std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Thick(ds, nslice),
@@ -432,7 +436,6 @@ namespace impactx::elements
             zeval += tau;
         }
 
-
         /** This pushes particle spin in an ExactCFbend element over a
          *  single step of size tau, based on the Thomas-BMT equation.
          *
@@ -584,7 +587,6 @@ namespace impactx::elements
             zeval += 0_prt;
         }
 
-
         /** This pushes the reference particle.
          *
          * @param[in,out] refpart reference particle
@@ -652,8 +654,6 @@ namespace impactx::elements
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
-
-
 
         /** This function returns the linear transport map.
          *
@@ -790,7 +790,6 @@ namespace impactx::elements
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
-
 
         int m_unit; //! unit specification for Multipole strength
         int m_int_order; //! order used for the symplectic integration (2 or 4)

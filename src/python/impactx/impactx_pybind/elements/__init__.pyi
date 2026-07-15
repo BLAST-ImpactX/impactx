@@ -274,14 +274,14 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         self,
         aperture_x: typing.SupportsFloat | typing.SupportsIndex,
         aperture_y: typing.SupportsFloat | typing.SupportsIndex,
-        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         shift_odd_x: bool = False,
         shape: str = "rectangular",
         action: str = "transmit",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -456,11 +456,11 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -589,11 +589,11 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -736,11 +736,11 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -883,11 +883,11 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         ds: typing.SupportsFloat | typing.SupportsIndex,
         ez: typing.SupportsFloat | typing.SupportsIndex,
         bz: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1031,11 +1031,11 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         kx: typing.SupportsFloat | typing.SupportsIndex,
         ky: typing.SupportsFloat | typing.SupportsIndex,
         kt: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1185,20 +1185,20 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         psi: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
         g: typing.SupportsFloat | typing.SupportsIndex,
-        R: typing.SupportsFloat | typing.SupportsIndex = 1,
+        R: typing.SupportsFloat | typing.SupportsIndex = 1.0,
         K0: typing.SupportsFloat | typing.SupportsIndex = 1.6449340668482264,
-        K1: typing.SupportsFloat | typing.SupportsIndex = 0,
+        K1: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         K2: typing.SupportsFloat | typing.SupportsIndex = 1.0,
         K3: typing.SupportsFloat | typing.SupportsIndex = 0.16666666666666666,
-        K4: typing.SupportsFloat | typing.SupportsIndex = 0,
-        K5: typing.SupportsFloat | typing.SupportsIndex = 0,
-        K6: typing.SupportsFloat | typing.SupportsIndex = 0,
+        K4: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        K5: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        K6: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         model: str = "linear",
         location: str = "entry",
         modify_ref_part: bool = False,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -1424,9 +1424,9 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
         flag: str = "entry",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -1566,11 +1566,11 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1697,11 +1697,11 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __init__(
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1831,13 +1831,13 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         int_order: typing.SupportsInt | typing.SupportsIndex = 2,
-        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 10,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1988,13 +1988,13 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         int_order: typing.SupportsInt | typing.SupportsIndex = 2,
-        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 10,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -2144,13 +2144,13 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         int_order: typing.SupportsInt | typing.SupportsIndex = 2,
-        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 10,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -2307,11 +2307,11 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         ds: typing.SupportsFloat | typing.SupportsIndex,
         phi: typing.SupportsFloat | typing.SupportsIndex,
         B: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -2458,9 +2458,9 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         xkick: typing.SupportsFloat | typing.SupportsIndex,
         ykick: typing.SupportsFloat | typing.SupportsIndex,
         unit: str = "dimensionless",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -2602,9 +2602,9 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         multipole: typing.SupportsInt | typing.SupportsIndex,
         K_normal: typing.SupportsFloat | typing.SupportsIndex,
         K_skew: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -2994,9 +2994,9 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         self,
         knll: typing.SupportsFloat | typing.SupportsIndex,
         cnll: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -3136,9 +3136,9 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
     def __init__(
         self,
         angle: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -3277,13 +3277,13 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
             typing.SupportsFloat | typing.SupportsIndex
         ],
         min_radius2: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         shift_odd_x: bool = False,
         action: str = "transmit",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -3602,11 +3602,11 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -3759,7 +3759,7 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         An RF cavity.
         """
@@ -3924,11 +3924,11 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -4061,11 +4061,11 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         ds: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -4207,9 +4207,9 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         self,
         V: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -4351,9 +4351,9 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         V: typing.SupportsFloat | typing.SupportsIndex,
         freq: typing.SupportsFloat | typing.SupportsIndex,
         phase: typing.SupportsFloat | typing.SupportsIndex = -90.0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -4518,7 +4518,7 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsFloat | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsFloat | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         A soft-edge solenoid.
         """
@@ -4831,11 +4831,11 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         self,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         ks: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -5126,7 +5126,7 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         A soft-edge quadrupole.
         """
@@ -5277,9 +5277,9 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         self,
         theta: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -5414,9 +5414,9 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         k: typing.SupportsFloat | typing.SupportsIndex,
         taper: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -5569,10 +5569,10 @@ class LinearMap(mixin.Named, mixin.Alignment):
     def __init__(
         self,
         R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -5728,10 +5728,10 @@ class SpinMap(mixin.Named, mixin.Alignment):
         self,
         v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
         A: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double,
-        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """

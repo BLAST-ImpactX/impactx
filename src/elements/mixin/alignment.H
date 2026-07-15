@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -29,6 +29,10 @@ namespace impactx::elements::mixin
     {
         static constexpr amrex::ParticleReal degree2rad =
             ablastr::constant::math::pi_v<amrex::ParticleReal> / amrex::ParticleReal{180};
+
+        static constexpr amrex::ParticleReal DEFAULT_dx = 0;
+        static constexpr amrex::ParticleReal DEFAULT_dy = 0;
+        static constexpr amrex::ParticleReal DEFAULT_rotation_degree = 0;
 
         /** A finite-length element
          *

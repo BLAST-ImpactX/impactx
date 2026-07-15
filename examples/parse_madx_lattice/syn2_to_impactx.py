@@ -112,7 +112,6 @@ def cnv_sbend(elem, order):
     tilt = elem.get_double_attribute("tilt", 0.0)
     rot = 180 * tilt / np.pi
 
-    model = " "
     us_dipedge = None
     ds_dipedge = None
     cf = (k1 != 0.0) or (k2 != 0.0) or (k1s != 0.0)

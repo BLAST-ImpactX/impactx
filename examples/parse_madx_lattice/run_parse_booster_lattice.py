@@ -130,7 +130,8 @@ def get_lattice():
     lattice_raw = synmadx.MadX_reader().get_lattice(lattice_line, lattice_file)
 
     if enable_rf:
-        lattice_with_rf = set_rf(
+        # sets the RF cavity attributes in-place
+        set_rf(
             lattice_raw,
             voltage=rf_volt,
             harmno=harmonic_number,
@@ -189,9 +190,6 @@ def main():
     ref.set_mass_MeV(refpart.get_mass() * 1000.0)
     kin_energy = (refpart.get_total_energy() - refpart.get_mass()) * 1000.0
     ref.set_kin_energy_MeV(kin_energy)
-
-    # charge to mass ratio
-    qm_eev = 1.0 / (1.0e-9 * mp)
 
     # Create distribution and add particles
     distr = distribution.Gaussian(

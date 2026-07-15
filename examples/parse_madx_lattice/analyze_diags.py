@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
+import glob
+import re
+
 import matplotlib.pyplot as plt
 import numpy as np
 import openpmd_api as io
+import pandas as pd
 import scipy
 
 # columns in rbc file
@@ -11,6 +15,33 @@ import scipy
 # attributes in the monitor file:
 # >> series.iterations[1].particles["beam"].attributes
 # ['alpha_t', 'alpha_x', 'alpha_y', 'beta_gamma_ref', 'beta_ref', 'beta_t', 'beta_x', 'beta_y', 'charge_C', 'charge_ref', 'dispersion_px', 'dispersion_py', 'dispersion_x', 'dispersion_y', 'emittance_t', 'emittance_tn', 'emittance_x', 'emittance_xn', 'emittance_y', 'emittance_yn', 'gamma_ref', 'mass_ref', 'max_pt', 'max_px', 'max_py', 'max_t', 'max_x', 'max_y', 'mean_pt', 'mean_px', 'mean_py', 'mean_t', 'mean_x', 'mean_y', 'min_pt', 'min_px', 'min_py', 'min_t', 'min_x', 'min_y', 'pt_max', 'pt_mean', 'pt_min', 'pt_ref', 'px_max', 'px_mean', 'px_min', 'px_ref', 'py_max', 'py_mean', 'py_min', 'py_ref', 'pz_ref', 's_ref', 'sig_pt', 'sig_px', 'sig_py', 'sig_t', 'sig_x', 'sig_y', 'sigma_pt', 'sigma_px', 'sigma_py', 'sigma_t', 'sigma_x', 'sigma_y', 't_max', 't_mean', 't_min', 't_ref', 'x_max', 'x_mean', 'x_min', 'x_ref', 'y_max', 'y_mean', 'y_min', 'y_ref', 'z_ref']
+
+
+def read_file(file_pattern):
+    for filename in glob.glob(file_pattern):
+        df = pd.read_csv(filename, delimiter=r"\s+")
+        if "step" not in df.columns:
+            step = int(re.findall(r"[0-9]+", filename)[0])
+            df["step"] = step
+        else:
+            df = df[df["step"] != "step"]
+        df = df.apply(pd.to_numeric)
+        yield df
+
+
+def read_time_series(file_pattern):
+    """Read in all CSV files from each MPI rank (and potentially OpenMP
+    thread). Concatenate into one Pandas dataframe.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    return pd.concat(
+        read_file(file_pattern),
+        axis=0,
+        ignore_index=True,
+    )  # .set_index('id')
 
 
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -77,69 +108,23 @@ plt.subplot(224)
 plt.plot(s_ref, beamattrs["max_t"], label="max t")
 plt.legend(loc="best")
 
-rbc_0 = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=1, max_rows=1)
+# read the reduced beam characteristics from all ranks/threads; the file
+# suffix differs between MPI (.0.0) and serial (.0) builds, so glob for it
+rbc = read_time_series("diags/reduced_beam_characteristics.*")
 
-rbc_1 = np.loadtxt("diags/reduced_beam_characteristics.0.0", skiprows=4)
+# the run tracks the beam twice (monitor-only, then the full lattice), which
+# appends a second header line and a repeated initial row to the file:
+# keep the first occurrence of each step
+rbc = rbc.sort_values("step", kind="stable").drop_duplicates(
+    subset="step", keep="first"
+)
 
-rbc = np.vstack((rbc_0, rbc_1))
-
-step_s = rbc[:, 0]
-s = rbc[:, 1]
-
-mean_x = rbc[:, 2]
-min_x = rbc[:, 3]
-max_x = rbc[:, 4]
-
-mean_y = rbc[:, 5]
-min_y = rbc[:, 6]
-max_y = rbc[:, 7]
-
-mean_t = rbc[:, 8]
-min_t = rbc[:, 9]
-max_t = rbc[:, 10]
-
-sigma_x = rbc[:, 11]
-sigma_y = rbc[:, 12]
-sigma_t = rbc[:, 13]
-
-mean_px = rbc[:, 14]
-min_px = rbc[:, 15]
-max_px = rbc[:, 16]
-
-mean_py = rbc[:, 17]
-min_py = rbc[:, 18]
-max_py = rbc[:, 19]
-
-mean_pt = rbc[:, 20]
-min_pt = rbc[:, 21]
-max_pt = rbc[:, 22]
-
-sigma_px = rbc[:, 23]
-sigma_py = rbc[:, 24]
-sigma_pt = rbc[:, 25]
-
-emittance_x = rbc[:, 26]
-emittance_y = rbc[:, 27]
-emittance_t = rbc[:, 28]
-
-alpha_x = rbc[:, 29]
-alpha_y = rbc[:, 30]
-alpha_t = rbc[:, 31]
-
-beta_x = rbc[:, 32]
-beta_y = rbc[:, 33]
-beta_t = rbc[:, 34]
-
-dispersion_x = rbc[:, 35]
-dispersion_px = rbc[:, 36]
-dispersion_y = rbc[:, 37]
-dispersion_py = rbc[:, 38]
-
-emittance_xn = rbc[:, 39]
-emittance_yn = rbc[:, 40]
-emittance_tn = rbc[:, 41]
-
-charge = rbc[:, 42] / scipy.constants.eV
+s = rbc["s"].to_numpy()
+sigma_x = rbc["sigma_x"].to_numpy()
+sigma_y = rbc["sigma_y"].to_numpy()
+sigma_t = rbc["sigma_t"].to_numpy()
+sigma_pt = rbc["sigma_pt"].to_numpy()
+charge = rbc["charge_C"].to_numpy() / scipy.constants.eV
 
 
 print("initial rbc stdx: ", sigma_x[0])

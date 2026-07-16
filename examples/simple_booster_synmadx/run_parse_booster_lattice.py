@@ -7,11 +7,10 @@
 # -*- coding: utf-8 -*-
 
 
-import mpi4py.MPI as MPI
 import numpy as np
 from scipy import constants
 
-from impactx import ImpactX, distribution, synmadx, twiss
+from impactx import ImpactX, amr, distribution, synmadx, twiss
 from impactx.synmadx import syn2_to_impactx, unroll_impactx_lattice
 
 pi = constants.pi
@@ -54,8 +53,6 @@ total_booster_charge = 6.7e12
 filled_buckets = 81
 bunch_charge_C = eV * total_booster_charge / filled_buckets
 
-myrank = MPI.COMM_WORLD.rank
-
 lattice_line = "booster"
 lattice_file = "sbbooster-cooked.madx"
 
@@ -77,7 +74,7 @@ def set_rf(lattice, voltage, harmno, bunch_phase_offset, phase, above_transition
     # Offset phase by how far the bunch has shifted
     phase_set = phase_set + bunch_phase_offset
 
-    if DEBUG and myrank == 0:
+    if DEBUG and amr.ParallelDescriptor.IOProcessor():
         print("setrf: lattice: ", id(lattice))
         print(
             "set_rf: voltage=",
@@ -93,7 +90,7 @@ def set_rf(lattice, voltage, harmno, bunch_phase_offset, phase, above_transition
     for elem in lattice.get_elements():
         if elem.get_type() == synmadx.element_type.rfcavity:
             cavities = cavities + 1
-    if DEBUG and myrank == 0:
+    if DEBUG and amr.ParallelDescriptor.IOProcessor():
         print(" for ", cavities, " cavities")
 
     # set RF frequency assuming the closed orbit length matches the lattice lengh
@@ -115,7 +112,7 @@ def set_rf(lattice, voltage, harmno, bunch_phase_offset, phase, above_transition
             )  # MAD-X convention frequency in MHz
 
     for elem in lattice.get_elements():
-        if DEBUG and myrank == 0 and elem.get_type() == synmadx.element_type.rfcavity:
+        if DEBUG and amr.ParallelDescriptor.IOProcessor() and elem.get_type() == synmadx.element_type.rfcavity:
             print("set_rf: ", elem)
             break
 
@@ -151,7 +148,7 @@ def main():
     # Read the lattice
     lattice = get_lattice()
 
-    if myrank == 0:
+    if amr.ParallelDescriptor.IOProcessor():
         print(
             "Read lattice, length = {}, {} elements".format(
                 lattice.get_length(), len(lattice.get_elements())
@@ -166,7 +163,7 @@ def main():
     gamma = refpart.get_gamma()
     beta = refpart.get_beta()
 
-    if myrank == 0:
+    if amr.ParallelDescriptor.IOProcessor():
         print("Beam parameters")
         print("energy: ", energy, "GeV")
         print("momentum: ", momentum, "GeV/c")
@@ -221,7 +218,7 @@ def main():
 
     # save the lattice
 
-    if myrank == 0:
+    if amr.ParallelDescriptor.IOProcessor():
         # first the synergia lattice
         with open("booster_synergia_lattice.txt", "w") as f:
             print(lattice, file=f)

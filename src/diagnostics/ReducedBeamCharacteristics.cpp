@@ -16,13 +16,16 @@
 #include "EmittanceInvariants.H"
 
 #include <AMReX_BLProfiler.H>           // for TinyProfiler
+#include <AMReX_Extension.H>            // for AMREX_FORCE_INLINE
 #include <AMReX_GpuDevice.H>            // for dtoh_memcpy
-#include <AMReX_GpuQualifiers.H>        // for AMREX_GPU_DEVICE
+#include <AMReX_GpuQualifiers.H>        // for AMREX_GPU_HOST_DEVICE
 #include <AMReX_ParallelDescriptor.H>   // for ParallelDescriptor
-#include <AMReX_ParticleReduce.H>       // for ParticleReduce
+#include <AMReX_ParticleReduceSIMD.H>   // for ParticleReduceSIMD
 #include <AMReX_REAL.H>                 // for ParticleReal
 #include <AMReX_Reduce.H>               // for ReduceOps
+#include <AMReX_SIMD.H>                 // for simd::load_1d
 #include <AMReX_SmallMatrix.H>          // for SmallMatrix
+#include <AMReX_Tuple.H>                // for makeTuple
 #include <AMReX_TypeList.H>             // for TypeMultiplier
 
 #include <array>
@@ -32,6 +35,84 @@
 
 namespace impactx::diagnostics
 {
+namespace
+{
+    //! constant coordinate shifts subtracted before forming the beam moments
+    struct Shifts
+    {
+        amrex::ParticleReal x, y, t, px, py, pt, sx, sy, sz;
+    };
+
+    /** Per-particle beam-moments reduction kernel.
+     *
+     * Invoked by amrex::ParticleReduceSIMD as f(ptd, si). On CPU with SIMD
+     * support (ImpactX_SIMD=ON), the vectorized main loop evaluates this for a
+     * SIMD register of particles at a time; the scalar remainder loop, CPUs
+     * without SIMD support, and GPUs evaluate it for one particle at a time.
+     * amrex::simd::load_1d makes the same source cover all three cases.
+     *
+     * This is a functor with a templated operator() instead of a generic
+     * lambda for CUDA (extended device lambda) portability.
+     */
+    struct BeamMomentsKernel
+    {
+        Shifts m_shift;
+
+        template <typename PTD, typename SI>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        auto operator() (PTD const& ptd, SI const si) const noexcept
+        {
+            using amrex::simd::load_1d;
+
+            // access SoA particle position, momentum, spin data and weighting
+            auto const p_w  = load_1d(ptd.rdata(RealSoA::w), si);
+            auto const p_x  = load_1d(ptd.rdata(RealSoA::x), si);
+            auto const p_y  = load_1d(ptd.rdata(RealSoA::y), si);
+            auto const p_t  = load_1d(ptd.rdata(RealSoA::t), si);
+            auto const p_px = load_1d(ptd.rdata(RealSoA::px), si);
+            auto const p_py = load_1d(ptd.rdata(RealSoA::py), si);
+            auto const p_pt = load_1d(ptd.rdata(RealSoA::pt), si);
+            auto const p_sx = load_1d(ptd.rdata(RealSoA::sx), si);
+            auto const p_sy = load_1d(ptd.rdata(RealSoA::sy), si);
+            auto const p_sz = load_1d(ptd.rdata(RealSoA::sz), si);
+
+            // deviations from the shift: O(rms) rather than O(coordinate), which
+            // keeps the (weighted) second moments below well-conditioned
+            auto const dx  = p_x  - m_shift.x;
+            auto const dy  = p_y  - m_shift.y;
+            auto const dt  = p_t  - m_shift.t;
+            auto const dpx = p_px - m_shift.px;
+            auto const dpy = p_py - m_shift.py;
+            auto const dpt = p_pt - m_shift.pt;
+            auto const dsx = p_sx - m_shift.sx;
+            auto const dsy = p_sy - m_shift.sy;
+            auto const dsz = p_sz - m_shift.sz;
+
+            return amrex::makeTuple(
+                // Sum(w)
+                p_w,
+                // weighted first moments (shifted): x, y, t, px, py, pt, sx, sy, sz
+                dx*p_w, dy*p_w, dt*p_w, dpx*p_w, dpy*p_w, dpt*p_w,
+                dsx*p_w, dsy*p_w, dsz*p_w,
+                // weighted second moments (shifted): diagonal x, y, t, px, py, pt
+                dx*dx*p_w, dy*dy*p_w, dt*dt*p_w, dpx*dpx*p_w, dpy*dpy*p_w, dpt*dpt*p_w,
+                // same-plane correlations: xpx, ypy, tpt
+                dx*dpx*p_w, dy*dpy*p_w, dt*dpt*p_w,
+                // dispersive correlations: xpt, pxpt, ypt, pypt
+                dx*dpt*p_w, dpx*dpt*p_w, dy*dpt*p_w, dpy*dpt*p_w,
+                // cross-plane correlations: xy, xpy, xt, pxy, pxpy, pxt, yt, pyt
+                dx*dy*p_w, dx*dpy*p_w, dx*dt*p_w, dpx*dy*p_w, dpx*dpy*p_w, dpx*dt*p_w, dy*dt*p_w, dpy*dt*p_w,
+                // spin second moments (diagonal): sx, sy, sz
+                dsx*dsx*p_w, dsy*dsy*p_w, dsz*dsz*p_w,
+                // min of x, y, t, px, py, pt
+                p_x, p_y, p_t, p_px, p_py, p_pt,
+                // max of x, y, t, px, py, pt
+                p_x, p_y, p_t, p_px, p_py, p_pt
+            );
+        }
+    };
+} // anonymous namespace
+
     std::unordered_map<std::string, amrex::ParticleReal>
     reduced_beam_characteristics (ImpactXParticleContainer const & pc)
     {
@@ -46,9 +127,6 @@ namespace impactx::diagnostics
         // reference particle relativistic beta*gamma
         amrex::ParticleReal const bg = ref_part.beta_gamma();
         amrex::ParticleReal const bg2 = bg*bg;
-
-        // preparing access to particle data: SoA
-        using PType = typename ImpactXParticleContainer::SuperParticleType;
 
         /* The reduced beam characteristics are computed in a single pass over the
          * particles from raw (weighted) power sums. For beams that are off-center
@@ -129,58 +207,16 @@ namespace impactx::diagnostics
         > reduce_ops;
         using ReducedDataT = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_sum + num_min + num_max]>;
 
-        auto r = amrex::ParticleReduce<ReducedDataT>(
-            pc,
-            [=] AMREX_GPU_DEVICE(const PType& p) noexcept -> ReducedDataT::Type
-            {
-                // access SoA particle position, momentum, spin data and weighting
-                const amrex::ParticleReal p_w = p.rdata(RealSoA::w);
-                const amrex::ParticleReal p_x = p.rdata(RealSoA::x);
-                const amrex::ParticleReal p_y = p.rdata(RealSoA::y);
-                const amrex::ParticleReal p_t = p.rdata(RealSoA::t);
-                const amrex::ParticleReal p_px = p.rdata(RealSoA::px);
-                const amrex::ParticleReal p_py = p.rdata(RealSoA::py);
-                const amrex::ParticleReal p_pt = p.rdata(RealSoA::pt);
-                const amrex::ParticleReal p_sx = p.rdata(RealSoA::sx);
-                const amrex::ParticleReal p_sy = p.rdata(RealSoA::sy);
-                const amrex::ParticleReal p_sz = p.rdata(RealSoA::sz);
-
-                // deviations from the shift: O(rms) rather than O(coordinate), which
-                // keeps the (weighted) second moments below well-conditioned
-                const amrex::ParticleReal dx  = p_x  - shift_x;
-                const amrex::ParticleReal dy  = p_y  - shift_y;
-                const amrex::ParticleReal dt  = p_t  - shift_t;
-                const amrex::ParticleReal dpx = p_px - shift_px;
-                const amrex::ParticleReal dpy = p_py - shift_py;
-                const amrex::ParticleReal dpt = p_pt - shift_pt;
-                const amrex::ParticleReal dsx = p_sx - shift_sx;
-                const amrex::ParticleReal dsy = p_sy - shift_sy;
-                const amrex::ParticleReal dsz = p_sz - shift_sz;
-
-                return {
-                    // Sum(w)
-                    p_w,
-                    // weighted first moments (shifted): x, y, t, px, py, pt, sx, sy, sz
-                    dx*p_w, dy*p_w, dt*p_w, dpx*p_w, dpy*p_w, dpt*p_w,
-                    dsx*p_w, dsy*p_w, dsz*p_w,
-                    // weighted second moments (shifted): diagonal x, y, t, px, py, pt
-                    dx*dx*p_w, dy*dy*p_w, dt*dt*p_w, dpx*dpx*p_w, dpy*dpy*p_w, dpt*dpt*p_w,
-                    // same-plane correlations: xpx, ypy, tpt
-                    dx*dpx*p_w, dy*dpy*p_w, dt*dpt*p_w,
-                    // dispersive correlations: xpt, pxpt, ypt, pypt
-                    dx*dpt*p_w, dpx*dpt*p_w, dy*dpt*p_w, dpy*dpt*p_w,
-                    // cross-plane correlations: xy, xpy, xt, pxy, pxpy, pxt, yt, pyt
-                    dx*dy*p_w, dx*dpy*p_w, dx*dt*p_w, dpx*dy*p_w, dpx*dpy*p_w, dpx*dt*p_w, dy*dt*p_w, dpy*dt*p_w,
-                    // spin second moments (diagonal): sx, sy, sz
-                    dsx*dsx*p_w, dsy*dsy*p_w, dsz*dsz*p_w,
-                    // min of x, y, t, px, py, pt
-                    p_x, p_y, p_t, p_px, p_py, p_pt,
-                    // max of x, y, t, px, py, pt
-                    p_x, p_y, p_t, p_px, p_py, p_pt
-                };
-            },
-            reduce_ops
-        );
+        /* Fused single-pass reduction over all particles. With ImpactX_SIMD=ON,
+         * the sums accumulate in per-lane partial sums that are folded at the
+         * end, which reassociates the floating-point additions relative to the
+         * scalar evaluation order (rounding-level differences only); min/max
+         * are exact either way.
+         */
+        BeamMomentsKernel const beam_moments{
+            Shifts{shift_x, shift_y, shift_t, shift_px, shift_py, shift_pt,
+                   shift_sx, shift_sy, shift_sz}};
+        auto r = amrex::ParticleReduceSIMD<ReducedDataT>(pc, beam_moments, reduce_ops);
 
         // extract this rank's partial sums, minima and maxima
         std::vector<amrex::ParticleReal> values_sum(num_sum);

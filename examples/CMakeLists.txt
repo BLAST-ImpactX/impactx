@@ -1673,6 +1673,20 @@ add_impactx_test(simple-booster.py
     examples/simple_booster/plot_simple_booster.py
 )
 
+# Fermilab Booster (synmadx MAD-X Parser) #####################################
+#
+if(ImpactX_SYNMADX)
+    # copy MAD-X lattice file
+    file(COPY ${ImpactX_SOURCE_DIR}/examples/simple_booster_synmadx/sbbooster-cooked.madx
+            DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/simple-booster-synmadx.py)
+    add_impactx_test(simple-booster-synmadx.py
+        examples/simple_booster_synmadx/run_parse_booster_lattice.py
+        OFF  # ImpactX MPI-parallel
+        OFF  # no analysis script yet
+        examples/simple_booster_synmadx/analyze_diags.py
+    )
+endif()
+
 # HTU Beamline Model with Off-Energy Transport ################################
 #
 file(COPY ${ImpactX_SOURCE_DIR}/examples/htu_beamline/htu_lattice.py

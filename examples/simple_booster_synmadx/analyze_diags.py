@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import glob
 import re
 
@@ -15,6 +16,13 @@ import scipy
 # attributes in the monitor file:
 # >> series.iterations[1].particles["beam"].attributes
 # ['alpha_t', 'alpha_x', 'alpha_y', 'beta_gamma_ref', 'beta_ref', 'beta_t', 'beta_x', 'beta_y', 'charge_C', 'charge_ref', 'dispersion_px', 'dispersion_py', 'dispersion_x', 'dispersion_y', 'emittance_t', 'emittance_tn', 'emittance_x', 'emittance_xn', 'emittance_y', 'emittance_yn', 'gamma_ref', 'mass_ref', 'max_pt', 'max_px', 'max_py', 'max_t', 'max_x', 'max_y', 'mean_pt', 'mean_px', 'mean_py', 'mean_t', 'mean_x', 'mean_y', 'min_pt', 'min_px', 'min_py', 'min_t', 'min_x', 'min_y', 'pt_max', 'pt_mean', 'pt_min', 'pt_ref', 'px_max', 'px_mean', 'px_min', 'px_ref', 'py_max', 'py_mean', 'py_min', 'py_ref', 'pz_ref', 's_ref', 'sig_pt', 'sig_px', 'sig_py', 'sig_t', 'sig_x', 'sig_y', 'sigma_pt', 'sigma_px', 'sigma_py', 'sigma_t', 'sigma_x', 'sigma_y', 't_max', 't_mean', 't_min', 't_ref', 'x_max', 'x_mean', 'x_min', 'x_ref', 'y_max', 'y_mean', 'y_min', 'y_ref', 'z_ref']
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--save-png", action="store_true", help="non-interactive run: save to PNGs"
+)
+args = parser.parse_args()
 
 
 def read_file(file_pattern):
@@ -187,4 +195,8 @@ plt.title("charge")
 plt.plot(s, charge, label="charge")
 plt.legend(loc="best")
 
-plt.show()
+if args.save_png:
+    for num in plt.get_fignums():
+        plt.figure(num).savefig(f"analyze_diags_{num}.png")
+else:
+    plt.show()

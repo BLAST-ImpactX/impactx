@@ -17,7 +17,8 @@ from enum import Enum
 import numpy as np
 
 import impactx
-from impactx import synmadx
+
+from . import synmadx_pybind as synmadx
 
 
 class Order(Enum):
@@ -30,7 +31,7 @@ class Order(Enum):
 force_linear_dipedges_for_bends = True
 
 
-ET = impactx.synmadx.element_type
+ET = synmadx.element_type
 
 # nslice_by_elem_type = {
 #     "drift": 1,

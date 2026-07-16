@@ -10,9 +10,9 @@
 import mpi4py.MPI as MPI
 import numpy as np
 from scipy import constants
-from syn2_to_impactx import syn2_to_impactx, unroll_impactx_lattice
 
 from impactx import ImpactX, distribution, synmadx, twiss
+from impactx.synmadx import syn2_to_impactx, unroll_impactx_lattice
 
 pi = constants.pi
 c = constants.c

@@ -38,7 +38,7 @@ install(TARGETS synmadx
 
 # Python bindings
 if(ImpactX_PYTHON)
-    pybind11_add_module(pysynmadx MODULE python/synmadx_pywrap.cc)
+    pybind11_add_module(pysynmadx MODULE ${ImpactX_SOURCE_DIR}/src/python/synmadx.cpp)
     target_link_libraries(pysynmadx PRIVATE synmadx)
     set_target_properties(pysynmadx PROPERTIES
         OUTPUT_NAME synmadx_pybind

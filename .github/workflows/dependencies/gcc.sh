@@ -14,6 +14,7 @@ sudo apt-get install -y \
     ccache              \
     cmake               \
     gnupg               \
+    libboost-dev        \
     libfftw3-dev        \
     libhdf5-dev         \
     ninja-build         \

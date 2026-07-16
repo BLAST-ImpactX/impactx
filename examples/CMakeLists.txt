@@ -1682,8 +1682,8 @@ if(ImpactX_SYNMADX)
     add_impactx_test(simple-booster-synmadx.py
         examples/simple_booster_synmadx/run_parse_booster_lattice.py
         OFF  # ImpactX MPI-parallel
-        OFF  # no analysis script yet
         examples/simple_booster_synmadx/analyze_diags.py
+        OFF  # no plot script yet
     )
 endif()
 

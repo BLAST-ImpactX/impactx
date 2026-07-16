@@ -1015,6 +1015,10 @@ This module provides elements and methods for the accelerator lattice.
          Please check any loaded lattice files very carefully.
          Please report your experience and bugs on `our issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
 
+      .. seealso::
+
+         *synmadx*, our :ref:`alternative MAD-X parser <usage-python-synmadx>` ported from Synergia.
+
       :param filename: filename to file with beamline elements
       :param nslice: number of slices used for the application of collective effects
 
@@ -1459,6 +1463,61 @@ comparison methods. They derive directly from each element's ``to_dict()`` outpu
 
       # two lattices (KnownElementsList, FilteredElementsList, or plain list)
       elements.isclose(lattice_a, lattice_b, ignore_attributes=["name"])
+
+
+.. _usage-python-synmadx:
+
+Alternative MAD-X Parser: synmadx
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Additionally to our official MAD-X importer,
+:py:meth:`impactx.elements.KnownElementsList.load_file`, ImpactX ships *synmadx*,
+an alternative, standalone MAD-X lattice parser that was ported from
+`Synergia <https://github.com/fnalacceleratormodeling/synergia2>`__.
+
+.. note::
+
+   synmadx is only available if ImpactX was compiled with the CMake option
+   ``-DImpactX_SYNMADX=ON``, which needs `Boost <https://www.boost.org>`__ installed.
+
+.. py:class:: impactx.synmadx.MadX_reader
+
+   Read and parse a MAD-X file into a Synergia lattice.
+
+   .. py:method:: parse(string)
+
+      Parse MAD-X input given as a string.
+
+      :param string: MAD-X statements to parse
+
+   .. py:method:: get_lattice(line_name)
+                  get_lattice(line_name, filename)
+
+      Return the named beamline as a Synergia lattice, optionally reading and
+      parsing a MAD-X file first.
+
+      :param line_name: name of the beamline (line or sequence) to extract
+      :param filename: path to a MAD-X (``.madx``) file
+
+.. py:function:: impactx.synmadx.syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.exact)
+
+   Convert a Synergia lattice parsed with synmadx into a list of ImpactX
+   lattice elements.
+
+   :param lattice: Synergia lattice, e.g., from :py:meth:`impactx.synmadx.MadX_reader.get_lattice`; must include a reference particle
+   :param init_monitor: prepend a ``BeamMonitor`` that records the initial beam
+   :param final_monitor: append a ``BeamMonitor`` that records the final beam
+   :param order: tracking model used for the converted elements: ``Order.linear``, ``Order.chr`` (chromatic), or ``Order.exact``
+
+.. py:function:: impactx.synmadx.unroll_impactx_lattice(lattice)
+
+   Return a Python source string that recreates the given list of ImpactX
+   elements, e.g., for saving a converted lattice to a file.
+
+   :param lattice: a list of ImpactX lattice elements
+
+See the :ref:`Simple Booster (synmadx MAD-X Parser) example <examples-simple-booster-synmadx>`
+for a complete workflow.
 
 
 Lattice Elements

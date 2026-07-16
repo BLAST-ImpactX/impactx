@@ -1,4 +1,4 @@
-.. _examples-fodo:
+.. _examples-simple-booster:
 
 Simple Booster
 ==============
@@ -127,3 +127,16 @@ Generate a survey of the layout of the Simple Booster machine
 
 .. figure:: simple_booster_survey.png
    :alt: Simple Booster lattice elements layout
+
+
+Variations
+----------
+
+.. toctree::
+   :hidden:
+
+   ../simple_booster_synmadx/README
+
+* :ref:`Simple Booster (synmadx MAD-X Parser) <examples-simple-booster-synmadx>`:
+  the same Booster model, with the lattice parsed at runtime from the original
+  MAD-X file using the alternative synmadx parser ported from Synergia.

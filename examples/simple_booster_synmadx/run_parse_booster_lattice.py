@@ -112,7 +112,11 @@ def set_rf(lattice, voltage, harmno, bunch_phase_offset, phase, above_transition
             )  # MAD-X convention frequency in MHz
 
     for elem in lattice.get_elements():
-        if DEBUG and amr.ParallelDescriptor.IOProcessor() and elem.get_type() == synmadx.element_type.rfcavity:
+        if (
+            DEBUG
+            and amr.ParallelDescriptor.IOProcessor()
+            and elem.get_type() == synmadx.element_type.rfcavity
+        ):
             print("set_rf: ", elem)
             break
 

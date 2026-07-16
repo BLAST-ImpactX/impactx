@@ -118,11 +118,9 @@ def cnv_sbend(elem, order):
     cf = (k1 != 0.0) or (k2 != 0.0) or (k1s != 0.0)
 
     # model for dipedges
-    if force_linear_dipedges_for_bends:
+    if force_linear_dipedges_for_bends or order == Order.linear:
         de_model = "linear"
-    elif order == Order.linear:
-        de_model = "linear"
-    elif order == Order.exact or order == Order.chr:
+    else:  # Order.exact, Order.chr
         de_model = "nonlinear"
 
     if e1 != 0.0:
@@ -136,7 +134,6 @@ def cnv_sbend(elem, order):
             name=nm + "_usedge",
             rotation=rot,
         )
-        pass
     if e2 != 0.0:
         ds_dipedge = impactx.elements.DipEdge(
             e2,
@@ -148,7 +145,6 @@ def cnv_sbend(elem, order):
             name=nm + "_dsedge",
             rotation=rot,
         )
-        pass
 
     if elem.get_double_attribute("h1", 0.0) != 0.0:
         print("h1 attribute not supported for sbend in ImpactX")
@@ -171,7 +167,6 @@ def cnv_sbend(elem, order):
             main_bend_elem = impactx.elements.ExactSbend(
                 ds, phi, nslice=ns, rotation=rot, name=nm
             )
-        pass
     else:
         if order == Order.linear:
             # only do first order bend
@@ -197,18 +192,14 @@ def cnv_sbend(elem, order):
                 name=nm,
                 rotation=rot,
             )
-            pass
-        pass
 
     # collect the pieces
     ixelem = []
     if us_dipedge:
         ixelem.append(us_dipedge)
-        pass
     ixelem.append(main_bend_elem)
     if ds_dipedge:
         ixelem.append(ds_dipedge)
-        pass
 
     return ixelem
 
@@ -247,11 +238,9 @@ def cnv_rbend(elem, order):
         e2 = -e2 - bendangle / 2
 
     # model for dipedges
-    if force_linear_dipedges_for_bends:
+    if force_linear_dipedges_for_bends or order == Order.linear:
         de_model = "linear"
-    elif order == Order.linear:
-        de_model = "linear"
-    elif order == Order.exact or order == Order.chr:
+    else:  # Order.exact, Order.chr
         de_model = "nonlinear"
 
     if e1 != 0.0:
@@ -297,7 +286,6 @@ def cnv_rbend(elem, order):
             main_bend_elem = impactx.elements.ExactSbend(
                 ds, phi, nslice=ns, name=nm, rotation=rot
             )
-        pass
 
     else:
         # CF bend
@@ -325,18 +313,14 @@ def cnv_rbend(elem, order):
                 name=nm,
                 rotation=rot,
             )
-            pass
-        pass
 
     # collect the pieces
     ixelem = []
     if us_dipedge:
         ixelem.append(us_dipedge)
-        pass
     ixelem.append(main_bend_elem)
     if ds_dipedge:
         ixelem.append(ds_dipedge)
-        pass
 
     return ixelem
 
@@ -666,8 +650,6 @@ def syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.
             impactx_lattice.append(ix_elem)
         else:
             print("warning: unsupported element: ", etype)
-
-        pass
 
     if final_monitor:
         # define monitor if it hasn't already been defined

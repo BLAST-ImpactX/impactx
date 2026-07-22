@@ -185,14 +185,18 @@ def objective(parameters: dict) -> dict:
 def test_xopt():
     from xopt import Xopt
     from xopt.evaluator import Evaluator
-    from xopt.vocs import VOCS
+    from xopt.vocs import VOCS, select_best
 
     if gen_name == "TuRBO":
-        from xopt.generators.bayesian import UpperConfidenceBoundGenerator as Generator
+        from xopt.generators.bayesian.upper_confidence_bound import (
+            UpperConfidenceBoundGenerator as Generator,
+        )
 
         gen_args = {"turbo_controller": "optimize"}
     elif gen_name == "Nelder-Mead":
-        from xopt.generators.scipy.neldermead import NelderMeadGenerator as Generator
+        from xopt.generators.sequential.neldermead import (
+            NelderMeadGenerator as Generator,
+        )
 
         gen_args = {}
     else:
@@ -214,12 +218,12 @@ def test_xopt():
     # create Xopt evaluator, generator, and Xopt objects
     evaluator = Evaluator(function=objective)
     generator = Generator(vocs=vocs, **gen_args)
-    X = Xopt(evaluator=evaluator, generator=generator, vocs=vocs)
+    X = Xopt(evaluator=evaluator, generator=generator)
 
     # Initial guess for the quadrople strengths
     initial_quad_strengths = {
-        "q1_k": np.array([-3]),
-        "q2_k": np.array([3]),
+        "q1_k": -3.0,
+        "q2_k": 3.0,
     }
     if gen_name == "TuRBO":
         # a few random guesses
@@ -242,13 +246,11 @@ def test_xopt():
         # X.vocs.normalize_inputs(X.data).plot(*X.vocs.variable_names, kind="scatter")
 
     # Select the best result
-    best_idx, best_error = X.vocs.select_best(X.data)
-    best_run = X.data.iloc[best_idx]
-    best_ks = best_run[["q1_k", "q2_k"]].to_dict(orient="index")[best_idx[0]]
+    best_idx, best_error, best_ks = select_best(X.vocs, X.data)
 
     # Print the optimization result
     print("Optimal parameters for k:", best_ks)
-    print("L2 norm of alpha & beta at the optimum:", best_run["error"].values[0])
+    print("L2 norm of alpha & beta at the optimum:", best_error[0])
 
     # analytical result:
     #   k: -3.5, 2.75

@@ -42,6 +42,10 @@ jobs:
       run: |
         .github/workflows/dependencies/gcc-openmpi.sh
 
+    - name: install optimizer dependencies (covers optional tests)
+      run: |
+        python3 -m pip install -U -r examples/requirements_optimizer.txt
+
     - name: CCache Cache
       uses: actions/cache@v6
       # - once stored under a key, they become immutable (even if local cache path content changes)

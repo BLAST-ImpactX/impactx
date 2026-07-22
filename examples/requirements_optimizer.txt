@@ -1,0 +1,6 @@
+# Optional numerical optimizers, e.g., for the optimize_triplet example.
+#
+# Optimizers often pull in the PyTorch/BoTorch stack, so keep
+# torch on CPU wheels for CI (see also requirements_torch_cpu.txt).
+--extra-index-url https://download.pytorch.org/whl/cpu
+xopt>=3.0

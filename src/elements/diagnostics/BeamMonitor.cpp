@@ -269,6 +269,7 @@ namespace detail {
         beam.setAttribute( "py_ref", ref_part.py );
         beam.setAttribute( "pz_ref", ref_part.pz );
         beam.setAttribute( "pt_ref", ref_part.pt );
+        beam.setAttribute( "gyromagnetic_anomaly_ref", ref_part.gyromagnetic_anomaly );
         beam.setAttribute( "mass_ref", ref_part.mass );
         beam.setAttribute( "charge_ref", ref_part.charge );
 

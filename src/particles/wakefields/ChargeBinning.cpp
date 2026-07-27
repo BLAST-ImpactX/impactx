@@ -51,7 +51,7 @@ namespace impactx::particles::wakefields
                     amrex::ParticleReal* const AMREX_RESTRICT pos_z = soa.GetRealData(impactx::RealSoA::z).dataPtr();
 
                     // Parallel loop over particles
-                    amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE(int i)
+                    amrex::For(np, [=] AMREX_GPU_DEVICE(int i)
                     {
                         // Access particle z-position directly
                         amrex::ParticleReal const z = pos_z[i];  // (Macro)Particle longitudinal position at i
@@ -155,7 +155,7 @@ namespace impactx::particles::wakefields
                     amrex::Real* const AMREX_RESTRICT pos_z = soa.GetRealData(impactx::RealSoA::z).dataPtr();
                     amrex::Real* const AMREX_RESTRICT d_w = soa.GetRealData(impactx::RealSoA::w).dataPtr();
 
-                    amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE(int i)
+                    amrex::For(np, [=] AMREX_GPU_DEVICE(int i)
                     {
                         amrex::Real const w = d_w[i];
                         amrex::Real const x = pos_x[i];

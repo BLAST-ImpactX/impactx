@@ -16,6 +16,10 @@ sim.n_cell = [32, 32, 40]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [4]
+# one box per level and process: this example runs on a single process
+sim.max_grid_size_x = [80]
+sim.max_grid_size_y = [80]
+sim.max_grid_size_z = [80]
 
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"

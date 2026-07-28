@@ -38,6 +38,7 @@ algo.poisson_solver = "multigrid"
 # Space charge solver with one MR level
 amr.max_level = 1
 amr.n_cell = 32 32 40
+amr.max_grid_size = 80  # one box per level and process: this example runs on a single process
 amr.blocking_factor_x = 16
 amr.blocking_factor_y = 16
 amr.blocking_factor_z = 4

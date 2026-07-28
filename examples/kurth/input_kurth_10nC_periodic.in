@@ -45,4 +45,5 @@ algo.poisson_solver = "multigrid"
 
 amr.n_cell = 48 48 40
 #amr.n_cell = 72 72 72  # optional for increased precision
+amr.max_grid_size = 72  # one box per process: this example runs on a single process
 geometry.prob_relative = 3.0

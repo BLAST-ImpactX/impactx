@@ -16,6 +16,9 @@ sim.n_cell = [32, 32, 1]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [1]
+# one box per MPI process (this example runs on 2 MPI processes)
+sim.max_grid_size_x = [16]
+sim.max_grid_size_y = [32]
 
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "2D"

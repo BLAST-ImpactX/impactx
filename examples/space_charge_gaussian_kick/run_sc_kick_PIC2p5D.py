@@ -24,6 +24,9 @@ sim.n_cell = [64, 64, 1]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [1]
+# one box per MPI process (this example runs on 2 MPI processes)
+sim.max_grid_size_x = [32]
+sim.max_grid_size_y = [64]
 sim.prob_relative = [1.1]
 
 # beam diagnostics

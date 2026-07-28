@@ -51,6 +51,8 @@ algo.space_charge.apply_longitudinal_kick = false
 algo.poisson_solver = "fft"
 
 amr.n_cell = 32 32 1
+# one box per MPI process (this example runs on 2 MPI processes)
+amr.max_grid_size_x = 16
 amr.blocking_factor_x = 16
 amr.blocking_factor_y = 16
 amr.blocking_factor_z = 1

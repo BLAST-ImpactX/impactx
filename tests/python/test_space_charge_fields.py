@@ -32,6 +32,7 @@ def test_space_charge_phi_via_hook(save_png=True):
 
     # numerical parameters
     sim.n_cell = [48, 48, 40]
+    sim.max_grid_size = [48]  # one box per process: this test runs on a single process
     sim.tiny_profiler = False
     sim.particle_shape = 2
     sim.space_charge = "3D"

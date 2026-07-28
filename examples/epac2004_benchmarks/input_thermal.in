@@ -37,6 +37,10 @@ algo.space_charge = 3D
 
 #amr.n_cell = 128 128 128  #full resolution
 amr.n_cell = 64 64 64
+# one box per MPI process (this example runs on 2 MPI processes)
+amr.max_grid_size_x = 64
+amr.max_grid_size_y = 64
+amr.max_grid_size_z = 32
 geometry.prob_relative = 3.0
 
 ###############################################################################

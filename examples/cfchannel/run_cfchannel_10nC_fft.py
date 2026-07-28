@@ -12,6 +12,7 @@ sim = ImpactX()
 
 # set numerical parameters and IO control
 sim.n_cell = [48, 48, 40]  # [72, 72, 64] for increased precision
+sim.max_grid_size = [72]  # one box per process: this example runs on a single process
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"
 sim.poisson_solver = "fft"

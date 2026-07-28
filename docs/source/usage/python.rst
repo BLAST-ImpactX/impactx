@@ -31,6 +31,25 @@ Collective Effects & Overall Simulation Parameters
 
       The number of grid points along each direction on the coarsest level.
 
+   .. py:property:: max_grid_size
+
+      The maximum number of grid points per box (grid) along each direction, as a list with one entry per mesh-refinement level.
+      The mesh is decomposed into boxes of at most this size.
+      For best performance, aim for exactly one box per parallel (MPI) process, which is also one box per GPU on accelerated machines; ImpactX warns at the start of a run if the number of boxes does not match the number of processes.
+
+   .. py:property:: max_grid_size_x
+
+      The maximum number of grid points per box along ``x``, as a list with one entry per mesh-refinement level, overwriting :py:attr:`~max_grid_size`.
+      This property is also set when assigning :py:attr:`~blocking_factor_x`.
+      Analogous properties exist as ``max_grid_size_y`` and ``max_grid_size_z``.
+
+   .. py:property:: blocking_factor_x
+
+      The AMReX blocking factor for the ``x`` direction, as a list with one entry per mesh-refinement level.
+      Box sizes are forced to be a multiple of this value, which must be a power of two.
+      Setting this property also sets :py:attr:`~max_grid_size_x` to the same value, which preserves one box per process in the default decomposition; assign :py:attr:`~max_grid_size_x` afterwards to overwrite.
+      Analogous properties exist as ``blocking_factor_y`` and ``blocking_factor_z``.
+
    .. py:property:: max_level
 
       The maximum mesh-refinement level for the simulation.

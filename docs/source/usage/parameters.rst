@@ -2364,6 +2364,38 @@ See there ``nslice`` option on lattice elements for slicing.
 
     The number of grid points along each direction (on the **coarsest level**).
 
+    If this parameter is not set, the mesh is decomposed into exactly one box
+    (grid) per MPI process. One box per process is the ideal decomposition for
+    every simulation, including space charge calculations. The automatically
+    chosen mesh size is only suitable for simulations that need no auxiliary
+    field grids, e.g., without space charge calculations, set this parameter
+    to control the field resolution otherwise.
+
+    If it is set, the mesh is chopped into boxes of at
+    most :pp:param:`amr.max_grid_size` cells per direction, independent of the
+    number of processes.
+
+.. pp:param:: amr.max_grid_size
+    :type: ``integer, per MR level``
+    :optional:
+    :default: ``32``
+
+    The maximum number of grid points per box (`grid <https://amrex-codes.github.io/amrex/docs_html/GridCreation.html>`__) along each direction.
+    The mesh on each mesh-refinement level is decomposed into boxes of at most this size.
+
+    For best performance, aim for **exactly one box per parallel (MPI) process**, which is also one box per GPU on accelerated machines.
+    More boxes per process cause significant overhead (particle redistribution, communication in field solves, extra kernel launches).
+    Fewer boxes than processes leave processes idle.
+    ImpactX issues a warning at the start of a run if the number of boxes does not match the number of processes.
+
+.. pp:param:: amr.max_grid_size_x
+    :type: ``integer, per MR level``
+    :optional:
+    :default: ``amr.max_grid_size``
+
+    The maximum number of grid points per box along ``x``, overwriting :pp:param:`amr.max_grid_size`.
+    Analogous parameters exist as ``amr.max_grid_size_y`` and ``amr.max_grid_size_z``.
+
 .. pp:param:: amr.max_level
     :type: ``integer``
     :default: ``0``

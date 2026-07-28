@@ -16,6 +16,8 @@
 #include "particles/Push.H"
 #include "particles/wakefields/HandleWakefield.H"
 
+#include <ablastr/warn_manager/WarnManager.H>
+
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
 #include <AMReX_BLProfiler.H>
@@ -26,6 +28,7 @@
 
 #include <iostream>
 #include <memory>
+#include <string>
 
 
 namespace impactx {
@@ -118,6 +121,55 @@ namespace impactx {
             if (verbose > 0) {
                 std::cout << "\nGrids Summary:\n";
                 amr_data->printGridSummary(std::cout, 0, amr_data->finestLevel());
+            }
+        }
+
+        // warn on inefficient domain decompositions (number of boxes vs. parallel processes)
+        {
+            std::string const python_hint(
+                " In Python, the equivalent options are sim.max_grid_size and "
+                "sim.max_grid_size_x/_y/_z."
+            );
+            int const nprocs = amrex::ParallelDescriptor::NProcs();
+            for (int lev = 0; lev <= amr_data->finestLevel(); ++lev) {
+                amrex::Long const nboxes = amr_data->boxArray(lev).size();
+                if (nprocs == 1 && nboxes > 1) {
+                    ablastr::warn_manager::WMRecordWarning(
+                        "ImpactX::init_grids",
+                        "The mesh on level " + std::to_string(lev) + " is decomposed into " +
+                        std::to_string(nboxes) + " boxes, but this simulation runs on a "
+                        "single process. More than one box per process causes significant "
+                        "overhead (particle redistribution, communication in field solves, "
+                        "extra kernel launches) without any parallelization benefit. "
+                        "Set amr.max_grid_size at least as large as amr.n_cell "
+                        "(per direction: amr.max_grid_size_x/_y/_z) to create a single box, "
+                        "or run with more MPI processes." + python_hint,
+                        ablastr::warn_manager::WarnPriority::high
+                    );
+                } else if (nboxes > nprocs) {
+                    ablastr::warn_manager::WMRecordWarning(
+                        "ImpactX::init_grids",
+                        "The mesh on level " + std::to_string(lev) + " is decomposed into " +
+                        std::to_string(nboxes) + " boxes for only " + std::to_string(nprocs) +
+                        " MPI processes. More than one box per process (e.g., per GPU) "
+                        "causes significant overhead (particle redistribution, communication "
+                        "in field solves, extra kernel launches). Increase amr.max_grid_size "
+                        "(per direction: amr.max_grid_size_x/_y/_z) so that the number of "
+                        "boxes matches the number of processes." + python_hint,
+                        ablastr::warn_manager::WarnPriority::high
+                    );
+                } else if (lev == 0 && nboxes < nprocs) {
+                    ablastr::warn_manager::WMRecordWarning(
+                        "ImpactX::init_grids",
+                        "The mesh on level 0 is decomposed into " + std::to_string(nboxes) +
+                        " box(es) for " + std::to_string(nprocs) + " MPI processes. Processes "
+                        "without a box do not participate in field solves and hold no "
+                        "particles after redistribution. Decrease amr.max_grid_size "
+                        "(per direction: amr.max_grid_size_x/_y/_z) so that the number of "
+                        "boxes matches the number of processes." + python_hint,
+                        ablastr::warn_manager::WarnPriority::high
+                    );
+                }
             }
         }
 

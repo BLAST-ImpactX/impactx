@@ -128,9 +128,52 @@ void init_ImpactX (py::module& m)
                       pp_amr.addarr(bf_str.c_str(), blocking_factor_dir);
                       pp_amr.addarr(mgs_str.c_str(), blocking_factor_dir);
                   },
-                  "AMReX blocking factor for a direction, per MR level."
+                  "AMReX blocking factor for a direction, per MR level. "
+                  "Also sets max_grid_size_x/_y/_z in this direction to the "
+                  "same value; assign that property afterwards to overwrite."
+            )
+            .def_property(mgs_str.c_str(),
+                  [mgs_str](ImpactX & /* ix */) {
+                      amrex::ParmParse pp_amr("amr");
+                      std::vector<int> max_grid_size_dir;
+                      pp_amr.queryarr(mgs_str.c_str(), max_grid_size_dir);
+
+                      return max_grid_size_dir;
+                  },
+                  [mgs_str](ImpactX &ix, std::vector<int> max_grid_size_dir) {
+                      if (ix.initialized())
+                          throw std::runtime_error("Read-only parameter after init_grids was called.");
+
+                      amrex::ParmParse pp_amr("amr");
+                      pp_amr.addarr(mgs_str.c_str(), max_grid_size_dir);
+                  },
+                  "AMReX maximum box size for a direction, per MR level. "
+                  "Boxes larger than this are chopped, aim for one box per "
+                  "parallel process."
             );
     }
+
+    impactx
+        .def_property("max_grid_size",
+            [](ImpactX & /* ix */) {
+                amrex::ParmParse pp_amr("amr");
+                std::vector<int> max_grid_size;
+                pp_amr.queryarr("max_grid_size", max_grid_size);
+
+                return max_grid_size;
+            },
+            [](ImpactX &ix, std::vector<int> max_grid_size) {
+                if (ix.initialized())
+                    throw std::runtime_error("Read-only parameter after init_grids was called.");
+
+                amrex::ParmParse pp_amr("amr");
+                pp_amr.addarr("max_grid_size", max_grid_size);
+            },
+            "AMReX maximum box size along all directions, per MR level. "
+            "Boxes larger than this are chopped; aim for one box per "
+            "parallel process. Per-direction values (max_grid_size_x/_y/_z) "
+            "take precedence."
+        );
 
     impactx
         // from amrex::AmrMesh

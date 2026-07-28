@@ -467,12 +467,56 @@ namespace impactx
         m_coordsystem = coord_system;
     }
 
+    namespace
+    {
+        //! the selection to use: resolve the stored requested names, or build the
+        //! default from the current spin-tracking and eigenemittance flags
+        diagnostics::MomentsSelection
+        effective_selection (std::optional<std::vector<std::string>> const & names)
+        {
+            amrex::ParmParse pp_diag("diag");
+            bool eigen = false;
+            pp_diag.query("eigenemittances", eigen);
+
+            if (names.has_value())
+            {
+                return diagnostics::resolve_beam_moments_selection(names.value(), eigen);
+            }
+
+            amrex::ParmParse pp_algo("algo");
+            bool spin = false;
+            pp_algo.query("spin", spin);
+            return diagnostics::default_beam_moments_selection(spin, eigen);
+        }
+    }
+
+    void
+    ImpactXParticleContainer::set_beam_moments_selection (std::vector<std::string> const & names)
+    {
+        if (names.empty())
+        {
+            m_beam_moments_select_names.reset();  // back to the default selection
+        }
+        else
+        {
+            m_beam_moments_select_names = names;
+        }
+    }
+
+    std::vector<std::string>
+    ImpactXParticleContainer::beam_moments_selection () const
+    {
+        if (m_beam_moments_select_names.has_value()) { return m_beam_moments_select_names.value(); }
+        return {};
+    }
+
     void
     ImpactXParticleContainer::record_beam_moments ()
     {
         BL_PROFILE("ImpactXParticleContainer::record_beam_moments");
 
-        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        auto rbc = diagnostics::reduced_beam_characteristics(
+            *this, effective_selection(m_beam_moments_select_names));
         amrex::ParticleReal const s = this->GetRefParticle().s;
         rbc["s"] = s;
 
@@ -484,7 +528,33 @@ namespace impactx
     {
         BL_PROFILE("ImpactXParticleContainer::beam_moments");
 
-        auto rbc = diagnostics::reduced_beam_characteristics(*this);
+        auto rbc = diagnostics::reduced_beam_characteristics(
+            *this, effective_selection(m_beam_moments_select_names));
+        amrex::ParticleReal const s = this->GetRefParticle().s;
+        rbc["s"] = s;
+
+        return rbc;
+    }
+
+    std::unordered_map<std::string, amrex::ParticleReal>
+    ImpactXParticleContainer::beam_moments (std::vector<std::string> const & names)
+    {
+        BL_PROFILE("ImpactXParticleContainer::beam_moments");
+
+        diagnostics::MomentsSelection sel;
+        if (names.empty())
+        {
+            sel = effective_selection(m_beam_moments_select_names);
+        }
+        else
+        {
+            amrex::ParmParse pp_diag("diag");
+            bool eigen = false;
+            pp_diag.query("eigenemittances", eigen);
+            sel = diagnostics::resolve_beam_moments_selection(names, eigen);
+        }
+
+        auto rbc = diagnostics::reduced_beam_characteristics(*this, sel);
         amrex::ParticleReal const s = this->GetRefParticle().s;
         rbc["s"] = s;
 

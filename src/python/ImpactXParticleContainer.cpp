@@ -15,6 +15,7 @@
 #include <AMReX_ParticleContainer.H>
 
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -161,11 +162,15 @@ void init_impactxparticlecontainer(py::module& m)
              "Compute reduced beam characteristics like the position and momentum moments of the particle distribution, as well as emittance and Twiss parameters."
         )
         .def("beam_moments",
-             [](ImpactXParticleContainer & pc) {
+             [](ImpactXParticleContainer & pc, std::optional<std::vector<std::string>> const & select) {
+                 if (select.has_value()) { return pc.beam_moments(select.value()); }
                  return pc.beam_moments();
              },
+             py::arg("select") = std::nullopt,
              "Calculate beam moments at current ``s`` like the position and momentum moments of the particle "
-             "distribution, as well as emittance and Twiss parameters."
+             "distribution, as well as emittance and Twiss parameters.\n\n"
+             "If ``select`` is given (a list of output names, or ``[\"all\"]``), only those outputs are "
+             "computed, using the fastest reduction that covers them."
         )
         .def("beam_moments_history_list",
              [](ImpactXParticleContainer & pc) {
@@ -189,6 +194,14 @@ void init_impactxparticlecontainer(py::module& m)
             [](ImpactXParticleContainer & pc){ return pc.store_beam_moments; },
             [](ImpactXParticleContainer & pc, bool record){ pc.store_beam_moments = record; },
             "In situ calculate and store the beam moments for every simulation step."
+        )
+        .def_property("beam_moments_select",
+            [](ImpactXParticleContainer & pc){ return pc.beam_moments_selection(); },
+            [](ImpactXParticleContainer & pc, std::vector<std::string> const & names){ pc.set_beam_moments_selection(names); },
+            "The selection of beam-moment outputs to compute for ``beam_moments()`` and "
+            "``store_beam_moments``: a list of output names (e.g. ``[\"sigma_x\", \"dispersion_x\"]``), "
+            "or ``[\"all\"]`` for the full set. An empty list resets to the default (all outputs except "
+            "min/max, and except the spin moments when spin tracking is off)."
         )
 
         // TODO: cleverly pass the list of rho multifabs as references

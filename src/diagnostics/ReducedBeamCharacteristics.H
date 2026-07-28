@@ -10,6 +10,7 @@
 #ifndef IMPACTX_REDUCED_BEAM_CHARACTERISTICS_H
 #define IMPACTX_REDUCED_BEAM_CHARACTERISTICS_H
 
+#include "BeamMomentsSelection.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/CovarianceMatrix.H"
 
@@ -27,6 +28,19 @@ namespace impactx::diagnostics
      */
     std::unordered_map<std::string, amrex::ParticleReal>
     reduced_beam_characteristics (ImpactXParticleContainer const & pc);
+
+    /** Compute a selected subset of the moments of the beam distribution
+     *
+     * Computes only the outputs the selection requests, using the fastest
+     * reduction profile that covers them. This uses an MPI Allreduce and returns
+     * a result on all ranks.
+     *
+     * @param pc        the particle container
+     * @param selection the resolved moment selection (see BeamMomentsSelection.H)
+     */
+    std::unordered_map<std::string, amrex::ParticleReal>
+    reduced_beam_characteristics (ImpactXParticleContainer const & pc,
+                                  MomentsSelection const & selection);
 
     /** Compute moments of the beam distribution from covariance matrix
      */

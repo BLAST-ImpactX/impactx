@@ -26,8 +26,10 @@
 
 #include <list>
 #include <optional>
+#include <string>
 #include <tuple>
 #include <unordered_map>
+#include <vector>
 
 
 namespace impactx
@@ -324,13 +326,37 @@ namespace impactx
         /** In situ calculate and store the beam moments for every simulation step */
         bool store_beam_moments = false;
 
+        /** Set the selection of beam-moment outputs to compute.
+         *
+         * @param names requested output names (e.g. {"sigma_x","dispersion_x"}),
+         *              or {"all"} for the full set; an empty list resets to the
+         *              default (all outputs except min/max, and except the spin
+         *              moments when spin tracking is off).
+         */
+        void
+        set_beam_moments_selection (std::vector<std::string> const & names);
+
+        /** Get the currently requested beam-moment output names (empty when the
+         *  default selection is in effect).
+         */
+        std::vector<std::string>
+        beam_moments_selection () const;
+
         /** Calculate & record the beam moments at current s */
         void
         record_beam_moments ();
 
-        /** Calculate beam moments at current s */
+        /** Calculate beam moments at current s (using the stored selection) */
         std::unordered_map<std::string, amrex::ParticleReal>
         beam_moments ();
+
+        /** Calculate a selected subset of the beam moments at current s
+         *
+         * @param names requested output names; an empty list uses the stored
+         *              selection (or the default)
+         */
+        std::unordered_map<std::string, amrex::ParticleReal>
+        beam_moments (std::vector<std::string> const & names);
 
         /** Get the history of beam moments */
         std::list<std::unordered_map<std::string, amrex::ParticleReal> >
@@ -356,6 +382,10 @@ namespace impactx
 
         //! history of the beam moments over s
         std::list<std::unordered_map<std::string, amrex::ParticleReal> > m_beam_moments;
+
+        //! requested beam-moment output names (unset => the default selection);
+        //! resolved to a selection in the .cpp to keep this header dependency-free
+        std::optional<std::vector<std::string>> m_beam_moments_select_names;
 
         //! the RF bucket length for particles in the particle container
         //!   only active if algo.particle_bc is not set to "open" (default)

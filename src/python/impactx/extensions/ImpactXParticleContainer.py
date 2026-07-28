@@ -29,8 +29,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     import numpy as np
     from quantiphy import Quantity
 
-    # Beam Characteristics
-    rbc = self.beam_moments()
+    # Beam Characteristics (this phase-space plot needs the full set: min/max
+    # for the histogram ranges and the Twiss parameters for the labels)
+    rbc = self.beam_moments(["all"])
 
     # update for plot unit system
     m2mm = 1.0e3

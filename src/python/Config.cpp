@@ -5,6 +5,11 @@
  */
 #include "pyImpactX.H"
 
+#include <ImpactXVersion.H>
+
+#include <Utils/WarpXVersion.H>
+
+#include <AMReX.H>
 #include <AMReX_SIMD.H>
 
 #ifdef ImpactX_USE_OPENPMD
@@ -88,6 +93,8 @@ void init_Config (py::module& m)
 
     std::shared_ptr<ConfigMap const> const config = std::make_shared<ConfigMap>(
         ConfigMap{
+            {"ablastr_version", std::string{WARPX_GIT_VERSION}},
+            {"amrex_version", amrex::Version()},
             {"gpu_backend", gpu_backend},
             {"have_fft",
 #ifdef ImpactX_USE_FFT
@@ -131,6 +138,7 @@ void init_Config (py::module& m)
                 false
 #endif
             },
+            {"impactx_version", std::string{IMPACTX_GIT_VERSION}},
             {"openpmd_backends",
 #ifdef ImpactX_USE_OPENPMD
                 openPMD::getVariants()
@@ -157,6 +165,24 @@ void init_Config (py::module& m)
         }
     );
 
+    std::map<std::string, char const *> const doc = {
+        {"ablastr_version", "ABLASTR library version"},
+        {"amrex_version", "AMReX library version"},
+        {"gpu_backend", "GPU backend ('CUDA', 'HIP' or 'SYCL'), None without GPU support"},
+        {"have_fft", "Build supports FFT-based solvers"},
+        {"have_gpu", "Build supports GPUs"},
+        {"have_mpi", "Build supports MPI"},
+        {"have_omp", "Build supports OpenMP"},
+        {"have_openpmd", "Build supports openPMD I/O"},
+        {"have_simd", "Build supports explicit SIMD vectorization"},
+        {"impactx_version", "ImpactX library version"},
+        {"openpmd_backends", "openPMD I/O backends available in this build"},
+        {"precision", "Floating point precision of amrex::Real ('SINGLE' or 'DOUBLE')"},
+        {"precision_particles",
+            "Floating point precision of amrex::ParticleReal ('SINGLE' or 'DOUBLE')"},
+        {"simd_size", "Number of amrex::ParticleReal elements in a native SIMD vector"}
+    };
+
     py::dict config_metaclass_namespace;
     config_metaclass_namespace["__module__"] = m.attr("__name__");
     config_metaclass_namespace["__repr__"] = py::cpp_function(
@@ -181,7 +207,8 @@ void init_Config (py::module& m)
             entry.first.c_str(),
             [config, name = entry.first](py::object const &) {
                 return config->at(name);
-            }
+            },
+            doc.at(entry.first)
         );
     }
     pyImpactXConfig.def_static(

@@ -127,6 +127,7 @@ print("")
 print(f"Spin moment consistency condition = {condition:e}")
 
 atol = 1.0e-12 if is_double else 1.0e-3
+rtol = 0.0
 print(f"  atol={atol}")
 
 assert np.allclose(
@@ -134,5 +135,6 @@ assert np.allclose(
     [
         1.0,
     ],
+    rtol=rtol,
     atol=atol,
 )

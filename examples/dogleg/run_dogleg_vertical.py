@@ -104,6 +104,7 @@ def assert_final_beam(moments):
             -2.666972e-01,
         ],
         rtol=2.0e-2,
+        atol=0.0,  # do not let the default atol swallow the emittance checks
     )
 
 

@@ -186,12 +186,13 @@ assert np.allclose(
     rtol=rtol,
     atol=atol,
 )
-atol = 1.0e-6  # ignored
+atol = 1.0e-6
 print(f"  atol={atol}")
 assert np.allclose(
     [px_mean],
     [
         px_mean_predicted,
     ],
+    rtol=0.0,
     atol=atol,
 )

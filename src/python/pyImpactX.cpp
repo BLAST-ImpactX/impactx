@@ -20,6 +20,7 @@ using namespace impactx;
 
 
 // forward declarations of exposed classes
+void init_Config(py::module&);
 void init_distribution(py::module&);
 void init_elements(py::module&);
 void init_flatten_rho(py::module& m);
@@ -53,6 +54,7 @@ PYBIND11_MODULE(impactx_pybind, m) {
     init_transformation(m);
     init_wakeconvolution(m);
     init_ImpactX(m);
+    init_Config(m);
     init_flatten_rho(m);
 
     // expose our amrex module

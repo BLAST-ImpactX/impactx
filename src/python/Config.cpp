@@ -39,7 +39,12 @@ namespace
         std::map<std::string, bool>,
         std::optional<std::string>
     >;
-    using ConfigMap = std::map<std::string, ConfigValue>;
+    struct ConfigEntry
+    {
+        ConfigValue value;
+        char const * doc;
+    };
+    using ConfigMap = std::map<std::string, ConfigEntry>;
 
     std::string config_repr (ConfigMap const & config)
     {
@@ -53,7 +58,7 @@ namespace
         }
 
         std::string repr = "impactx.Config:";
-        for (auto const & [name, value] : config)
+        for (auto const & [name, entry] : config)
         {
             repr += "\n    " + name;
             repr.append(name_width - name.size(), ' ');
@@ -61,7 +66,7 @@ namespace
             if (name == "openpmd_backends")
             {
                 py::list enabled_backends;
-                auto const & backends = std::get<std::map<std::string, bool>>(value);
+                auto const & backends = std::get<std::map<std::string, bool>>(entry.value);
                 for (auto const & [backend, enabled] : backends)
                 {
                     if (enabled)
@@ -73,7 +78,7 @@ namespace
             }
             else
             {
-                repr += py::repr(py::cast(value)).cast<std::string>();
+                repr += py::repr(py::cast(entry.value)).cast<std::string>();
             }
         }
         return repr;
@@ -93,95 +98,86 @@ void init_Config (py::module& m)
 
     std::shared_ptr<ConfigMap const> const config = std::make_shared<ConfigMap>(
         ConfigMap{
-            {"ablastr_version", std::string{WARPX_GIT_VERSION}},
-            {"amrex_version", amrex::Version()},
-            {"gpu_backend", gpu_backend},
-            {"have_fft",
+            {"ablastr_version", {
+                std::string{WARPX_GIT_VERSION},
+                "ABLASTR library version"}},
+            {"amrex_version", {
+                amrex::Version(),
+                "AMReX library version"}},
+            {"gpu_backend", {
+                gpu_backend,
+                "GPU backend ('CUDA', 'HIP' or 'SYCL'), None without GPU support"}},
+            {"have_fft", {
 #ifdef ImpactX_USE_FFT
-                true
+                true,
 #else
-                false
+                false,
 #endif
-            },
-            {"have_gpu",
+                "Build supports FFT-based solvers"}},
+            {"have_gpu", {
 #ifdef AMREX_USE_GPU
-                true
+                true,
 #else
-                false
+                false,
 #endif
-            },
-            {"have_mpi",
+                "Build supports GPUs"}},
+            {"have_mpi", {
 #ifdef AMREX_USE_MPI
-                true
+                true,
 #else
-                false
+                false,
 #endif
-            },
-            {"have_omp",
+                "Build supports MPI"}},
+            {"have_omp", {
 #ifdef AMREX_USE_OMP
-                true
+                true,
 #else
-                false
+                false,
 #endif
-            },
-            {"have_openpmd",
+                "Build supports OpenMP"}},
+            {"have_openpmd", {
 #ifdef ImpactX_USE_OPENPMD
-                true
+                true,
 #else
-                false
+                false,
 #endif
-            },
-            {"have_simd",
+                "Build supports openPMD I/O"}},
+            {"have_simd", {
 #ifdef AMREX_USE_SIMD
-                true
+                true,
 #else
-                false
+                false,
 #endif
-            },
-            {"impactx_version", std::string{IMPACTX_GIT_VERSION}},
-            {"openpmd_backends",
+                "Build supports explicit SIMD vectorization"}},
+            {"impactx_version", {
+                std::string{IMPACTX_GIT_VERSION},
+                "ImpactX library version"}},
+            {"openpmd_backends", {
 #ifdef ImpactX_USE_OPENPMD
-                openPMD::getVariants()
+                openPMD::getVariants(),
 #else
-                std::map<std::string, bool>{}
+                std::map<std::string, bool>{},
 #endif
-            },
-            {"precision",
+                "openPMD I/O backends available in this build"}},
+            {"precision", {
 #ifdef AMREX_USE_FLOAT
-                std::string{"SINGLE"}
+                std::string{"SINGLE"},
 #else
-                std::string{"DOUBLE"}
+                std::string{"DOUBLE"},
 #endif
-            },
-            {"precision_particles",
+                "Floating point precision of amrex::Real ('SINGLE' or 'DOUBLE')"}},
+            {"precision_particles", {
 #ifdef AMREX_SINGLE_PRECISION_PARTICLES
-                std::string{"SINGLE"}
+                std::string{"SINGLE"},
 #else
-                std::string{"DOUBLE"}
+                std::string{"DOUBLE"},
 #endif
-            },
-            {"simd_size",
-                static_cast<int>(amrex::simd::native_simd_size_particlereal)}
+                "Floating point precision of amrex::ParticleReal ('SINGLE' or 'DOUBLE')"}},
+            {"simd_size", {
+                static_cast<int>(amrex::simd::native_simd_size_particlereal),
+                "Number of amrex::ParticleReal elements in a native SIMD vector"}}
         }
     );
-
-    std::map<std::string, char const *> const doc = {
-        {"ablastr_version", "ABLASTR library version"},
-        {"amrex_version", "AMReX library version"},
-        {"gpu_backend", "GPU backend ('CUDA', 'HIP' or 'SYCL'), None without GPU support"},
-        {"have_fft", "Build supports FFT-based solvers"},
-        {"have_gpu", "Build supports GPUs"},
-        {"have_mpi", "Build supports MPI"},
-        {"have_omp", "Build supports OpenMP"},
-        {"have_openpmd", "Build supports openPMD I/O"},
-        {"have_simd", "Build supports explicit SIMD vectorization"},
-        {"impactx_version", "ImpactX library version"},
-        {"openpmd_backends", "openPMD I/O backends available in this build"},
-        {"precision", "Floating point precision of amrex::Real ('SINGLE' or 'DOUBLE')"},
-        {"precision_particles",
-            "Floating point precision of amrex::ParticleReal ('SINGLE' or 'DOUBLE')"},
-        {"simd_size", "Number of amrex::ParticleReal elements in a native SIMD vector"}
-    };
 
     py::dict config_metaclass_namespace;
     config_metaclass_namespace["__module__"] = m.attr("__name__");
@@ -201,20 +197,25 @@ void init_Config (py::module& m)
     py::class_<Config> pyImpactXConfig(
         m, "Config", py::metaclass(config_metaclass)
     );
-    for (auto const & entry : *config)
+    for (auto const & [name, entry] : *config)
     {
         pyImpactXConfig.def_property_readonly_static(
-            entry.first.c_str(),
-            [config, name = entry.first](py::object const &) {
-                return config->at(name);
+            name.c_str(),
+            [config, name](py::object const &) {
+                return config->at(name).value;
             },
-            doc.at(entry.first)
+            entry.doc
         );
     }
     pyImpactXConfig.def_static(
         "to_dict",
         [config]() {
-            return *config;
+            py::dict d;
+            for (auto const & [name, entry] : *config)
+            {
+                d[name.c_str()] = entry.value;
+            }
+            return d;
         },
         "Return the ImpactX build configuration as a dictionary."
     );

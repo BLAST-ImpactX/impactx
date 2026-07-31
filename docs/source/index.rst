@@ -38,13 +38,13 @@ There, you can find already answered questions, add your own, get help with inst
    /* front page: hide chapter titles
     * needed for consistent HTML-PDF-EPUB chapters
     */
-   div#installation.section,
-   div#usage.section,
-   div#theory.section,
-   div#data-analysis.section,
-   div#development.section,
-   div#maintenance.section,
-   div#epilogue.section {
+   section#installation,
+   section#usage,
+   section#data-analysis,
+   section#theory,
+   section#development,
+   section#maintenance,
+   section#epilogue {
        display:none;
    }
    </style>

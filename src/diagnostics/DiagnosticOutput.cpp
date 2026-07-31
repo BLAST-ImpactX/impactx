@@ -55,7 +55,7 @@ namespace
             bool compute_spin_moments = false;
             pp_algo.queryAdd("spin", compute_spin_moments);
 
-            file_handler << "step" << " " << "s" << " "
+            file_handler << "step" << " " << "period" << " " << "s" << " "
                          << "mean_x" << " " << "min_x" << " " << "max_x" << " "
                          << "mean_y" << " " << "min_y" << " " << "max_y" << " "
                          << "mean_t" << " " << "min_t" << " " << "max_t" << " "
@@ -137,7 +137,8 @@ namespace
         amrex::AllPrintToFile & file_handler,
         std::unordered_map<std::string, amrex::ParticleReal> const & rbc,
         amrex::ParticleReal s,
-        int step
+        int step,
+        int period
     )
     {
         // determine whether to output eigenemittances
@@ -150,7 +151,7 @@ namespace
         bool compute_spin_moments = false;
         pp_algo.queryAdd("spin", compute_spin_moments);
 
-        file_handler << step << " " << s << " "
+        file_handler << step << " " << period << " " << s << " "
                 << rbc.at("mean_x") << " " << rbc.at("min_x") << " " << rbc.at("max_x") << " "
                 << rbc.at("mean_y") << " " << rbc.at("min_y") << " " << rbc.at("max_y") << " "
                 << rbc.at("mean_t") << " " << rbc.at("min_t") << " " << rbc.at("max_t") << " "
@@ -188,6 +189,7 @@ namespace impactx::diagnostics
         ImpactXParticleContainer const & pc,
         std::string const & file_name,
         int step,
+        int period,
         bool append
     )
     {
@@ -205,7 +207,7 @@ namespace impactx::diagnostics
         std::unordered_map<std::string, amrex::ParticleReal> const rbc =
             diagnostics::reduced_beam_characteristics(pc);
 
-        write_rbc(file_handler, rbc, s, step);
+        write_rbc(file_handler, rbc, s, step, period);
     }
 
     void DiagnosticOutput (
@@ -213,6 +215,7 @@ namespace impactx::diagnostics
         RefPart const & ref_part,
         std::string const & file_name,
         int step,
+        int period,
         bool append
     )
     {
@@ -226,7 +229,7 @@ namespace impactx::diagnostics
         std::unordered_map<std::string, amrex::ParticleReal> const rbc =
             diagnostics::reduced_beam_characteristics(cm, ref_part);
 
-        write_rbc(file_handler, rbc, s, step);
+        write_rbc(file_handler, rbc, s, step, period);
     }
 
     void DiagnosticOutput (

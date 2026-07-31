@@ -407,8 +407,9 @@ If the same element name is used multiple times, then an output series is create
     :type: ``string``
     :default: ``g``
 
-    openPMD `iteration encoding <https://openpmd-api.readthedocs.io/en/0.14.0/usage/concepts.html#iteration-and-series>`__: (v)ariable based, (f)ile based, (g)roup based (default)
-    variable based is an `experimental feature with ADIOS2 <https://openpmd-api.readthedocs.io/en/0.14.0/backends/adios2.html#experimental-new-adios2-schema>`__.
+    openPMD `iteration encoding <https://openpmd-api.readthedocs.io/en/latest/usage/concepts.html#iteration-and-series>`__: (v)ariable based, (f)ile based, (g)roup based (default).
+    Variable based is an `experimental feature with ADIOS2 <https://openpmd-api.readthedocs.io/en/0.14.0/backends/adios2.html#experimental-new-adios2-schema>`__,
+    and `currently requires linear read access <https://github.com/openPMD/openPMD-api/issues/1911>`__ (``Access.read_linear``) in downstream readers.
 
 .. pp:param:: <monitor_name>.period_sample_intervals
     :type: ``integer``
@@ -417,12 +418,26 @@ If the same element name is used multiple times, then an output series is create
     For periodic lattice, only output every Nth period (turn).
     By default, diagnostics are returned every cycle.
 
+.. pp:param:: <monitor_name>.particles
+    :type: ``boolean``
+    :default: ``true``
+
+    Output the individual particles of the beam.
+    When set to ``false``, the beam monitor becomes a fast, small diagnostic that stores only per-output attributes (reference particle and, if enabled, beam moments).
+
+.. pp:param:: <monitor_name>.beam_moments
+    :type: ``boolean``
+    :default: ``true``
+
+    Compute and output the beam moments (reduced beam characteristics) of the whole bunch as openPMD attributes on the ``beam`` particle species.
+
 .. pp:param:: <monitor_name>.nonlinear_lens_invariants
     :type: ``boolean``
     :default: ``false``
 
     Compute and output the invariants H and I within the nonlinear magnetic insert element (see: ``nonlinear_lens``).
     Invariants associated with the nonlinear magnetic insert described by V. Danilov and S. Nagaitsev, PRSTAB 13, 084002 (2010), Sect. V.A.
+    Requires ``<monitor_name>.particles = true``.
 
     .. pp:param:: <monitor_name>.alpha
         :type: ``float``
@@ -2038,6 +2053,22 @@ When ImpactX needs to sort particles spatially, it will redistribute them over M
     :default: ``true``
 
     Inject particles only for the first lattice period.
+
+.. pp:param:: <source_name>.load_ref_particle
+    :type: ``boolean``
+    :default: ``true``
+
+    Restore the reference particle from the species metadata of the openPMD file.
+
+    The reference particle state (:math:`s`, positions, momenta, mass, charge and the gyromagnetic anomaly)
+    is restored exactly from the iteration the particles are read from.
+    In this case, the :ref:`beam.* input block <running-cpp-parameters-particle>` can be omitted entirely.
+    Set to ``false`` to load all particles relative to a manually configured reference particle:
+    the relative particle coordinates in the file (in particular the momenta :math:`p_x`, :math:`p_y`
+    and :math:`p_t`, which are normalized by the reference particle momentum) are then interpreted
+    with respect to the existing reference particle.
+    The existing reference particle in that case needs to be manually configured before the tracking loop.
+    This option acts during particle tracking, it has no effect in envelope or reference-particle-only tracking.
 
 
 ``spin_map``

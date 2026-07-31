@@ -25,12 +25,14 @@ namespace impactx::diagnostics
      * @param pc container of the particles use for diagnostics
      * @param file_name file base name; the full path is resolved under ``diag.file_prefix``
      * @param step the global step
+     * @param period the current period (turn or cycle) for periodic lattices
      * @param append open a new file with a fresh header (false) or append data to an existing file (true)
      */
     void DiagnosticOutput (
         ImpactXParticleContainer const & pc,
         std::string const & file_name,
         int step = 0,
+        int period = 0,
         bool append = false
     );
 
@@ -42,6 +44,7 @@ namespace impactx::diagnostics
      * @param ref_part reference particle
      * @param file_name file base name; the full path is resolved under ``diag.file_prefix``
      * @param step the global step
+     * @param period the current period (turn or cycle) for periodic lattices
      * @param append open a new file with a fresh header (false) or append data to an existing file (true)
      */
     void DiagnosticOutput (
@@ -49,6 +52,7 @@ namespace impactx::diagnostics
         RefPart const & ref_part,
         std::string const & file_name,
         int step = 0,
+        int period = 0,
         bool append = false
     );
 

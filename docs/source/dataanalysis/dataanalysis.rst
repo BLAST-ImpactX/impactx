@@ -36,11 +36,12 @@ Reference particle:
 * ``x_ref`` horizontal position x, in meters
 * ``y_ref`` vertical position y, in meters
 * ``z_ref`` longitudinal position z, in meters
-* ``t_ref`` clock time * c in meters
+* ``t_ref`` clock time * c, in meters
 * ``px_ref`` momentum in x, normalized to mass*c, :math:`p_x = \gamma \beta_x`
 * ``py_ref`` momentum in y, normalized to mass*c, :math:`p_y = \gamma \beta_y`
 * ``pz_ref`` momentum in z, normalized to mass*c, :math:`p_z = \gamma \beta_z`
 * ``pt_ref`` energy, normalized by rest energy, :math:`p_t = -\gamma`
+* ``gyromagnetic_anomaly_ref`` `anomalous magnetic moment <https://en.wikipedia.org/wiki/Anomalous_magnetic_dipole_moment>`__, unitless
 * ``mass_ref`` reference rest mass, in kg
 * ``charge_ref`` reference charge, in C
 
@@ -100,6 +101,8 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
 
 * ``step``
     Iteration within the simulation
+* ``period``
+    Current period (turn or cycle) for periodic lattices (unit: dimensionless)
 * ``s``
     Reference particle coordinate ``s`` (unit: meter)
 * ``mean/min/max_x``, ``mean/min/max_y``, ``mean/min/max_t``

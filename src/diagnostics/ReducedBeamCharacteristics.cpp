@@ -16,19 +16,103 @@
 #include "EmittanceInvariants.H"
 
 #include <AMReX_BLProfiler.H>           // for TinyProfiler
-#include <AMReX_GpuQualifiers.H>        // for AMREX_GPU_DEVICE
+#include <AMReX_Extension.H>            // for AMREX_FORCE_INLINE
+#include <AMReX_GpuDevice.H>            // for dtoh_memcpy
+#include <AMReX_GpuQualifiers.H>        // for AMREX_GPU_HOST_DEVICE
 #include <AMReX_ParallelDescriptor.H>   // for ParallelDescriptor
-#include <AMReX_ParticleReduce.H>       // for ParticleReduce
+#include <AMReX_ParticleReduceSIMD.H>   // for ParticleReduceSIMD
 #include <AMReX_REAL.H>                 // for ParticleReal
 #include <AMReX_Reduce.H>               // for ReduceOps
+#include <AMReX_SIMD.H>                 // for simd::load_1d
 #include <AMReX_SmallMatrix.H>          // for SmallMatrix
+#include <AMReX_Tuple.H>                // for makeTuple
 #include <AMReX_TypeList.H>             // for TypeMultiplier
 
+#include <array>
 #include <limits>
+#include <vector>
 
 
 namespace impactx::diagnostics
 {
+namespace
+{
+    //! constant coordinate shifts subtracted before forming the beam moments
+    struct Shifts
+    {
+        amrex::ParticleReal x, y, t, px, py, pt, sx, sy, sz;
+    };
+
+    /** Per-particle beam-moments reduction kernel.
+     *
+     * Invoked by amrex::ParticleReduceSIMD as f(ptd, si). On CPU with SIMD
+     * support (ImpactX_SIMD=ON), the vectorized main loop evaluates this for a
+     * SIMD register of particles at a time; the scalar remainder loop, CPUs
+     * without SIMD support, and GPUs evaluate it for one particle at a time.
+     * amrex::simd::load_1d makes the same source cover all three cases.
+     *
+     * This is a functor with a templated operator() instead of a generic
+     * lambda for CUDA (extended device lambda) portability.
+     */
+    struct BeamMomentsKernel
+    {
+        Shifts m_shift;
+
+        template <typename PTD, typename SI>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        auto operator() (PTD const& ptd, SI const si) const noexcept
+        {
+            using amrex::simd::load_1d;
+
+            // access SoA particle position, momentum, spin data and weighting
+            auto const p_w  = load_1d(ptd.rdata(RealSoA::w), si);
+            auto const p_x  = load_1d(ptd.rdata(RealSoA::x), si);
+            auto const p_y  = load_1d(ptd.rdata(RealSoA::y), si);
+            auto const p_t  = load_1d(ptd.rdata(RealSoA::t), si);
+            auto const p_px = load_1d(ptd.rdata(RealSoA::px), si);
+            auto const p_py = load_1d(ptd.rdata(RealSoA::py), si);
+            auto const p_pt = load_1d(ptd.rdata(RealSoA::pt), si);
+            auto const p_sx = load_1d(ptd.rdata(RealSoA::sx), si);
+            auto const p_sy = load_1d(ptd.rdata(RealSoA::sy), si);
+            auto const p_sz = load_1d(ptd.rdata(RealSoA::sz), si);
+
+            // deviations from the shift: O(rms) rather than O(coordinate), which
+            // keeps the (weighted) second moments below well-conditioned
+            auto const dx  = p_x  - m_shift.x;
+            auto const dy  = p_y  - m_shift.y;
+            auto const dt  = p_t  - m_shift.t;
+            auto const dpx = p_px - m_shift.px;
+            auto const dpy = p_py - m_shift.py;
+            auto const dpt = p_pt - m_shift.pt;
+            auto const dsx = p_sx - m_shift.sx;
+            auto const dsy = p_sy - m_shift.sy;
+            auto const dsz = p_sz - m_shift.sz;
+
+            return amrex::makeTuple(
+                // Sum(w)
+                p_w,
+                // weighted first moments (shifted): x, y, t, px, py, pt, sx, sy, sz
+                dx*p_w, dy*p_w, dt*p_w, dpx*p_w, dpy*p_w, dpt*p_w,
+                dsx*p_w, dsy*p_w, dsz*p_w,
+                // weighted second moments (shifted): diagonal x, y, t, px, py, pt
+                dx*dx*p_w, dy*dy*p_w, dt*dt*p_w, dpx*dpx*p_w, dpy*dpy*p_w, dpt*dpt*p_w,
+                // same-plane correlations: xpx, ypy, tpt
+                dx*dpx*p_w, dy*dpy*p_w, dt*dpt*p_w,
+                // dispersive correlations: xpt, pxpt, ypt, pypt
+                dx*dpt*p_w, dpx*dpt*p_w, dy*dpt*p_w, dpy*dpt*p_w,
+                // cross-plane correlations: xy, xpy, xt, pxy, pxpy, pxt, yt, pyt
+                dx*dy*p_w, dx*dpy*p_w, dx*dt*p_w, dpx*dy*p_w, dpx*dpy*p_w, dpx*dt*p_w, dy*dt*p_w, dpy*dt*p_w,
+                // spin second moments (diagonal): sx, sy, sz
+                dsx*dsx*p_w, dsy*dsy*p_w, dsz*dsz*p_w,
+                // min of x, y, t, px, py, pt
+                p_x, p_y, p_t, p_px, p_py, p_pt,
+                // max of x, y, t, px, py, pt
+                p_x, p_y, p_t, p_px, p_py, p_pt
+            );
+        }
+    };
+} // anonymous namespace
+
     std::unordered_map<std::string, amrex::ParticleReal>
     reduced_beam_characteristics (ImpactXParticleContainer const & pc)
     {
@@ -44,266 +128,185 @@ namespace impactx::diagnostics
         amrex::ParticleReal const bg = ref_part.beta_gamma();
         amrex::ParticleReal const bg2 = bg*bg;
 
-        // preparing access to particle data: SoA
-        using PType = typename ImpactXParticleContainer::SuperParticleType;
+        /* The reduced beam characteristics are computed in a single pass over the
+         * particles from raw (weighted) power sums. For beams that are off-center
+         * from the reference orbit, accumulating the sums relative to a shift near
+         * the beam centroid keeps them at the O(rms^2) scale instead of O(offset^2).
+         * The recovered central moments then carry a relative error ~eps*(offset/rms):
+         * linear, as in a mean-subtracted two-pass reduction, rather than the
+         * ~eps*(offset/rms)^2 of a raw <u^2> - <u>^2, which would lose accuracy in
+         * single precision. The essential point is that we square the (small)
+         * deviation from the shift, not the (large) coordinate.
+         *
+         * Any global constant is exact under the parallel-axis theorem. Sampling the
+         * first particle needs only offset/rms (i.e. to land within ~rms of the
+         * centroid), not the true mean, and makes no assumption on the beam shape.
+         * (In the offset >> rms limit the leading digits of the subtraction cancel
+         * exactly per Sterbenz's lemma, but that is an asymptotic bonus, not the
+         * mechanism.)
+         */
+        constexpr int comps[9] = {
+            RealSoA::x, RealSoA::y, RealSoA::t,
+            RealSoA::px, RealSoA::py, RealSoA::pt,
+            RealSoA::sx, RealSoA::sy, RealSoA::sz
+        };
+        std::array shift = {0._prt, 0._prt, 0._prt, 0._prt, 0._prt, 0._prt, 0._prt, 0._prt, 0._prt};
+        {
+            // Sample the first particle held locally, then agree on a single global
+            // shift taken from the lowest rank that actually owns a particle. Any
+            // global constant is exact under the parallel-axis theorem, so a rank
+            // with no particles (e.g. one MPI rank of many, or a container that is
+            // momentarily empty right after a restart) simply contributes nothing.
+            // For a globally empty beam the zero shift is kept.
+            bool found = false;
+            for (int lev = 0; lev <= pc.finestLevel() && !found; ++lev) {
+                for (auto const & kv : pc.GetParticles(lev)) {
+                    auto const & ptile = kv.second;
+                    if (ptile.numParticles() > 0) {
+                        auto const & soa = ptile.GetStructOfArrays().GetRealData();
+                        for (int c = 0; c < 9; ++c) {
+                            amrex::Gpu::dtoh_memcpy(
+                                &shift[c], soa[comps[c]].dataPtr(), sizeof(amrex::ParticleReal));
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            int src_rank = found ? amrex::ParallelDescriptor::MyProc()
+                                 : amrex::ParallelDescriptor::NProcs();
+            amrex::ParallelAllReduce::Min(src_rank, amrex::ParallelDescriptor::Communicator());
+            if (src_rank < amrex::ParallelDescriptor::NProcs()) {
+                amrex::ParallelDescriptor::Bcast(shift.data(), shift.size(), src_rank);
+            }
+        }
+        amrex::ParticleReal const shift_x  = shift[0];
+        amrex::ParticleReal const shift_y  = shift[1];
+        amrex::ParticleReal const shift_t  = shift[2];
+        amrex::ParticleReal const shift_px = shift[3];
+        amrex::ParticleReal const shift_py = shift[4];
+        amrex::ParticleReal const shift_pt = shift[5];
+        amrex::ParticleReal const shift_sx = shift[6];
+        amrex::ParticleReal const shift_sy = shift[7];
+        amrex::ParticleReal const shift_sz = shift[8];
 
         /* The variables below need to be static to work around an MSVC bug
          * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
          */
-        // numbers of same type reduction operations in first concurrent batch
-        static constexpr std::size_t num_red_ops_1_sum = 10;  // summation
-        static constexpr std::size_t num_red_ops_1_min = 6;  // minimum
-        static constexpr std::size_t num_red_ops_1_max = 6;  // maximum
+        // numbers of same-type reduction operations, fused into a single pass:
+        //   Sum(w), 9 weighted first moments, 24 weighted (shifted) second moments,
+        //   and the min/max of the 6 phase-space coordinates.
+        static constexpr std::size_t num_sum = 34;
+        static constexpr std::size_t num_min = 6;
+        static constexpr std::size_t num_max = 6;
 
-        // prepare reduction operations for calculation of mean and min/max values in 6D phase space
         amrex::TypeMultiplier<amrex::ReduceOps,
-            amrex::ReduceOpSum[num_red_ops_1_sum],  // preparing mean values for w, x, y, t, px, py, pt, sx, sy, sz
-            amrex::ReduceOpMin[num_red_ops_1_min],  // preparing min values for x, y, t, px, py, pt
-            amrex::ReduceOpMax[num_red_ops_1_max]   // preparing max values for x, y, t, px, py, pt
-        > reduce_ops_1;
-        using ReducedDataT1 = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_red_ops_1_sum + num_red_ops_1_min + num_red_ops_1_max]>;
+            amrex::ReduceOpSum[num_sum],  // Sum(w) + first and second (shifted) moments
+            amrex::ReduceOpMin[num_min],  // min of x, y, t, px, py, pt
+            amrex::ReduceOpMax[num_max]   // max of x, y, t, px, py, pt
+        > reduce_ops;
+        using ReducedDataT = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_sum + num_min + num_max]>;
 
-        auto r1 = amrex::ParticleReduce<ReducedDataT1>(
-            pc,
-            [=] AMREX_GPU_DEVICE(const PType& p) noexcept -> ReducedDataT1::Type
-            {
-                // access particle position data
-                const amrex::ParticleReal p_x = p.rdata(RealSoA::x);
-                const amrex::ParticleReal p_y = p.rdata(RealSoA::y);
-                const amrex::ParticleReal p_t = p.rdata(RealSoA::t);
-
-                // access SoA particle momentum data and weighting
-                const amrex::ParticleReal p_w = p.rdata(RealSoA::w);
-                const amrex::ParticleReal p_px = p.rdata(RealSoA::px);
-                const amrex::ParticleReal p_py = p.rdata(RealSoA::py);
-                const amrex::ParticleReal p_pt = p.rdata(RealSoA::pt);
-
-                // access particle spin data
-                const amrex::ParticleReal p_sx = p.rdata(RealSoA::sx);
-                const amrex::ParticleReal p_sy = p.rdata(RealSoA::sy);
-                const amrex::ParticleReal p_sz = p.rdata(RealSoA::sz);
-
-                // prepare mean position values
-                const amrex::ParticleReal p_x_mean = p_x * p_w;
-                const amrex::ParticleReal p_y_mean = p_y * p_w;
-                const amrex::ParticleReal p_t_mean = p_t * p_w;
-
-                const amrex::ParticleReal p_px_mean = p_px * p_w;
-                const amrex::ParticleReal p_py_mean = p_py * p_w;
-                const amrex::ParticleReal p_pt_mean = p_pt * p_w;
-
-                const amrex::ParticleReal p_sx_mean = p_sx * p_w;
-                const amrex::ParticleReal p_sy_mean = p_sy * p_w;
-                const amrex::ParticleReal p_sz_mean = p_sz * p_w;
-
-                return {p_w,
-                        p_x_mean, p_y_mean, p_t_mean,
-                        p_px_mean, p_py_mean, p_pt_mean,
-                        p_sx_mean, p_sy_mean, p_sz_mean,
-                        p_x, p_y, p_t, p_px, p_py, p_pt,
-                        p_x, p_y, p_t, p_px, p_py, p_pt};
-            },
-            reduce_ops_1
-        );
-
-        std::vector<amrex::ParticleReal> values_per_rank_1st(num_red_ops_1_sum);
-
-        /* contains in this order:
-         * w, x_mean, y_mean, t_mean
-         * px_mean, py_mean, pt_mean
-         * sx_mean, sy_mean, sz_mean
+        /* Fused single-pass reduction over all particles. With ImpactX_SIMD=ON,
+         * the sums accumulate in per-lane partial sums that are folded at the
+         * end, which reassociates the floating-point additions relative to the
+         * scalar evaluation order (rounding-level differences only); min/max
+         * are exact either way.
          */
-        amrex::constexpr_for<0, num_red_ops_1_sum> ([&](auto i) {
-            values_per_rank_1st[i] = amrex::get<i>(r1);
+        BeamMomentsKernel const beam_moments{
+            Shifts{shift_x, shift_y, shift_t, shift_px, shift_py, shift_pt,
+                   shift_sx, shift_sy, shift_sz}};
+        auto r = amrex::ParticleReduceSIMD<ReducedDataT>(pc, beam_moments, reduce_ops);
+
+        // extract this rank's partial sums, minima and maxima
+        std::vector<amrex::ParticleReal> values_sum(num_sum);
+        amrex::constexpr_for<0, num_sum> ([&](auto i) {
+            values_sum[i] = amrex::get<i>(r);
+        });
+        std::vector<amrex::ParticleReal> values_min(num_min);
+        amrex::constexpr_for<0, num_min> ([&](auto i) {
+            constexpr std::size_t idx = i + num_sum;
+            values_min[i] = amrex::get<idx>(r);
+        });
+        std::vector<amrex::ParticleReal> values_max(num_max);
+        amrex::constexpr_for<0, num_max> ([&](auto i) {
+            constexpr std::size_t idx = i + num_sum + num_min;
+            values_max[i] = amrex::get<idx>(r);
         });
 
-        // reduced sum over mpi ranks (allreduce)
+        // reduce across MPI ranks (allreduce)
         amrex::ParallelAllReduce::Sum(
-            values_per_rank_1st.data(),
-            values_per_rank_1st.size(),
-            amrex::ParallelDescriptor::Communicator()
-        );
-
-        amrex::ParticleReal const w_sum   = values_per_rank_1st.at(0);
-        amrex::ParticleReal const mean_x  = values_per_rank_1st.at(1) /= w_sum;
-        amrex::ParticleReal const mean_y  = values_per_rank_1st.at(2) /= w_sum;
-        amrex::ParticleReal const mean_t  = values_per_rank_1st.at(3) /= w_sum;
-        amrex::ParticleReal const mean_px = values_per_rank_1st.at(4) /= w_sum;
-        amrex::ParticleReal const mean_py = values_per_rank_1st.at(5) /= w_sum;
-        amrex::ParticleReal const mean_pt = values_per_rank_1st.at(6) /= w_sum;
-        amrex::ParticleReal const mean_sx = values_per_rank_1st.at(7) /= w_sum;
-        amrex::ParticleReal const mean_sy = values_per_rank_1st.at(8) /= w_sum;
-        amrex::ParticleReal const mean_sz = values_per_rank_1st.at(9) /= w_sum;
-
-        std::vector<amrex::ParticleReal> values_per_rank_min(num_red_ops_1_min);
-
-        /* contains in this order:
-         * x_min, y_min, t_min
-         * px_min, py_min, pt_min
-         */
-        amrex::constexpr_for<0, num_red_ops_1_min> ([&](auto i) {
-            constexpr std::size_t idx = i + num_red_ops_1_sum;
-            values_per_rank_min[i] = amrex::get<idx>(r1);
-        });
-
-        std::vector<amrex::ParticleReal> values_per_rank_max(num_red_ops_1_max);
-
-        /* contains in this order:
-         * x_max, y_max, t_max
-         * px_max, py_max, pt_max
-         */
-        amrex::constexpr_for<0, num_red_ops_1_max> ([&](auto i) {
-            constexpr std::size_t idx = i + num_red_ops_1_sum + num_red_ops_1_min;
-            values_per_rank_max[i] = amrex::get<idx>(r1);
-        });
-
-        // reduced sum over mpi ranks (allreduce)
+            values_sum.data(), values_sum.size(), amrex::ParallelDescriptor::Communicator());
         amrex::ParallelAllReduce::Min(
-                values_per_rank_min.data(),
-                values_per_rank_min.size(),
-                amrex::ParallelDescriptor::Communicator()
-        );
-
-        // reduced sum over mpi ranks (allreduce)
+            values_min.data(), values_min.size(), amrex::ParallelDescriptor::Communicator());
         amrex::ParallelAllReduce::Max(
-                values_per_rank_max.data(),
-                values_per_rank_max.size(),
-                amrex::ParallelDescriptor::Communicator()
-        );
+            values_max.data(), values_max.size(), amrex::ParallelDescriptor::Communicator());
 
-        /* The variable below needs to be static to work around an MSVC bug
-         * https://stackoverflow.com/questions/55136414/constexpr-variable-captured-inside-lambda-loses-its-constexpr-ness
-         */
-        // number of reduction operations in second concurrent batch
-        static constexpr std::size_t num_red_ops_2 = 25;
-        // prepare reduction operations for calculation of mean square and correlation values
-        amrex::TypeMultiplier<amrex::ReduceOps, amrex::ReduceOpSum[num_red_ops_2]> reduce_ops_2;
-        using ReducedDataT2 = amrex::TypeMultiplier<amrex::ReduceData, amrex::ParticleReal[num_red_ops_2]>;
-
-        auto r2 = amrex::ParticleReduce<ReducedDataT2>(
-                pc,
-                [=] AMREX_GPU_DEVICE(const PType& p) noexcept
-            -> ReducedDataT2::Type
-            {
-                // access SoA particle momentum data and weighting
-                const amrex::ParticleReal p_w = p.rdata(RealSoA::w);
-                const amrex::ParticleReal p_px = p.rdata(RealSoA::px);
-                const amrex::ParticleReal p_py = p.rdata(RealSoA::py);
-                const amrex::ParticleReal p_pt = p.rdata(RealSoA::pt);
-                // access position data
-                const amrex::ParticleReal p_x = p.rdata(RealSoA::x);
-                const amrex::ParticleReal p_y = p.rdata(RealSoA::y);
-                const amrex::ParticleReal p_t = p.rdata(RealSoA::t);
-                // access spin data
-                const amrex::ParticleReal p_sx = p.rdata(RealSoA::sx);
-                const amrex::ParticleReal p_sy = p.rdata(RealSoA::sy);
-                const amrex::ParticleReal p_sz = p.rdata(RealSoA::sz);
-                // prepare mean square for positions
-                const amrex::ParticleReal p_x_ms = (p_x-mean_x)*(p_x-mean_x)*p_w;
-                const amrex::ParticleReal p_y_ms = (p_y-mean_y)*(p_y-mean_y)*p_w;
-                const amrex::ParticleReal p_t_ms = (p_t-mean_t)*(p_t-mean_t)*p_w;
-                // prepare mean square for momenta
-                const amrex::ParticleReal p_px_ms = (p_px-mean_px)*(p_px-mean_px)*p_w;
-                const amrex::ParticleReal p_py_ms = (p_py-mean_py)*(p_py-mean_py)*p_w;
-                const amrex::ParticleReal p_pt_ms = (p_pt-mean_pt)*(p_pt-mean_pt)*p_w;
-                // prepare mean square for spin
-                const amrex::ParticleReal p_sx_ms = (p_sx-mean_sx)*(p_sx-mean_sx)*p_w;
-                const amrex::ParticleReal p_sy_ms = (p_sy-mean_sy)*(p_sy-mean_sy)*p_w;
-                const amrex::ParticleReal p_sz_ms = (p_sz-mean_sz)*(p_sz-mean_sz)*p_w;
-                // prepare position-momentum correlations
-                const amrex::ParticleReal p_xpx = (p_x-mean_x)*(p_px-mean_px)*p_w;
-                const amrex::ParticleReal p_ypy = (p_y-mean_y)*(p_py-mean_py)*p_w;
-                const amrex::ParticleReal p_tpt = (p_t-mean_t)*(p_pt-mean_pt)*p_w;
-                // prepare correlations for dispersion (4 required)
-                const amrex::ParticleReal p_xpt = (p_x-mean_x)*(p_pt-mean_pt)*p_w;
-                const amrex::ParticleReal p_pxpt = (p_px-mean_px)*(p_pt-mean_pt)*p_w;
-                const amrex::ParticleReal p_ypt = (p_y-mean_y)*(p_pt-mean_pt)*p_w;
-                const amrex::ParticleReal p_pypt = (p_py-mean_py)*(p_pt-mean_pt)*p_w;
-                // prepare additional cross-plane correlations (8 required)
-                const amrex::ParticleReal p_xy = (p_x-mean_x)*(p_y-mean_y)*p_w;
-                const amrex::ParticleReal p_xpy = (p_x-mean_x)*(p_py-mean_py)*p_w;
-                const amrex::ParticleReal p_xt = (p_x-mean_x)*(p_t-mean_t)*p_w;
-                const amrex::ParticleReal p_pxy = (p_px-mean_px)*(p_y-mean_y)*p_w;
-                const amrex::ParticleReal p_pxpy = (p_px-mean_px)*(p_py-mean_py)*p_w;
-                const amrex::ParticleReal p_pxt = (p_px-mean_px)*(p_t-mean_t)*p_w;
-                const amrex::ParticleReal p_yt = (p_y-mean_y)*(p_t-mean_t)*p_w;
-                const amrex::ParticleReal p_pyt = (p_py-mean_py)*(p_t-mean_t)*p_w;
-
-                const amrex::ParticleReal p_charge = q_C*p_w;
-
-                return {p_x_ms, p_y_ms, p_t_ms,
-                        p_px_ms, p_py_ms, p_pt_ms,
-                        p_xpx, p_ypy, p_tpt,
-                        p_xpt, p_pxpt, p_ypt, p_pypt,
-                        p_xy, p_xpy, p_xt, p_pxy, p_pxpy, p_pxt, p_yt, p_pyt,
-                        p_charge,
-                        p_sx_ms, p_sy_ms, p_sz_ms};
-            },
-                reduce_ops_2
-        );
-
-        std::vector<amrex::ParticleReal> values_per_rank_2nd(num_red_ops_2);
-
-        /* contains in this order:
-         * x_ms, y_ms, t_ms
-         * px_ms, py_ms, pt_ms,
-         * xpx, ypy, tpt,
-         * p_xpt, p_pxpt, p_ypt, p_pypt,
-         * p_xy, p_xpy, p_xt, p_pxy, p_pxpy, p_pxt, p_yt, p_pyt,
-         * charge,
-         * sx_ms, sy_ms, sz_ms
-         */
-        amrex::constexpr_for<0, num_red_ops_2> ([&](auto i) {
-            values_per_rank_2nd[i] = amrex::get<i>(r2);
-        });
-
-        // reduced sum over mpi ranks (allreduce)
-        amrex::ParallelAllReduce::Sum(
-            values_per_rank_2nd.data(),
-            values_per_rank_2nd.size(),
-            amrex::ParallelDescriptor::Communicator()
-        );
-
+        // Recover the beam moments from the raw (shifted) power sums via the
+        // parallel-axis theorem. The shift keeps every sum at the O(rms^2) scale,
+        // so the central moments below stay well-conditioned even in single precision.
+        amrex::ParticleReal const w_sum = values_sum[0];
+        // shifted means: <u - shift_u>
+        amrex::ParticleReal const dmean_x  = values_sum[1] / w_sum;
+        amrex::ParticleReal const dmean_y  = values_sum[2] / w_sum;
+        amrex::ParticleReal const dmean_t  = values_sum[3] / w_sum;
+        amrex::ParticleReal const dmean_px = values_sum[4] / w_sum;
+        amrex::ParticleReal const dmean_py = values_sum[5] / w_sum;
+        amrex::ParticleReal const dmean_pt = values_sum[6] / w_sum;
+        amrex::ParticleReal const dmean_sx = values_sum[7] / w_sum;
+        amrex::ParticleReal const dmean_sy = values_sum[8] / w_sum;
+        amrex::ParticleReal const dmean_sz = values_sum[9] / w_sum;
+        // means
+        amrex::ParticleReal const mean_x  = shift_x  + dmean_x;
+        amrex::ParticleReal const mean_y  = shift_y  + dmean_y;
+        amrex::ParticleReal const mean_t  = shift_t  + dmean_t;
+        amrex::ParticleReal const mean_px = shift_px + dmean_px;
+        amrex::ParticleReal const mean_py = shift_py + dmean_py;
+        amrex::ParticleReal const mean_pt = shift_pt + dmean_pt;
+        amrex::ParticleReal const mean_sx = shift_sx + dmean_sx;
+        amrex::ParticleReal const mean_sy = shift_sy + dmean_sy;
+        amrex::ParticleReal const mean_sz = shift_sz + dmean_sz;
         // minimum values
-        amrex::ParticleReal const min_x = values_per_rank_min.at(0);
-        amrex::ParticleReal const min_y = values_per_rank_min.at(1);
-        amrex::ParticleReal const min_t = values_per_rank_min.at(2);
-        amrex::ParticleReal const min_px = values_per_rank_min.at(3);
-        amrex::ParticleReal const min_py = values_per_rank_min.at(4);
-        amrex::ParticleReal const min_pt = values_per_rank_min.at(5);
+        amrex::ParticleReal const min_x = values_min.at(0);
+        amrex::ParticleReal const min_y = values_min.at(1);
+        amrex::ParticleReal const min_t = values_min.at(2);
+        amrex::ParticleReal const min_px = values_min.at(3);
+        amrex::ParticleReal const min_py = values_min.at(4);
+        amrex::ParticleReal const min_pt = values_min.at(5);
         // maximum values
-        amrex::ParticleReal const max_x = values_per_rank_max.at(0);
-        amrex::ParticleReal const max_y = values_per_rank_max.at(1);
-        amrex::ParticleReal const max_t = values_per_rank_max.at(2);
-        amrex::ParticleReal const max_px = values_per_rank_max.at(3);
-        amrex::ParticleReal const max_py = values_per_rank_max.at(4);
-        amrex::ParticleReal const max_pt = values_per_rank_max.at(5);
-        // mean square and correlation values
-        amrex::ParticleReal const x_ms   = values_per_rank_2nd.at(0) /= w_sum;
-        amrex::ParticleReal const y_ms   = values_per_rank_2nd.at(1) /= w_sum;
-        amrex::ParticleReal const t_ms   = values_per_rank_2nd.at(2) /= w_sum;
-        amrex::ParticleReal const px_ms  = values_per_rank_2nd.at(3) /= w_sum;
-        amrex::ParticleReal const py_ms  = values_per_rank_2nd.at(4) /= w_sum;
-        amrex::ParticleReal const pt_ms  = values_per_rank_2nd.at(5) /= w_sum;
-        amrex::ParticleReal const xpx    = values_per_rank_2nd.at(6) /= w_sum;
-        amrex::ParticleReal const ypy    = values_per_rank_2nd.at(7) /= w_sum;
-        amrex::ParticleReal const tpt    = values_per_rank_2nd.at(8) /= w_sum;
-        amrex::ParticleReal const xpt    = values_per_rank_2nd.at(9) /= w_sum;
-        amrex::ParticleReal const pxpt   = values_per_rank_2nd.at(10) /= w_sum;
-        amrex::ParticleReal const ypt    = values_per_rank_2nd.at(11) /= w_sum;
-        amrex::ParticleReal const pypt   = values_per_rank_2nd.at(12) /= w_sum;
-        amrex::ParticleReal const xy     = values_per_rank_2nd.at(13) /= w_sum;
-        amrex::ParticleReal const xpy    = values_per_rank_2nd.at(14) /= w_sum;
-        amrex::ParticleReal const xt     = values_per_rank_2nd.at(15) /= w_sum;
-        amrex::ParticleReal const pxy    = values_per_rank_2nd.at(16) /= w_sum;
-        amrex::ParticleReal const pxpy   = values_per_rank_2nd.at(17) /= w_sum;
-        amrex::ParticleReal const pxt    = values_per_rank_2nd.at(18) /= w_sum;
-        amrex::ParticleReal const yt     = values_per_rank_2nd.at(19) /= w_sum;
-        amrex::ParticleReal const pyt    = values_per_rank_2nd.at(20) /= w_sum;
-        amrex::ParticleReal const charge = values_per_rank_2nd.at(21);
-        amrex::ParticleReal const sx_ms  = values_per_rank_2nd.at(22) /= w_sum;
-        amrex::ParticleReal const sy_ms  = values_per_rank_2nd.at(23) /= w_sum;
-        amrex::ParticleReal const sz_ms  = values_per_rank_2nd.at(24) /= w_sum;
+        amrex::ParticleReal const max_x = values_max.at(0);
+        amrex::ParticleReal const max_y = values_max.at(1);
+        amrex::ParticleReal const max_t = values_max.at(2);
+        amrex::ParticleReal const max_px = values_max.at(3);
+        amrex::ParticleReal const max_py = values_max.at(4);
+        amrex::ParticleReal const max_pt = values_max.at(5);
+        // mean square and correlation values (central moments via parallel-axis theorem)
+        amrex::ParticleReal const x_ms   = values_sum[10] / w_sum - dmean_x  * dmean_x;
+        amrex::ParticleReal const y_ms   = values_sum[11] / w_sum - dmean_y  * dmean_y;
+        amrex::ParticleReal const t_ms   = values_sum[12] / w_sum - dmean_t  * dmean_t;
+        amrex::ParticleReal const px_ms  = values_sum[13] / w_sum - dmean_px * dmean_px;
+        amrex::ParticleReal const py_ms  = values_sum[14] / w_sum - dmean_py * dmean_py;
+        amrex::ParticleReal const pt_ms  = values_sum[15] / w_sum - dmean_pt * dmean_pt;
+        amrex::ParticleReal const xpx    = values_sum[16] / w_sum - dmean_x  * dmean_px;
+        amrex::ParticleReal const ypy    = values_sum[17] / w_sum - dmean_y  * dmean_py;
+        amrex::ParticleReal const tpt    = values_sum[18] / w_sum - dmean_t  * dmean_pt;
+        amrex::ParticleReal const xpt    = values_sum[19] / w_sum - dmean_x  * dmean_pt;
+        amrex::ParticleReal const pxpt   = values_sum[20] / w_sum - dmean_px * dmean_pt;
+        amrex::ParticleReal const ypt    = values_sum[21] / w_sum - dmean_y  * dmean_pt;
+        amrex::ParticleReal const pypt   = values_sum[22] / w_sum - dmean_py * dmean_pt;
+        amrex::ParticleReal const xy     = values_sum[23] / w_sum - dmean_x  * dmean_y;
+        amrex::ParticleReal const xpy    = values_sum[24] / w_sum - dmean_x  * dmean_py;
+        amrex::ParticleReal const xt     = values_sum[25] / w_sum - dmean_x  * dmean_t;
+        amrex::ParticleReal const pxy    = values_sum[26] / w_sum - dmean_px * dmean_y;
+        amrex::ParticleReal const pxpy   = values_sum[27] / w_sum - dmean_px * dmean_py;
+        amrex::ParticleReal const pxt    = values_sum[28] / w_sum - dmean_px * dmean_t;
+        amrex::ParticleReal const yt     = values_sum[29] / w_sum - dmean_y  * dmean_t;
+        amrex::ParticleReal const pyt    = values_sum[30] / w_sum - dmean_py * dmean_t;
+        amrex::ParticleReal const sx_ms  = values_sum[31] / w_sum - dmean_sx * dmean_sx;
+        amrex::ParticleReal const sy_ms  = values_sum[32] / w_sum - dmean_sy * dmean_sy;
+        amrex::ParticleReal const sz_ms  = values_sum[33] / w_sum - dmean_sz * dmean_sz;
+        // beam charge
+        amrex::ParticleReal const charge = q_C * w_sum;
         // standard deviations of positions
         amrex::ParticleReal const sigma_x = std::sqrt(x_ms);
         amrex::ParticleReal const sigma_y = std::sqrt(y_ms);

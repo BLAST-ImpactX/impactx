@@ -59,7 +59,35 @@ namespace impactx::elements
 
         int const npart = beam["id"][scalar].getExtent()[0];  // how many particles to read total
 
-        // TODO: read reference particle (optional?)
+        // restore the reference particle from the species metadata
+        if (m_load_ref_particle)
+        {
+            RefPart & ref = pc.GetRefParticle();
+            auto const read_attr = [&beam, this] (std::string const & attr_name) {
+                if (!beam.containsAttribute(attr_name)) {
+                    throw std::runtime_error(
+                        "Source: attribute '" + attr_name + "' not found in " + m_series_name +
+                        " (load_ref_particle requires a file written by an ImpactX beam_monitor;"
+                        " set load_ref_particle=false to keep the current reference particle)"
+                    );
+                }
+                return beam.getAttribute(attr_name).get<amrex::ParticleReal>();
+            };
+
+            ref.s = read_attr("s_ref");
+            ref.x = read_attr("x_ref");
+            ref.y = read_attr("y_ref");
+            ref.z = read_attr("z_ref");
+            ref.t = read_attr("t_ref");
+            ref.px = read_attr("px_ref");
+            ref.py = read_attr("py_ref");
+            ref.pz = read_attr("pz_ref");
+            ref.pt = read_attr("pt_ref");
+            ref.gyromagnetic_anomaly = read_attr("gyromagnetic_anomaly_ref");
+            ref.mass = read_attr("mass_ref");
+            ref.charge = read_attr("charge_ref");
+            // ref.sedge: could be set to ref.s, but should be set anyway in tracking loops on element entry.
+        }
 
         // read the particles
 

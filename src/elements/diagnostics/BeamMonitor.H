@@ -75,6 +75,8 @@ namespace detail
         static constexpr char const * DEFAULT_backend = "default";
         static constexpr char const * DEFAULT_encoding = "g";
         static constexpr int DEFAULT_period_sample_intervals = 1;
+        static constexpr bool DEFAULT_particles = true;
+        static constexpr bool DEFAULT_beam_moments = true;
 
         /** This element writes the particle beam out to openPMD data.
          *
@@ -84,12 +86,16 @@ namespace detail
          * @param backend file format backend for openPMD, e.g., "bp5", "bp4", or "h5"
          * @param encoding openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
          * @param period_sample_intervals for periodic lattice, only output every Nth period (turn)
+         * @param particles output the individual particles of the beam (default: true)
+         * @param beam_moments output the beam moments (reduced beam characteristics) as attributes (default: true)
          */
         BeamMonitor (
             std::string series_name,
             std::string backend = DEFAULT_backend,
             std::string encoding = DEFAULT_encoding,
-            int period_sample_intervals = DEFAULT_period_sample_intervals
+            int period_sample_intervals = DEFAULT_period_sample_intervals,
+            bool particles = DEFAULT_particles,
+            bool beam_moments = DEFAULT_beam_moments
         );
 
         BeamMonitor (BeamMonitor const & other) = default;
@@ -188,6 +194,20 @@ namespace detail
         AMREX_FORCE_INLINE
         int period_sample_intervals () const { return m_period_sample_intervals; }
 
+        /** Output the individual particles of the beam */
+        AMREX_FORCE_INLINE
+        bool particles () const { return m_particles; }
+
+        /** Toggle output of the individual particles of the beam */
+        void set_particles (bool particles) { m_particles = particles; }
+
+        /** Output the beam moments (reduced beam characteristics) as openPMD attributes */
+        AMREX_FORCE_INLINE
+        bool beam_moments () const { return m_beam_moments; }
+
+        /** Toggle output of the beam moments */
+        void set_beam_moments (bool beam_moments) { m_beam_moments = beam_moments; }
+
         /** track all openPMD series instances
          *
          * Ensure m_series is the same for the same output path.
@@ -203,6 +223,29 @@ namespace detail
         /** Open the openPMD series (on first access) */
         void open ();
 
+        /** Whether to write through the steps-based openPMD writeIterations() API
+         *
+         * I/O steps are the recommended way to write and are fully supported
+         * by ADIOS2 BP5, HDF5 and JSON, with one exception: the ADIOS2 BP4
+         * engine drops attribute-only iterations written through I/O steps
+         * (verified with openPMD-api 0.16.1 and 0.17.1). Thus, when no
+         * particle data sets are written, use random access for "bp4". The
+         * generic "bp" ending resolves to ADIOS2's default engine, which is
+         * BP5 for ADIOS2 >= 2.9. Variable-based encoding strictly requires
+         * I/O steps (random access overwrites attributes of prior
+         * iterations).
+         * Note: openPMD-api cannot report the selected ADIOS2
+         *   engine (Series::backend() only returns "ADIOS2"), so this checks
+         *   the resolved file ending.
+         *   https://github.com/openPMD/openPMD-api/issues/1913
+         */
+        bool use_io_steps () const
+        {
+            return m_particles ||
+                   m_encoding == "v" ||
+                   m_OpenPMDFileType != "bp4";
+        }
+
         std::string m_series_name; //! openPMD filename
         std::string m_OpenPMDFileType; //! openPMD backend: usually HDF5 (h5) or ADIOS2 (bp/bp4/bp5) or ADIOS2 SST (sst)
         std::string m_encoding; //! openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
@@ -212,7 +255,10 @@ namespace detail
 
         int m_file_min_digits = 6; //! minimum number of digits to iteration number in file name
 
-        int m_period_sample_intervals = 1; //! only output every Nth period (turn or cycle) of periodic lattices
+        int m_period_sample_intervals = DEFAULT_period_sample_intervals; //! only output every Nth period (turn or cycle) of periodic lattices
+
+        bool m_particles = DEFAULT_particles; //! output the individual particles of the beam
+        bool m_beam_moments = DEFAULT_beam_moments; //! output the beam moments as openPMD attributes
 
         /** This rank's offset in the MPI-global particle array, by level
          *

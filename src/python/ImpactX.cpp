@@ -941,7 +941,7 @@ void init_ImpactX (py::module& m)
 #ifdef ImpactX_USE_OPENPMD
             openPMD::getVariants()
 #else
-            py::none()
+            py::dict()
 #endif
     ;
     pyImpactXConfig

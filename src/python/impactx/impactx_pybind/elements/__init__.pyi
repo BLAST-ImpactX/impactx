@@ -90,6 +90,8 @@ class BeamMonitor(mixin.Thin):
         backend: str = "default",
         encoding: str = "g",
         period_sample_intervals: typing.SupportsInt | typing.SupportsIndex = 1,
+        particles: bool = True,
+        beam_moments: bool = True,
     ) -> None:
         """
         This element writes the particle beam out to openPMD data.
@@ -199,6 +201,13 @@ class BeamMonitor(mixin.Thin):
         openPMD file backend (e.g. default, bp4, h5)
         """
     @property
+    def beam_moments(self) -> bool:
+        """
+        Output the beam moments (reduced beam characteristics) as openPMD attributes (default: True)
+        """
+    @beam_moments.setter
+    def beam_moments(self, arg1: bool) -> None: ...
+    @property
     def beta(self) -> float:
         """
         Twiss beta (in meters) of the bare linear lattice at the location of output for the nonlinear IOTA invariants H and I.
@@ -228,10 +237,17 @@ class BeamMonitor(mixin.Thin):
     @property
     def nonlinear_lens_invariants(self) -> bool:
         """
-        Compute and output the invariants H and I within the nonlinear magnetic insert element
+        Compute and output the invariants H and I within the nonlinear magnetic insert element. Requires particles=True.
         """
     @nonlinear_lens_invariants.setter
     def nonlinear_lens_invariants(self, arg1: bool) -> None: ...
+    @property
+    def particles(self) -> bool:
+        """
+        Output the individual particles of the beam (default: True)
+        """
+    @particles.setter
+    def particles(self, arg1: bool) -> None: ...
     @property
     def period_sample_intervals(self) -> int:
         """
@@ -4684,6 +4700,7 @@ class Source(mixin.Named, mixin.Thin):
         distribution: str,
         openpmd_path: str,
         active_once: bool = True,
+        load_ref_particle: bool = True,
         name: str | None = None,
     ) -> None:
         """
@@ -4794,6 +4811,13 @@ class Source(mixin.Named, mixin.Thin):
         """
     @distribution.setter
     def distribution(self, arg1: str) -> None: ...
+    @property
+    def load_ref_particle(self) -> bool:
+        """
+        Restore the reference particle from the species metadata of the openPMD file (particle tracking only).
+        """
+    @load_ref_particle.setter
+    def load_ref_particle(self, arg1: bool) -> None: ...
     @property
     def series_name(self) -> str:
         """

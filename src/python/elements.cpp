@@ -422,16 +422,20 @@ void init_elements(py::module& m)
                      bm,
                      std::make_pair("backend", bm.backend()),
                      std::make_pair("encoding", bm.encoding()),
-                     std::make_pair("period_sample_intervals", bm.period_sample_intervals())
+                     std::make_pair("period_sample_intervals", bm.period_sample_intervals()),
+                     std::make_pair("particles", bm.particles()),
+                     std::make_pair("beam_moments", bm.beam_moments())
                  );
              }
         )
-        .def(py::init<std::string, std::string, std::string, int>(),
+        .def(py::init<std::string, std::string, std::string, int, bool, bool>(),
              py::arg("name"),
              py::arg("backend") = diagnostics::BeamMonitor::DEFAULT_backend,
              py::arg("encoding") = diagnostics::BeamMonitor::DEFAULT_encoding,
              py::arg("period_sample_intervals") =
                  diagnostics::BeamMonitor::DEFAULT_period_sample_intervals,
+             py::arg("particles") = diagnostics::BeamMonitor::DEFAULT_particles,
+             py::arg("beam_moments") = diagnostics::BeamMonitor::DEFAULT_beam_moments,
              "This element writes the particle beam out to openPMD data."
         )
         .def_property_readonly("name",
@@ -451,13 +455,24 @@ void init_elements(py::module& m)
             &diagnostics::BeamMonitor::period_sample_intervals,
             "for periodic lattices, only output every Nth period (turn or cycle)"
         )
+        .def_property("particles",
+            [](diagnostics::BeamMonitor & bm) { return bm.particles(); },
+            [](diagnostics::BeamMonitor & bm, bool particles) { bm.set_particles(particles); },
+            "Output the individual particles of the beam (default: True)"
+        )
+        .def_property("beam_moments",
+            [](diagnostics::BeamMonitor & bm) { return bm.beam_moments(); },
+            [](diagnostics::BeamMonitor & bm, bool beam_moments) { bm.set_beam_moments(beam_moments); },
+            "Output the beam moments (reduced beam characteristics) as openPMD attributes (default: True)"
+        )
         .def_property("nonlinear_lens_invariants",
             [](diagnostics::BeamMonitor & bm) { return detail::get_or_throw<bool>(bm.name(), "nonlinear_lens_invariants"); },
             [](diagnostics::BeamMonitor & bm, bool nonlinear_lens_invariants) {
                 amrex::ParmParse pp_element(bm.name());
                 pp_element.add("nonlinear_lens_invariants", nonlinear_lens_invariants);
             },
-            "Compute and output the invariants H and I within the nonlinear magnetic insert element"
+            "Compute and output the invariants H and I within the nonlinear magnetic insert element. "
+            "Requires particles=True."
         )
         .def_property("alpha",
             [](diagnostics::BeamMonitor & bm) { return detail::get_or_throw<amrex::Real>(bm.name(), "alpha"); },
@@ -2402,7 +2417,8 @@ void init_elements(py::module& m)
                      src,
                      std::make_pair("distribution", src.m_distribution),
                      std::make_pair("openpmd_path", src.m_series_name),
-                     std::make_pair("active_once", src.m_active_once)
+                     std::make_pair("active_once", src.m_active_once),
+                     std::make_pair("load_ref_particle", src.m_load_ref_particle)
                  );
              }
         )
@@ -2412,7 +2428,8 @@ void init_elements(py::module& m)
                     src,
                     std::make_pair("distribution", src.m_distribution),
                     std::make_pair("openpmd_path", src.m_series_name),
-                    std::make_pair("active_once", src.m_active_once)
+                    std::make_pair("active_once", src.m_active_once),
+                    std::make_pair("load_ref_particle", src.m_load_ref_particle)
                 );
             }
         )
@@ -2420,11 +2437,13 @@ void init_elements(py::module& m)
              std::string,
              std::string,
              bool,
+             bool,
              std::optional<std::string>
          >(),
              py::arg("distribution"),
              py::arg("openpmd_path"),
              py::arg("active_once") = Source::DEFAULT_active_once,
+             py::arg("load_ref_particle") = Source::DEFAULT_load_ref_particle,
              py::arg("name") = py::none(),
              "A particle source."
         )
@@ -2442,6 +2461,11 @@ void init_elements(py::module& m)
             [](Source & src) { return src.m_active_once; },
             [](Source & src, bool actice_once) { src.m_active_once = actice_once; },
             "Inject particles only for the first lattice period."
+        )
+        .def_property("load_ref_particle",
+            [](Source & src) { return src.m_load_ref_particle; },
+            [](Source & src, bool load_ref_particle) { src.m_load_ref_particle = load_ref_particle; },
+            "Restore the reference particle from the species metadata of the openPMD file (particle tracking only)."
         )
     ;
     register_push(py_Source);

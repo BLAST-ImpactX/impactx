@@ -146,9 +146,22 @@ def all_elements():
     )
 
     monitor = elements.BeamMonitor(
-        name="test_monitor", backend="h5", encoding="g", period_sample_intervals=2
+        name="test_monitor",
+        backend="h5",
+        encoding="g",
+        period_sample_intervals=2,
     )
     lattice.append(monitor)
+
+    monitor_nopart = elements.BeamMonitor(
+        name="monitor_nopart",
+        backend="h5",
+        encoding="f",
+        period_sample_intervals=3,
+        particles=False,
+        beam_moments=True,
+    )
+    lattice.append(monitor_nopart)
 
     lattice.append(
         elements.Buncher(

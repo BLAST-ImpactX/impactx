@@ -1821,7 +1821,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.BeamMonitor(name, backend="default", encoding="g", period_sample_intervals=1)
+.. py:class:: impactx.elements.BeamMonitor(name, backend="default", encoding="g", period_sample_intervals=1, particles=True, beam_moments=True)
 
    A beam monitor, writing all beam particles at fixed ``s`` to openPMD files.
 
@@ -1832,21 +1832,33 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    ``json`` only works with serial/single-rank jobs.
    By default, the first available backend in the order given above is taken.
 
-   openPMD `iteration encoding <https://openpmd-api.readthedocs.io/en/0.14.0/usage/concepts.html#iteration-and-series>`__ determines if multiple files are created for individual output steps or not.
-   Variable based is an `experimental feature with ADIOS2 <https://openpmd-api.readthedocs.io/en/0.14.0/backends/adios2.html#experimental-new-adios2-schema>`__.
+   openPMD `iteration encoding <https://openpmd-api.readthedocs.io/en/latest/usage/concepts.html#iteration-and-series>`__ determines if multiple files are created for individual output steps or not.
+   Variable based is an `experimental feature with ADIOS2 <https://openpmd-api.readthedocs.io/en/0.14.0/backends/adios2.html#experimental-new-adios2-schema>`__ and currently requires linear read access (``Access.read_linear``) in downstream readers.
 
    :param name: name of the series
    :param backend: I/O backend, e.g., ``bp``, ``h5``, ``json``
    :param encoding: openPMD iteration encoding: (v)ariable based, (f)ile based, (g)roup based (default)
    :param period_sample_intervals: for periodic lattice, only output every Nth period (turn)
+   :param particles: output the individual particles of the beam (default: ``True``)
+   :param beam_moments: output the beam moments (reduced beam characteristics) as openPMD attributes (default: ``True``)
 
    .. py:property:: name
 
       name of the series
 
+   .. py:property:: particles
+
+      Output the individual particles of the beam (default: ``True``).
+      When set to ``False``, the beam monitor becomes a fast, small diagnostic that stores only per-output attributes (reference particle and, if enabled, beam moments).
+
+   .. py:property:: beam_moments
+
+      Output the beam moments (reduced beam characteristics) of the whole bunch as openPMD attributes on the ``beam`` particle species (default: ``True``).
+
    .. py:property:: nonlinear_lens_invariants
 
-      Compute and output the invariants H and I within the nonlinear magnetic insert element
+      Compute and output the invariants H and I within the nonlinear magnetic insert element.
+      Requires ``particles=True``.
 
    .. py:property:: alpha
 
@@ -1866,7 +1878,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
 
       Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
 
-.. py:class:: impactx.elements.Source(distribution, openpmd_path, active_once=True, name=None)
+.. py:class:: impactx.elements.Source(distribution, openpmd_path, active_once=True, load_ref_particle=True, name=None)
 
    A particle source.
    Currently, this only supports openPMD files from our :py:class:`impactx.elements.BeamMonitor`
@@ -1874,7 +1886,20 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param distribution: Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
    :param openpmd_path: path to the openPMD series
    :param active_once: Inject particles only for the first lattice period. Default: ``True``
+   :param load_ref_particle: Restore the reference particle from the species metadata of the openPMD file. Default: ``True``
    :param name: an optional name for the element
+
+   .. note::
+
+      With ``load_ref_particle``, the reference particle state (:math:`s`, positions, momenta, mass, charge
+      and the gyromagnetic anomaly) is restored exactly from the iteration the particles are read from.
+      Set ``load_ref_particle=False`` to load all particles relative to a manually configured reference
+      particle: the relative particle coordinates in the file (in particular the momenta :math:`p_x`,
+      :math:`p_y` and :math:`p_t`, which are normalized by the reference particle momentum) are then
+      interpreted with respect to the existing reference particle.
+      The existing reference particle in that case needs to be manually configured before the tracking loop.
+      This option acts when particles are tracked or pushed (:py:func:`impactx.push`),
+      it has no effect in envelope or reference-particle-only tracking.
 
    .. attention::
 

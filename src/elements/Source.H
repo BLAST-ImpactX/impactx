@@ -31,24 +31,29 @@ namespace impactx::elements
         using PType = ImpactXParticleContainer::ParticleType;
 
         static constexpr bool DEFAULT_active_once = true;
+        static constexpr bool DEFAULT_load_ref_particle = true;
 
         /** A particle source
          *
          * @param distribution Must read "openPMD" for this constructor
          * @param openpmd_path path to openPMD series as accepted by openPMD::Series
          * @param active_once inject particles only for the first lattice period
+         * @param load_ref_particle restore the reference particle from the species metadata
+         *        of the openPMD file (particle tracking only)
          * @param name a user defined and not necessarily unique name of the element
          */
         Source (
             std::string distribution,
             std::string openpmd_path,
             bool active_once = DEFAULT_active_once,
+            bool load_ref_particle = DEFAULT_load_ref_particle,
             std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           m_distribution(distribution),
           m_series_name(std::move(openpmd_path)),
-          m_active_once(active_once)
+          m_active_once(active_once),
+          m_load_ref_particle(load_ref_particle)
         {
             if (distribution != "openPMD") {
                 throw std::runtime_error("Only 'openPMD' distribution is supported if openpmd_path is provided!");
@@ -64,6 +69,8 @@ namespace impactx::elements
         /** Initialize/Load particles.
          *
          * Particles are relative to the reference particle.
+         * If load_ref_particle is set, the reference particle is restored from
+         * the species metadata of the file before the particles are added.
          *
          * @param[in,out] pc particle container to push
          * @param[in] step global step for diagnostics
@@ -97,6 +104,7 @@ namespace impactx::elements
         std::string m_distribution; //! Distribution type of particles in the source
         std::string m_series_name; //! openPMD filename
         bool m_active_once = true; //! Inject particles only for the first lattice period
+        bool m_load_ref_particle = true; //! Restore the reference particle from the file's species metadata
     };
 
 } // namespace impactx

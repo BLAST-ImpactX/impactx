@@ -14,7 +14,7 @@
 #include <AMReX_INT.H>
 
 #include <stdexcept>
-#include <string_view>
+#include <variant>
 
 
 namespace impactx
@@ -23,9 +23,22 @@ namespace impactx
     {
         BL_PROFILE("ImpactX::validate");
 
+        // elements
+        if (m_lattice.empty())
+            throw std::runtime_error("Beamline lattice has zero elements. Not yet initialized?");
+
+        // does a source element at the beginning of the beamline load the
+        // beam and, by default, also the reference particle during tracking?
+        bool source_loads_beam = false;
+        bool source_loads_ref = false;
+        if (auto const * source = std::get_if<elements::Source>(&m_lattice.front())) {
+            source_loads_beam = true;
+            source_loads_ref = source->m_load_ref_particle;
+        }
+
         // reference particle initialized?
         auto const & ref = amr_data->track_particles.m_particle_container->GetRefParticle();
-        if (ref.kin_energy_MeV() == 0.0)
+        if (ref.kin_energy_MeV() == 0.0 && !source_loads_ref)
             throw std::runtime_error("The reference particle energy is zero. Not yet initialized?");
 
         // particles in the beam bunch
@@ -37,24 +50,14 @@ namespace impactx
             for (int lev = 0; lev <= nLevelPC; ++lev) {
                 nParticles += amr_data->track_particles.m_particle_container->NumberOfParticlesAtLevel(lev);
             }
-            if (nParticles == 0)
+            if (nParticles == 0 && !source_loads_beam)
             {
-                // do we have a source element as the first element of the beamline?
-                auto & first_element = m_lattice.front();
-                std::visit([](auto&& element){
-                    if (std::string_view(element.type) != std::string_view("Source")) {
-                        throw std::runtime_error(
-                            "No particles found. "
-                            "Cannot track particles without an initialized beam. "
-                            "Did you forget to call sim.add_particles ?"
-                        );
-                    }
-                }, first_element);
+                throw std::runtime_error(
+                    "No particles found. "
+                    "Cannot track particles without an initialized beam. "
+                    "Did you forget to call sim.add_particles ?"
+                );
             }
         }
-
-        // elements
-        if (m_lattice.empty())
-            throw std::runtime_error("Beamline lattice has zero elements. Not yet initialized?");
     }
 } // namespace impactx

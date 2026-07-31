@@ -560,6 +560,14 @@ namespace impactx
         auto space_charge = get_space_charge_algo();
 
         if (track == "particles") {
+            // The beam input block is optional: if omitted, a source element in the
+            // lattice is expected to load the beam (and, by default, the reference
+            // particle) from an openPMD file.
+            if (!pp_dist.contains("distribution")) {
+                amrex::Print() << "No beam.distribution: expecting a source element in the lattice to load the beam." << std::endl;
+                return;
+            }
+
             // set charge and mass and energy of ref particle
             RefPart const ref = initialization::read_reference_particle(pp_dist);
             amr_data->track_particles.m_particle_container->SetRefParticle(ref);

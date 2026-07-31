@@ -6,7 +6,7 @@
 #
 # -*- coding: utf-8 -*-
 
-from impactx import Config, ImpactX, elements, push
+from impactx import ImpactX, elements, push
 
 sim = ImpactX()
 
@@ -18,19 +18,23 @@ sim.slice_step_diagnostics = True
 # domain decomposition & space charge mesh
 sim.init_grids()
 
-# load the particle bunch and the reference particle (a 250 MeV proton beam)
-# from the final beam monitor output of the solenoid example
-beam = sim.beam
-push(beam, elements.Source("openPMD", "../solenoid.py/diags/openPMD/m1.h5"))
+# load a 250 MeV proton beam with an initial
+# horizontal rms emittance of 1 um and an
+# initial vertical rms emittance of 2 um
+kin_energy_MeV = 250.0  # reference energy
 
-# test only:
-# check that the reference particle was restored exactly from the file metadata
-# this is a 250 MeV proton at the end of the first solenoid channel (one period)
-rtol = 1.0e-13 if Config.precision == "DOUBLE" else 1.0e-5  # a few machine epsilon
+#   reference particle: manually configured, not loaded from the file below
+beam = sim.beam
 ref = beam.ref
-assert abs(ref.kin_energy_MeV - 250.0) < 250.0 * rtol
-assert abs(ref.charge_qe - 1.0) < rtol
-assert abs(ref.s - 3.820395) < 3.820395 * rtol
+ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
+
+#   load particle bunch from file, relative to the reference particle above
+push(
+    beam,
+    elements.Source(
+        "openPMD", "../solenoid.py/diags/openPMD/m1.h5", load_ref_particle=False
+    ),
+)
 
 # add beam diagnostics
 m1 = elements.BeamMonitor("m1", backend="h5")

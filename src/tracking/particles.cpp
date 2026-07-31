@@ -167,6 +167,7 @@ namespace impactx
                 diagnostics::DiagnosticOutput(*pc,
                                               "reduced_beam_characteristics",
                                               step_,
+                                              period_,
                                               true);
             }
 
@@ -195,7 +196,8 @@ namespace impactx
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(*amr_data->track_particles.m_particle_container,
                                           "reduced_beam_characteristics_final",
-                                          step);
+                                          step,
+                                          m_tracking_state.m_period);
 
             // output particles lost in apertures
             if (amr_data->track_particles.m_particles_lost->TotalNumberOfParticles() > 0)

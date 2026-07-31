@@ -789,6 +789,20 @@ if(ImpactX_TEST_CLEANUP)
     set_property(TEST solenoid.py.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.py.cleanup")
 endif()
 
+add_impactx_test(solenoid.restart.noref.py
+    examples/solenoid_restart/run_solenoid_noref.py
+    OFF  # ImpactX MPI-parallel
+    examples/solenoid_restart/analysis_solenoid.py
+    OFF  # no plot script yet
+)
+if(ImpactX_PYTHON)
+    set_property(TEST solenoid.restart.noref.py.run APPEND PROPERTY DEPENDS "solenoid.py.run")
+endif()
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.py.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.noref.py.cleanup")
+endif()
+
 
 # Pole-face rotation ##########################################################
 #

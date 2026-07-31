@@ -210,7 +210,7 @@ namespace impactx
 
                         // print slice step reduced beam characteristics to file
                         diagnostics::DiagnosticOutput(
-                            cm, ref, "reduced_beam_characteristics", step, true);
+                            cm, ref, "reduced_beam_characteristics", step, period, true);
 
                     }
 
@@ -239,7 +239,7 @@ namespace impactx
 
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(
-                cm, ref, "reduced_beam_characteristics_final", step);
+                cm, ref, "reduced_beam_characteristics_final", step, period);
         }
     }
 } // namespace impactx

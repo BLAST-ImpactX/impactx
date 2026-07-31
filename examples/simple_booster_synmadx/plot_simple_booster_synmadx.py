@@ -197,6 +197,6 @@ plt.legend(loc="best")
 
 if args.save_png:
     for num in plt.get_fignums():
-        plt.figure(num).savefig(f"analyze_diags_{num}.png")
+        plt.figure(num).savefig(f"plot_simple_booster_synmadx_{num}.png")
 else:
     plt.show()

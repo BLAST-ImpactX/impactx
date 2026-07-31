@@ -82,8 +82,8 @@ Visualize
 
 You can run the following script to visualize the beam evolution:
 
-.. dropdown:: Script ``analyze_diags.py``
+.. dropdown:: Script ``plot_simple_booster_synmadx.py``
 
-   .. literalinclude:: analyze_diags.py
+   .. literalinclude:: plot_simple_booster_synmadx.py
       :language: python3
-      :caption: You can copy this file from ``examples/simple_booster_synmadx/analyze_diags.py``.
+      :caption: You can copy this file from ``examples/simple_booster_synmadx/plot_simple_booster_synmadx.py``.

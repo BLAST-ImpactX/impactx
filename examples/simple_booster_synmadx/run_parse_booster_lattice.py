@@ -149,6 +149,17 @@ def get_lattice():
 
 def main():
 
+    # set numerical parameters and IO control
+    sim.particle_shape = 2  # B-spline order
+    sim.space_charge = False
+    # sim.diagnostics = False  # benchmarking
+    sim.diagnostics = True
+    sim.slice_step_diagnostics = True
+
+    # domain decomposition & space charge mesh; this also initializes AMReX,
+    # which is required before amr.ParallelDescriptor can be used
+    sim.init_grids()
+
     # Read the lattice
     lattice = get_lattice()
 
@@ -174,16 +185,6 @@ def main():
         print("gamma: ", gamma)
         print("beta: ", beta)
         print()
-
-    # set numerical parameters and IO control
-    sim.particle_shape = 2  # B-spline order
-    sim.space_charge = False
-    # sim.diagnostics = False  # benchmarking
-    sim.diagnostics = True
-    sim.slice_step_diagnostics = True
-
-    # domain decomposition & space charge mesh
-    sim.init_grids()
 
     # Create the ImpactX reference particle
     ref = sim.particle_container().ref_particle()

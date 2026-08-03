@@ -469,6 +469,7 @@ CMake Option                  Default & Values                               Des
 ``ImpactX_amrex_repo``        ``https://github.com/AMReX-Codes/amrex.git``   Repository URI to pull and build AMReX from
 ``ImpactX_amrex_branch``      *we set and maintain a compatible commit*      Repository branch for ``ImpactX_amrex_repo``
 ``ImpactX_amrex_internal``    **ON**/OFF                                     Needs a pre-installed AMReX library if set to ``OFF``
+``ImpactX_catch_internal``     **ON**/OFF                                     Needs a pre-installed Catch2 library if set to ``OFF``
 ``ImpactX_openpmd_src``       *None*                                         Path to openPMD-api source directory (preferred if set)
 ``ImpactX_openpmd_repo``      ``https://github.com/openPMD/openPMD-api.git`` Repository URI to pull and build openPMD-api from
 ``ImpactX_openpmd_branch``    ``0.17.0``                                     Repository branch for ``ImpactX_openpmd_repo``

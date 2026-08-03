@@ -1,11 +1,15 @@
-# Fetch Catch2 v3 for unit tests
-include(FetchContent)
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v3.5.2
-)
-FetchContent_MakeAvailable(Catch2)
+# Catch2 v3 for unit tests
+if(ImpactX_catch_internal)
+    include(FetchContent)
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v3.5.2
+    )
+    FetchContent_MakeAvailable(Catch2)
+else()
+    find_package(Catch2 3.5.2 CONFIG REQUIRED)
+endif()
 
 set(SYNMADX_TEST_SOURCES
     test_lattice.cc

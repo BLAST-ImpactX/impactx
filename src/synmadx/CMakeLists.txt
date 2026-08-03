@@ -2,7 +2,9 @@
 # Depends on header-only Boost libraries (Spirit, Phoenix, Fusion, ...),
 # found via find_package(Boost) in the top-level CMakeLists.txt
 
-add_library(synmadx SHARED
+# The Python extension embeds synmadx so wheels do not depend on a separate,
+# non-relocatable runtime library.
+add_library(synmadx STATIC
     synergia/lattice/mx_expr.cc
     synergia/lattice/mx_parse.cc
     synergia/lattice/mx_tree.cc
@@ -28,9 +30,9 @@ target_include_directories(synmadx PUBLIC
 # Boost types (e.g., boost::variant in mx_expr.h) appear in public headers
 target_link_libraries(synmadx PUBLIC Boost::headers)
 
-target_compile_features(synmadx PUBLIC cxx_std_17)
+target_compile_features(synmadx PUBLIC cxx_std_20)
 
-# install shared library
+# install library
 install(TARGETS synmadx
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

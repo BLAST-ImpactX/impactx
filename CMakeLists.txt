@@ -488,7 +488,8 @@ if(ImpactX_PYTHON)
         WORKING_DIRECTORY
             ${ImpactX_BINARY_DIR}
         DEPENDS
-            pyImpactX $<$<BOOL:${ImpactX_SYNMADX}>:pysynmadx>
+            pyImpactX
+            $<$<BOOL:${ImpactX_SYNMADX}>:pysynmadx>
             pyImpactX_python_sources
     )
 
@@ -552,9 +553,9 @@ if(ImpactX_PYTHON)
         VERBATIM
     )
     add_dependencies(pyImpactX_python_sources pyImpactX)
-    add_dependencies(${ImpactX_CUSTOM_TARGET_PREFIX}pip_wheel
-        pyImpactX_python_sources
-    )
+    if(ImpactX_SYNMADX)
+        add_dependencies(pyImpactX_python_sources pysynmadx)
+    endif()
 endif()
 
 

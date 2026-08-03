@@ -2875,3 +2875,32 @@ Overall simulation parameters
 
     Controls how much information is printed to the terminal, when running ImpactX.
     Use ``0`` for silent; higher is more verbose.
+
+.. pp:param:: impactx.progress
+    :type: ``string``
+    :optional:
+    :default: ``auto``
+
+    Controls the tracking progress indicator that is shown while ``track_particles``,
+    ``track_envelope`` or ``track_reference`` run. Allowed values:
+
+    * ``auto``: show a live, single-line progress bar (percent, path length ``s``, ETA and
+      the current element) when the output is an interactive terminal, and one
+      ``++++ Starting step=<N> of <T> ...`` status line per step otherwise (e.g. when the
+      output is redirected to a file, in batch jobs, or in the dashboard).
+    * ``on``: always show the live progress bar, even when the output is not a terminal.
+    * ``off``: always print per-step status lines and never the live bar.
+
+    On an interactive terminal the live bar is pinned to the bottom line, so other output
+    that appears during tracking (for example the space-charge solver's residuals or
+    warnings) scrolls above it instead of overwriting it. Requires :pp:param:`impactx.verbose`
+    ``> 0``; with ``impactx.verbose >= 2`` the detailed per-step status lines are always used.
+
+.. pp:param:: impactx.progress_ascii
+    :type: ``boolean``
+    :optional:
+
+    If ``1`` (true), the live progress bar is drawn with plain ASCII characters instead of
+    Unicode block glyphs. The default is derived from the process locale (ASCII unless the
+    locale advertises UTF-8), and is only relevant when :pp:param:`impactx.progress` shows the
+    live bar.

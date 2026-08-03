@@ -128,7 +128,7 @@ namespace impactx
         };
 
         // the per-slice external-field transport map and per-slice housekeeping
-        auto element_push = [this, &pc, verbose, &pp_diag, diag_enable, &early_params_checked] (
+        auto element_push = [this, &pc, &pp_diag, diag_enable, &early_params_checked] (
             elements::KnownElements & element_variant,
             int step_,
             int period_
@@ -143,10 +143,8 @@ namespace impactx
             // move "lost" particles to another particle container
             collect_lost_particles(*pc);
 
-            // just prints an empty newline at the end of the slice_step
-            if (verbose > 0) {
-                amrex::Print() << "\n";
-            }
+            // note: the per-slice status line (progress bar or banner) is emitted
+            //       by track_lattice_particles, which also closes the banner line
 
             // slice-step diagnostics
             bool slice_step_diagnostics = false;

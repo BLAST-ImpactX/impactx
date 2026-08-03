@@ -12,6 +12,7 @@
 
 #include "elements/All.H"
 #include "particles/ImpactXParticleContainer.H"
+#include "tracking/ProgressBar.H"
 #include "tracking/TrackingDirection.H"
 #include "tracking/TrackingState.H"
 
@@ -80,6 +81,11 @@ namespace impactx
         int verbose = 1;
         amrex::ParmParse("impactx").queryAddWithParser("verbose", verbose);
 
+        // progress bar / per-step status line (forward tracking only)
+        ProgressBar bar(count_total_steps(lattice, num_periods),
+                        count_total_length(lattice, num_periods),
+                        forward ? verbose : 0);
+
         int & step = tracking_state.m_step;
 
         // visit one element for all of its space-charge slices
@@ -109,9 +115,12 @@ namespace impactx
             // number of slices used for the application of space charge
             int nslice = 1;
             amrex::ParticleReal slice_ds = 0; // in meters
-            std::visit([&nslice, &slice_ds](auto && element) {
+            std::string element_label; // for the progress bar; once per element
+            std::visit([&nslice, &slice_ds, &element_label](auto && element) {
                 nslice = element.nslice();
                 slice_ds = element.ds() / nslice;
+                element_label = element.has_name() ? element.name()
+                                                   : std::string(element.type);
             }, element_variant);
 
             // sub-steps for space charge within the element
@@ -123,10 +132,11 @@ namespace impactx
                 if (forward)
                 {
                     step++;
-                    if (verbose > 0) {
-                        amrex::Print() << "\n++++ Starting step=" << step
-                                       << " slice_step=" << slice_step;
-                    }
+
+                    // progress bar (live) or per-step banner line (non-interactive);
+                    // s is the reference particle's integrated path length in meters
+                    bar.show(step, slice_step,
+                             static_cast<double>(pc.GetRefParticle().s), element_label);
 
                     // optional, user-defined function call
                     call_hook("before_slice");
@@ -142,6 +152,13 @@ namespace impactx
                 {
                     element_push(element_variant, step, period);
                     collective_kicks(element_variant, slice_ds);
+                }
+
+                // close the banner line of this slice step (Banner mode only;
+                // the live bar stays on a single, carriage-return-updated line)
+                if (forward && bar.wants_banner())
+                {
+                    amrex::Print() << "\n";
                 }
             }
 
@@ -194,6 +211,9 @@ namespace impactx
 
         if (forward)
         {
+            // finalize the progress bar (live mode: 100% frame + newline)
+            bar.finish();
+
             // avoid dangling references if users manipulate the lattice
             tracking_state.set_no_element();
         }

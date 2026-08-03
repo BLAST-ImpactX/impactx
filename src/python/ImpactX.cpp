@@ -613,6 +613,38 @@ void init_ImpactX (py::module& m)
             "``0`` for silent, higher is more verbose. Default is ``1``."
         )
 
+        .def_property("progress",
+            [](ImpactX & /* ix */){
+                std::string progress = "auto";
+                amrex::ParmParse pp_impactx("impactx");
+                pp_impactx.query("progress", progress);
+                return progress;
+            },
+            [](ImpactX & /* ix */, std::string const & progress) {
+                amrex::ParmParse pp_impactx("impactx");
+                pp_impactx.add("progress", progress);
+            },
+            "Controls the tracking progress bar / status line.\n"
+            "``\"auto\"`` (default) shows a live, single-line progress bar on an interactive\n"
+            "terminal and per-step status lines otherwise; ``\"on\"`` always shows the live bar;\n"
+            "``\"off\"`` always shows per-step status lines. Requires ``verbose > 0``."
+        )
+
+        .def_property("progress_ascii",
+            [](ImpactX & /* ix */){
+                bool ascii = false;
+                amrex::ParmParse pp_impactx("impactx");
+                pp_impactx.query("progress_ascii", ascii);
+                return ascii;
+            },
+            [](ImpactX & /* ix */, bool const ascii) {
+                amrex::ParmParse pp_impactx("impactx");
+                pp_impactx.add("progress_ascii", ascii);
+            },
+            "If ``True``, the progress bar uses plain ASCII glyphs instead of Unicode block\n"
+            "characters. Defaults to a value derived from the process locale."
+        )
+
         .def_property("tiny_profiler",
             [](ImpactX & /* ix */){
                 return detail::get_or_throw<bool>("tiny_profiler", "enabled");

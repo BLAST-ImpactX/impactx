@@ -13,6 +13,7 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
+#include "tracking/ProgressBar.H"
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
@@ -89,6 +90,11 @@ namespace impactx
         int num_periods = 1;
         amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
 
+        // progress bar / per-step status line
+        ProgressBar bar(count_total_steps(m_lattice, num_periods),
+                        count_total_length(m_lattice, num_periods),
+                        verbose);
+
         for (period=0; period < num_periods; ++period)
         {
             // optional, user-defined function call
@@ -107,10 +113,13 @@ namespace impactx
                 // number of slices through the element
                 int nslice = 1;
                 amrex::ParticleReal slice_ds; // in meters
-                std::visit([&nslice, &slice_ds](auto &&element)
+                std::string element_label; // for the progress bar; once per element
+                std::visit([&nslice, &slice_ds, &element_label](auto &&element)
                 {
                     nslice = element.nslice();
                     slice_ds = element.ds() / nslice;
+                    element_label = element.has_name() ? element.name()
+                                                       : std::string(element.type);
                 }, element_variant);
 
                 // sub-steps within the element
@@ -118,10 +127,10 @@ namespace impactx
                 {
                     BL_PROFILE("ImpactX::track_reference::slice_step");
                     step++;
-                    if (verbose > 0) {
-                        amrex::Print() << "\n++++ Starting step=" << step
-                                       << " slice_step=" << slice_step;
-                    }
+
+                    // progress bar (live) or per-step banner line (non-interactive);
+                    // s is the reference particle's integrated path length in meters
+                    bar.show(step, slice_step, static_cast<double>(ref.s), element_label);
 
                     // optional, user-defined function call
                     call_hook("before_slice");
@@ -129,8 +138,8 @@ namespace impactx
                     // push the reference particle with external maps
                     push(ref, element_variant);
 
-                    // just prints an empty newline at the end of the slice_step
-                    if (verbose > 0)
+                    // close the banner line of this slice step (Banner mode only)
+                    if (bar.wants_banner())
                     {
                         amrex::Print() << "\n";
                     }
@@ -160,6 +169,9 @@ namespace impactx
             call_hook("after_period");
 
         } // end periods though the lattice loop
+
+        // finalize the progress bar (live mode: 100% frame + newline)
+        bar.finish();
 
         // avoid dangling references if users manipulate the lattice
         m_tracking_state.set_no_element();

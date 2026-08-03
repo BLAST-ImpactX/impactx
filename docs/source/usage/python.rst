@@ -416,6 +416,27 @@ Collective Effects & Overall Simulation Parameters
       Controls how much information is printed to the terminal, when running ImpactX.
       ``0`` for silent, higher is more verbose. Default is ``1``.
 
+   .. py:property:: progress
+
+      Controls the tracking progress indicator shown while ``track_particles``,
+      ``track_envelope`` or ``track_reference`` run.
+
+      * ``"auto"`` (default): a live, single-line progress bar (percent, path length ``s``,
+        ETA and current element) on an interactive terminal, and one
+        ``++++ Starting step=<N> of <T> ...`` line per step otherwise (redirected output,
+        batch jobs, the dashboard).
+      * ``"on"``: always show the live bar, even when the output is not a terminal.
+      * ``"off"``: always print per-step status lines and never the live bar.
+
+      On a terminal the live bar is pinned to the bottom line, so other output during
+      tracking (e.g. space-charge solver residuals) scrolls above it. Requires
+      ``verbose > 0``; ``verbose >= 2`` always uses the detailed per-step lines.
+
+   .. py:property:: progress_ascii
+
+      If ``True``, the live progress bar uses plain ASCII characters instead of Unicode
+      block glyphs. Defaults to a value derived from the process locale.
+
    .. py:property:: tiny_profiler
 
       This parameter can be used to disable tiny profiling including CArena memory profiling at runtime.

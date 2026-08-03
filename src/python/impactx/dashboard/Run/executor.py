@@ -62,12 +62,18 @@ async def execute_impactx_sim() -> None:
         if "Initializing AMReX" in sim_output_line_decoded:
             start_timer = asyncio.create_task(SimulationProgress.dashboard_timer())
         if "++++ Starting step=" in sim_output_line_decoded:
-            match = re.search(r"\+\+\+\+ Starting step=(\d+)", sim_output_line_decoded)
+            # ImpactX emits "++++ Starting step=<N> of <T> (<P>%) <label>" per step;
+            # <T> is the exact total (num_periods * sum(nslice)) computed by ImpactX.
+            match = re.search(
+                r"\+\+\+\+ Starting step=(\d+) of (\d+)", sim_output_line_decoded
+            )
             if match:
                 state.sim_current_step = int(match.group(1))
-                state.sim_progress = (
-                    state.sim_current_step / state.sim_total_steps
-                ) * 95
+                state.sim_total_steps = int(match.group(2))
+                if state.sim_total_steps > 0:
+                    state.sim_progress = (
+                        state.sim_current_step / state.sim_total_steps
+                    ) * 95
 
         SimulationProgress.print_to_xterm(sim_output_line)
         SimulationHistory.add_to_view_details_log(sim_output_line_decoded)

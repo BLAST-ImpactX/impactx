@@ -177,15 +177,21 @@ class SimulationProgress:
     @staticmethod
     def determine_sim_total_steps(simulation_content_file) -> int:
         """
-        Determines the total step count for the given input file.
+        Estimates the total step count for the given input file.
 
-        Sum of nslices is sim_total_step
+        This is only a pre-run estimate for the very first progress frame; the
+        exact total (num_periods * sum(nslice)) is parsed from the simulation
+        output while it runs (see Run/executor.py).
+
+        Sum of nslices, multiplied by the number of lattice periods.
         """
 
         nslice_matches = re.findall(r"nslice=(\d+)", simulation_content_file)
+        periods_match = re.search(r"periods\s*=\s*(\d+)", simulation_content_file)
+        periods = int(periods_match.group(1)) if periods_match else 1
 
         if nslice_matches:
-            state.sim_total_steps = sum(int(match) for match in nslice_matches)
+            state.sim_total_steps = sum(int(m) for m in nslice_matches) * periods
 
         return state.sim_total_steps
 

@@ -12,8 +12,10 @@ Instead of a hand-converted ImpactX lattice file, this example parses the origin
 MAD-X file ``sbbooster-cooked.madx`` at runtime with *synmadx*, a standalone MAD-X
 lattice parser that was ported from
 `Synergia <https://github.com/fnalacceleratormodeling/synergia2>`__.
-synmadx is an alternative MAD-X parser, additionally to our official MAD-X importer,
-:py:meth:`impactx.elements.KnownElementsList.load_file`.
+synmadx is a custom compatibility parser for users migrating existing Synergia
+workflows.  For new and general-purpose MAD-X workflows, use the primary importer,
+:py:meth:`impactx.elements.KnownElementsList.load_file`.  The synmadx reader has
+`known correctness and coverage issues <https://github.com/BLAST-ImpactX/impactx/issues/1584>`__.
 The parsed Synergia lattice is then converted element-by-element into ImpactX
 elements by the ``impactx.synmadx.syn2_to_impactx`` function, which also sets up
 the RF cavities programmatically.

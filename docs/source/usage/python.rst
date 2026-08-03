@@ -1467,13 +1467,22 @@ comparison methods. They derive directly from each element's ``to_dict()`` outpu
 
 .. _usage-python-synmadx:
 
-Alternative MAD-X Parser: synmadx
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Synergia Migration Parser: synmadx
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Additionally to our official MAD-X importer,
-:py:meth:`impactx.elements.KnownElementsList.load_file`, ImpactX ships *synmadx*,
-an alternative, standalone MAD-X lattice parser that was ported from
-`Synergia <https://github.com/fnalacceleratormodeling/synergia2>`__.
+ImpactX's primary MAD-X importer is
+:py:meth:`impactx.elements.KnownElementsList.load_file`.  ImpactX also ships
+*synmadx*, a custom compatibility parser ported from
+`Synergia <https://github.com/fnalacceleratormodeling/synergia2>`__ for users
+migrating existing Synergia workflows.
+
+.. warning::
+
+   The synmadx reader has `known correctness and coverage issues
+   <https://github.com/BLAST-ImpactX/impactx/issues/1584>`__.  Use the primary
+   :py:meth:`impactx.elements.KnownElementsList.load_file` importer for new and
+   general-purpose MAD-X workflows, and validate converted lattices carefully
+   when using synmadx for migration.
 
 .. note::
 

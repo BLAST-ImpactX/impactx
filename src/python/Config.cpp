@@ -98,14 +98,6 @@ void init_Config (py::module& m)
 
     std::shared_ptr<ConfigMap const> const config = std::make_shared<ConfigMap>(
         ConfigMap{
-            {"ablastr_version", {
-                std::string{WARPX_GIT_VERSION},
-                "ABLASTR library version"}},
-
-            {"amrex_version", {
-                amrex::Version(),
-                "AMReX library version"}},
-
             {"gpu_backend", {
                 gpu_backend,
                 "GPU backend ('CUDA', 'HIP' or 'SYCL'), None without GPU support"}},
@@ -157,10 +149,6 @@ void init_Config (py::module& m)
                 false,
 #endif
                 "Build supports explicit SIMD vectorization"}},
-
-            {"impactx_version", {
-                std::string{IMPACTX_GIT_VERSION},
-                "ImpactX library version"}},
 
             {"openpmd_backends", {
 #ifdef ImpactX_USE_OPENPMD

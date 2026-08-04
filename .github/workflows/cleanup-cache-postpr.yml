@@ -3,7 +3,7 @@
 # This file is part of ImpactX.
 #
 # License: BSD-3-Clause-LBNL
-# Authors: Axel Huebl
+# Authors: Axel Huebl, Weiqun Zhang
 
 name: CleanUpCachePostPR
 
@@ -16,7 +16,7 @@ on:
 jobs:
   CleanUpCcacheCachePostPR:
     name: Clean Up Ccache Cache Post PR
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       actions: write
       contents: read

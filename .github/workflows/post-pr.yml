@@ -3,7 +3,7 @@
 # This file is part of ImpactX.
 #
 # License: BSD-3-Clause-LBNL
-# Authors: Axel Huebl
+# Authors: Axel Huebl, Weiqun Zhang
 
 name: PostPR
 
@@ -18,7 +18,7 @@ on:
 
 jobs:
   noop:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: No OP
         run: echo "This workflow is going to trigger CleanUpCachePostPR."

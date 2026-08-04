@@ -3,7 +3,7 @@
 # This file is part of ImpactX.
 #
 # License: BSD-3-Clause-LBNL
-# Authors: Axel Huebl
+# Authors: Axel Huebl, Weiqun Zhang
 
 name: CleanUpCache
 
@@ -19,7 +19,7 @@ on:
 jobs:
   CleanUpCcacheCache:
     name: Clean Up Ccache Cache for ${{ github.event.workflow_run.name }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       actions: write
       contents: read

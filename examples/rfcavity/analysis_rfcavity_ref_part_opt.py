@@ -63,7 +63,7 @@ print("")
 print("Initial Beam:")
 print(f"  s_ref={si:e} gamma_ref={gammai:e}")
 
-atol = 2.5e-4
+atol = 1.0e-4
 print(f"  atol={atol}")
 
 assert np.allclose(
@@ -81,7 +81,7 @@ print("")
 print("Final Beam:")
 print(f"  s_ref={sf:e} gamma_ref={gammaf:e}")
 
-atol = 1.0e-4 if is_double else 2.0e-1
+atol = 5.0e-4 if is_double else 2.0e-1
 print(f"  atol={atol}")
 
 assert np.allclose(

@@ -9,6 +9,7 @@
  */
 #include "ImpactX.H"
 #include "diagnostics/DiagnosticOutput.H"
+#include "elements/mixin/accessors.H"
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
@@ -105,13 +106,7 @@ namespace impactx
                 call_hook("before_element");
 
                 // number of slices through the element
-                int nslice = 1;
-                amrex::ParticleReal slice_ds; // in meters
-                std::visit([&nslice, &slice_ds](auto &&element)
-                {
-                    nslice = element.nslice();
-                    slice_ds = element.ds() / nslice;
-                }, element_variant);
+                int const nslice = elements::nslice(element_variant);
 
                 // sub-steps within the element
                 for (int slice_step = 0; slice_step < nslice; ++slice_step)

@@ -11,6 +11,7 @@
 #define IMPACTX_TRACKING_PARTICLES_H
 
 #include "elements/All.H"
+#include "elements/mixin/accessors.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "tracking/TrackingDirection.H"
 #include "tracking/TrackingState.H"
@@ -22,7 +23,6 @@
 
 #include <list>
 #include <string>
-#include <variant>
 
 
 namespace impactx
@@ -103,16 +103,12 @@ namespace impactx
             {
                 // back-tracking: invert this element's map in place so the element
                 // transport below applies the inverse map.
-                std::visit([](auto && element){ element.reverse(); }, element_variant);
+                elements::reverse(element_variant);
             }
 
             // number of slices used for the application of space charge
-            int nslice = 1;
-            amrex::ParticleReal slice_ds = 0; // in meters
-            std::visit([&nslice, &slice_ds](auto && element) {
-                nslice = element.nslice();
-                slice_ds = element.ds() / nslice;
-            }, element_variant);
+            int const nslice = elements::nslice(element_variant);
+            amrex::ParticleReal const slice_ds = elements::slice_ds(element_variant); // in meters
 
             // sub-steps for space charge within the element
             for (int s = 0; s < nslice; ++s)
@@ -153,7 +149,7 @@ namespace impactx
             else
             {
                 // restore the forward element map (reverse() is an involution)
-                std::visit([](auto && element){ element.reverse(); }, element_variant);
+                elements::reverse(element_variant);
             }
         };
 

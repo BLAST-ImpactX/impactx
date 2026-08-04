@@ -10,6 +10,7 @@
 #include "ImpactX.H"
 #include "diagnostics/DiagnosticOutput.H"
 #include "diagnostics/FilePrefix.H"
+#include "elements/mixin/accessors.H"
 #include "elements/mixin/dynamicdata.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
@@ -66,9 +67,7 @@ namespace impactx {
         // loop over all beamline elements & finalize them
         for (auto & element_variant : m_lattice)
         {
-            std::visit([](auto&& element){
-                element.finalize();
-            }, element_variant);
+            elements::finalize(element_variant);
         }
     }
 

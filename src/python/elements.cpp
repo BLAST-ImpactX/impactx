@@ -7,6 +7,7 @@
 
 #include <particles/Push.H>
 #include <elements/All.H>
+#include <elements/mixin/accessors.H>
 #include <particles/CovarianceMatrix.H>
 
 #include <AMReX_Enum.H>
@@ -214,7 +215,7 @@ namespace
         std::string extra_args;
 
         // properties of mixin classes
-        if constexpr (std::is_base_of_v<elements::mixin::Thick, std::decay_t<T_Element>>) {
+        if constexpr (elements::mixin::is_thick_v<T_Element>) {
             extra_args.append(format_extra(std::make_pair("ds", el.ds())));
         }
 
@@ -285,12 +286,12 @@ namespace
             // for thin elements, nslice is 1 by definition and not a constructor argument
             ret.insert(std::make_pair("nslice", el.nslice()));
         }
-        if constexpr (std::is_base_of_v<elements::mixin::Alignment, std::decay_t<T_Element>>) {
+        if constexpr (elements::mixin::has_alignment_v<T_Element>) {
             ret.insert(std::make_pair("dx", el.dx()));
             ret.insert(std::make_pair("dy", el.dy()));
             ret.insert(std::make_pair("rotation", el.rotation()));
         }
-        if constexpr (std::is_base_of_v<elements::mixin::PipeAperture, std::decay_t<T_Element>>) {
+        if constexpr (elements::mixin::has_pipe_aperture_v<T_Element>) {
             ret.insert(std::make_pair("aperture_x", el.aperture_x()));
             ret.insert(std::make_pair("aperture_y", el.aperture_y()));
         }
@@ -2934,7 +2935,7 @@ void init_elements(py::module& m)
     );
 
     m.def("reverse", [](elements::KnownElements & el) {
-            std::visit([](auto && e) { e.reverse(); }, el);
+            elements::reverse(el);
         },
         py::arg("element"),
         "Reverse an element in-place so that pushing particles through\n"

@@ -9,9 +9,9 @@
  */
 #include "elements/transformation/Insert.H"
 
+#include "elements/mixin/accessors.H"
+
 #include <stdexcept>
-#include <type_traits>
-#include <variant>
 
 
 namespace impactx::elements::transformation
@@ -24,11 +24,7 @@ namespace impactx::elements::transformation
     )
     {
         // algorithm below is so far only implemented for thin elements to insert
-        double new_element_ds = 0.0;  // in meters
-        std::visit([&new_element_ds](auto &&new_element)
-        {
-            new_element_ds = new_element.ds();
-        }, element);
+        double const new_element_ds = elements::ds(element);  // in meters
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
             new_element_ds == 0,
             "insert_element_ever_s: Only thin elements are supported."
@@ -46,40 +42,26 @@ namespace impactx::elements::transformation
             list.pop_front();
 
             // check where the current element ends
-            double cur_s_out;  // in meters
-            std::visit([&s, &cur_s_out](auto &&cur_element)
-            {
-                cur_s_out = s + cur_element.ds();
-            }, cur_element_variant);
+            double const cur_s_out = s + elements::ds(cur_element_variant);  // in meters
 
             // case 1: current element is thick and ends after next insert
             if (s_next_insert < cur_s_out)
             {
                 double const s_rel_insert = s_next_insert - s;
 
+                if (elements::is_thin(cur_element_variant))
+                {
+                    throw std::runtime_error("insert_element_ever_s: Thin element cannot be split.");
+                }
+
                 // split element and shorten each part
                 elements::KnownElements cur_element_leftover = cur_element_variant;
-                std::visit([&s_rel_insert](auto &&cur_element)
-                {
-                    if constexpr(std::is_base_of_v<elements::mixin::Thin, std::decay_t<decltype(cur_element)>>)
-                    {
-                        throw std::runtime_error("insert_element_ever_s: Thin element cannot be split.");
-                    }
-                    else {
-                        cur_element.m_ds = static_cast<amrex::ParticleReal>(s_rel_insert);
-                    }
-                }, cur_element_variant);
-                std::visit([&s_rel_insert](auto &&cur_element_left)
-                {
-                    if constexpr(std::is_base_of_v<elements::mixin::Thin, std::decay_t<decltype(cur_element_left)>>)
-                    {
-                        throw std::runtime_error("insert_element_ever_s: Thin element cannot be split.");
-                    }
-                    else {
-                        cur_element_left.m_ds -= static_cast<amrex::ParticleReal>(s_rel_insert);
-                        cur_element_left.set_name(cur_element_left.name() + "_leftover");
-                    }
-                }, cur_element_leftover);
+                elements::ds(cur_element_variant, static_cast<amrex::ParticleReal>(s_rel_insert));
+                elements::ds(
+                    cur_element_leftover,
+                    elements::ds(cur_element_leftover) - static_cast<amrex::ParticleReal>(s_rel_insert)
+                );
+                elements::name(cur_element_leftover, elements::name(cur_element_leftover) + "_leftover");
 
                 // insert element in between
                 new_list.push_back(cur_element_variant);

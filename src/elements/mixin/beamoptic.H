@@ -13,6 +13,7 @@
 #include "alignment.H"
 #include "pipeaperture.H"
 #include "spintransport.H"
+#include "traits.H"
 
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/PushAll.H"
@@ -272,8 +273,8 @@ namespace detail
 #endif
 
             // pre/post-push functionality declared by mixin classes
-            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
-            constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
+            constexpr bool has_alignment = mixin::has_alignment_v<T_Element> && T_DoAlignment;
+            constexpr bool has_aperture = mixin::has_pipe_aperture_v<T_Element>;
 
             // shift into the alignment-error frame (compile-time gated)
             if constexpr (has_alignment) {
@@ -423,8 +424,8 @@ namespace detail
 #endif
 
             // pre/post-push functionality declared by mixin classes
-            constexpr bool has_alignment = std::is_base_of_v<mixin::Alignment, T_Element> && T_DoAlignment;
-            constexpr bool has_aperture = std::is_base_of_v<mixin::PipeAperture, T_Element>;
+            constexpr bool has_alignment = mixin::has_alignment_v<T_Element> && T_DoAlignment;
+            constexpr bool has_aperture = mixin::has_pipe_aperture_v<T_Element>;
 
             // shift into the alignment-error frame (compile-time gated)
             if constexpr (has_alignment) {
@@ -494,7 +495,7 @@ namespace detail
     template< typename T_Element, typename F >
     void dispatch_misalignment ([[maybe_unused]] T_Element & element, F && f)
     {
-        if constexpr (std::is_base_of_v<mixin::Alignment, std::decay_t<T_Element>>) {
+        if constexpr (mixin::has_alignment_v<T_Element>) {
 #ifdef ImpactX_OPTIMIZE_ALIGNMENT
             if (element.misaligned()) { f(std::true_type{}); }
             else                      { f(std::false_type{}); }
@@ -531,7 +532,7 @@ namespace detail
         uint64_t* const AMREX_RESTRICT part_idcpu = soa.GetIdCPUData().dataPtr();
 
         if (spin) {
-            if constexpr (std::is_base_of_v<mixin::SpinTransport, std::decay_t<T_Element>>) {
+            if constexpr (mixin::has_spin_transport_v<T_Element>) {
                 amrex::ParticleReal* const AMREX_RESTRICT part_sx = soa_real[RealSoA::sx].dataPtr();
                 amrex::ParticleReal* const AMREX_RESTRICT part_sy = soa_real[RealSoA::sy].dataPtr();
                 amrex::ParticleReal* const AMREX_RESTRICT part_sz = soa_real[RealSoA::sz].dataPtr();

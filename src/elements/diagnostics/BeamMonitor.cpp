@@ -28,6 +28,7 @@ namespace io = openPMD;
 
 #include <filesystem>
 #include <fstream>  // for std::ofstream
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -141,6 +142,9 @@ namespace detail {
         m_particles(particles),
         m_beam_moments(beam_moments)
     {
+        if (period_sample_intervals < 1) {
+            throw std::runtime_error("BeamMonitor: period_sample_intervals must be >= 1");
+        }
     }
 
     void BeamMonitor::open ()
@@ -175,8 +179,6 @@ namespace detail {
         }
 
         amrex::ParmParse pp_diag("diag");
-        // turn filter
-        pp_diag.queryAddWithParser("period_sample_intervals", m_period_sample_intervals);
         // legacy options from other diagnostics
         pp_diag.queryAddWithParser("file_min_digits", m_file_min_digits);
 

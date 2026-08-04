@@ -149,7 +149,8 @@ namespace impactx
 
         // per-slice house-keeping and diagnostics, applied once at the end of each slice
         auto slice_diagnostics = [this, &pc, verbose, &pp_diag, diag_enable, &early_params_checked] (
-            int step_
+            int step_,
+            int period_
         )
         {
             // Apply optional particle boundary conditions

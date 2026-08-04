@@ -73,8 +73,8 @@ namespace impactx
      *  @tparam ElementTransport callable
      *    ``void (elements::KnownElements & element, int step, int period)``
      *    applying one slice of the element's external-field transport map (no book-keeping)
-     *  @tparam SliceDiagnostics callable ``void (int step)`` running the once-per-slice
-     *    book-keeping (boundary conditions, lost particles, slice diagnostics)
+     *  @tparam SliceDiagnostics callable ``void (int step, int period)`` running the
+     *    once-per-slice book-keeping (boundary conditions, lost particles, slice diagnostics)
      *  @param[in,out] lattice the beamline elements to traverse
      *  @param[in,out] pc beam particle container (reference particle / edge update)
      *  @param[in,out] tracking_state tracking state shared with hooks (element, step, period);
@@ -186,7 +186,7 @@ namespace impactx
                 }
 
                 // once-per-slice book-keeping and diagnostics
-                slice_diagnostics(step);
+                slice_diagnostics(step, period);
             }
 
             if (forward)

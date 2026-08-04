@@ -1,6 +1,9 @@
 name: 🔄 Update Stub Files
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [development]
+  pull_request:
 
 concurrency:
   group: ${{ github.ref }}-${{ github.head_ref }}-subs

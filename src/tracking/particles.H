@@ -51,6 +51,11 @@ namespace impactx
      *  second half starts where the first ended). This applies the expensive collective
      *  solve once per slice (``nslice`` per element).
      *
+     *  Some finite-length elements cannot be subdivided this way (@see elements::can_slice):
+     *  Programmable, LinearMap and SpinMap. Those keep the first-order composition,
+     *  ``K(ds) M(ds)`` forward and ``M(ds) K(ds)`` backward, so they still receive their
+     *  collective kick.
+     *
      *  Thin (zero-length) elements, and all elements in pure-optics runs (no collective
      *  effects), apply the element transport once per slice with no kick, unchanged.
      *
@@ -139,16 +144,18 @@ namespace impactx
             int const nslice = elements::nslice(element_variant);
             amrex::ParticleReal const slice_ds = elements::slice_ds(element_variant); // in meters
 
-            // Strang-split a thick element's transport ``M`` around a mid-slice collective
-            // kick ``K`` (drift-outer / MKM, #846 / #920) only where it is meaningful: for
-            // finite-length elements while collective effects are active. This second-order,
-            // time-symmetric split applies the expensive collective solve once per slice.
-            // Under ``Backward`` tracking ``slice_ds`` is negative (the map is reversed), so
-            // the same composition is the exact inverse, M^-1(ds/2) K^-1(ds) M^-1(ds/2).
-            // Thin elements and pure-optics runs apply the transport once, unchanged.
-            bool const split = collective_effects
-                            && slice_ds != amrex::ParticleReal(0)
-                            && elements::is_thick(element_variant);
+            // Does a collective kick ``K`` apply at all? Only zero-length slices are exempt:
+            // a kick over zero length leaves the momenta unchanged, so we skip its (expensive)
+            // field solve entirely.
+            bool const kick = collective_effects && slice_ds != amrex::ParticleReal(0);
+
+            // Strang-split the element's transport ``M`` around a mid-slice collective kick
+            // ``K`` (drift-outer / MKM, #846 / #920) wherever the element can be subdivided.
+            // This second-order, time-symmetric split applies the expensive collective solve
+            // once per slice. Under ``Backward`` tracking ``slice_ds`` is negative (the map is
+            // reversed), so the same composition is the exact inverse,
+            // M^-1(ds/2) K^-1(ds) M^-1(ds/2).
+            bool const split = kick && elements::can_slice(element_variant);
 
             // sub-steps for space charge within the element
             for (int s = 0; s < nslice; ++s)
@@ -178,6 +185,22 @@ namespace impactx
                     element_transport(element_variant, step, period);
                     collective_kicks(element_variant, slice_ds);
                     element_transport(element_variant, step, period);
+                }
+                else if (kick)
+                {
+                    // finite length, but this element cannot be subdivided to form the two
+                    // half-maps (Programmable, LinearMap, SpinMap): fall back to the
+                    // first-order composition.
+                    if (forward)
+                    {
+                        collective_kicks(element_variant, slice_ds);
+                        element_transport(element_variant, step, period);
+                    }
+                    else
+                    {
+                        element_transport(element_variant, step, period);
+                        collective_kicks(element_variant, slice_ds);
+                    }
                 }
                 else
                 {

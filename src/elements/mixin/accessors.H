@@ -4,7 +4,7 @@
  *
  * This file is part of ImpactX.
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Edoardo Zoni, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 #ifndef IMPACTX_ELEMENTS_MIXIN_ACCESSORS_H

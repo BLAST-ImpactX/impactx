@@ -128,7 +128,9 @@ namespace impactx::elements
     inline std::string
     name (KnownElements const & element_variant)
     {
-        return std::visit([](auto const & element) { return element.name(); }, element_variant);
+        return std::visit([](auto const & element) {
+            return element.has_name() ? element.name() : std::string{};
+        }, element_variant);
     }
 
     /** Set the name of an element

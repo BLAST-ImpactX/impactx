@@ -41,3 +41,21 @@ def test_element_insert():
 
     # clean shutdown
     monitor.finalize()
+
+
+def test_element_insert_unnamed():
+    """Splitting an unnamed element gives its leftover segments generated names."""
+    lattice = elements.transformation.insert_element_every_ds(
+        elements.KnownElementsList([elements.Drift(ds=0.25)]),
+        ds=0.1,
+        element=elements.Empty(),
+    )
+
+    drifts = [el for el in lattice if el.to_dict()["type"] == "Drift"]
+
+    assert len(lattice) == 5
+    assert [drift.name for drift in drifts] == [
+        None,
+        "_leftover",
+        "_leftover_leftover",
+    ]

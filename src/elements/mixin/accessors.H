@@ -14,7 +14,6 @@
 
 #include "elements/All.H"
 
-#include <AMReX_BLassert.H>
 #include <AMReX_REAL.H>
 
 #include <stdexcept>
@@ -38,9 +37,9 @@ namespace impactx::elements
      * these unqualified; the explicit ``elements::`` spelling is preferred for clarity.
      *
      * Getters are total: every lattice element provides ``ds()``, ``nslice()``, ``name()``,
-     * ``has_name()`` and a static ``type``. Setters are partial and assert on elements that
-     * do not support them, @see mixin::has_settable_ds_v, mixin::has_settable_nslice_v and
-     * mixin::is_named_v for the exact sets.
+     * ``has_name()`` and a static ``type``. Setters are partial and throw ``std::runtime_error``
+     * on elements that do not support them, @see mixin::has_settable_ds_v,
+     * mixin::has_settable_nslice_v and mixin::is_named_v for the exact sets.
      *
      * @note This header includes ``elements/All.H`` and therefore sits *above* the element
      *       definitions. Do not include it from an element header or from another header in
@@ -70,7 +69,7 @@ namespace impactx::elements
             if constexpr (mixin::has_settable_ds_v<decltype(element)>) {
                 element.m_ds = ds;
             } else {
-                AMREX_ALWAYS_ASSERT_WITH_MESSAGE(false,
+                throw std::runtime_error(
                     "elements::ds: this element has no settable segment length.");
             }
         }, element_variant);
@@ -100,9 +99,13 @@ namespace impactx::elements
     {
         std::visit([nslice](auto & element) {
             if constexpr (mixin::has_settable_nslice_v<decltype(element)>) {
+                if (nslice <= 0) {
+                    throw std::runtime_error(
+                        "elements::nslice: nslice must be > 0.");
+                }
                 element.m_nslice = nslice;
             } else {
-                AMREX_ALWAYS_ASSERT_WITH_MESSAGE(false,
+                throw std::runtime_error(
                     "elements::nslice: this element cannot be sliced.");
             }
         }, element_variant);
@@ -146,7 +149,7 @@ namespace impactx::elements
             if constexpr (mixin::is_named_v<decltype(element)>) {
                 element.set_name(name);
             } else {
-                AMREX_ALWAYS_ASSERT_WITH_MESSAGE(false,
+                throw std::runtime_error(
                     "elements::name: this element has no settable name.");
             }
         }, element_variant);

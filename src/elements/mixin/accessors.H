@@ -17,6 +17,7 @@
 #include <AMReX_BLassert.H>
 #include <AMReX_REAL.H>
 
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <variant>
@@ -247,7 +248,7 @@ namespace impactx::elements
      * Subdividing an element is how a caller shortens its transport: with the slice count
      * temporarily doubled, each push advances ``ds/(2*nslice)`` instead of ``ds/nslice``.
      * Restoring on scope exit keeps the lattice consistent even if the pushes in between
-     * throw, e.g. from a Programmable element's Python callback.
+     * throw.
      *
      * The element must be sliceable, @see can_slice.
      */
@@ -263,6 +264,10 @@ namespace impactx::elements
         : m_element_variant(element_variant),
           m_nslice_original(elements::nslice(element_variant))
         {
+            if (!elements::can_slice(m_element_variant)) {
+                throw std::runtime_error(
+                    "elements::ScopedNslice: this element cannot be sliced.");
+            }
             elements::nslice(m_element_variant, nslice);
         }
 

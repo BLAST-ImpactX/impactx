@@ -183,11 +183,42 @@ Collective Effects & Overall Simulation Parameters
 
          CSR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
 
-         CSR effects require the compilation flag ``-DImpactX_FFT=ON``.
+         CSR effects require the compilation flag ``-DImpactX_FFT=ON``, unless a user-defined kick model is set via ``csr_kick_model``.
 
    .. py:property:: csr_bins
 
       The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+
+   .. py:property:: csr_kick_model
+
+      A user-defined CSR kick model (default: ``None``, which selects the built-in analytic model).
+
+      Use this to couple custom CSR models into the tracking loop, e.g., machine-learning surrogate models that were pre-trained on data from high-fidelity CSR solvers, as in
+      `A. L. Edelen et al., in Proc. IPAC'22, WEPOMS013, DOI:10.18429/JACoW-IPAC2022-WEPOMS013 <https://doi.org/10.18429/JACoW-IPAC2022-WEPOMS013>`__
+      (`arXiv:2203.07542 <https://arxiv.org/abs/2203.07542>`__).
+      See the :ref:`example <examples-ml-csr-surrogate>` and the :ref:`how-to guide <usage-howto-python-extend>`.
+
+      ``csr = True`` is still required for CSR to be applied. The model replaces only the wake/kick computation.
+      It is called once per tracking slice in CSR-active bend elements as ``model(profile, context)``, with an :py:class:`impactx.CSRProfile` and an :py:class:`impactx.CSRElementContext` argument.
+
+      The model must return the per-bin kick **forces in Newtons**, each an array of length ``profile.num_bins``, either as
+
+      * a dict with the required key ``"pt"`` (longitudinal force :math:`F_t`, applied as :math:`\Delta p_t = -F_t \Delta s / (c \, p_\mathrm{ref})`, where a positive value describes energy loss) and the optional keys ``"px"``/``"py"`` (transverse forces :math:`F_{x,y}`, applied as :math:`\Delta p_{x,y} = +F_{x,y} \Delta s / (\beta c \, p_\mathrm{ref})`), or
+      * a bare array, equivalent to ``{"pt": array}``.
+
+      Accepted array types: NumPy arrays and everything NumPy can convert (lists, detached CPU torch tensors, ...), pyAMReX ``PODVector``, and objects implementing the CUDA array interface (e.g., cupy arrays).
+
+      .. note::
+
+         The built-in analytic model corresponds to returning
+         :math:`F_t = \left(\mathrm{d}N/\mathrm{d}s \ast W_\mathrm{CSR}\right) \Delta`, the convolution of the number density derivative with the steady-state CSR wake function (:py:func:`impactx.wakeconvolution.w_l_csr`).
+
+      .. note::
+
+         This is a Python-only feature: it cannot be expressed in ParmParse input files and is not serialized.
+         Under MPI, set the model on every rank. It is invoked on the I/O rank only and the resulting kick is broadcast.
+         A model failure on the I/O rank is communicated to and raised on every rank, so parallel runs stop cleanly.
+         A kick model works in ImpactX builds without FFT support.
 
    .. py:property:: isr
 
@@ -531,6 +562,90 @@ Collective Effects & Overall Simulation Parameters
       :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
       :return: a dictionary of beam moments
       :rtype: dict[str, float]
+
+
+.. py:class:: impactx.CSRProfile
+
+   The binned longitudinal beam profile passed to a user-defined CSR kick model, see :py:attr:`impactx.ImpactX.csr_kick_model`.
+
+   All arrays share the same binning: bin ``i`` spans ``[bin_min + i * bin_size, bin_min + (i+1) * bin_size)`` in the longitudinal coordinate :math:`t = ct` (in meters) and have ``num_bins + 1`` entries, where the last entry is a guard bin.
+   The arrays are pyAMReX ``PODVector`` objects in device memory on GPU builds. Use ``.to_xp()`` for zero-copy access (NumPy on CPU, cupy on GPU) or ``.to_numpy(copy=True)`` for a host copy.
+
+   .. warning::
+
+      The profile and its array views are only valid during the model call.
+      Copy any data you retain.
+
+   .. py:property:: charge
+
+      Line charge density :math:`\lambda(t)` in C/m from nearest-grid-point deposition. ``sum(charge) * bin_size`` approximates the bunch charge in C.
+
+   .. py:property:: mean_x
+
+      Charge-weighted mean of :math:`x` per bin, in meters (zero for empty bins).
+
+   .. py:property:: mean_y
+
+      Charge-weighted mean of :math:`y` per bin, in meters (zero for empty bins).
+
+   .. py:property:: bin_min
+
+      Lower edge of bin 0 in :math:`t = ct`, in meters.
+
+   .. py:property:: bin_size
+
+      Bin spacing in meters, ``(t_max - t_min) / (num_bins - 1)``.
+
+   .. py:property:: num_bins
+
+      Number of kick bins (= :py:attr:`impactx.ImpactX.csr_bins`). The profile arrays have ``num_bins + 1`` entries.
+
+
+.. py:class:: impactx.CSRElementContext
+
+   The per-element, per-slice context passed to a user-defined CSR kick model, see :py:attr:`impactx.ImpactX.csr_kick_model`.
+   Only valid during the model call. Copy any data you retain.
+
+   .. py:property:: element_name
+
+      User-given element name (empty if unnamed).
+
+   .. py:property:: element_type
+
+      Element type, e.g., ``"Sbend"``.
+
+   .. py:property:: rc
+
+      Radius-of-curvature magnitude :math:`|R|` in meters.
+
+   .. py:property:: signed_rc
+
+      Signed radius of curvature :math:`R` in meters, preserving the bend polarity for models
+      that return transverse kicks.
+
+   .. py:property:: ds
+
+      Element (arc) length in meters.
+
+   .. py:property:: nslice
+
+      Number of slices in the element.
+
+   .. py:property:: slice
+
+      Current slice index, 0-based, in forward orientation.
+
+   .. py:property:: s
+
+      Distance from the element entrance at kick time, in meters (``= slice * slice_ds``, also during back-tracking).
+
+   .. py:property:: slice_ds
+
+      Slice length in meters.
+
+   .. py:property:: ref
+
+      The reference particle (a :py:class:`impactx.RefPart` snapshot copy).
 
 
 .. py:class:: impactx.Config

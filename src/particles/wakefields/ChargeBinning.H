@@ -46,6 +46,27 @@ namespace impactx::particles::wakefields
         bool GetNumberDensity = true
     );
 
+    /** Function to calculate the per-bin weighted transverse position sums along s
+     *
+     * The output is packed as [sum_w | sum_w*x | sum_w*y], each block of length
+     * num_bins = len(packed_sums) / 3, so that all three blocks can be
+     * MPI-reduced with a single reduction and normalized afterwards.
+     *
+     * @param[in] myspc the particle species to deposit along s
+     * @param[in,out] packed_sums zero-initialized output of size 3 * num_bins
+     * @param[in] bin_min lower end of the beam in s
+     * @param[in] bin_size size of the beam in s divided by num_bins
+     * @param[in] is_unity_particle_weight ignore the particle weighting per macro particle,
+     *                                     otherwise treat each particle as one physical particle
+     */
+    void WeightedTransverseSums (
+        impactx::ImpactXParticleContainer& myspc,
+        amrex::Gpu::DeviceVector<amrex::Real> & packed_sums,
+        amrex::Real bin_min,
+        amrex::Real bin_size,
+        bool is_unity_particle_weight = false
+    );
+
     /** Function to calculate the mean transverse positions (x and y) at each bin along s
      *
      * @param[in] myspc the particle species to deposit along s

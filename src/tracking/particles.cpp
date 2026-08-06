@@ -20,6 +20,8 @@
 #include "particles/wakefields/HandleWakefield.H"
 #include "tracking/particles.H"
 
+#include <ablastr/warn_manager/WarnManager.H>
+
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
 #include <AMReX_BLProfiler.H>
@@ -104,8 +106,19 @@ namespace impactx
             );
         }
 
+        if (m_csr_kick_model && !csr) {
+            ablastr::warn_manager::WMRecordWarning(
+                "ImpactX::track_particles",
+                "A user-provided CSR kick model (csr_kick_model) is set, but "
+                "algo.csr is disabled. The CSR kick model will not be called. "
+                "Enable algo.csr to apply it.",
+                ablastr::warn_manager::WarnPriority::medium
+            );
+        }
+
         if (verbose > 0) {
-            amrex::Print() << " CSR effects: " << csr << "\n";
+            amrex::Print() << " CSR effects: " << csr
+                           << (csr && m_csr_kick_model ? " (user-provided kick model)" : "") << "\n";
             amrex::Print() << " ISR effects: " << isr << "\n";
             amrex::Print() << " Spin tracking: " << spin << "\n";
         }
@@ -114,11 +127,13 @@ namespace impactx
         // space charge, coherent and incoherent synchrotron radiation, etc.
         auto collective_kicks = [this, &pc] (
             elements::KnownElements & element_variant,
-            amrex::ParticleReal slice_ds
+            amrex::ParticleReal slice_ds,
+            int slice_step,
+            int nslice
         )
         {
             // Wakefield calculation: call wakefield function to apply wake effects
-            particles::wakefields::HandleWakefield(*pc, element_variant, slice_ds);
+            particles::wakefields::HandleWakefield(*pc, element_variant, slice_ds, slice_step, nslice, m_csr_kick_model);
 
             // ISR calculation: call ISR function to apply incoherent synchrotron radiation effects
             particles::wakefields::HandleISR(*pc, element_variant, slice_ds);

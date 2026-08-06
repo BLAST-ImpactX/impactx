@@ -28,38 +28,43 @@ namespace impactx::particles::wakefields
      *
      * @param[in] element_variant the lattice element to check
      * @param[in] refpart reference particle
-     * @returns boolean flag indicating if the element has CSR, radius of curvature (or zero)
+     * @returns boolean flag indicating if the element has CSR, radius-of-curvature
+     *          magnitude, and signed radius of curvature (or zeroes)
      */
     template <typename VariantType>
-    std::tuple<bool, amrex::Real>
+    std::tuple<bool, amrex::Real, amrex::Real>
     CSRBendElement (
         VariantType const& element_variant,
         RefPart const & refpart
     )
     {
         amrex::Real R = 0;
+        amrex::Real signed_R = 0;
         bool element_has_csr = false;
 
         if (std::holds_alternative<elements::Sbend>(element_variant))
         {
             auto& element = std::get<elements::Sbend>(element_variant);
-            R = std::abs(element.m_rc);
+            signed_R = element.m_rc;
+            R = std::abs(signed_R);
             element_has_csr = true;
         }
         else if (std::holds_alternative<elements::CFbend>(element_variant))
         {
             auto& element = std::get<elements::CFbend>(element_variant);
-            R = std::abs(element.m_rc);
+            signed_R = element.m_rc;
+            R = std::abs(signed_R);
             element_has_csr = true;
         }
         else if (std::holds_alternative<elements::ExactSbend>(element_variant))
         {
             auto& element = std::get<elements::ExactSbend>(element_variant);
-            R = std::abs(element.rc(refpart));
+            signed_R = element.rc(refpart);
+            R = std::abs(signed_R);
             element_has_csr = true;
         }
 
-        return {element_has_csr, R};
+        return {element_has_csr, R, signed_R};
     }
 
 } // namespace impactx::particles::wakefields

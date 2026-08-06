@@ -5,6 +5,7 @@
 target_sources(pyImpactX
   PRIVATE
     Config.cpp
+    CSRKickModel.cpp
     distribution.cpp
     elements.cpp
     flatten_rho.cpp

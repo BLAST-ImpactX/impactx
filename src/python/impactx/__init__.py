@@ -32,6 +32,9 @@ from .extensions.KnownElementsList import (
     FilteredElementsList,
     register_KnownElementsList_extension,
 )
+from .extensions.ImpactX import (
+    register_ImpactX_extension,
+)
 from .extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
@@ -62,6 +65,7 @@ FilteredElementsList.__module__ = impactx_pybind.elements.__name__
 RefPart.load_file = read_beam  # noqa
 
 # Pure Python extensions to ImpactX types
+register_ImpactX_extension(impactx_pybind.ImpactX)
 register_ImpactXParticleContainer_extension(impactx_pybind.ImpactXParticleContainer)
 
 # Alternative constructors from raw field data

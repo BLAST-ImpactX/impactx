@@ -14,6 +14,7 @@ This facilitates a wide range of workflows, including:
    - **Dynamic lattice manipulation**, e.g., changing element strengths between turns, ramping voltages, or feedback systems.
    - **Custom beam optics elements**, e.g., a non-linear kick or a tabulated map, plugged in via the :py:class:`impactx.elements.Programmable` element.
    - **AI/ML surrogate models** built with PyTorch or TensorFlow to emulate detailed transport in a single element.
+   - **Custom collective-effect models**, e.g., a pre-trained CSR surrogate replacing the built-in analytic CSR wake, plugged in via :py:attr:`~impactx.ImpactX.csr_kick_model`.
 
 Because ImpactX exposes particles and fields *without copies* through `pyAMReX <https://pyamrex.readthedocs.io/>`__,
 per-step Python callbacks have very low overhead and stay GPU-resident when ImpactX runs on GPUs
@@ -153,6 +154,44 @@ Typical usage (per-tile push) looks like this:
 
 A complete script is provided in this :ref:`FODO Cell example <examples-fodo-programmable>`.
 For a more complex example, see our :ref:`ML surrogate element example <examples-ml-surrogate>`.
+
+.. _usage-howto-python-extend-csr:
+
+Custom CSR Wake Models (ML Surrogates)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+While the surfaces above observe the beam between elements or replace an element entirely, the
+:py:attr:`~impactx.ImpactX.csr_kick_model` property plugs into the *collective-effect* slot of the
+tracking loop: it replaces the built-in analytic Coherent Synchrotron Radiation (CSR) wake model
+with a user-defined one, e.g., a neural network pre-trained on data from a high-fidelity CSR solver
+(`A. L. Edelen et al., in Proc. IPAC'22, WEPOMS013 <https://doi.org/10.18429/JACoW-IPAC2022-WEPOMS013>`__).
+
+ImpactX keeps the surrounding machinery (per-slice charge binning, MPI reduction, and the momentum
+kick) and calls the model once per tracking slice in CSR-active bend elements with the binned
+longitudinal beam profile (:py:class:`impactx.CSRProfile`) and the element context
+(:py:class:`impactx.CSRElementContext`). The model returns the per-bin kick forces in Newtons:
+
+.. code-block:: python
+
+   import numpy as np
+
+   def my_csr_model(profile, context):
+       """Predict the per-bin longitudinal CSR kick force [N]."""
+       lam = profile.charge.to_xp()  # lambda(t) [C/m], NumPy (CPU) or CuPy (GPU)
+
+       # example inputs, as in Edelen et al. (IPAC'22):
+       # the charge profile, the position in the bend, and the bend radius
+       kick = my_network(lam, context.s, context.rc)  # length profile.num_bins
+
+       return {"pt": kick}  # optional additional keys: "px", "py"
+
+   sim.csr = True  # still required
+   sim.csr_kick_model = my_csr_model  # None restores the built-in model
+
+Details of the units and the calling convention are documented in
+:py:attr:`~impactx.ImpactX.csr_kick_model`.
+A complete, self-contained script that trains and couples a PyTorch surrogate is provided in the
+:ref:`NN CSR surrogate example <examples-ml-csr-surrogate>`.
 
 .. _usage-howto-python-extend-data-access:
 

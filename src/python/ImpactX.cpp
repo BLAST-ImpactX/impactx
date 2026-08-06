@@ -222,13 +222,26 @@ void init_ImpactX (py::module& m)
         )
         .def_property("csr_bins",
             [](ImpactX & /* ix */) {
-                return detail::get_or_throw<bool>("algo", "csr_bins");
+                return detail::get_or_throw<int>("algo", "csr_bins");
             },
             [](ImpactX & /* ix */, int csr_bins) {
                 amrex::ParmParse pp_algo("algo");
                 pp_algo.add("csr_bins", csr_bins);
             },
             "Number of longitudinal bins used for CSR calculations (default: 150)."
+        )
+        .def("_set_csr_kick_model",
+            [](ImpactX & ix, py::object callable) {
+                if (callable.is_none()) {
+                    ix.m_csr_kick_model = nullptr;
+                    return;
+                }
+                ix.m_csr_kick_model = make_csr_kick_model(callable);
+            },
+            py::arg("callable"),
+            "Internal: install a wrapped CSR kick model or None. Use the "
+            "csr_kick_model property instead, which validates user models "
+            "and converts their results via pyAMReX."
         )
         .def_property("isr",
             [](ImpactX & /* ix */) {
@@ -242,7 +255,7 @@ void init_ImpactX (py::module& m)
         )
         .def_property("isr_order",
             [](ImpactX & /* ix */) {
-                return detail::get_or_throw<bool>("algo", "isr_order");
+                return detail::get_or_throw<int>("algo", "isr_order");
             },
             [](ImpactX & /* ix */, int isr_order) {
                 amrex::ParmParse pp_algo("algo");

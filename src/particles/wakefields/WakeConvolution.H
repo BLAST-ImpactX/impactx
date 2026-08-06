@@ -99,7 +99,7 @@ namespace impactx::particles::wakefields
      * @param[in] s value along s [m]
      * @param[in] R band radius [m]
      * @param[in] bin_size longitudinal bin size [m]
-     * @return wake functions in [V*pc/mm]
+     * @return bin-integrated wake function value in [J]
      */
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     amrex::Real
@@ -120,10 +120,11 @@ namespace impactx::particles::wakefields
 
     /** Perform FFT-based convolution
      *
-     * @param[in] beam_profile_slope number density slope along s [1/m]
-     * @param[in] wake_func wake function along s [V*pc/mm]
+     * @param[in] beam_profile_slope number density slope along s [1/m^2]
+     * @param[in] wake_func wake function along s [J]
      * @param[in] delta_t size of a bin in wake_func [m]
-     * @return FFT convolution of beam_profile_slope & wake_func (N = len(beam_profile_slope) = len(wake_func)/2)
+     * @return FFT convolution of beam_profile_slope & wake_func, a per-bin
+     *         longitudinal force [N] (N = len(beam_profile_slope) = len(wake_func)/2)
      */
     amrex::Gpu::DeviceVector<amrex::Real>
     convolve_fft (

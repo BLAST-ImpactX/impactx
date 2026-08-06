@@ -50,7 +50,9 @@ namespace impactx
      *  so the caller is expected to reset it (to 0) before a forward run.
      *
      *  @tparam HookFn callable ``void (std::string const & name)`` invoking a named hook
-     *  @tparam CollectiveKicks callable, see @p ElementPush for the signature
+     *  @tparam CollectiveKicks callable
+     *    ``void (elements::KnownElements & element, amrex::ParticleReal slice_ds,
+     *            int slice_step, int nslice)``
      *  @tparam ElementPush callable
      *    ``void (elements::KnownElements & element, int element_index, int slice_step,
      *            int nslice, amrex::ParticleReal slice_ds, int step, int period)``
@@ -131,13 +133,13 @@ namespace impactx
                 // TODO: Strang-split here (#846 / #920)
                 if (forward)
                 {
-                    collective_kicks(element_variant, slice_ds);
+                    collective_kicks(element_variant, slice_ds, slice_step, nslice);
                     element_push(element_variant, step, period);
                 }
                 else
                 {
                     element_push(element_variant, step, period);
-                    collective_kicks(element_variant, slice_ds);
+                    collective_kicks(element_variant, slice_ds, slice_step, nslice);
                 }
             }
 

@@ -77,6 +77,7 @@ Coherent Synchrotron Radiation (CSR)
    :maxdepth: 1
 
    examples/chicane/README_csr.rst
+   examples/pytorch_csr_surrogate/README.rst
 
 
 Quantum Excitation

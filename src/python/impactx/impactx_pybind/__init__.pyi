@@ -1093,6 +1093,8 @@ class UnorderedMap:
     def values(self) -> typing.ValuesView: ...
 
 class Config:
+    ablastr_version: typing.ClassVar[str] = "26.06-5-g759c5cb11a41"
+    amrex_version: typing.ClassVar[str] = "26.07-54-gaa5b8cc69640"
     gpu_backend = None
     have_fft: typing.ClassVar[bool] = True
     have_gpu: typing.ClassVar[bool] = False
@@ -1100,6 +1102,7 @@ class Config:
     have_omp: typing.ClassVar[bool] = True
     have_openpmd: typing.ClassVar[bool] = True
     have_simd: typing.ClassVar[bool] = False
+    impactx_version: typing.ClassVar[str] = "55435ea5d132"
     openpmd_backends: typing.ClassVar[dict] = {
         "adios1": False,
         "adios2": False,

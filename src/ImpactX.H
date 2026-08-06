@@ -13,6 +13,7 @@
 #include "elements/All.H"
 #include "initialization/AmrCoreData.H"
 #include "particles/distribution/All.H"
+#include "particles/wakefields/CSRKickModel.H"
 #include "tracking/TrackingState.H"
 
 #include <AMReX_REAL.H>
@@ -170,6 +171,17 @@ namespace impactx
             std::string,
             std::function<void(ImpactX *)>
         > m_hook;  //! hooks that users can call
+
+        /** Optional user-provided CSR kick model (e.g., an ML surrogate).
+         *
+         * When set (non-empty), it replaces the built-in analytic CSR wake
+         * model: per tracking slice in CSR-active bend elements, it receives
+         * the binned longitudinal beam profile and the element context and
+         * returns per-bin kicks
+         * (\see particles::wakefields::CSRKickModel).
+         * algo.csr must additionally be enabled for CSR to be applied.
+         */
+        particles::wakefields::CSRKickModel m_csr_kick_model;
 
         /** A few states during tracking loops, useful to know in hooks (Python callback functions).
          */

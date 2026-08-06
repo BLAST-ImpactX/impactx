@@ -1401,6 +1401,17 @@ add_impactx_test(pytorch_surrogate_model
 label_impactx_test(pytorch_surrogate_model slow)
 
 
+# PyTorch CSR Surrogate: Chicane ##############################################
+#
+add_impactx_test(pytorch_csr_surrogate
+    examples/pytorch_csr_surrogate/run_chicane_csr_ml.py
+    OFF  # ImpactX MPI-parallel
+    examples/pytorch_csr_surrogate/analysis_chicane_csr_ml.py
+    OFF  # no plot script yet
+)
+label_impactx_test(pytorch_csr_surrogate slow)
+
+
 # IOTA s-dependent nonlinear lens with aperture ###############################
 #
 add_impactx_test(IOTA_nll_aperture

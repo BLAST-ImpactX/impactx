@@ -2532,6 +2532,14 @@ Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19
 
    CSR effects require the compilation flag ``-DImpactX_FFT=ON``.
 
+.. note::
+
+   Through the user-facing Python interface, the built-in analytic CSR wake model can be replaced with a user-defined kick model, e.g., a pre-trained machine-learning surrogate as in
+   `A. L. Edelen et al., in Proc. IPAC'22, WEPOMS013, DOI:10.18429/JACoW-IPAC2022-WEPOMS013 <https://doi.org/10.18429/JACoW-IPAC2022-WEPOMS013>`__
+   (`arXiv:2203.07542 <https://arxiv.org/abs/2203.07542>`__).
+   See ``csr_kick_model`` in the :ref:`Python interface documentation <usage-python>`. In that case, the FFT compilation requirement does not apply.
+   This is a Python-only feature and cannot be expressed in input files.
+
 .. _running-cpp-parameters-collective-isr:
 
 

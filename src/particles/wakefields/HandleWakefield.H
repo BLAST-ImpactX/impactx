@@ -11,30 +11,44 @@
 #define HANDLE_WAKEFIELD_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "elements/mixin/named.H"
 #include "ChargeBinning.H"
 #include "CSRBendElement.H"
+#include "CSRKickModel.H"
 #include "WakeConvolution.H"
 #include "WakePush.H"
 
+#include <AMReX_BLassert.H>
 #include <AMReX_GpuContainers.H>
 #include <AMReX_GpuDevice.H>
 #include <AMReX_GpuParallelReduce.H>
+#include <AMReX_ParallelDescriptor.H>
 
 #include <cmath>
+#include <exception>
 #include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
 #include <vector>
 
 
 namespace impactx::particles::wakefields
 {
     /** Function to handle CSR bending process including charge deposition,
-     * mean transverse position calculation, wakefield generation, and convolution.
+     * wakefield generation (built-in analytic model or user-provided kick
+     * model), and the momentum kick.
      *
      * Returns immediately if slice_ds is zero.
      *
      * @param[in] particle_container the particle species container
      * @param[in] element_variant variant type of the lattice element
      * @param[in] slice_ds slice spacing along s
+     * @param[in] slice current slice index in the element (0-based, forward orientation)
+     * @param[in] nslice number of slices in the element
+     * @param[in] csr_kick_model optional user-provided CSR kick model;
+     *            empty selects the built-in analytic model
      * @param[in] print_wakefield for debugging: print the wakefield to convolved_wakefield.txt
      */
     template <typename T_Element>
@@ -42,6 +56,9 @@ namespace impactx::particles::wakefields
         impactx::ImpactXParticleContainer& particle_container,
         T_Element const& element_variant,
         amrex::Real slice_ds,
+        int slice,
+        int nslice,
+        CSRKickModel const & csr_kick_model = {},
         bool print_wakefield = false
     )
     {
@@ -54,13 +71,24 @@ namespace impactx::particles::wakefields
         pp_algo.queryAdd("csr", csr);
 
         // Call the CSR bend function
-        auto const [element_has_csr, R] = impactx::particles::wakefields::CSRBendElement(element_variant, particle_container.GetRefParticle());
+        auto const csr_bend = impactx::particles::wakefields::CSRBendElement(
+            element_variant, particle_container.GetRefParticle());
+        bool const element_has_csr = std::get<0>(csr_bend);
+        amrex::Real const R = std::get<1>(csr_bend);
+        amrex::Real const signed_R = std::get<2>(csr_bend);
 
         // Enter loop if lattice has bend element
         if (csr && element_has_csr)
         {
+            bool const use_kick_model = static_cast<bool>(csr_kick_model);
 #ifndef ImpactX_USE_FFT
-            throw std::runtime_error("algo.csr was requested but ImpactX was not compiled with FFT support. Recompile with ImpactX_FFT=ON.");
+            if (!use_kick_model) {
+                throw std::runtime_error(
+                    "algo.csr was requested but ImpactX was not compiled with FFT support. "
+                    "Recompile with ImpactX_FFT=ON or provide a user-defined CSR kick model "
+                    "(csr_kick_model)."
+                );
+            }
 #endif
 
             int csr_bins = 150;
@@ -100,28 +128,173 @@ namespace impactx::particles::wakefields
 
             // Allocate memory for the charge profile
             amrex::Gpu::DeviceVector<amrex::Real> charge_distribution(num_bins + 1, 0.0);
-            amrex::Gpu::DeviceVector<amrex::Real> mean_x(num_bins, 0.0);
-            amrex::Gpu::DeviceVector<amrex::Real> mean_y(num_bins, 0.0);
 
             // Call charge deposition function
             impactx::particles::wakefields::DepositCharge1D(particle_container, charge_distribution, bin_min, bin_size, is_unity_particle_weight);
 
             // Sum up all partial charge histograms to one MPI process to calculate the global wakefield.
-            // Once calculated, we will distribute convolved_wakefield back to every MPI process.
+            // Once calculated, we will distribute the kick per bin back to every MPI process.
             amrex::ParallelReduce::Sum(
                 charge_distribution,
                 amrex::ParallelDescriptor::IOProcessorNumber(),
                 amrex::ParallelDescriptor::Communicator()
             );
 
-            // Pre-size on every rank to the (global) wake length.  On the IO
-            // processor this is overwritten by the convolution result of the
-            // same length.
-            amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield(num_bins, 0.0);
-            if (amrex::ParallelDescriptor::IOProcessor()) {
-                // Call the mean transverse position function
-                impactx::particles::wakefields::MeanTransversePosition(particle_container, mean_x, mean_y, bin_min,
-                                                                       bin_size, is_unity_particle_weight);
+            // Per-bin kick forces [N]. wake_pt is pre-sized on every rank to
+            // the (global) wake length. On the IO processor it is overwritten
+            // by the built-in convolution result or the kick model output of
+            // the same length. The transverse components are optional and
+            // only allocated if a user-provided kick model returns them.
+            amrex::Gpu::DeviceVector<amrex::Real> wake_pt(num_bins, 0.0);
+            amrex::Gpu::DeviceVector<amrex::Real> wake_px;
+            amrex::Gpu::DeviceVector<amrex::Real> wake_py;
+
+            if (use_kick_model)
+            {
+                // Per-bin weighted transverse sums, packed as
+                // [sum_w | sum_w*x | sum_w*y] for a single MPI reduction.
+                amrex::Gpu::DeviceVector<amrex::Real> packed_sums(3 * (num_bins + 1), 0.0);
+                impactx::particles::wakefields::WeightedTransverseSums(
+                    particle_container, packed_sums, bin_min, bin_size, is_unity_particle_weight);
+                amrex::ParallelReduce::Sum(
+                    packed_sums,
+                    amrex::ParallelDescriptor::IOProcessorNumber(),
+                    amrex::ParallelDescriptor::Communicator()
+                );
+
+                int const io_rank = amrex::ParallelDescriptor::IOProcessorNumber();
+                int const nprocs = amrex::ParallelDescriptor::NProcs();
+                int has_transverse = 0;  // bit 0: px is present, bit 1: py is present
+                int model_succeeded = 1;
+                std::string model_error;
+                if (amrex::ParallelDescriptor::IOProcessor())
+                {
+                    auto invoke_model = [&] ()
+                    {
+                        // Assemble the binned beam profile
+                        CSRProfile profile;
+                        profile.charge = std::move(charge_distribution);
+                        profile.mean_x.resize(num_bins + 1);
+                        profile.mean_y.resize(num_bins + 1);
+                        profile.bin_min = bin_min;
+                        profile.bin_size = bin_size;
+                        profile.num_bins = num_bins;
+
+                        int const nb1 = num_bins + 1;
+                        amrex::Real const * const dptr_sums = packed_sums.data();
+                        amrex::Real * const dptr_mean_x = profile.mean_x.data();
+                        amrex::Real * const dptr_mean_y = profile.mean_y.data();
+                        amrex::ParallelFor(nb1, [=] AMREX_GPU_DEVICE (int i)
+                        {
+                            amrex::Real const sum_w = dptr_sums[i];
+                            dptr_mean_x[i] = sum_w > 0
+                                ? dptr_sums[nb1 + i] / sum_w
+                                : amrex::Real(0.0);
+                            dptr_mean_y[i] = sum_w > 0
+                                ? dptr_sums[2 * nb1 + i] / sum_w
+                                : amrex::Real(0.0);
+                        });
+
+                        // Assemble the element context
+                        CSRElementContext context;
+                        std::visit([&context] (auto const & element)
+                        {
+                            using T = std::decay_t<decltype(element)>;
+                            context.element_type = T::type;
+                            if constexpr (std::is_base_of_v<elements::mixin::Named, T>) {
+                                if (element.has_name()) {
+                                    context.element_name = element.name();
+                                }
+                            }
+                            context.ds = element.ds();
+                        }, element_variant);
+                        context.rc = R;
+                        context.signed_rc = signed_R;
+                        context.nslice = nslice;
+                        context.slice = slice;
+                        context.s = static_cast<amrex::ParticleReal>(slice) * slice_ds;
+                        context.slice_ds = slice_ds;
+                        context.ref = particle_container.GetRefParticle();
+
+                        // Ensure all deposition results are visible to the model
+                        amrex::Gpu::streamSynchronize();
+
+                        // Call the user-provided kick model
+                        CSRKick kick = csr_kick_model(profile, context);
+
+                        if (int(kick.pt.size()) != num_bins ||
+                            !(kick.px.empty() || int(kick.px.size()) == num_bins) ||
+                            !(kick.py.empty() || int(kick.py.size()) == num_bins))
+                        {
+                            throw std::runtime_error(
+                                "HandleWakefield: the user-provided CSR kick model returned "
+                                "arrays of wrong length for element type '" +
+                                context.element_type + "' (name: '" + context.element_name +
+                                "', slice " + std::to_string(slice) + "): expected " +
+                                std::to_string(num_bins) + " values per component."
+                            );
+                        }
+
+                        wake_pt = std::move(kick.pt);
+                        wake_px = std::move(kick.px);
+                        wake_py = std::move(kick.py);
+                        has_transverse =
+                            (wake_px.empty() ? 0 : 1) | (wake_py.empty() ? 0 : 2);
+                    };
+
+                    if (nprocs == 1)
+                    {
+                        // Preserve the original Python exception type and traceback in serial.
+                        invoke_model();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            invoke_model();
+                        }
+                        catch (std::exception const & error)
+                        {
+                            model_succeeded = 0;
+                            model_error = error.what();
+                        }
+                        catch (...)
+                        {
+                            model_succeeded = 0;
+                            model_error = "The CSR kick model raised an unknown exception.";
+                        }
+                    }
+                }
+
+                if (nprocs > 1)
+                {
+                    amrex::ParallelDescriptor::Bcast(&model_succeeded, 1, io_rank);
+                    if (!model_succeeded)
+                    {
+                        int error_size = static_cast<int>(model_error.size());
+                        amrex::ParallelDescriptor::Bcast(&error_size, 1, io_rank);
+                        model_error.resize(error_size);
+                        if (error_size > 0) {
+                            amrex::ParallelDescriptor::Bcast(
+                                model_error.data(), error_size, io_rank);
+                        }
+                        throw std::runtime_error(model_error);
+                    }
+                }
+
+                // Broadcast which kick components are present and pre-size the
+                // receiving ranks accordingly (the vectors are broadcast below).
+                amrex::ParallelDescriptor::Bcast(&has_transverse, 1, io_rank);
+                if (!amrex::ParallelDescriptor::IOProcessor())
+                {
+                    if (has_transverse & 1) { wake_px.resize(num_bins, 0.0); }
+                    if (has_transverse & 2) { wake_py.resize(num_bins, 0.0); }
+                }
+            }
+            else if (amrex::ParallelDescriptor::IOProcessor())
+            {
+                // Built-in analytic CSR model:
+                // dN/ds convolved with the steady-state CSR wake function.
 
                 // Call charge density derivative function
                 amrex::Gpu::DeviceVector<amrex::Real> slopes(charge_distribution.size() - 1, 0.0);
@@ -144,25 +317,41 @@ namespace impactx::particles::wakefields
                 });
 
                 // Call convolution function
-                convolved_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
+                wake_pt = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
             }
 
-            // Broadcast the global wakefield from the IO processor (which alone
-            // computed it) to every MPI rank. Receivers are pre-sized above.
+            // Broadcast the global kick per bin from the IO processor (which
+            // alone computed it) to every MPI rank. Receivers are pre-sized above.
             amrex::ParallelDescriptor::Bcast(
-                convolved_wakefield,
+                wake_pt,
                 amrex::ParallelDescriptor::IOProcessorNumber(),
                 amrex::ParallelDescriptor::Communicator()
             );
+            if (!wake_px.empty())
+            {
+                amrex::ParallelDescriptor::Bcast(
+                    wake_px,
+                    amrex::ParallelDescriptor::IOProcessorNumber(),
+                    amrex::ParallelDescriptor::Communicator()
+                );
+            }
+            if (!wake_py.empty())
+            {
+                amrex::ParallelDescriptor::Bcast(
+                    wake_py,
+                    amrex::ParallelDescriptor::IOProcessorNumber(),
+                    amrex::ParallelDescriptor::Communicator()
+                );
+            }
 
             // Check convolution output
             if (print_wakefield && amrex::ParallelDescriptor::IOProcessor())
             {
-                // convolved_wakefield is in (non-managed) device memory. Copy it
+                // wake_pt is in (non-managed) device memory. Copy it
                 // to the host before iterating it on the host for printing.
-                amrex::Gpu::HostVector<amrex::Real> h_wakefield(convolved_wakefield.size());
-                amrex::Gpu::dtoh_memcpy(h_wakefield.data(), convolved_wakefield.data(),
-                                        convolved_wakefield.size() * sizeof(amrex::Real));
+                amrex::Gpu::HostVector<amrex::Real> h_wakefield(wake_pt.size());
+                amrex::Gpu::dtoh_memcpy(h_wakefield.data(), wake_pt.data(),
+                                        wake_pt.size() * sizeof(amrex::Real));
                 std::cout << "Convolved wakefield: ";
                 std::ofstream outfile("convolved_wakefield.txt");
                 for (amrex::Real const val : h_wakefield) {
@@ -174,7 +363,7 @@ namespace impactx::particles::wakefields
             }
 
             // Call function to kick particles with wake
-            impactx::particles::wakefields::WakePush(particle_container, convolved_wakefield, slice_ds, bin_size, t_min);
+            impactx::particles::wakefields::WakePush(particle_container, wake_pt, wake_px, wake_py, slice_ds, bin_size, t_min);
         }
     }
 

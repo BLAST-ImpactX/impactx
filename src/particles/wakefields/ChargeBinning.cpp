@@ -112,10 +112,9 @@ namespace impactx::particles::wakefields
         });
     }
 
-    void MeanTransversePosition (
+    void WeightedTransverseSums (
         impactx::ImpactXParticleContainer& myspc,
-        amrex::Gpu::DeviceVector<amrex::Real> & mean_x,
-        amrex::Gpu::DeviceVector<amrex::Real> & mean_y,
+        amrex::Gpu::DeviceVector<amrex::Real> & packed_sums,
         amrex::Real bin_min,
         amrex::Real bin_size,
         bool is_unity_particle_weight
@@ -123,18 +122,8 @@ namespace impactx::particles::wakefields
     {
         using namespace amrex::literals;
 
-        int const num_bins = mean_x.size();
-        amrex::Real* dptr_mean_x = mean_x.data();
-        amrex::Real* dptr_mean_y = mean_y.data();
-
-        // Declare arrays for sums of positions and weights
-        auto sum_x = amrex::Gpu::DeviceVector<amrex::Real>(num_bins, 0.0_rt);
-        auto sum_y = amrex::Gpu::DeviceVector<amrex::Real>(num_bins, 0.0_rt);
-        auto sum_w = amrex::Gpu::DeviceVector<amrex::Real>(num_bins, 0.0_rt);
-
-        amrex::Real* const sum_w_ptr = sum_w.data();
-        amrex::Real* const sum_x_ptr = sum_x.data();
-        amrex::Real* const sum_y_ptr = sum_y.data();
+        int const num_bins = packed_sums.size() / 3;
+        amrex::Real* const dptr_sums = packed_sums.data();
 
         int const nlevs = myspc.finestLevel();
         for (int lev = 0; lev <= nlevs; ++lev)
@@ -167,20 +156,40 @@ namespace impactx::particles::wakefields
 
                         amrex::Real const weight = is_unity_particle_weight ? 1.0_rt : w;  // Check is macroparticle made up of 1 or more particles
 
-                        amrex::HostDevice::Atomic::Add(&sum_w_ptr[bin], weight);      // Deposit the number of particles composing macroparticle
-                        amrex::HostDevice::Atomic::Add(&sum_x_ptr[bin], x * weight);  // Deposit x position multiplied by number of particles at this position
-                        amrex::HostDevice::Atomic::Add(&sum_y_ptr[bin], y * weight);
+                        amrex::HostDevice::Atomic::Add(&dptr_sums[bin], weight);                      // Deposit the number of particles composing macroparticle
+                        amrex::HostDevice::Atomic::Add(&dptr_sums[num_bins + bin], x * weight);       // Deposit x position multiplied by number of particles at this position
+                        amrex::HostDevice::Atomic::Add(&dptr_sums[2 * num_bins + bin], y * weight);
                     });
                 }
             }
         }
+    }
 
+    void MeanTransversePosition (
+        impactx::ImpactXParticleContainer& myspc,
+        amrex::Gpu::DeviceVector<amrex::Real> & mean_x,
+        amrex::Gpu::DeviceVector<amrex::Real> & mean_y,
+        amrex::Real bin_min,
+        amrex::Real bin_size,
+        bool is_unity_particle_weight
+    )
+    {
+        using namespace amrex::literals;
+
+        int const num_bins = mean_x.size();
+        amrex::Real* dptr_mean_x = mean_x.data();
+        amrex::Real* dptr_mean_y = mean_y.data();
+
+        auto packed_sums = amrex::Gpu::DeviceVector<amrex::Real>(3 * num_bins, 0.0_rt);
+        WeightedTransverseSums(myspc, packed_sums, bin_min, bin_size, is_unity_particle_weight);
+
+        amrex::Real const * const dptr_sums = packed_sums.data();
         amrex::ParallelFor(num_bins, [=] AMREX_GPU_DEVICE(int i)
         {
-            if (sum_w_ptr[i] > 0) // Ensure number of particles in a bin is >= 1 before taking the mean
+            if (dptr_sums[i] > 0) // Ensure number of particles in a bin is >= 1 before taking the mean
             {
-                dptr_mean_x[i] = sum_x_ptr[i] / sum_w_ptr[i];
-                dptr_mean_y[i] = sum_y_ptr[i] / sum_w_ptr[i];
+                dptr_mean_x[i] = dptr_sums[num_bins + i] / dptr_sums[i];
+                dptr_mean_y[i] = dptr_sums[2 * num_bins + i] / dptr_sums[i];
             }
             else
             {

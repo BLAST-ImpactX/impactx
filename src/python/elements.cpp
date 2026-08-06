@@ -346,7 +346,11 @@ void init_elements(py::module& m)
         )
         .def_property("nslice",
             [](elements::mixin::Thick & th) { return th.m_nslice; },
-            [](elements::mixin::Thick & th, int nslice) { th.m_nslice = nslice; },
+            [](elements::mixin::Thick & th, int nslice) {
+                if (nslice <= 0)
+                    throw std::invalid_argument("Thick: nslice must be > 0!");
+                th.m_nslice = nslice;
+            },
             "number of slices used for the application of space charge"
         )
     ;
@@ -1262,7 +1266,11 @@ void init_elements(py::module& m)
         )
         .def_property("int_order",
             [](ExactMultipole & exact_multipole) { return exact_multipole.m_int_order; },
-            [](ExactMultipole & exact_multipole, int int_order) { exact_multipole.m_int_order = int_order; },
+            [](ExactMultipole & exact_multipole, int int_order) {
+                if (int_order != 2 && int_order != 4 && int_order != 6)
+                    throw std::invalid_argument("ExactMultipole: The order used for symplectic integration must be 2, 4 or 6.");
+                exact_multipole.m_int_order = int_order;
+            },
             "order of symplectic integration used for particle push in applied fields"
         )
         .def_property("mapsteps",
@@ -1419,7 +1427,11 @@ void init_elements(py::module& m)
         )
         .def_property("int_order",
             [](ExactQuad & exact_quad) { return exact_quad.m_int_order; },
-            [](ExactQuad & exact_quad, int int_order) { exact_quad.m_int_order = int_order; },
+            [](ExactQuad & exact_quad, int int_order) {
+                if (int_order != 2 && int_order != 4 && int_order != 6)
+                    throw std::invalid_argument("ExactQuad: The order used for symplectic integration must be 2, 4 or 6.");
+                exact_quad.m_int_order = int_order;
+            },
             "order of symplectic integration used for particle push in applied fields"
         )
         .def_property("mapsteps",
@@ -1921,7 +1933,11 @@ void init_elements(py::module& m)
         )
         .def_property("nslice",
             [](Programmable & p) { return p.nslice(); },
-            [](Programmable & p, int nslice) { p.m_nslice = nslice; }
+            [](Programmable & p, int nslice) {
+                if (nslice <= 0)
+                    throw std::invalid_argument("Programmable: nslice must be > 0!");
+                p.m_nslice = nslice;
+            }
         )
         .def_property("ds",
               [](Programmable & p) { return p.ds(); },

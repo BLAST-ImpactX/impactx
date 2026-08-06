@@ -15,6 +15,8 @@
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 
+#include <stdexcept>
+
 
 namespace impactx::elements::mixin
 {
@@ -27,7 +29,8 @@ namespace impactx::elements::mixin
         /** A finite-length element
          *
          * @param ds Segment length in m
-         * @param nslice number of slices used for the application of space charge
+         * @param nslice number of slices used for the application of space charge,
+         *               a positive integer
          */
         Thick (
             amrex::ParticleReal ds,
@@ -35,6 +38,8 @@ namespace impactx::elements::mixin
         )
         : m_ds(ds), m_nslice(nslice)
         {
+            if (m_nslice <= 0)
+                throw std::invalid_argument("Thick: nslice must be > 0!");
         }
 
         /** Number of slices used for the application of space charge

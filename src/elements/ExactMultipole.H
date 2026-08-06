@@ -118,6 +118,9 @@ namespace impactx::elements
           m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps),
           m_id(DynamicData::allocate_id())
         {
+            if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
+                throw std::invalid_argument("ExactMultipole: The order used for symplectic integration must be 2, 4 or 6.");
+
             if (m_mapsteps <= 0)
                 throw std::invalid_argument("ExactMultipole: mapsteps must be > 0!");
 

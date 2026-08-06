@@ -175,9 +175,11 @@ def cnv_sbend(elem, order):
             )
         else:
             # CF bend
+            # ExactCFbend requires k_normal and k_skew to have the same length,
+            # so both arrays are truncated at the same order (see cnv_rbend).
             if k2 == 0.0:
                 knormal = [1 / radius_of_curvature, k1]
-                kskew = [0.0, k1s, 0.0]
+                kskew = [0.0, k1s]
             else:
                 knormal = [1 / radius_of_curvature, k1, k2]
                 kskew = [0.0, k1s, 0.0]
@@ -552,7 +554,8 @@ def cnv_octupole(elem, order):
             ds=L,
             k_normal=knorm,
             k_skew=kskew,
-            order=4,
+            # the ExactMultipole argument is int_order, matching cnv_sextupole
+            int_order=4,
             nslice=nslice_by_elem_type["octupole"],
             name=nm,
         )

@@ -115,11 +115,11 @@ namespace impactx::elements
           m_id(DynamicData::allocate_id())
         {
             if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
-                throw std::runtime_error("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
+                throw std::invalid_argument("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
 
             m_ncoef = int(k_normal.size());
             if (m_ncoef != int(k_skew.size()))
-                throw std::runtime_error("ExactCFbend: normal and skew coefficient arrays must have same length!");
+                throw std::invalid_argument("ExactCFbend: normal and skew coefficient arrays must have same length!");
 
             auto& coef = DynamicData::emplace(
                 m_id,

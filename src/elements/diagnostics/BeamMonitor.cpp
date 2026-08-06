@@ -143,7 +143,7 @@ namespace detail {
         m_beam_moments(beam_moments)
     {
         if (period_sample_intervals < 1) {
-            throw std::runtime_error("BeamMonitor: period_sample_intervals must be >= 1");
+            throw std::invalid_argument("BeamMonitor: period_sample_intervals must be >= 1");
         }
     }
 

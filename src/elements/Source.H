@@ -56,7 +56,7 @@ namespace impactx::elements
           m_load_ref_particle(load_ref_particle)
         {
             if (distribution != "openPMD") {
-                throw std::runtime_error("Only 'openPMD' distribution is supported if openpmd_path is provided!");
+                throw std::invalid_argument("Only 'openPMD' distribution is supported if openpmd_path is provided!");
             }
         }
 

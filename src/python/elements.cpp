@@ -15,6 +15,7 @@
 
 #include <map>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -965,7 +966,7 @@ void init_elements(py::module& m)
             )
             {
                  if (R <= 0.0)
-                     throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
+                     throw std::invalid_argument(R"(DipEdge parameter R must be > 0.)");
 
                 DipEdge::Model const fm = amrex::getEnum<DipEdge::Model>(model);
                 DipEdge::Location const fl = amrex::getEnum<DipEdge::Location>(location);
@@ -1010,7 +1011,7 @@ void init_elements(py::module& m)
             [](DipEdge & dip_edge) { return dip_edge.m_R; },
             [](DipEdge & dip_edge, amrex::ParticleReal R) {
                 if (R <= 0.0)
-                     throw std::runtime_error(R"(DipEdge parameter R must be > 0.)");
+                     throw std::invalid_argument(R"(DipEdge parameter R must be > 0.)");
                 dip_edge.m_R = R;
             },
             "Length scale for field integrals in m"
@@ -1334,7 +1335,7 @@ void init_elements(py::module& m)
             [](ExactCFbend & exact_cfbend) { return exact_cfbend.m_int_order; },
             [](ExactCFbend & exact_cfbend, int int_order) {
                 if (int_order != 2 && int_order != 4 && int_order != 6)
-                    throw std::runtime_error("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
+                    throw std::invalid_argument("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
                 exact_cfbend.m_int_order = int_order;
             },
             "order of symplectic integration used for particle push in applied fields"

@@ -120,7 +120,7 @@ namespace impactx::elements
         {
             m_ncoef = int(k_normal.size());
             if (m_ncoef != int(k_skew.size()))
-                throw std::runtime_error("ExactMultipole: normal and skew coefficient arrays must have same length!");
+                throw std::invalid_argument("ExactMultipole: normal and skew coefficient arrays must have same length!");
 
             auto& coef = DynamicData::emplace(
                 m_id,

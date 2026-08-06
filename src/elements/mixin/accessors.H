@@ -100,7 +100,7 @@ namespace impactx::elements
         std::visit([nslice](auto & element) {
             if constexpr (mixin::has_settable_nslice_v<decltype(element)>) {
                 if (nslice <= 0) {
-                    throw std::runtime_error(
+                    throw std::invalid_argument(
                         "elements::nslice: nslice must be > 0.");
                 }
                 element.m_nslice = nslice;

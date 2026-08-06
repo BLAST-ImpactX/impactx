@@ -174,7 +174,7 @@ namespace impactx::elements
         {
             m_ncoef = int(cos_coef.size());
             if (m_ncoef != int(sin_coef.size()))
-                throw std::runtime_error("SoftSolenoid: cos and sin coefficients must have same length!");
+                throw std::invalid_argument("SoftSolenoid: cos and sin coefficients must have same length!");
 
             auto& coef = DynamicData::emplace(
                 m_id,

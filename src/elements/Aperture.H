@@ -96,17 +96,17 @@ namespace impactx::elements
             if (aperture_x > 0_prt) {
                 m_inv_aperture_x = 1_prt / aperture_x;
             } else {
-                throw std::runtime_error("Aperture: aperture_x must be > 0!");
+                throw std::invalid_argument("Aperture: aperture_x must be > 0!");
             }
 
             if (aperture_y > 0_prt) {
                 m_inv_aperture_y = 1_prt / aperture_y;
             } else {
-                throw std::runtime_error("Aperture: aperture_y must be > 0!");
+                throw std::invalid_argument("Aperture: aperture_y must be > 0!");
             }
 
             if (m_repeat_y == 0_prt && m_shift_odd_x) {
-                throw std::runtime_error("Aperture: shift_odd_x can only be used if repeat_y is set, too!");
+                throw std::invalid_argument("Aperture: shift_odd_x can only be used if repeat_y is set, too!");
             }
         }
 

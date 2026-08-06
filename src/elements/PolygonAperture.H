@@ -115,17 +115,17 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
 
             if (m_repeat_y == 0_prt && m_shift_odd_x) {
-                throw std::runtime_error("PolygonAperture: shift_odd_x can only be used if repeat_y is set, too!");
+                throw std::invalid_argument("PolygonAperture: shift_odd_x can only be used if repeat_y is set, too!");
             }
 
             m_nvert = vertices_x.size();
             if (m_nvert != vertices_y.size()) {
-                throw std::runtime_error("PolygonAperture: horizontal and vertical vertices arrays must have same length!");
+                throw std::invalid_argument("PolygonAperture: horizontal and vertical vertices arrays must have same length!");
             }
 
             if ((vertices_x[0] != vertices_x[m_nvert-1]) ||
                 (vertices_y[0] != vertices_y[m_nvert-1])) {
-                throw std::runtime_error("PolygonAperture: first and last vertex must be exactly equal!");
+                throw std::invalid_argument("PolygonAperture: first and last vertex must be exactly equal!");
             }
 
             auto& vert = DynamicData::emplace(

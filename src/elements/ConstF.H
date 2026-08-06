@@ -154,7 +154,7 @@ namespace impactx::elements
 
             if (m_kt < 0_prt)
             {
-                throw std::runtime_error(std::string(type) + ": must have kt >= 0!");
+                throw std::invalid_argument(std::string(type) + ": must have kt >= 0!");
             }
             auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);
             m_cos_ktds = cos_ktds;
@@ -357,7 +357,7 @@ namespace impactx::elements
             }
 
             if (m_kt < 0_prt) {
-                throw std::runtime_error(std::string(type) + ": must have kt >= 0!");
+                throw std::invalid_argument(std::string(type) + ": must have kt >= 0!");
             }
             auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);
             amrex::ParticleReal const_t = -m_kt * betgam2 * sin_ktds;

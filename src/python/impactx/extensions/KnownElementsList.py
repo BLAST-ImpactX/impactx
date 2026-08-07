@@ -79,12 +79,38 @@ def _invalidate_all_registered_views(lattice) -> None:
         fel._invalidated = True
 
 
+# These report an angle in radians from ``to_dict()`` although their constructors
+# take degrees, so serializing them for round-trip needs ``in_degrees=True``.
+# See https://github.com/BLAST-ImpactX/impactx/issues/1367
+_DEGREE_ELEMENTS = (
+    "ExactSbend",
+    "PlaneXYRot",
+    "PRot",
+    "ThinDipole",
+)
+
+
+def _element_to_dict(element) -> dict:
+    """Serialize an element to a dict that its constructor can consume again.
+
+    Applies the radians/degrees work-around for the element types whose
+    ``to_dict()`` disagrees with their constructor.
+    """
+    if type(element).__name__ in _DEGREE_ELEMENTS:
+        return element.to_dict(in_degrees=True)
+    return element.to_dict()
+
+
 def _clone_element(template):
-    """Deep-clone a lattice element via ``to_dict`` (pybind elements are not copy.copy-able)."""
-    d = template.to_dict()
-    type_name = d.pop("type")
-    cls = getattr(elements, type_name)
-    return cls(**d)
+    """Deep-clone a lattice element via ``to_dict`` (pybind elements are not copy.copy-able).
+
+    Goes through ``_element_to_dict`` and ``_element_from_dict`` so that the dict is
+    one the constructor accepts: ``_filter_kwargs`` drops keys that ``to_dict``
+    reports but the constructor rejects (thin elements such as ``Marker`` report
+    ``ds=0.0`` yet take only a name), and angles are converted to the degrees the
+    constructor expects.
+    """
+    return _element_from_dict(_element_to_dict(template))
 
 
 def _make_drift_from_old(
@@ -822,19 +848,9 @@ def to_dicts(self) -> list[dict]:
     # simple implementation:
     # return [el.to_dict() for el in self]
 
-    # work-around for ExactSbend, PlaneXYRot, PRot, ThinDipole .to_dict() returning radians not degrees
-    results = []
-    for el in self:
-        if type(el) in [
-            elements.ExactSbend,
-            elements.PlaneXYRot,
-            elements.PRot,
-            elements.ThinDipole,
-        ]:
-            results.append(el.to_dict(in_degrees=True))
-        else:
-            results.append(el.to_dict())
-    return results
+    # work-around for ExactSbend, PlaneXYRot, PRot, ThinDipole .to_dict() returning
+    # radians not degrees; shared with _clone_element via _element_to_dict
+    return [_element_to_dict(el) for el in self]
 
 
 def _format_value(v):

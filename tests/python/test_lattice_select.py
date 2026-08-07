@@ -1134,3 +1134,38 @@ def test_replace_with_drifts_thin_element():
     assert lattice[0].ds == 0.0
     assert lattice[1].name == "d1"
     assert lattice[1].ds == 1.0
+
+
+def test_delete_with_thin_element_present():
+    """Cloning must not pass `ds` to thin elements that do not accept it.
+
+    `Marker.to_dict()` reports `ds=0.0` but `Marker.__init__` takes only a name,
+    so rebuilding the lattice used to raise TypeError whenever an unselected
+    thin element had to be cloned.
+    """
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Marker(name="m1"),
+            elements.Drift(name="d1", ds=1.0),
+            elements.ShortRF(name="rf1", V=1.0, freq=1.0e6, phase=0.0),
+        ]
+    )
+    lattice.select(kind="Drift").delete()
+    assert [type(e).__name__ for e in lattice] == ["Marker", "ShortRF"]
+    assert lattice[0].name == "m1"
+    assert lattice[1].name == "rf1"
+
+
+def test_replace_each_with_thin_element_present():
+    """Same cloning path, via replace_each."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Marker(name="m1"),
+            elements.Quad(name="q1", ds=0.5, k=1.0),
+        ]
+    )
+    lattice.select(kind="Quad").replace_each(elements.Drift(ds=0.5))
+    assert [type(e).__name__ for e in lattice] == ["Marker", "Drift"]
+    assert lattice[0].name == "m1"

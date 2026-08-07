@@ -723,3 +723,47 @@ def test_to_py_roundtrip(all_elements):
             f"  Original: {d1}\n"
             f"  Reconstructed: {d2}"
         )
+
+
+def test_clone_element_covers_all_element_types(all_elements):
+    """Every element type must survive the clone used to rebuild a lattice.
+
+    ``delete()``, ``replace_each()`` and ``replace_with_drifts()`` rebuild the
+    lattice by cloning the elements they are not replacing. That clone goes
+    through ``to_dict()`` and back into the constructor, and the two are not
+    symmetric for thin elements: ``Marker.to_dict()`` reports ``ds=0.0`` while
+    ``Marker.__init__`` takes only a name. Cloning such an element used to raise
+    ``TypeError``, breaking all three operations on any lattice containing one.
+    """
+    from impactx.extensions.KnownElementsList import _clone_element
+
+    lattice, _ = all_elements
+
+    failures = []
+    for element in lattice:
+        type_name = type(element).__name__
+        if type_name in SKIP_ELEMENTS:
+            continue
+        try:
+            clone = _clone_element(element)
+        except Exception as e:  # noqa: BLE001 - report every offender at once
+            failures.append(f"{type_name}: {type(e).__name__}: {e}")
+            continue
+        assert type(clone) is type(element), type_name
+        assert dicts_equal(clone.to_dict(), element.to_dict()), (
+            f"clone of {type_name} does not match the original:\n"
+            f"  Original: {element.to_dict()}\n"
+            f"  Clone:    {clone.to_dict()}"
+        )
+
+    assert not failures, "elements that cannot be cloned:\n  " + "\n  ".join(failures)
+
+
+def test_lattice_rebuild_covers_all_element_types(all_elements):
+    """The same coverage through the public API that depends on cloning."""
+    lattice, _ = all_elements
+
+    n_before = len(lattice)
+    # delete a single element: every *other* element has to be cloned
+    lattice.select(kind="Marker").delete()
+    assert len(lattice) < n_before

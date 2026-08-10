@@ -107,6 +107,14 @@ namespace
      * This is the element's per-slice map (for @c ds/nslice), i.e. the building
      * block that @c KnownElementsList.transfer_map composes over @c nslice and
      * over the whole lattice.
+     *
+     * The evaluation convention matches @c diagnostics::walk_lattice and the
+     * envelope tracker: advance a private copy of the reference particle by one
+     * slice, then evaluate @c transport_map at the post-advance reference state.
+     * Elements whose linear map depends on the reference momentum through the
+     * slice (@c ShortRF, @c ChrAcc) read the post-advance @c pt, and elements
+     * that integrate their map during the reference push (@c RFCavity,
+     * @c SoftQuadrupole, @c SoftSolenoid) only have one to return afterwards.
      */
     template<typename T_PyClass>
     void register_transfer_map (T_PyClass & cl)
@@ -116,7 +124,12 @@ namespace
         cl.def("transfer_map",
             [](Element const & el, RefPart const & ref) -> Map6x6 {
                 if constexpr (Element::has_linear_transport) {
-                    return el.transport_map(ref);
+                    // private copy: the caller's reference particle is not modified
+                    RefPart ref_slice = ref;
+                    // the element starts at the current s, as in walk_lattice
+                    ref_slice.sedge = ref_slice.s;
+                    el(ref_slice);
+                    return el.transport_map(ref_slice);
                 } else {
                     throw std::runtime_error(
                         std::string(Element::type)
@@ -132,6 +145,10 @@ namespace
             "``ds/nslice`` slice (the building block that the lattice transfer\n"
             "map composes). Raises for an element whose linear transport map is\n"
             "not implemented.\n\n"
+            "Uses the same convention as ``KnownElementsList.transfer_map``: the\n"
+            "reference particle is advanced through one slice first, and the map\n"
+            "is evaluated at that post-advance reference state. The reference\n"
+            "particle you pass in is copied and left unmodified.\n\n"
             ":param ref: reference particle at the element entrance\n"
         );
     }

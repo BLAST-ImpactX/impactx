@@ -68,3 +68,53 @@ def test_lattice_linear_map():
     # Now the user explicitly assumes that undefined maps are identity maps
     R = lattice.transfer_map(ref, fallback_identity_map=True)
     assert np.allclose(R.to_numpy(), R_expected, rtol=rtol, atol=atol)
+
+
+def test_exact_cfbend_transfer_map_unit_normalization():
+    """ExactCFbend in MAD-X units must use the reference particle's rigidity.
+
+    ``unit=1`` normalizes the coefficients by the magnetic rigidity B*rho, so its
+    transfer map must equal the ``unit=0`` map built from coefficients that were
+    divided by B*rho beforehand.
+
+    Regression test: ``transport_map()`` used to read the cached ``m_brho``, which
+    is only ever assigned in ``compute_constants()``. No push functor is built on
+    the ``transfer_map`` / ``map_trace`` / envelope paths, so that member was read
+    uninitialized.
+    """
+
+    ref = RefPart()
+    ref.set_species("proton").set_kin_energy_MeV(2.0e3)
+    brho = ref.rigidity_Tm
+
+    k_normal = [0.2, 0.5]
+    k_skew = [0.0, 0.0]
+
+    madx_units = elements.KnownElementsList()
+    madx_units.append(
+        elements.ExactCFbend(
+            name="cf_madx", ds=0.5, k_normal=k_normal, k_skew=k_skew, unit=1
+        )
+    )
+
+    impactx_units = elements.KnownElementsList()
+    impactx_units.append(
+        elements.ExactCFbend(
+            name="cf_ix",
+            ds=0.5,
+            k_normal=[k / brho for k in k_normal],
+            k_skew=[k / brho for k in k_skew],
+            unit=0,
+        )
+    )
+
+    if Config.precision == "SINGLE":
+        rtol = 5.0e-5
+    else:
+        rtol = 1.0e-12
+
+    R_madx = madx_units.transfer_map(ref).to_numpy()
+    R_impactx = impactx_units.transfer_map(ref).to_numpy()
+
+    assert np.all(np.isfinite(R_madx))
+    assert np.allclose(R_madx, R_impactx, rtol=rtol, atol=0.0)

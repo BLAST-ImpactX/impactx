@@ -273,6 +273,7 @@ class FilteredElementsList:
         *,
         kind=None,
         name=None,
+        has=None,
     ):
         r"""Apply filtering to this filtered list.
 
@@ -295,10 +296,14 @@ class FilteredElementsList:
                      Examples: "quad1", r"quad\d+", ["quad1", "quad2"], [r"quad\d+", "bend1"]
         :type name: str or list[str] or tuple[str, ...] or None, optional
 
+        :param has: Property name(s) that an element must be able to **set**. Same
+                    meaning as for :py:meth:`impactx.elements.KnownElementsList.select`.
+        :type has: str or list[str] or tuple[str, ...] or None, optional
+
         :return: FilteredElementsList containing references to original elements
         :rtype: FilteredElementsList
 
-        :raises TypeError: If kind/name parameters have wrong types
+        :raises TypeError: If kind/name/has parameters have wrong types
 
         **Examples:**
 
@@ -321,21 +326,38 @@ class FilteredElementsList:
         """
         self._require_valid()
         # Apply filtering directly to the indices we already have
-        if kind is not None or name is not None:
+        if kind is not None or name is not None or has is not None:
             # Validate parameters
-            _validate_select_parameters(kind, name)
+            _validate_select_parameters(kind, name, has)
 
             matching_indices = []
 
             for i in self._indices:
                 element = self._original_list[i]
-                if _check_element_match(element, kind, name):
+                if _check_element_match(element, kind, name, has):
                     matching_indices.append(i)
 
             return FilteredElementsList(self._original_list, matching_indices)
 
         # If no filtering criteria provided, return all current elements
         return FilteredElementsList(self._original_list, self._indices)
+
+    def set(self, *, skip=False, **kwargs) -> int:
+        """Assign element properties in bulk on the selected elements.
+
+        Unlike ``delete``, ``replace_each`` and ``replace_with_drifts``, this
+        mutates elements in place rather than rebuilding the lattice, so it does
+        **not** invalidate this or any other live selection.
+
+        :param skip: If false (default), raise ``AttributeError`` when any selected
+                     element cannot take a given property. If true, set only where
+                     applicable and silently skip the rest.
+        :param kwargs: Property name/value pairs, e.g. ``nslice=8, int_order=6``.
+        :return: number of elements for which at least one property was written
+        :rtype: int
+        """
+        self._require_valid()
+        return _set_on(iter(self), kwargs, skip)
 
     def delete(self) -> None:
         """Remove selected elements from the underlying lattice. Invalidates this and all other
@@ -479,6 +501,93 @@ class FilteredElementsList:
         return f"FilteredElementsList({len(self)} elements)"
 
 
+# Value checks mirroring the C++ validation in the element constructors and
+# property setters, so that ``set()`` can reject a bad value before it writes to
+# any element. Keep in sync with src/elements/ and src/python/elements.cpp.
+# Properties not listed here are set without a value check.
+_SET_VALIDATORS = {
+    "nslice": (lambda v: isinstance(v, int) and v > 0, "must be an integer > 0"),
+    "int_order": (lambda v: v in (2, 4, 6), "must be 2, 4 or 6"),
+    "mapsteps": (lambda v: isinstance(v, int) and v > 0, "must be an integer > 0"),
+}
+
+
+def _set_on(elements_iter, kwargs, skip):
+    """Assign ``kwargs`` to elements, in an all-or-nothing manner.
+
+    Values are validated, then capability is checked across the whole selection,
+    and only then is anything written. Because a property setter can still reject
+    a value that ``_SET_VALIDATORS`` does not cover (``DipEdge.R``, enum strings,
+    type conversions), each write is journaled and the journal is unwound in
+    reverse if a later write raises. Any failure therefore leaves every element
+    exactly as it was.
+
+    Rollback is preferred over validating on throwaway clones: reconstructing an
+    element allocates a new entry in its ``GPUDataRegistry``, and that registry is
+    only ever emptied by ``clear()``, which nothing calls. Cloning to validate
+    would therefore leak roughly 1.7 kB per coefficient-carrying element on every
+    call. Restoring a value that was valid moments ago cannot fail, so unwinding
+    is safe.
+
+    Args:
+        elements_iter: Iterable of elements (references into a lattice)
+        kwargs: Property name -> value to assign
+        skip: If True, silently skip elements that cannot take a property;
+              if False, raise AttributeError instead
+
+    Returns:
+        int: Number of elements for which at least one property was written
+
+    Raises:
+        ValueError: If a value is invalid for a known property
+        AttributeError: If skip is False and some element cannot take a property
+    """
+    # 1) values are element-independent, so check the known knobs once, up front
+    for attr, value in kwargs.items():
+        check = _SET_VALIDATORS.get(attr)
+        if check is not None and not check[0](value):
+            raise ValueError(f"'{attr}' {check[1]}, got {value!r}")
+
+    element_list = list(elements_iter)
+
+    # 2) capability scan over the whole selection before writing anything
+    if not skip:
+        offenders = {}
+        for element in element_list:
+            for attr in kwargs:
+                if not _is_settable(element, attr):
+                    offenders.setdefault(attr, set()).add(type(element).__name__)
+        if offenders:
+            details = "; ".join(
+                f"'{attr}' on {', '.join(sorted(kinds))}"
+                for attr, kinds in sorted(offenders.items())
+            )
+            raise AttributeError(
+                f"cannot set {details}. Narrow the selection with "
+                f"select(has=...), or pass skip=True to set only where applicable."
+            )
+
+    # 3) apply, journaling every write so a late rejection can be undone
+    journal = []  # (element, attr, previous value), in the order applied
+    changed = 0
+    try:
+        for element in element_list:
+            touched = False
+            for attr, value in kwargs.items():
+                if _is_settable(element, attr):
+                    journal.append((element, attr, getattr(element, attr)))
+                    setattr(element, attr, value)
+                    touched = True
+            if touched:
+                changed += 1
+    except Exception:
+        for element, attr, previous in reversed(journal):
+            setattr(element, attr, previous)
+        raise
+
+    return changed
+
+
 def _is_regex_pattern(pattern: str) -> bool:
     """Check if a string looks like a regex pattern by testing if it contains regex metacharacters."""
     # Simple heuristic: if it contains regex metacharacters, treat as regex
@@ -498,16 +607,44 @@ def _matches_string(text: str, string_pattern: str) -> bool:
         return text == string_pattern
 
 
-def _validate_select_parameters(kind, name):
+def _is_settable(element, attr: str) -> bool:
+    """Check if ``attr`` is a writable property on this element's class.
+
+    A pybind11 ``def_property`` yields a descriptor with a non-None ``fset``,
+    while ``def_property_readonly`` leaves it None. Total getter with a partial
+    setter is the norm: every element reports ``nslice``, but only thick ones
+    accept a new value. See ``src/elements/mixin/accessors.H``.
+
+    Args:
+        element: The element to check
+        attr: Property name, e.g. "nslice", "int_order", "mapsteps"
+
+    Returns:
+        bool: True if the property exists and can be assigned
+    """
+    descriptor = getattr(type(element), attr, None)
+    return descriptor is not None and getattr(descriptor, "fset", None) is not None
+
+
+def _validate_select_parameters(kind, name, has=None):
     """Validate parameters for select methods.
 
     Args:
         kind: Element type(s) to filter by
         name: Element name(s) to filter by
+        has: Settable property name(s) to filter by
 
     Raises:
         TypeError: If parameters have wrong types
     """
+    if has is not None:
+        if isinstance(has, (list, tuple)):
+            for h in has:
+                if not isinstance(h, str):
+                    raise TypeError("'has' parameter must contain strings")
+        elif not isinstance(has, str):
+            raise TypeError("'has' parameter must be a string or list/tuple of strings")
+
     if kind is not None:
         if isinstance(kind, (list, tuple)):
             for k in kind:
@@ -565,13 +702,30 @@ def _matches_name_pattern(element, name_pattern):
     )
 
 
-def _check_element_match(element, kind, name):
-    """Check if an element matches the given kind and name criteria.
+def _matches_has_pattern(element, attr):
+    """Check if an element has a settable property of exactly this name.
+
+    Matching is exact: these are API names, not user-supplied labels, so no
+    regex interpretation is applied (unlike ``kind`` and ``name``).
+
+    Args:
+        element: The element to check
+        attr: Property name to look for
+
+    Returns:
+        bool: True if the element can be assigned this property
+    """
+    return isinstance(attr, str) and _is_settable(element, attr)
+
+
+def _check_element_match(element, kind, name, has=None):
+    """Check if an element matches the given kind, name and has criteria.
 
     Args:
         element: The element to check
         kind: Kind criteria (str, type, list, tuple, or None)
         name: Name criteria (str, list, tuple, or None)
+        has: Settable-property criteria (str, list, tuple, or None)
 
     Returns:
         bool: True if element matches any criteria (OR logic)
@@ -604,7 +758,36 @@ def _check_element_match(element, kind, name):
                     match = True
                     break
 
+    # Check for 'has' parameter (only if nothing matched yet - OR logic)
+    if has is not None and not match:
+        if isinstance(has, str):
+            # Single property
+            if _matches_has_pattern(element, has):
+                match = True
+        elif isinstance(has, (list, tuple)):
+            # Multiple properties (OR logic)
+            for attr in has:
+                if _matches_has_pattern(element, attr):
+                    match = True
+                    break
+
     return match
+
+
+def set_properties(self, *, skip=False, **kwargs) -> int:
+    """Assign element properties in bulk, registered as ``set``.
+
+    Named ``set_properties`` at module scope because this module also calls the
+    builtin ``set(...)``; it is bound to the containers as ``set``.
+
+    :param skip: If false (default), raise ``AttributeError`` when any selected
+                 element cannot take a given property. If true, set only where
+                 applicable and silently skip the rest.
+    :param kwargs: Property name/value pairs, e.g. ``nslice=8, int_order=6``.
+    :return: number of elements for which at least one property was written
+    :rtype: int
+    """
+    return _set_on(iter(self), kwargs, skip)
 
 
 def select(
@@ -612,10 +795,12 @@ def select(
     *,
     kind=None,
     name=None,
+    has=None,
 ) -> FilteredElementsList:
-    r"""Filter elements by type and name with OR-based logic.
+    r"""Filter elements by type, name and settable properties with OR-based logic.
 
-    This method supports filtering elements by their type and/or name using keyword arguments.
+    This method supports filtering elements by their type, name and/or settable
+    properties using keyword arguments.
     Returns references to original elements, allowing modification and chaining.
 
     **Filtering Logic:**
@@ -633,6 +818,12 @@ def select(
                  a list/tuple of strings and/or regex pattern strings for OR-based filtering.
                  Examples: "quad1", r"quad\d+", ["quad1", "quad2"], [r"quad\d+", "bend1"]
     :type name: str or list[str] or tuple[str, ...] or None, optional
+
+    :param has: Property name(s) that an element must be able to **set**, not merely
+                report. Matched exactly, without regex. Note ``has="nslice"`` matches
+                thick elements only, because every element reports ``nslice`` but only
+                thick ones accept a new value. Examples: "int_order", ["int_order", "mapsteps"]
+    :type has: str or list[str] or tuple[str, ...] or None, optional
 
     :return: FilteredElementsList containing references to original elements
     :rtype: FilteredElementsList
@@ -704,14 +895,14 @@ def select(
     """
 
     # Handle keyword arguments for filtering
-    if kind is not None or name is not None:
+    if kind is not None or name is not None or has is not None:
         # Validate parameters
-        _validate_select_parameters(kind, name)
+        _validate_select_parameters(kind, name, has)
 
         matching_indices = []
 
         for i, element in enumerate(self):
-            if _check_element_match(element, kind, name):
+            if _check_element_match(element, kind, name, has):
                 matching_indices.append(i)
 
         return FilteredElementsList(self, matching_indices)
@@ -1095,6 +1286,11 @@ def register_KnownElementsList_extension(kel):
     kel.get_kinds = get_kinds
     kel.count_by_kind = count_by_kind
     kel.has_kind = has_kind
+
+    # Bulk property assignment. Bound as ``set``; the module-level function is
+    # named ``set_properties`` so it does not shadow the builtin ``set``, which
+    # this module calls in delete/replace_*/get_kinds.
+    kel.set = set_properties
 
     # Element-wise == and isclose() (duck-typed across container types).
     # No custom __hash__: the inherited identity-based hash is kept so that

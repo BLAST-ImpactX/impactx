@@ -1169,3 +1169,274 @@ def test_replace_each_with_thin_element_present():
     lattice.select(kind="Quad").replace_each(elements.Drift(ds=0.5))
     assert [type(e).__name__ for e in lattice] == ["Marker", "Drift"]
     assert lattice[0].name == "m1"
+
+
+# ---------------------------------------------------------------------------
+# select(has=...) capability filter
+# ---------------------------------------------------------------------------
+
+
+def _mixed_lattice():
+    """Thick, exact and thin elements, covering every settability case."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Drift(name="d1", ds=1.0),
+            elements.Quad(name="q1", ds=0.5, k=1.0),
+            elements.ExactQuad(name="eq1", ds=0.5, k=1.0),
+            elements.ExactDrift(name="ed1", ds=0.3),
+            elements.Marker(name="m1"),
+            elements.ShortRF(name="rf1", V=1.0, freq=1.0e6, phase=0.0),
+        ]
+    )
+    return lattice
+
+
+def _kinds(selection):
+    return [type(e).__name__ for e in selection]
+
+
+def test_select_has_is_settable_not_merely_readable():
+    """`nslice` reads on every element but only thick ones accept a value."""
+    lattice = _mixed_lattice()
+    # every element reports nslice ...
+    assert all(hasattr(e, "nslice") for e in lattice)
+    # ... but has= matches only those that can be assigned
+    assert _kinds(lattice.select(has="nslice")) == [
+        "Drift",
+        "Quad",
+        "ExactQuad",
+        "ExactDrift",
+    ]
+
+
+def test_select_has_list_is_or_matched():
+    lattice = _mixed_lattice()
+    lattice.append(
+        elements.SoftQuadrupole(
+            name="sq1",
+            ds=1.0,
+            gscale=1.0,
+            cos_coefficients=[1.0],
+            sin_coefficients=[0.0],
+        )
+    )
+    # SoftQuadrupole has mapsteps but no int_order; ExactQuad has both
+    assert _kinds(lattice.select(has="mapsteps")) == ["ExactQuad", "SoftQuadrupole"]
+    assert _kinds(lattice.select(has=["int_order", "mapsteps"])) == [
+        "ExactQuad",
+        "SoftQuadrupole",
+    ]
+
+
+def test_select_has_ors_with_kind_and_ands_when_chained():
+    lattice = _mixed_lattice()
+    # OR within a single call, like kind and name
+    assert _kinds(lattice.select(kind="Marker", has="int_order")) == [
+        "ExactQuad",
+        "Marker",
+    ]
+    # AND by chaining
+    assert _kinds(lattice.select(kind=r".*Quad").select(has="int_order")) == [
+        "ExactQuad"
+    ]
+
+
+def test_select_has_invalid_type_raises():
+    lattice = _mixed_lattice()
+    with pytest.raises(TypeError, match="has"):
+        lattice.select(has=42)
+    with pytest.raises(TypeError, match="has"):
+        lattice.select(has=["nslice", 42])
+
+
+# ---------------------------------------------------------------------------
+# set()
+# ---------------------------------------------------------------------------
+
+
+def test_set_on_selection():
+    lattice = _mixed_lattice()
+    assert lattice.select(kind=r".*Quad").set(nslice=8) == 2
+    assert [e.nslice for e in lattice] == [1, 8, 8, 1, 1, 1]
+
+
+def test_set_raises_on_mixed_lattice_and_changes_nothing():
+    """Default is raise, not skip: a whole-lattice call must not half-apply."""
+    lattice = _mixed_lattice()
+    with pytest.raises(AttributeError, match="nslice"):
+        lattice.set(nslice=8)
+    assert [e.nslice for e in lattice] == [1, 1, 1, 1, 1, 1]
+
+
+def test_set_skip_applies_where_possible():
+    lattice = _mixed_lattice()
+    assert lattice.set(nslice=8, skip=True) == 4
+    assert [e.nslice for e in lattice] == [8, 8, 8, 8, 1, 1]
+
+
+def test_set_multiple_properties():
+    lattice = _mixed_lattice()
+    assert lattice.select(has="int_order").set(int_order=6, mapsteps=6) == 1
+    eq = lattice[2]
+    assert eq.int_order == 6
+    assert eq.mapsteps == 6
+
+
+def test_set_unknown_property_raises_by_default():
+    """A typo names a property no element has, which must not pass silently."""
+    lattice = _mixed_lattice()
+    with pytest.raises(AttributeError, match="nslize"):
+        lattice.set(nslize=8)
+    assert lattice.set(nslize=8, skip=True) == 0
+
+
+@pytest.mark.parametrize(
+    "kwargs, match",
+    [
+        (dict(nslice=0), "nslice"),
+        (dict(nslice=-3), "nslice"),
+        (dict(int_order=3), "int_order"),
+        (dict(mapsteps=0), "mapsteps"),
+    ],
+)
+def test_set_rejects_invalid_values_without_writing(kwargs, match):
+    lattice = _mixed_lattice()
+    before = [(e.nslice, getattr(e, "int_order", None)) for e in lattice]
+    with pytest.raises(ValueError, match=match):
+        lattice.select(has="int_order").set(**kwargs)
+    assert [(e.nslice, getattr(e, "int_order", None)) for e in lattice] == before
+
+
+def test_set_does_not_invalidate_live_selections():
+    """Contrast with delete(), which rebuilds the lattice and invalidates views."""
+    lattice = _mixed_lattice()
+    view = lattice.select(kind="Quad")
+    lattice.set(nslice=4, skip=True)
+    # the view is still usable and sees the new value
+    assert len(view) == 1
+    assert view[0].nslice == 4
+
+    lattice.select(kind="Drift").delete()
+    with pytest.raises(RuntimeError, match="no longer valid"):
+        len(view)
+
+
+def test_set_on_empty_selection():
+    lattice = _mixed_lattice()
+    empty = lattice.select(name="does_not_exist")
+    assert len(empty) == 0
+    assert empty.set(nslice=8) == 0
+
+
+def test_set_via_filtered_view_matches_container():
+    """set() is registered on both containers with the same semantics."""
+    lattice = _mixed_lattice()
+    assert lattice.select().set(nslice=2, skip=True) == 4
+    assert lattice.set(nslice=3, skip=True) == 4
+    assert [e.nslice for e in lattice] == [3, 3, 3, 3, 1, 1]
+
+
+# ---------------------------------------------------------------------------
+# element-level validation these rely on
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "ctor",
+    [
+        lambda: elements.Drift(ds=1.0, nslice=0),
+        lambda: elements.ExactQuad(ds=1.0, k=1.0, int_order=3),
+        lambda: elements.ExactQuad(ds=1.0, k=1.0, mapsteps=0),
+        lambda: elements.ExactMultipole(
+            ds=1.0, k_normal=[0.1], k_skew=[0.0], int_order=5
+        ),
+    ],
+)
+def test_constructors_reject_invalid_knobs(ctor):
+    with pytest.raises(ValueError):
+        ctor()
+
+
+def test_property_setters_reject_invalid_knobs():
+    d = elements.Drift(ds=1.0)
+    with pytest.raises(ValueError):
+        d.nslice = 0
+    assert d.nslice == 1
+
+    q = elements.ExactQuad(ds=1.0, k=1.0)
+    with pytest.raises(ValueError):
+        q.int_order = 3
+    with pytest.raises(ValueError):
+        q.mapsteps = 0
+    assert (q.int_order, q.mapsteps) == (2, 10)
+
+
+def test_argument_validation_raises_value_error():
+    """Element argument checks raise ValueError, not RuntimeError."""
+    with pytest.raises(ValueError, match="R must be > 0"):
+        elements.DipEdge(psi=0.1, rc=1.0, g=0.01, R=-1.0)
+    with pytest.raises(ValueError, match="same length"):
+        elements.ExactCFbend(ds=1.0, k_normal=[0.1], k_skew=[0.0, 0.0])
+
+
+def test_set_rolls_back_when_a_setter_rejects_late():
+    """A setter that rejects after earlier writes must undo them.
+
+    `_SET_VALIDATORS` only prevalidates nslice/int_order/mapsteps. `DipEdge.R`
+    is validated by its own setter, so `set(psi=..., R=-1.0)` fails only after
+    `psi` has been written. That write has to be rolled back.
+    """
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.DipEdge(psi=0.1, rc=1.0, g=0.01, R=1.0, name="de1"),
+            elements.DipEdge(psi=0.1, rc=1.0, g=0.01, R=1.0, name="de2"),
+        ]
+    )
+    before = [(e.psi, e.R) for e in lattice]
+
+    with pytest.raises(ValueError, match="R must be > 0"):
+        lattice.set(psi=0.2, R=-1.0)
+
+    assert [(e.psi, e.R) for e in lattice] == before
+
+
+def test_set_rolls_back_earlier_elements_too():
+    """The rollback spans elements, not just properties within one element."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            # a first element that accepts everything
+            elements.DipEdge(psi=0.1, rc=1.0, g=0.01, R=1.0, name="ok"),
+            # a second one that will reject R and must undo the first
+            elements.DipEdge(psi=0.1, rc=1.0, g=0.01, R=1.0, name="bad"),
+        ]
+    )
+    with pytest.raises(ValueError):
+        lattice.set(psi=0.3, R=-2.0)
+
+    assert [e.psi for e in lattice] == [0.1, 0.1]
+
+
+def test_lattice_stores_copies_not_references():
+    """Documented container semantics that `set()` inherits.
+
+    `append` copies, so the lattice element and the object handed to `append`
+    are independent. A `Programmable` callback closing over the original will
+    therefore not see `ds`/`nslice` written through the lattice. Tracked in
+    https://github.com/BLAST-ImpactX/impactx/pull/1381
+    """
+    original = elements.Drift(ds=1.0, name="d")
+    lattice = elements.KnownElementsList()
+    lattice.append(original)
+
+    assert lattice[0] is not original
+    assert lattice[0] is lattice[0]  # but stable within the lattice
+
+    lattice.set(ds=7.0)
+    assert lattice[0].ds == 7.0
+    assert original.ds == 1.0  # unchanged
+
+    original.ds = 9.0
+    assert lattice[0].ds == 7.0  # and not the reverse either

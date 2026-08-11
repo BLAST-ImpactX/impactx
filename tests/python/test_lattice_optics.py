@@ -134,3 +134,39 @@ def test_element_transfer_map_keeps_reference_particle():
 
     assert ref.s == s_before
     assert ref.pt == pt_before
+def _tolerances():
+    if Config.precision == "SINGLE":
+        return 5.0e-5, 1.0e-7
+    return 1.0e-8, 0.0
+
+
+@pytest.mark.parametrize("element", [elements.ChrQuad, elements.ExactQuad])
+def test_transport_map_zero_strength(element):
+    """A quadrupole of zero strength must transport like a drift."""
+
+    ref = RefPart()
+    ref.set_species("electron").set_kin_energy_MeV(1.0e3)
+    rtol, atol = _tolerances()
+
+    R = element(ds=0.3, k=0.0).transfer_map(ref).to_numpy()
+    R_drift = elements.Drift(ds=0.3).transfer_map(ref).to_numpy()
+
+    assert np.allclose(R, R_drift, rtol=rtol, atol=atol)
+
+
+@pytest.mark.parametrize(
+    "element", [elements.ChrQuad, elements.ChrPlasmaLens, elements.ExactQuad]
+)
+def test_transport_map_madx_units(element):
+    """A strength given in T/m (unit=1) must give the same map as the
+    equivalent rigidity-normalized strength in 1/m^2 (unit=0)."""
+
+    ref = RefPart()
+    ref.set_species("electron").set_kin_energy_MeV(1.0e3)
+    rtol, atol = _tolerances()
+
+    k = 2.0  # 1/m^2
+    R = element(ds=0.3, k=k, unit=0).transfer_map(ref).to_numpy()
+    R_madx = element(ds=0.3, k=k * ref.rigidity_Tm, unit=1).transfer_map(ref).to_numpy()
+
+    assert np.allclose(R, R_madx, rtol=rtol, atol=atol)

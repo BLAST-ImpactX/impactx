@@ -420,9 +420,9 @@ namespace impactx::elements
                 R(4,4) = std::cos(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
             } else {
-                R(1,2) = m_slice_ds;
-                R(3,4) = m_slice_ds;
-                R(5,6) = m_slice_ds / betgam2;
+                R(1,2) = slice_ds;
+                R(3,4) = slice_ds;
+                R(5,6) = slice_ds / betgam2;
             }
 
             // apply the transverse rotation (roll) alignment error

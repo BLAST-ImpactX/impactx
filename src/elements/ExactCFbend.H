@@ -678,10 +678,13 @@ namespace impactx::elements
 
             amrex::ParticleReal const * k_normal = m_k_normal_h_data;
 
+            // magnetic rigidity of the reference particle
+            amrex::ParticleReal const brho_inv = 1.0_prt / refpart.rigidity_Tm();
+
             // find magnetic field and curvature; normalize units to MAD-X convention if needed
-            amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];
-            amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
-            amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] / m_brho : k_normal[1];
+            amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] * brho_inv : k_normal[0];
+            amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt / curvature;
+            amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] * brho_inv : k_normal[1];
             amrex::ParticleReal const b2rc2 = amrex::Math::powi<2>(bet) * amrex::Math::powi<2>(rc);
 
             // update horizontal and longitudinal phase space variables

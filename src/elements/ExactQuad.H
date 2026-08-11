@@ -464,13 +464,16 @@ namespace impactx::elements
             amrex::ParticleReal const pt_ref = refpart.pt;
             amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
+            // normalize quad units to MAD-X convention if needed
+            amrex::ParticleReal const g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
+
             // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+            amrex::ParticleReal const omega = std::sqrt(std::abs(g));
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            if (m_k > 0.0_prt) {
+            if (g > 0.0_prt) {
                 R(1,1) = std::cos(omega*slice_ds);
                 R(1,2) = std::sin(omega*slice_ds)/omega;
                 R(2,1) = -omega*std::sin(omega*slice_ds);
@@ -480,7 +483,7 @@ namespace impactx::elements
                 R(4,3) = omega*std::sinh(omega*slice_ds);
                 R(4,4) = std::cosh(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
-            } else if (m_k < 0.0_prt) {
+            } else if (g < 0.0_prt) {
                 R(1,1) = std::cosh(omega*slice_ds);
                 R(1,2) = std::sinh(omega*slice_ds)/omega;
                 R(2,1) = omega*std::sinh(omega*slice_ds);
@@ -491,9 +494,9 @@ namespace impactx::elements
                 R(4,4) = std::cos(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
             } else {
-                R(1,2) = m_slice_ds;
-                R(3,4) = m_slice_ds;
-                R(5,6) = m_slice_ds / betgam2;
+                R(1,2) = slice_ds;
+                R(3,4) = slice_ds;
+                R(5,6) = slice_ds / betgam2;
             }
 
             // apply the transverse rotation (roll) alignment error

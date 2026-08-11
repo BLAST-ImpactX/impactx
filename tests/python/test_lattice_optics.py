@@ -76,7 +76,7 @@ def _single_element_lattices():
         # plain control: map is independent of the reference push
         elements.Drift(ds=0.3),
         # map is evaluated at the post-advance reference momentum
-        elements.ShortRF(V=5.0e6, freq=1.3e9, phase=-90.0),
+        elements.ShortRF(V=5.0e6, freq=1.3e9, phase=0.0),
         elements.ChrAcc(ds=0.3, ez=1.0e6, bz=1.0),
         # map is integrated during the reference push
         elements.RFCavity(

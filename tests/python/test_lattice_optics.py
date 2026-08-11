@@ -134,6 +134,8 @@ def test_element_transfer_map_keeps_reference_particle():
 
     assert ref.s == s_before
     assert ref.pt == pt_before
+
+
 def _tolerances():
     if Config.precision == "SINGLE":
         return 5.0e-5, 1.0e-7

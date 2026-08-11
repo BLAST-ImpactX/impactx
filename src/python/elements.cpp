@@ -766,13 +766,13 @@ void init_elements(py::module& m)
              "An active Plasma Lens with chromatic effects included."
         )
         .def_property("k",
-            [](ChrQuad & cq) { return cq.m_k; },
-            [](ChrQuad & cq, amrex::ParticleReal k) { cq.m_k = k; },
+            [](ChrPlasmaLens & chr_pl_lens) { return chr_pl_lens.m_k; },
+            [](ChrPlasmaLens & chr_pl_lens, amrex::ParticleReal k) { chr_pl_lens.m_k = k; },
             "focusing strength in 1/m^2 (or T/m)"
         )
         .def_property("unit",
-            [](ChrQuad & cq) { return cq.m_unit; },
-            [](ChrQuad & cq, int unit) { cq.m_unit = unit; },
+            [](ChrPlasmaLens & chr_pl_lens) { return chr_pl_lens.m_unit; },
+            [](ChrPlasmaLens & chr_pl_lens, int unit) { chr_pl_lens.m_unit = unit; },
             "unit specification for focusing strength"
         )
     ;
@@ -2357,7 +2357,7 @@ void init_elements(py::module& m)
                  amrex::ParticleReal,
                  std::vector<amrex::ParticleReal>,
                  std::vector<amrex::ParticleReal>,
-                 amrex::ParticleReal,
+                 int,
                  amrex::ParticleReal,
                  amrex::ParticleReal,
                  amrex::ParticleReal,

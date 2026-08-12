@@ -130,7 +130,9 @@ void init_ImpactX (py::module& m)
                   },
                   "AMReX blocking factor for a direction, per MR level. "
                   "Also sets max_grid_size_x/_y/_z in this direction to the "
-                  "same value; assign that property afterwards to overwrite."
+                  "same value; assign that property afterwards to overwrite. "
+                  "The all-direction max_grid_size does not overwrite it, "
+                  "since per-direction values always take precedence."
             )
             .def_property(mgs_str.c_str(),
                   [mgs_str](ImpactX & /* ix */) {
@@ -149,7 +151,8 @@ void init_ImpactX (py::module& m)
                   },
                   "AMReX maximum box size for a direction, per MR level. "
                   "Boxes larger than this are chopped, aim for one box per "
-                  "parallel process."
+                  "parallel process. Takes precedence over the all-direction "
+                  "max_grid_size, no matter in which order they are assigned."
             );
     }
 
@@ -171,8 +174,10 @@ void init_ImpactX (py::module& m)
             },
             "AMReX maximum box size along all directions, per MR level. "
             "Boxes larger than this are chopped; aim for one box per "
-            "parallel process. Per-direction values (max_grid_size_x/_y/_z) "
-            "take precedence."
+            "parallel process. Per-direction values (max_grid_size_x/_y/_z, "
+            "also set by blocking_factor_x/_y/_z) take precedence, no matter "
+            "in which order they are assigned; assign those to change a "
+            "direction that is already set."
         );
 
     impactx

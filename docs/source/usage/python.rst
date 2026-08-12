@@ -36,11 +36,14 @@ Collective Effects & Overall Simulation Parameters
       The maximum number of grid points per box (grid) along each direction, as a list with one entry per mesh-refinement level.
       The mesh is decomposed into boxes of at most this size.
       For best performance, aim for exactly one box per parallel (MPI) process, which is also one box per GPU on accelerated machines; ImpactX warns at the start of a run if the number of boxes does not match the number of processes.
+      A direction that is also set through :py:attr:`~max_grid_size_x`, :py:attr:`~max_grid_size_y`, :py:attr:`~max_grid_size_z` or :py:attr:`~blocking_factor_x` keeps the per-direction value, no matter in which order the properties are assigned.
+      Use the per-direction properties in that case.
 
    .. py:property:: max_grid_size_x
 
       The maximum number of grid points per box along ``x``, as a list with one entry per mesh-refinement level, overwriting :py:attr:`~max_grid_size`.
       This property is also set when assigning :py:attr:`~blocking_factor_x`.
+      The per-direction value always wins over :py:attr:`~max_grid_size`, independent of the order of assignment, so assign this property to change ``x``.
       Analogous properties exist as ``max_grid_size_y`` and ``max_grid_size_z``.
 
    .. py:property:: blocking_factor_x
@@ -48,6 +51,7 @@ Collective Effects & Overall Simulation Parameters
       The AMReX blocking factor for the ``x`` direction, as a list with one entry per mesh-refinement level.
       Box sizes are forced to be a multiple of this value, which must be a power of two.
       Setting this property also sets :py:attr:`~max_grid_size_x` to the same value, which preserves one box per process in the default decomposition; assign :py:attr:`~max_grid_size_x` afterwards to overwrite.
+      Assigning the all-direction :py:attr:`~max_grid_size` does not overwrite it, since per-direction values always win.
       Analogous properties exist as ``blocking_factor_y`` and ``blocking_factor_z``.
 
    .. py:property:: max_level

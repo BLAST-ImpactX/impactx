@@ -551,9 +551,24 @@ def test_Kicker(sim, unit, xkick, ykick):
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
-def test_Multipole(sim):
+@pytest.mark.parametrize(
+    ("multipole", "K_normal", "K_skew"),
+    [
+        # deflects by only ~1e-13 at this beam size: the small-angle limit
+        (4, 65.0, 6.0),
+        # a strong low-order kick, rotating the spin by a large angle
+        (2, 300.0, 100.0),
+    ],
+    ids=["octupole", "strong_quadrupole"],
+)
+def test_Multipole(sim, multipole, K_normal, K_skew):
     roundtrip(
-        elements.Multipole(multipole=4, K_normal=65.0, K_skew=6.0, **ALIGNMENT_KWARGS),
+        elements.Multipole(
+            multipole=multipole,
+            K_normal=K_normal,
+            K_skew=K_skew,
+            **ALIGNMENT_KWARGS,
+        ),
         sim,
         spin=sim.spin,
     )

@@ -93,8 +93,7 @@ namespace impactx
         bool isr = false;
         pp_algo.query("isr", isr);
 
-        // whether any collective effect (space charge, CSR, ISR) is active; only then do
-        // we Strang-split a thick element's transport around a mid-slice collective kick
+        // whether any collective effect is active: only then is a kick applied per slice
         bool const collective_effects =
             (space_charge != SpaceChargeAlgo::False) || csr || isr;
 
@@ -133,10 +132,10 @@ namespace impactx
             particles::spacecharge::HandleSpacecharge(amr_data, [this](){ this->ResizeMesh(); }, slice_ds);
         };
 
-        // the per-slice external-field transport map ``M``
-        //   For the drift-outer (MKM) Strang split this is applied twice per slice
-        //   (once for each half-drift), so it carries no per-slice book-keeping; that
-        //   lives in @see slice_diagnostics below and runs once per slice.
+        // the external-field transport map ``M`` of one element slice
+        //   The Strang split around collective effects applies this twice per slice, once
+        //   per half-map, so it carries no book-keeping: that lives in @see
+        //   slice_diagnostics below.
         auto element_transport = [&pc] (
             elements::KnownElements & element_variant,
             int step_,
@@ -147,8 +146,10 @@ namespace impactx
             push(*pc, element_variant, step_, period_);
         };
 
-        // per-slice house-keeping and diagnostics, applied once at the end of each slice
-        auto slice_diagnostics = [this, &pc, verbose, &pp_diag, diag_enable, &early_params_checked] (
+        // book-keeping and diagnostics, applied once at the end of each slice
+        auto slice_diagnostics = [
+            this, &pc, verbose, &pp_diag, diag_enable, &early_params_checked
+        ] (
             int step_,
             int period_
         )

@@ -26,9 +26,9 @@ QM_EEV = -1.0 / 0.510998950 / 1e6  # electron charge/mass in e / eV
 def _deterministic_beam():
     """A fixed, reproducible beam in s-coordinates relative to the reference particle.
 
-    Sampled with a fixed seed instead of ``ImpactX.add_particles`` so that every run in
-    this test starts from bit-identical particles: the AMReX RNG stream advances between
-    runs in the same process, which would otherwise mask the effect we are testing.
+    Sampled with a fixed seed instead of ``ImpactX.add_particles``, because the AMReX RNG
+    stream advances between runs in the same process. Every run in this test must start
+    from bit-identical particles, otherwise the sampling masks the tested effect.
     """
     rng = np.random.default_rng(seed=42)
 
@@ -136,9 +136,9 @@ def _run(programmable, space_charge, nslice=NSLICE):
 def test_programmable_receives_collective_kick():
     """A Programmable element with a finite ``ds`` must receive the collective kick.
 
-    A Programmable element has a finite ``ds`` but does not derive from the ``Thick`` mixin.
-    Selecting elements for the collective kick by that mixin alone silently skips them, so
-    they would be tracked as pure optics even with space charge enabled.
+    A Programmable element carries its own ``ds`` and ``nslice`` instead of deriving from
+    the ``Thick`` mixin. It is therefore not eligible for the Strang split, but it is
+    eligible for the kick itself: it must not be tracked as pure optics.
     """
     prog_sc = _run(programmable=True, space_charge=True)
     prog_no_sc = _run(programmable=True, space_charge=False)
@@ -157,11 +157,11 @@ def test_programmable_receives_collective_kick():
 def test_programmable_transports_like_an_equivalent_drift():
     """A Programmable drift must transport the same length as elements.Drift, kick or not.
 
-    A Programmable element cannot be Strang-split by overriding its slice count: its push is
-    a Python callback that reads ``ds``/``nslice`` from the user's own object, while the
-    lattice holds a copy. Splitting it anyway would silently transport a full slice on each
-    of the two half-maps, i.e. drift twice as far. It therefore uses the first-order
-    composition, which agrees with the second-order Drift only in the converged limit.
+    A Programmable element cannot be subdivided by overriding its slice count. Its push is a
+    Python callback that reads ``ds`` and ``nslice`` from the user's own object, while the
+    lattice holds a copy, so the override is invisible to it and each half-map would transport
+    a full slice. It therefore uses the first-order composition, which agrees with the
+    Strang-split Drift only in the converged limit.
     """
     # without collective effects both take the identical, unsplit path
     drift = _run(programmable=False, space_charge=False)
@@ -172,7 +172,7 @@ def test_programmable_transports_like_an_equivalent_drift():
         )
 
     # with space charge the two integrators differ at O(1/nslice), but must converge to the
-    # same physics -- a double-length transport would not shrink with nslice
+    # same physics. A double-length transport would not shrink with nslice.
     coarse = _relative_difference(NSLICE)
     fine = _relative_difference(4 * NSLICE)
     assert fine < coarse, (

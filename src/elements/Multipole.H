@@ -191,10 +191,8 @@ namespace impactx::elements
 
         /** This operator pushes the particle spin.
          *
-         * The push is s-symmetric: half spin kick, phase space kick, half
-         * spin kick, with the second half evaluated at the updated momenta.
-         * The map is second-order accurate in the kick strength and an exact
-         * inverse of the reversed element.
+         * The push is s-symmetric: the map is second-order accurate in the
+         * kick strength and an exact inverse of the reversed element.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -243,26 +241,40 @@ namespace impactx::elements
             // assign complex position and complex multipole strength
             Complex const zeta(x, y);
 
-            // compute multipole magnetic field normalized by q/mc (half-step):
+            // compute multipole magnetic field normalized by q/mc:
             int const m = m_multipole - 1;
             Complex const kick = amrex::pow(zeta, m) * m_alpha;
-            T_Real const Bx = 0.5_prt * kick.m_imag * m_inv_factorial * m_beta * gamma_ref;
-            T_Real const By = 0.5_prt * kick.m_real * m_inv_factorial * m_beta * gamma_ref;
+            T_Real const Bx = kick.m_imag * m_inv_factorial * m_beta * gamma_ref;
+            T_Real const By = kick.m_real * m_inv_factorial * m_beta * gamma_ref;
             T_Real const Bz = 0_prt;
 
-            // Electric field normalized by q/mc^2 (half-step):
+            // Electric field normalized by q/mc^2:
             T_Real const Ex = 0.0_prt;
             T_Real const Ey = 0.0_prt;
             T_Real const Ez = 0.0_prt;
 
-            // Quantities required to evaluate the full Thomas-BMT precession vector (before phase space kick).
+            // The Thomas-BMT generator is evaluated at the transverse momentum
+            // halfway through the kick, so that reversing the element (negating
+            // the strengths) produces the exact inverse rotation.
+            T_Real const px_in = px;
+            T_Real const py_in = py;
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+
+            // transverse momenta at the kick midpoint
+            T_Real const px_mid = 0.5_prt * (px_in + px);
+            T_Real const py_mid = 0.5_prt * (py_in + py);
+
+            // Quantities required to evaluate the full Thomas-BMT precession
+            // vector, at the midpoint transverse momentum.
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
+            T_Real const Ps = sqrt(Pnorm*Pnorm - px_mid*px_mid - py_mid*py_mid);
             T_Real const gamma = gamma_ref * (1_prt - pt*m_beta);
-            T_Real Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            T_Real ux = px * iPnorm;
-            T_Real uy = py * iPnorm;
-            T_Real uz = Ps * iPnorm;
+            T_Real const ux = px_mid * iPnorm;
+            T_Real const uy = py_mid * iPnorm;
+            T_Real const uz = Ps * iPnorm;
 
             // Zero curvature in a multipole
             amrex::ParticleReal const h = 0.0_prt;
@@ -270,24 +282,7 @@ namespace impactx::elements
             // Evaluation of the full Thomas-BMT precession vector.
             tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
 
-            // push the spin vector using the generator just determined (half spin-kick)
-            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
-
-            // phase space push
-            (*this)(x, y, t, px, py, pt, idcpu, refpart);
-
-            // Quantities required to evaluate the full Thomas-BMT precession vector (after phase space kick).
-            // The fields depend only on (x,y) and pt is unchanged, so only the
-            // velocity direction needs to be refreshed.
-            Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            ux = px * iPnorm;
-            uy = py * iPnorm;
-            uz = Ps * iPnorm;
-
-            // Evaluation of the full Thomas-BMT precession vector.
-            tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
-
-            // push the spin vector using the generator just determined (half spin-kick)
+            // push the spin vector using the generator just determined
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
         }
 

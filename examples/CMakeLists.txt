@@ -108,21 +108,6 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
         # amrex.the_arena_init_size=0
         impactx_test_set_pythonpath(${name}.run)
     else()
-        # In non-MPI builds, MPI-parallel tests run on a single process. Their
-        # inputs decompose the mesh into one box per MPI process, so force a
-        # single box to keep the domain decomposition efficient (ImpactX warns
-        # otherwise, which impactx.abort_on_warning_threshold=low below
-        # escalates to an abort). 512 is just a large number, larger than any
-        # resolution used in the tests.
-        set(THIS_SERIAL_DECOMP)
-        if(is_mpi AND NOT ImpactX_MPI)
-            set(THIS_SERIAL_DECOMP
-                amr.max_grid_size=512
-                amr.max_grid_size_x=512
-                amr.max_grid_size_y=512
-                amr.max_grid_size_z=512
-            )
-        endif()
         add_test(NAME ${name}.run
                  COMMAND
                     ${THIS_MPI_TEST_EXE} $<TARGET_FILE:app> ${INPUTS_FILE}
@@ -134,7 +119,6 @@ function(add_impactx_test name input is_mpi analysis_script plot_script)
                         amrex.the_arena_init_size=0
                         impactx.always_warn_immediately=1
                         impactx.abort_on_warning_threshold=low
-                        ${THIS_SERIAL_DECOMP}
                         ${INPUTS_ARGS}
                  WORKING_DIRECTORY ${THIS_WORKING_DIR}
         )

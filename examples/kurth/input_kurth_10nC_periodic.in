@@ -20,7 +20,7 @@ beam.lambdaPt = 2.0326178944803812e-3
 # Beamline: lattice elements and segments
 ###############################################################################
 lattice.elements = monitor drift1 constf1 drift1 monitor
-lattice.nslice = 20
+lattice.nslice = 4
 #lattice.nslice = 30  # optional for increased precision
 
 monitor.type = beam_monitor

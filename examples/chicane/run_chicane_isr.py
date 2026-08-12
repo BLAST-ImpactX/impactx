@@ -47,7 +47,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice
-ns = 25  # number of slices per ds in the element
+ns = 6  # number of slices per ds in the element
 rc = 10.3462283686195526  # bend radius (meters)
 psi = 0.048345620280243  # pole face rotation angle (radians)
 lb = 0.500194828041958  # bend arc length (meters)

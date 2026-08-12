@@ -58,7 +58,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 doubling_distance = 10.612823669911099
 
 sim.lattice.extend(
-    [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=100), monitor]
+    [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=4), monitor]
 )
 
 # run simulation

@@ -54,7 +54,7 @@ constf = elements.Constf(
     kx=6.283185307179586,
     ky=6.283185307179586,
     kt=6.283185307179586,
-    nslice=400,
+    nslice=200,  # 400 for full resolution
 )
 
 #   set first lattice element

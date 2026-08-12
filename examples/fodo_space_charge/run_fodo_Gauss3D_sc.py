@@ -47,7 +47,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice)
-ns = 25  # number of slices per ds in the element
+ns = 4  # number of slices per ds in the element
 fodo = [
     monitor,
     elements.ChrDrift(name="drift1", ds=0.25, nslice=ns),

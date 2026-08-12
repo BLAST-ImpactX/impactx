@@ -61,7 +61,7 @@ sim.add_particles(beam_current_A, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice)
-ns = 100  # number of slices per ds in the element
+ns = 4  # number of slices per ds in the element
 fodo = [
     monitor,
     elements.Drift(name="drift1", ds=7.44e-2, nslice=ns),

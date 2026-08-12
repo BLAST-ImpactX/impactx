@@ -47,7 +47,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice
-nslice = 50  # use 1e5 for increased precision
+nslice = 12  # use 1e5 for increased precision
 
 # design the accelerator lattice
 sim.lattice.extend(

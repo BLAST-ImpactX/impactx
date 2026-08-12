@@ -210,6 +210,17 @@ void init_ImpactX (py::module& m)
             },
             "Whether to calculate space charge effects."
         )
+        .def_property("strang_split",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "strang_split");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("strang_split", enable);
+            },
+            "Compose the collective effect kicks and the element transport in a "
+            "second-order, time-symmetric Strang split (default: enabled) or to first order."
+        )
         .def_property("csr",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("algo", "csr");

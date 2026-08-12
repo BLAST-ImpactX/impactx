@@ -64,6 +64,12 @@ Collective Effects & Overall Simulation Parameters
 
       Use dynamic (``True``) resizing of the field mesh or static sizing (``False``).
 
+   .. py:property:: strang_split
+
+      Compose the collective effect kicks and the element transport in a second-order,
+      time-symmetric Strang split (``True``, default) or to first order (``False``).
+      See :pp:param:`algo.strang_split`.
+
    .. py:property:: space_charge
 
       The physical model of space charge used.

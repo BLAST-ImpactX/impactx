@@ -97,6 +97,12 @@ namespace impactx
         bool const collective_effects =
             (space_charge != SpaceChargeAlgo::False) || csr || isr;
 
+        // second-order Strang split of the collective kicks, on by default
+        //   Disabling it composes kick and transport to first order instead, which is what
+        //   most other codes do: useful to compare against them and to show convergence.
+        bool strang_split = true;
+        pp_algo.query("strang_split", strang_split);
+
         bool spin = false;
         pp_algo.query("spin", spin);
 
@@ -113,6 +119,9 @@ namespace impactx
             amrex::Print() << " CSR effects: " << csr << "\n";
             amrex::Print() << " ISR effects: " << isr << "\n";
             amrex::Print() << " Spin tracking: " << spin << "\n";
+            if (collective_effects) {
+                amrex::Print() << " Strang split: " << strang_split << "\n";
+            }
         }
 
         // collective effect kicks applied per element slice:
@@ -199,6 +208,7 @@ namespace impactx
             *pc,
             m_tracking_state,
             collective_effects,
+            strang_split,
             [this](std::string const & name) { call_hook(name); },
             collective_kicks,
             element_transport,

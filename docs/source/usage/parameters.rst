@@ -2268,12 +2268,26 @@ This requires these additional parameters:
 Collective Effects
 ------------------
 
+.. pp:param:: algo.strang_split
+    :type: ``boolean``
+    :optional:
+    :default: ``true``
+
+    Whether to compose the collective effect kicks and the element transport in a second-order, time-symmetric Strang split.
+    Per slice, this applies ``M(ds/2) K(ds) M(ds/2)``: half of the slice transport ``M``, the collective kick ``K`` at the slice midpoint, then the other half.
+    The collective solve still runs once per slice, so the second order comes at the cost of the first-order composition and far fewer slices are needed for the same accuracy.
+
+    Setting this to ``false`` composes kick and transport to first order, ``K(ds) M(ds)``, as most other beam dynamics codes do.
+    This is useful to compare against those codes and to study the convergence with ``nslice``.
+
+    Elements that cannot be subdivided (``Programmable``, ``LinearMap`` and ``SpinMap``) always use the first-order composition.
+
 .. _running-cpp-parameters-collective-spacecharge:
 
 Space Charge
 ^^^^^^^^^^^^
 
-Space charge kicks are applied in between slices of thick :ref:`lattice elements <running-cpp-parameters-lattice>`.
+Space charge kicks are applied per slice of thick :ref:`lattice elements <running-cpp-parameters-lattice>`.
 See there ``nslice`` option on lattice elements for slicing.
 
 .. pp:param:: algo.space_charge

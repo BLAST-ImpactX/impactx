@@ -49,8 +49,9 @@ namespace impactx
      *  other half. The half transports are realized by temporarily doubling the element's
      *  ``nslice``, which simply halves the ds per slice. The expensive collective solve
      *  still runs only once per slice.
-     *  Finite-length elements that cannot be subdivided are composed to first order
-     *  instead: ``K(ds) M(ds)`` forward and ``M(ds) K(ds)`` backward.
+     *  Elements that cannot be subdivided, and all elements once the split is turned off
+     *  (@p strang_split), are composed to first order instead: ``K(ds) M(ds)`` forward and
+     *  ``M(ds) K(ds)`` backward.
      *  Zero-length elements and runs without collective effects apply ``M`` alone, since a
      *  kick over zero length leaves the momenta unchanged. Typically, thin elements are
      *  embedded in drift elements, which experience the collective effect kicks.
@@ -83,6 +84,8 @@ namespace impactx
      *  @param[in,out] tracking_state tracking state shared with hooks (element, step, period);
      *                 its ``m_direction`` selects the traversal direction
      *  @param[in] collective_effects whether any collective kick is active in this run
+     *  @param[in] strang_split whether to Strang-split the collective kicks (second order),
+     *                 false composes kick and transport to first order
      *  @param[in] call_hook registry for user-specified callback hooks
      *  @param[in] collective_kicks applies the collective effect kicks (SC, CSR, ISR, ...)
      *  @param[in] element_transport applies the external-field map of one element slice
@@ -97,6 +100,7 @@ namespace impactx
         ImpactXParticleContainer & pc,
         TrackingState & tracking_state,
         bool collective_effects,
+        bool strang_split,
         HookFn const & call_hook,
         CollectiveKicks && collective_kicks,
         ElementTransport && element_transport,
@@ -147,7 +151,7 @@ namespace impactx
 
             // Strang-split the transport ``M`` around the kick ``K`` wherever
             // the element can be subdivided into the two half-maps
-            bool const split = kick && elements::can_slice(element_variant);
+            bool const split = kick && strang_split && elements::can_slice(element_variant);
 
             // sub-steps for space charge within the element
             for (int s = 0; s < nslice; ++s)

@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 import amrex.space3d as amr
-from impactx import ImpactX, elements
+from impactx import Config, ImpactX, elements
 
 
 def expected_ez0_transport_map(ds, bz, beta_gamma):
@@ -58,6 +58,13 @@ def test_element_push(bz_scale):
     """
     This tests using ImpactX without a lattice.
     """
+    # In single precision (float32, eps ~1.2e-7) the double-precision tolerance
+    # is unreachable: over one full period the ChrAcc + inverse ChrDrift
+    # roundtrip accumulates ~1.5e-6 in position_t (~13 eps), and single
+    # precision builds commonly enable -ffast-math on top. This is ordinary
+    # float32 accumulation, not a loss of significance in the maps.
+    atol = 1.0e-12 if Config.precision != "SINGLE" else 1.0e-5
+
     sim = ImpactX()
 
     # set numerical parameters and IO control
@@ -132,7 +139,7 @@ def test_element_push(bz_scale):
     np.testing.assert_allclose(
         sol_chr.transfer_map(initial_ref).to_numpy(),
         expected_ez0_transport_map(ds=ds_value, bz=bz_value, beta_gamma=ref.beta_gamma),
-        atol=1.0e-12,
+        atol=atol,
         rtol=0.0,
     )
 
@@ -163,7 +170,7 @@ def test_element_push(bz_scale):
         np.testing.assert_allclose(
             df_final[c].to_numpy(),
             df_initial[c].to_numpy(),
-            atol=1.0e-12,
+            atol=atol,
             rtol=0,
             err_msg=f"Roundtrip mismatch in {c}",
         )
@@ -171,7 +178,7 @@ def test_element_push(bz_scale):
         np.testing.assert_allclose(
             getattr(sim.beam.ref, c),
             getattr(initial_ref, c),
-            atol=1.0e-12,
+            atol=atol,
             rtol=0,
             err_msg=f"Reference-particle roundtrip mismatch in {c}",
         )

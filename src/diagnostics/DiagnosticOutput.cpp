@@ -111,10 +111,21 @@ namespace
         int step
     )
     {
+        using namespace amrex::literals; // for _prt
+
+        /* A reference particle that carries no energy yet, e.g. before a Source
+         * element loads it from file, has gamma = 0. Neither beta = sqrt(1 - 1/gamma^2)
+         * nor beta*gamma = sqrt(gamma^2 - 1) is a real number there, and evaluating
+         * them raises FE_INVALID (and FE_DIVBYZERO) under amrex.fpe_trap_invalid.
+         * Report the undefined quantities as NaN instead.
+         */
+        auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        bool const ref_is_initialized = ref_part.gamma() >= 1.0_prt;
+
         amrex::ParticleReal const s = ref_part.s;
-        amrex::ParticleReal const beta = ref_part.beta();
-        amrex::ParticleReal const gamma = ref_part.gamma();
-        amrex::ParticleReal const beta_gamma = ref_part.beta_gamma();
+        amrex::ParticleReal const beta = ref_is_initialized ? ref_part.beta() : nan;
+        amrex::ParticleReal const gamma = ref_is_initialized ? ref_part.gamma() : nan;
+        amrex::ParticleReal const beta_gamma = ref_is_initialized ? ref_part.beta_gamma() : nan;
         amrex::ParticleReal const x = ref_part.x;
         amrex::ParticleReal const y = ref_part.y;
         amrex::ParticleReal const z = ref_part.z;

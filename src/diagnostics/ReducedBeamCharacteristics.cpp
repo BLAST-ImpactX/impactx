@@ -31,6 +31,7 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <string>
 #include <vector>
 
 
@@ -150,8 +151,15 @@ namespace
         RefPart const ref_part = pc.GetRefParticle();
         // reference particle charge in C
         amrex::ParticleReal const q_C = ref_part.charge;
+        /* A reference particle that carries no energy yet, e.g. before a Source
+         * element loads it from file, has gamma = 0, for which beta*gamma =
+         * sqrt(gamma^2 - 1) is not a real number. Keep it out of the arithmetic
+         * below - such a beam reports "no beam" moments at the end anyway - so
+         * that we do not raise FE_INVALID under amrex.fpe_trap_invalid.
+         */
+        bool const ref_is_initialized = ref_part.gamma() >= 1.0_prt;
         // reference particle relativistic beta*gamma
-        amrex::ParticleReal const bg = ref_part.beta_gamma();
+        amrex::ParticleReal const bg = ref_is_initialized ? ref_part.beta_gamma() : 0.0_prt;
         amrex::ParticleReal const bg2 = bg*bg;
 
         /* The reduced beam characteristics are computed in a single pass over the
@@ -177,6 +185,7 @@ namespace
             RealSoA::sx, RealSoA::sy, RealSoA::sz
         };
         std::array shift = {0._prt, 0._prt, 0._prt, 0._prt, 0._prt, 0._prt, 0._prt, 0._prt, 0._prt};
+        bool has_particles = false;
         {
             // Sample the first particle held locally, then agree on a single global
             // shift taken from the lowest rank that actually owns a particle. Any
@@ -202,7 +211,10 @@ namespace
             int src_rank = found ? amrex::ParallelDescriptor::MyProc()
                                  : amrex::ParallelDescriptor::NProcs();
             amrex::ParallelAllReduce::Min(src_rank, amrex::ParallelDescriptor::Communicator());
-            if (src_rank < amrex::ParallelDescriptor::NProcs()) {
+            // this also tells us, globally and without a further reduction,
+            // whether the beam holds any particle at all
+            has_particles = src_rank < amrex::ParallelDescriptor::NProcs();
+            if (has_particles) {
                 amrex::ParallelDescriptor::Bcast(shift.data(), shift.size(), src_rank);
             }
         }
@@ -272,16 +284,33 @@ namespace
         // parallel-axis theorem. The shift keeps every sum at the O(rms^2) scale,
         // so the central moments below stay well-conditioned even in single precision.
         amrex::ParticleReal const w_sum = values_sum[0];
+
+        /* Every moment below is normalized by the beam's total weight, which is zero
+         * for a beam that holds no particles at all - e.g. the initial diagnostic of
+         * a simulation whose beam a Source element loads further down the lattice -
+         * and also for one of zero charge, as used for massless "test" particles.
+         * Both would turn each normalization into 0/0, which raises FE_INVALID under
+         * amrex.fpe_trap_invalid. Normalize by one instead, which carries the
+         * (all-zero) sums through the derived quantities without an exception, and
+         * report the undefined results as NaN at the end of this function.
+         *
+         * The comparison is an equality on purpose: it is quiet for a NaN w_sum,
+         * so a beam poisoned by a non-finite particle coordinate is not silently
+         * absorbed here, but keeps tripping the FPE traps where they are enabled.
+         */
+        bool const has_weight = !(w_sum == 0.0_prt);
+        amrex::ParticleReal const w_norm = has_weight ? w_sum : 1.0_prt;
+
         // shifted means: <u - shift_u>
-        amrex::ParticleReal const dmean_x  = values_sum[1] / w_sum;
-        amrex::ParticleReal const dmean_y  = values_sum[2] / w_sum;
-        amrex::ParticleReal const dmean_t  = values_sum[3] / w_sum;
-        amrex::ParticleReal const dmean_px = values_sum[4] / w_sum;
-        amrex::ParticleReal const dmean_py = values_sum[5] / w_sum;
-        amrex::ParticleReal const dmean_pt = values_sum[6] / w_sum;
-        amrex::ParticleReal const dmean_sx = values_sum[7] / w_sum;
-        amrex::ParticleReal const dmean_sy = values_sum[8] / w_sum;
-        amrex::ParticleReal const dmean_sz = values_sum[9] / w_sum;
+        amrex::ParticleReal const dmean_x  = values_sum[1] / w_norm;
+        amrex::ParticleReal const dmean_y  = values_sum[2] / w_norm;
+        amrex::ParticleReal const dmean_t  = values_sum[3] / w_norm;
+        amrex::ParticleReal const dmean_px = values_sum[4] / w_norm;
+        amrex::ParticleReal const dmean_py = values_sum[5] / w_norm;
+        amrex::ParticleReal const dmean_pt = values_sum[6] / w_norm;
+        amrex::ParticleReal const dmean_sx = values_sum[7] / w_norm;
+        amrex::ParticleReal const dmean_sy = values_sum[8] / w_norm;
+        amrex::ParticleReal const dmean_sz = values_sum[9] / w_norm;
         // means
         amrex::ParticleReal const mean_x  = shift_x  + dmean_x;
         amrex::ParticleReal const mean_y  = shift_y  + dmean_y;
@@ -307,30 +336,30 @@ namespace
         amrex::ParticleReal const max_py = values_max.at(4);
         amrex::ParticleReal const max_pt = values_max.at(5);
         // mean square and correlation values (central moments via parallel-axis theorem)
-        amrex::ParticleReal const x_ms   = values_sum[10] / w_sum - dmean_x  * dmean_x;
-        amrex::ParticleReal const y_ms   = values_sum[11] / w_sum - dmean_y  * dmean_y;
-        amrex::ParticleReal const t_ms   = values_sum[12] / w_sum - dmean_t  * dmean_t;
-        amrex::ParticleReal const px_ms  = values_sum[13] / w_sum - dmean_px * dmean_px;
-        amrex::ParticleReal const py_ms  = values_sum[14] / w_sum - dmean_py * dmean_py;
-        amrex::ParticleReal const pt_ms  = values_sum[15] / w_sum - dmean_pt * dmean_pt;
-        amrex::ParticleReal const xpx    = values_sum[16] / w_sum - dmean_x  * dmean_px;
-        amrex::ParticleReal const ypy    = values_sum[17] / w_sum - dmean_y  * dmean_py;
-        amrex::ParticleReal const tpt    = values_sum[18] / w_sum - dmean_t  * dmean_pt;
-        amrex::ParticleReal const xpt    = values_sum[19] / w_sum - dmean_x  * dmean_pt;
-        amrex::ParticleReal const pxpt   = values_sum[20] / w_sum - dmean_px * dmean_pt;
-        amrex::ParticleReal const ypt    = values_sum[21] / w_sum - dmean_y  * dmean_pt;
-        amrex::ParticleReal const pypt   = values_sum[22] / w_sum - dmean_py * dmean_pt;
-        amrex::ParticleReal const xy     = values_sum[23] / w_sum - dmean_x  * dmean_y;
-        amrex::ParticleReal const xpy    = values_sum[24] / w_sum - dmean_x  * dmean_py;
-        amrex::ParticleReal const xt     = values_sum[25] / w_sum - dmean_x  * dmean_t;
-        amrex::ParticleReal const pxy    = values_sum[26] / w_sum - dmean_px * dmean_y;
-        amrex::ParticleReal const pxpy   = values_sum[27] / w_sum - dmean_px * dmean_py;
-        amrex::ParticleReal const pxt    = values_sum[28] / w_sum - dmean_px * dmean_t;
-        amrex::ParticleReal const yt     = values_sum[29] / w_sum - dmean_y  * dmean_t;
-        amrex::ParticleReal const pyt    = values_sum[30] / w_sum - dmean_py * dmean_t;
-        amrex::ParticleReal const sx_ms  = values_sum[31] / w_sum - dmean_sx * dmean_sx;
-        amrex::ParticleReal const sy_ms  = values_sum[32] / w_sum - dmean_sy * dmean_sy;
-        amrex::ParticleReal const sz_ms  = values_sum[33] / w_sum - dmean_sz * dmean_sz;
+        amrex::ParticleReal const x_ms   = values_sum[10] / w_norm - dmean_x  * dmean_x;
+        amrex::ParticleReal const y_ms   = values_sum[11] / w_norm - dmean_y  * dmean_y;
+        amrex::ParticleReal const t_ms   = values_sum[12] / w_norm - dmean_t  * dmean_t;
+        amrex::ParticleReal const px_ms  = values_sum[13] / w_norm - dmean_px * dmean_px;
+        amrex::ParticleReal const py_ms  = values_sum[14] / w_norm - dmean_py * dmean_py;
+        amrex::ParticleReal const pt_ms  = values_sum[15] / w_norm - dmean_pt * dmean_pt;
+        amrex::ParticleReal const xpx    = values_sum[16] / w_norm - dmean_x  * dmean_px;
+        amrex::ParticleReal const ypy    = values_sum[17] / w_norm - dmean_y  * dmean_py;
+        amrex::ParticleReal const tpt    = values_sum[18] / w_norm - dmean_t  * dmean_pt;
+        amrex::ParticleReal const xpt    = values_sum[19] / w_norm - dmean_x  * dmean_pt;
+        amrex::ParticleReal const pxpt   = values_sum[20] / w_norm - dmean_px * dmean_pt;
+        amrex::ParticleReal const ypt    = values_sum[21] / w_norm - dmean_y  * dmean_pt;
+        amrex::ParticleReal const pypt   = values_sum[22] / w_norm - dmean_py * dmean_pt;
+        amrex::ParticleReal const xy     = values_sum[23] / w_norm - dmean_x  * dmean_y;
+        amrex::ParticleReal const xpy    = values_sum[24] / w_norm - dmean_x  * dmean_py;
+        amrex::ParticleReal const xt     = values_sum[25] / w_norm - dmean_x  * dmean_t;
+        amrex::ParticleReal const pxy    = values_sum[26] / w_norm - dmean_px * dmean_y;
+        amrex::ParticleReal const pxpy   = values_sum[27] / w_norm - dmean_px * dmean_py;
+        amrex::ParticleReal const pxt    = values_sum[28] / w_norm - dmean_px * dmean_t;
+        amrex::ParticleReal const yt     = values_sum[29] / w_norm - dmean_y  * dmean_t;
+        amrex::ParticleReal const pyt    = values_sum[30] / w_norm - dmean_py * dmean_t;
+        amrex::ParticleReal const sx_ms  = values_sum[31] / w_norm - dmean_sx * dmean_sx;
+        amrex::ParticleReal const sy_ms  = values_sum[32] / w_norm - dmean_sy * dmean_sy;
+        amrex::ParticleReal const sz_ms  = values_sum[33] / w_norm - dmean_sz * dmean_sz;
         // beam charge
         amrex::ParticleReal const charge = q_C * w_sum;
         // standard deviations of positions
@@ -516,6 +545,39 @@ namespace
         data["sigma_sx"] = sigma_sx;
         data["sigma_sy"] = sigma_sy;
         data["sigma_sz"] = sigma_sz;
+
+        /* Without a total weight to normalize by, or without a reference particle to
+         * measure against, none of the moments above carries information: they are
+         * the zeros that the substitute normalization produced. Report them as
+         * "undefined" so that they cannot be mistaken for a measurement of a real,
+         * if degenerate, beam. The charge stays as reduced: it is exactly zero.
+         */
+        if (!has_weight || !ref_is_initialized)
+        {
+            for (auto & moment : data) {
+                moment.second = nan;
+            }
+            data["charge_C"] = charge;
+
+            /* The extrema, however, are unweighted. They stay meaningful for a beam
+             * of zero charge, and are undefined only without any particle to take
+             * them over - in which case they are the identity elements of their
+             * reductions.
+             */
+            if (has_particles)
+            {
+                constexpr std::array coordinates = {"x", "y", "t", "px", "py", "pt"};
+                for (std::size_t c = 0; c < coordinates.size(); ++c)
+                {
+                    std::string const coordinate = coordinates[c];
+                    data["min_" + coordinate] = values_min[c];
+                    data["max_" + coordinate] = values_max[c];
+                    // deprecated spellings of the same two entries
+                    data[coordinate + "_min"] = values_min[c];
+                    data[coordinate + "_max"] = values_max[c];
+                }
+            }
+        }
 
         return data;
     }

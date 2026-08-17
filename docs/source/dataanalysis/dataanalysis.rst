@@ -137,6 +137,8 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
 
 Quantities that a beam does not define are written as ``nan``.
 The Courant-Snyder (Twiss) ``alpha`` and ``beta`` of a plane are ratios to its rms emittance, and are undefined wherever that emittance vanishes: for a single particle, for a cold plane, or longitudinally for a beam without energy spread.
+A beam without a total weight has no weighted moments either: one that holds no particles at all, for example at the start of a simulation whose beam a ``source`` element loads further down the lattice, or one of zero charge as used for test particles.
+Its ``min`` and ``max`` are unweighted and stay defined as long as it holds a particle, as do ``charge_C``, which is then zero, and ``s``.
 
 
 .. _dataanalysis-plot:

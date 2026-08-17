@@ -135,6 +135,9 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
 * ``sigma_sx``, ``sigma_sy``, ``sigma_sz``
     Standard deviation of the three spin components (unit: dimensionless).  This diagnostic is written only if spin tracking is on (algo.spin = True).
 
+Quantities that a beam does not define are written as ``nan``.
+The Courant-Snyder (Twiss) ``alpha`` and ``beta`` of a plane are ratios to its rms emittance, and are undefined wherever that emittance vanishes: for a single particle, for a cold plane, or longitudinally for a beam without energy spread.
+
 
 .. _dataanalysis-plot:
 

@@ -29,6 +29,7 @@
 #include <AMReX_TypeList.H>             // for TypeMultiplier
 
 #include <array>
+#include <cmath>
 #include <limits>
 #include <vector>
 
@@ -37,6 +38,29 @@ namespace impactx::diagnostics
 {
 namespace
 {
+    /** Square root of a quantity that is mathematically non-negative
+     *
+     * Variances and squared emittances are non-negative by construction, but the
+     * finite-precision moment sums they are recovered from can put them marginally
+     * below zero. std::sqrt of such a value raises FE_INVALID, which aborts the run
+     * under amrex.fpe_trap_invalid, so clamp the (rounding-level) negative case to
+     * zero instead.
+     *
+     * A NaN input is passed through rather than clamped: it means the beam moments
+     * are already poisoned, which should stay visible in the output.
+     *
+     * @param x a quantity that is non-negative up to rounding
+     * @returns sqrt(x), or zero if x is negative
+     */
+    AMREX_FORCE_INLINE
+    amrex::ParticleReal
+    sqrt_clamped (amrex::ParticleReal x)
+    {
+        using namespace amrex::literals; // for _prt
+
+        return (x < 0.0_prt) ? 0.0_prt : std::sqrt(x);
+    }
+
     //! constant coordinate shifts subtracted before forming the beam moments
     struct Shifts
     {
@@ -119,6 +143,8 @@ namespace
         BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(pc)");
 
         using namespace amrex::literals; // for _prt
+
+        auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
 
         // preparing to access reference particle data: RefPart
         RefPart const ref_part = pc.GetRefParticle();
@@ -308,17 +334,17 @@ namespace
         // beam charge
         amrex::ParticleReal const charge = q_C * w_sum;
         // standard deviations of positions
-        amrex::ParticleReal const sigma_x = std::sqrt(x_ms);
-        amrex::ParticleReal const sigma_y = std::sqrt(y_ms);
-        amrex::ParticleReal const sigma_t = std::sqrt(t_ms);
+        amrex::ParticleReal const sigma_x = sqrt_clamped(x_ms);
+        amrex::ParticleReal const sigma_y = sqrt_clamped(y_ms);
+        amrex::ParticleReal const sigma_t = sqrt_clamped(t_ms);
         // standard deviations of momenta
-        amrex::ParticleReal const sigma_px = std::sqrt(px_ms);
-        amrex::ParticleReal const sigma_py = std::sqrt(py_ms);
-        amrex::ParticleReal const sigma_pt = std::sqrt(pt_ms);
+        amrex::ParticleReal const sigma_px = sqrt_clamped(px_ms);
+        amrex::ParticleReal const sigma_py = sqrt_clamped(py_ms);
+        amrex::ParticleReal const sigma_pt = sqrt_clamped(pt_ms);
         // standard deviations of spin
-        amrex::ParticleReal const sigma_sx = std::sqrt(sx_ms);
-        amrex::ParticleReal const sigma_sy = std::sqrt(sy_ms);
-        amrex::ParticleReal const sigma_sz = std::sqrt(sz_ms);
+        amrex::ParticleReal const sigma_sx = sqrt_clamped(sx_ms);
+        amrex::ParticleReal const sigma_sy = sqrt_clamped(sy_ms);
+        amrex::ParticleReal const sigma_sz = sqrt_clamped(sz_ms);
         // RMS emittances
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
@@ -334,19 +360,24 @@ namespace
         amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
         amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
         amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;
-        amrex::ParticleReal const emittance_xd = std::sqrt(x_msd*px_msd-xpx_d*xpx_d);
+        amrex::ParticleReal const emittance_xd = sqrt_clamped(x_msd*px_msd-xpx_d*xpx_d);
         amrex::ParticleReal const y_msd = y_ms - pt_ms*dispersion_y*dispersion_y;
         amrex::ParticleReal const py_msd = py_ms - pt_ms*dispersion_py*dispersion_py;
         amrex::ParticleReal const ypy_d = ypy - pt_ms*dispersion_y*dispersion_py;
-        amrex::ParticleReal const emittance_yd = std::sqrt(y_msd*py_msd-ypy_d*ypy_d);
-        // Courant-Snyder (Twiss) beta-function
-        amrex::ParticleReal const beta_x = x_msd / emittance_xd;
-        amrex::ParticleReal const beta_y = y_msd / emittance_yd;
-        amrex::ParticleReal const beta_t = t_ms / emittance_t;
-        // Courant-Snyder (Twiss) alpha
-        amrex::ParticleReal const alpha_x = - xpx_d / emittance_xd;
-        amrex::ParticleReal const alpha_y = - ypy_d / emittance_yd;
-        amrex::ParticleReal const alpha_t = - tpt / emittance_t;
+        amrex::ParticleReal const emittance_yd = sqrt_clamped(y_msd*py_msd-ypy_d*ypy_d);
+        /* Courant-Snyder (Twiss) beta-function and alpha
+         *
+         * Both are ratios to an rms emittance, and are undefined where that emittance
+         * vanishes: a single particle, a cold plane, or a longitudinal plane without
+         * energy spread. Report NaN there rather than dividing by zero, which raises
+         * FE_DIVBYZERO (or FE_INVALID, for 0/0) under amrex.fpe_trap_zero/_invalid.
+         */
+        amrex::ParticleReal const beta_x = (emittance_xd > 0.0) ? x_msd / emittance_xd : nan;
+        amrex::ParticleReal const beta_y = (emittance_yd > 0.0) ? y_msd / emittance_yd : nan;
+        amrex::ParticleReal const beta_t = (emittance_t > 0.0) ? t_ms / emittance_t : nan;
+        amrex::ParticleReal const alpha_x = (emittance_xd > 0.0) ? - xpx_d / emittance_xd : nan;
+        amrex::ParticleReal const alpha_y = (emittance_yd > 0.0) ? - ypy_d / emittance_yd : nan;
+        amrex::ParticleReal const alpha_t = (emittance_t > 0.0) ? - tpt / emittance_t : nan;
 
         // Calculate normalized emittances
         amrex::ParticleReal emittance_xn = emittance_x * bg;
@@ -497,6 +528,8 @@ namespace
 
         using namespace amrex::literals; // for _prt
 
+        auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+
         // reference particle relativistic beta*gamma
         amrex::ParticleReal const bg = ref_part.beta_gamma();
         amrex::ParticleReal const bg2 = bg*bg;
@@ -524,13 +557,13 @@ namespace
         amrex::ParticleReal const yt     = cm(3,5);
         amrex::ParticleReal const pyt    = cm(4,5);
         // standard deviations of positions
-        amrex::ParticleReal const sig_x = std::sqrt(x_ms);
-        amrex::ParticleReal const sig_y = std::sqrt(y_ms);
-        amrex::ParticleReal const sig_t = std::sqrt(t_ms);
+        amrex::ParticleReal const sig_x = sqrt_clamped(x_ms);
+        amrex::ParticleReal const sig_y = sqrt_clamped(y_ms);
+        amrex::ParticleReal const sig_t = sqrt_clamped(t_ms);
         // standard deviations of momenta
-        amrex::ParticleReal const sig_px = std::sqrt(px_ms);
-        amrex::ParticleReal const sig_py = std::sqrt(py_ms);
-        amrex::ParticleReal const sig_pt = std::sqrt(pt_ms);
+        amrex::ParticleReal const sig_px = sqrt_clamped(px_ms);
+        amrex::ParticleReal const sig_py = sqrt_clamped(py_ms);
+        amrex::ParticleReal const sig_pt = sqrt_clamped(pt_ms);
         // RMS emittances
         amrex::ParticleReal const e2_x = x_ms*px_ms-xpx*xpx;
         amrex::ParticleReal const e2_y = y_ms*py_ms-ypy*ypy;
@@ -546,19 +579,24 @@ namespace
         amrex::ParticleReal const x_msd = x_ms - pt_ms*dispersion_x*dispersion_x;
         amrex::ParticleReal const px_msd = px_ms - pt_ms*dispersion_px*dispersion_px;
         amrex::ParticleReal const xpx_d = xpx - pt_ms*dispersion_x*dispersion_px;
-        amrex::ParticleReal const emittance_xd = std::sqrt(x_msd*px_msd-xpx_d*xpx_d);
+        amrex::ParticleReal const emittance_xd = sqrt_clamped(x_msd*px_msd-xpx_d*xpx_d);
         amrex::ParticleReal const y_msd = y_ms - pt_ms*dispersion_y*dispersion_y;
         amrex::ParticleReal const py_msd = py_ms - pt_ms*dispersion_py*dispersion_py;
         amrex::ParticleReal const ypy_d = ypy - pt_ms*dispersion_y*dispersion_py;
-        amrex::ParticleReal const emittance_yd = std::sqrt(y_msd*py_msd-ypy_d*ypy_d);
-        // Courant-Snyder (Twiss) beta-function
-        amrex::ParticleReal const beta_x = x_msd / emittance_xd;
-        amrex::ParticleReal const beta_y = y_msd / emittance_yd;
-        amrex::ParticleReal const beta_t = t_ms / emittance_t;
-        // Courant-Snyder (Twiss) alpha
-        amrex::ParticleReal const alpha_x = - xpx_d / emittance_xd;
-        amrex::ParticleReal const alpha_y = - ypy_d / emittance_yd;
-        amrex::ParticleReal const alpha_t = - tpt / emittance_t;
+        amrex::ParticleReal const emittance_yd = sqrt_clamped(y_msd*py_msd-ypy_d*ypy_d);
+        /* Courant-Snyder (Twiss) beta-function and alpha
+         *
+         * Both are ratios to an rms emittance, and are undefined where that emittance
+         * vanishes: a single particle, a cold plane, or a longitudinal plane without
+         * energy spread. Report NaN there rather than dividing by zero, which raises
+         * FE_DIVBYZERO (or FE_INVALID, for 0/0) under amrex.fpe_trap_zero/_invalid.
+         */
+        amrex::ParticleReal const beta_x = (emittance_xd > 0.0) ? x_msd / emittance_xd : nan;
+        amrex::ParticleReal const beta_y = (emittance_yd > 0.0) ? y_msd / emittance_yd : nan;
+        amrex::ParticleReal const beta_t = (emittance_t > 0.0) ? t_ms / emittance_t : nan;
+        amrex::ParticleReal const alpha_x = (emittance_xd > 0.0) ? - xpx_d / emittance_xd : nan;
+        amrex::ParticleReal const alpha_y = (emittance_yd > 0.0) ? - ypy_d / emittance_yd : nan;
+        amrex::ParticleReal const alpha_t = (emittance_t > 0.0) ? - tpt / emittance_t : nan;
 
         // Calculate normalized emittances
         amrex::ParticleReal emittance_xn = emittance_x * bg;
@@ -618,8 +656,6 @@ namespace
            emittance_2 = std::get<1>(emittances);
            emittance_3 = std::get<2>(emittances);
         }
-
-        auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
 
         std::unordered_map<std::string, amrex::ParticleReal> data;
         data["mean_x"] = 0.0_prt;

@@ -2,7 +2,7 @@
 #
 # Copyright 2022-2026 The ImpactX Community
 #
-# Authors: Axel Huebl
+# Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
 # -*- coding: utf-8 -*-

@@ -152,10 +152,7 @@ namespace
         // reference particle charge in C
         amrex::ParticleReal const q_C = ref_part.charge;
         /* A reference particle that carries no energy yet, e.g. before a Source
-         * element loads it from file, has gamma = 0, for which beta*gamma =
-         * sqrt(gamma^2 - 1) is not a real number. Keep it out of the arithmetic
-         * below - such a beam reports "no beam" moments at the end anyway - so
-         * that we do not raise FE_INVALID under amrex.fpe_trap_invalid.
+         * element loads it from file, has gamma = 0 and thus no valid beta.
          */
         bool const ref_is_initialized = ref_part.gamma() >= 1.0_prt;
         // reference particle relativistic beta*gamma
@@ -211,8 +208,7 @@ namespace
             int src_rank = found ? amrex::ParallelDescriptor::MyProc()
                                  : amrex::ParallelDescriptor::NProcs();
             amrex::ParallelAllReduce::Min(src_rank, amrex::ParallelDescriptor::Communicator());
-            // this also tells us, globally and without a further reduction,
-            // whether the beam holds any particle at all
+            // Does the beam hold any particle at all:
             has_particles = src_rank < amrex::ParallelDescriptor::NProcs();
             if (has_particles) {
                 amrex::ParallelDescriptor::Bcast(shift.data(), shift.size(), src_rank);
@@ -289,14 +285,14 @@ namespace
          * for a beam that holds no particles at all - e.g. the initial diagnostic of
          * a simulation whose beam a Source element loads further down the lattice -
          * and also for one of zero charge, as used for massless "test" particles.
-         * Both would turn each normalization into 0/0, which raises FE_INVALID under
-         * amrex.fpe_trap_invalid. Normalize by one instead, which carries the
+         * Both would turn each normalization into invalid divisions by zero.
+         * Normalize by one instead, which carries the
          * (all-zero) sums through the derived quantities without an exception, and
          * report the undefined results as NaN at the end of this function.
          *
          * The comparison is an equality on purpose: it is quiet for a NaN w_sum,
          * so a beam poisoned by a non-finite particle coordinate is not silently
-         * absorbed here, but keeps tripping the FPE traps where they are enabled.
+         * absorbed here, but keeps tripping FPE diagnostics when enabled.
          */
         bool const has_weight = !(w_sum == 0.0_prt);
         amrex::ParticleReal const w_norm = has_weight ? w_sum : 1.0_prt;
@@ -550,32 +546,25 @@ namespace
          * measure against, none of the moments above carries information: they are
          * the zeros that the substitute normalization produced. Report them as
          * "undefined" so that they cannot be mistaken for a measurement of a real,
-         * if degenerate, beam. The charge stays as reduced: it is exactly zero.
+         * if degenerate, beam.
+         *
+         * Two kinds of entry survive. The charge is exactly zero, as reduced. And the
+         * minima and maxima are unweighted: they stay meaningful for a beam of zero
+         * charge, and are undefined only without any particle to take them over - in
+         * which case they hold the identity elements of their reductions.
          */
         if (!has_weight || !ref_is_initialized)
         {
-            for (auto & moment : data) {
-                moment.second = nan;
-            }
-            data["charge_C"] = charge;
-
-            /* The extrema, however, are unweighted. They stay meaningful for a beam
-             * of zero charge, and are undefined only without any particle to take
-             * them over - in which case they are the identity elements of their
-             * reductions.
-             */
-            if (has_particles)
+            auto const is_defined = [has_particles](std::string const & moment)
             {
-                constexpr std::array coordinates = {"x", "y", "t", "px", "py", "pt"};
-                for (std::size_t c = 0; c < coordinates.size(); ++c)
-                {
-                    std::string const coordinate = coordinates[c];
-                    data["min_" + coordinate] = values_min[c];
-                    data["max_" + coordinate] = values_max[c];
-                    // deprecated spellings of the same two entries
-                    data[coordinate + "_min"] = values_min[c];
-                    data[coordinate + "_max"] = values_max[c];
-                }
+                if (moment == "charge_C") { return true; }
+                return has_particles &&
+                       (moment.starts_with("min_") || moment.starts_with("max_") ||
+                        moment.ends_with("_min") || moment.ends_with("_max"));
+            };
+
+            for (auto & moment : data) {
+                if (!is_defined(moment.first)) { moment.second = nan; }
             }
         }
 

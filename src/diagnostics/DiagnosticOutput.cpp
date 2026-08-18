@@ -114,10 +114,7 @@ namespace
         using namespace amrex::literals; // for _prt
 
         /* A reference particle that carries no energy yet, e.g. before a Source
-         * element loads it from file, has gamma = 0. Neither beta = sqrt(1 - 1/gamma^2)
-         * nor beta*gamma = sqrt(gamma^2 - 1) is a real number there, and evaluating
-         * them raises FE_INVALID (and FE_DIVBYZERO) under amrex.fpe_trap_invalid.
-         * Report the undefined quantities as NaN instead.
+         * element loads it from file, has gamma = 0 and thus no valid beta.
          */
         auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
         bool const ref_is_initialized = ref_part.gamma() >= 1.0_prt;

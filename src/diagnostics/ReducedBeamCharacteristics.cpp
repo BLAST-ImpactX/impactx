@@ -369,8 +369,7 @@ namespace
          *
          * Both are ratios to an rms emittance, and are undefined where that emittance
          * vanishes: a single particle, a cold plane, or a longitudinal plane without
-         * energy spread. Report NaN there rather than dividing by zero, which raises
-         * FE_DIVBYZERO (or FE_INVALID, for 0/0) under amrex.fpe_trap_zero/_invalid.
+         * energy spread.
          */
         amrex::ParticleReal const beta_x = (emittance_xd > 0.0) ? x_msd / emittance_xd : nan;
         amrex::ParticleReal const beta_y = (emittance_yd > 0.0) ? y_msd / emittance_yd : nan;
@@ -588,8 +587,7 @@ namespace
          *
          * Both are ratios to an rms emittance, and are undefined where that emittance
          * vanishes: a single particle, a cold plane, or a longitudinal plane without
-         * energy spread. Report NaN there rather than dividing by zero, which raises
-         * FE_DIVBYZERO (or FE_INVALID, for 0/0) under amrex.fpe_trap_zero/_invalid.
+         * energy spread.
          */
         amrex::ParticleReal const beta_x = (emittance_xd > 0.0) ? x_msd / emittance_xd : nan;
         amrex::ParticleReal const beta_y = (emittance_yd > 0.0) ? y_msd / emittance_yd : nan;

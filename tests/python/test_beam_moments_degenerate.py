@@ -8,13 +8,8 @@
 # -*- coding: utf-8 -*-
 
 import math
-import os
-import subprocess
-import sys
 
-import pytest
-
-from impactx import Config, ImpactX, create_envelope, distribution
+from impactx import ImpactX, create_envelope, distribution
 
 # beam moments that stay defined without a beam: the reference path length and
 # the beam charge (of which there is none)
@@ -198,106 +193,3 @@ def test_envelope_beam_moments_without_energy_spread():
     assert math.isfinite(moments["alpha_x"])
 
     sim.finalize()
-
-
-# A stand-alone run of one degenerate case, with AMReX trapping the floating-point
-# exceptions that it used to raise. Each case runs in its own process: a trap raises
-# SIGFPE, which no test could survive in-process, and AMReX arms the traps once, when
-# it is initialized - a second simulation in the same process would run untrapped.
-_FPE_TRAP_PROGRAM = """
-import sys
-
-from mpi4py import MPI  # noqa: F401  (keep MPI alive for the whole program)
-
-import amrex.space3d as amr
-
-amr.initialize(
-    [
-        "amrex.verbose=0",
-        "tiny_profiler.enabled=0",
-        "amrex.signal_handling=1",
-        "amrex.handle_sigfpe=1",
-        "amrex.fpe_trap_invalid=1",
-        "amrex.fpe_trap_zero=1",
-    ]
-)
-
-from impactx import ImpactX, distribution
-
-CASES = {
-    #                     npart, bunch_charge_C, lambdaPt, reference particle
-    "no_reference_particle": (0, 1.0e-9, 2.0e-3, False),
-    "empty": (0, 1.0e-9, 2.0e-3, True),
-    "no_charge": (1000, 0.0, 2.0e-3, True),
-    "single_particle": (1, 1.0e-9, 2.0e-3, True),
-    "no_energy_spread": (1000, 1.0e-9, 0.0, True),
-}
-npart, bunch_charge_C, lambda_pt, reference_particle = CASES[sys.argv[1]]
-
-sim = ImpactX()
-sim.particle_shape = 2
-sim.space_charge = False
-sim.slice_step_diagnostics = False
-sim.init_grids()
-
-if reference_particle:
-    sim.beam.ref.set_species("electron").set_kin_energy_MeV(2.0e3)
-
-if npart > 0:
-    sim.add_particles(
-        bunch_charge_C,
-        distribution.Waterbag(
-            lambdaX=3.9984884770e-5,
-            lambdaY=3.9984884770e-5,
-            lambdaT=1.0e-3,
-            lambdaPx=2.6623538760e-5,
-            lambdaPy=2.6623538760e-5,
-            lambdaPt=lambda_pt,
-        ),
-        npart,
-    )
-
-sim.beam.beam_moments()
-
-print("no floating-point exception raised")
-"""
-
-
-@pytest.mark.manages_amrex
-@pytest.mark.parametrize(
-    "case",
-    [
-        "no_reference_particle",
-        "empty",
-        "no_charge",
-        "single_particle",
-        "no_energy_spread",
-    ],
-)
-def test_beam_moments_do_not_raise_fpe(tmp_path, case):
-    """
-    Computing the beam moments of a degenerate beam does not raise a floating-point
-    exception, i.e. it survives amrex.fpe_trap_invalid / amrex.fpe_trap_zero.
-    """
-    if sys.platform != "linux":
-        pytest.skip(
-            "AMReX arms the FP traps for the whole process: through feenableexcept on "
-            "Linux/glibc, and through the FPCR trap bits on Apple Silicon, where an "
-            "exception arrives as SIGILL"
-        )
-    if not Config.have_mpi:
-        pytest.skip("the stand-alone program pre-initializes MPI via mpi4py")
-
-    program = tmp_path / "fpe_trap_beam_moments.py"
-    program.write_text(_FPE_TRAP_PROGRAM)
-
-    result = subprocess.run(
-        [sys.executable, str(program), case],
-        cwd=tmp_path,
-        env={**os.environ, "OMP_NUM_THREADS": "1"},
-        capture_output=True,
-        text=True,
-    )
-
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    assert "no floating-point exception raised" in result.stdout

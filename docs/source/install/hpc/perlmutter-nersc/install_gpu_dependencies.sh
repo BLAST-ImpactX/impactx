@@ -43,6 +43,9 @@ python3 -m pip uninstall -qqq -y mpi4py 2>/dev/null || true
 # General extra dependencies ##################################################
 #
 
+# build parallelism
+PARALLEL=16
+
 # tmpfs build directory: avoids issues often seen with $HOME and is faster
 build_dir=$(mktemp -d)
 
@@ -52,17 +55,15 @@ tar -xf ${build_dir}/ccache.tar.xz -C ${build_dir}
 mv ${build_dir}/ccache-4.10.2-linux-x86_64 ${SW_DIR}/ccache-4.10.2
 
 # Boost (header-only libraries, for the synmadx MAD-X lattice parser)
-#   unpacked in $HOME: the Boost sources are too large for the tmpfs build dir
-rm -rf $HOME/src/boost-temp
-mkdir -p $HOME/src/boost-temp
-curl -Lo $HOME/src/boost-temp/boost.tar.gz https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.gz
-tar -xzf $HOME/src/boost-temp/boost.tar.gz -C $HOME/src/boost-temp
+curl -Lo ${build_dir}/boost.tar.gz https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.gz
+tar -xzf ${build_dir}/boost.tar.gz -C ${build_dir}
+rm -rf ${build_dir}/boost.tar.gz
 (
-  cd $HOME/src/boost-temp/boost_1_82_0
+  cd ${build_dir}/boost_1_82_0
   ./bootstrap.sh --with-libraries=headers --prefix=${SW_DIR}/boost-1.82.0
-  ./b2 install -j 16
+  ./b2 cxxflags="-std=c++20" install -j ${PARALLEL}
 )
-rm -rf $HOME/src/boost-temp
+rm -rf ${build_dir}/boost_1_82_0
 
 # c-blosc (I/O compression)
 if [ -d $HOME/src/c-blosc ]
@@ -75,7 +76,7 @@ else
   git clone -b v1.21.1 https://github.com/Blosc/c-blosc.git $HOME/src/c-blosc
 fi
 cmake -S $HOME/src/c-blosc -B ${build_dir}/c-blosc-pm-gpu-build -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=OFF -DDEACTIVATE_AVX2=OFF -DCMAKE_INSTALL_PREFIX=${SW_DIR}/c-blosc-1.21.1
-cmake --build ${build_dir}/c-blosc-pm-gpu-build --target install --parallel 16
+cmake --build ${build_dir}/c-blosc-pm-gpu-build --target install --parallel ${PARALLEL}
 rm -rf ${build_dir}/c-blosc-pm-gpu-build
 
 # ADIOS2
@@ -89,7 +90,7 @@ else
   git clone -b v2.10.2 https://github.com/ornladios/ADIOS2.git $HOME/src/adios2
 fi
 cmake -S $HOME/src/adios2 -B ${build_dir}/adios2-pm-gpu-build -DADIOS2_USE_Blosc=ON -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_Python=OFF -DADIOS2_USE_ZeroMQ=OFF -DCMAKE_INSTALL_PREFIX=${SW_DIR}/adios2-2.10.2
-cmake --build ${build_dir}/adios2-pm-gpu-build --target install -j 16
+cmake --build ${build_dir}/adios2-pm-gpu-build --target install -j ${PARALLEL}
 rm -rf ${build_dir}/adios2-pm-gpu-build
 
 

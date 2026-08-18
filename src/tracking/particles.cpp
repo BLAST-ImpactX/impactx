@@ -145,7 +145,7 @@ namespace impactx
         //   The Strang split around collective effects applies this twice per slice, once
         //   per half-map, so it carries no book-keeping: that lives in @see
         //   slice_diagnostics below.
-        auto element_transport = [&pc] (
+        auto element_push = [&pc] (
             elements::KnownElements & element_variant,
             int step_,
             int period_
@@ -211,7 +211,7 @@ namespace impactx
             strang_split,
             [this](std::string const & name) { call_hook(name); },
             collective_kicks,
-            element_transport,
+            element_push,
             slice_diagnostics
         );
 

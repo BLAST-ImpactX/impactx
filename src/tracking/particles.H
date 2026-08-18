@@ -37,7 +37,7 @@ namespace impactx
      *
      *  The caller supplies the per-slice physics as three composable operations: the
      *  collective kick @p collective_kicks ``K`` (space charge, CSR, ISR, ...), the
-     *  element transport @p element_transport ``M`` (the external-field map of one
+     *  element transport @p element_push ``M`` (the external-field map of one
      *  element slice) and the @p slice_diagnostics book-keeping (boundary conditions,
      *  lost particles, slice diagnostics), which runs once per slice.
      *
@@ -74,7 +74,7 @@ namespace impactx
      *  @tparam CollectiveKicks callable
      *    ``void (elements::KnownElements & element, amrex::ParticleReal slice_ds)``
      *    applying the collective-effect kick over the length @p slice_ds
-     *  @tparam ElementTransport callable
+     *  @tparam ElementPush callable
      *    ``void (elements::KnownElements & element, int step, int period)``
      *    applying one slice of the element's external-field transport map (no book-keeping)
      *  @tparam SliceDiagnostics callable ``void (int step, int period)`` running the
@@ -88,12 +88,12 @@ namespace impactx
      *                 false composes kick and transport to first order
      *  @param[in] call_hook registry for user-specified callback hooks
      *  @param[in] collective_kicks applies the collective effect kicks (SC, CSR, ISR, ...)
-     *  @param[in] element_transport applies the external-field map of one element slice
+     *  @param[in] element_push applies the external-field map of one element slice
      *  @param[in] slice_diagnostics once-per-slice book-keeping and diagnostics
      */
     template <
         typename HookFn, typename CollectiveKicks,
-        typename ElementTransport, typename SliceDiagnostics
+        typename ElementPush, typename SliceDiagnostics
     >
     void track_lattice_particles (
         std::list<elements::KnownElements> & lattice,
@@ -103,7 +103,7 @@ namespace impactx
         bool strang_split,
         HookFn const & call_hook,
         CollectiveKicks && collective_kicks,
-        ElementTransport && element_transport,
+        ElementPush && element_push,
         SliceDiagnostics && slice_diagnostics
     )
     {
@@ -175,9 +175,9 @@ namespace impactx
                 {
                     // M(ds/2) K(ds) M(ds/2): the doubled slice count halves each transport
                     elements::ScopedNslice const half_slices(element_variant, 2 * nslice);
-                    element_transport(element_variant, step, period);
+                    element_push(element_variant, step, period);
                     collective_kicks(element_variant, slice_ds);
-                    element_transport(element_variant, step, period);
+                    element_push(element_variant, step, period);
                 }
                 else if (kick)
                 {
@@ -186,18 +186,18 @@ namespace impactx
                     if (forward)
                     {
                         collective_kicks(element_variant, slice_ds);
-                        element_transport(element_variant, step, period);
+                        element_push(element_variant, step, period);
                     }
                     else
                     {
-                        element_transport(element_variant, step, period);
+                        element_push(element_variant, step, period);
                         collective_kicks(element_variant, slice_ds);
                     }
                 }
                 else
                 {
                     // zero-length slice or no collective effects: transport only
-                    element_transport(element_variant, step, period);
+                    element_push(element_variant, step, period);
                 }
 
                 // once-per-slice book-keeping and diagnostics

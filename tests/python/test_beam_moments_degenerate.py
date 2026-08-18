@@ -9,8 +9,7 @@
 
 import math
 
-import impactx
-from impactx import ImpactX, distribution
+from impactx import ImpactX, create_envelope, distribution
 
 
 def waterbag(lambda_pt=2.0e-3):
@@ -102,7 +101,7 @@ def test_envelope_beam_moments_without_energy_spread():
     ref = sim.beam.ref
     ref.set_species("electron").set_kin_energy_MeV(2.0e3)
 
-    envelope = impactx.create_envelope(waterbag(lambda_pt=0.0), 1.0e-9)
+    envelope = create_envelope(waterbag(lambda_pt=0.0), 1.0e-9)
     moments = envelope.beam_moments(ref)
 
     assert moments["emittance_t"] == 0.0

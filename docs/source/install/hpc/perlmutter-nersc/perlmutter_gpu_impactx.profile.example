@@ -11,6 +11,10 @@ if [ -z ${proj-} ]; then echo "WARNING: The 'proj' variable is not yet set in yo
 module load gcc-native/13.2  # default gcc-native/14 breaks pybind11 builds with NVCC 12.9.41
 module load cmake/3.30.2
 
+# optional: for the synmadx MAD-X lattice parser
+#   header-only Boost, thus no LD_LIBRARY_PATH entry needed
+export CMAKE_PREFIX_PATH=${CFS}/${proj}/${USER}/sw/perlmutter/gpu/boost-1.82.0:$CMAKE_PREFIX_PATH
+
 # optional: for openPMD support
 module load cray-hdf5-parallel/1.12.2.9
 export CMAKE_PREFIX_PATH=${CFS}/${proj}/${USER}/sw/perlmutter/gpu/c-blosc-1.21.1:$CMAKE_PREFIX_PATH

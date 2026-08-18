@@ -165,7 +165,7 @@ Use the following :ref:`cmake commands <building-cmake>` to compile the applicat
          cd $HOME/src/impactx
          rm -rf build_pm_gpu_py
 
-         cmake -S . -B build_pm_gpu_py -DImpactX_COMPUTE=CUDA -DImpactX_APP=OFF -DImpactX_FFT=ON -DImpactX_PYTHON=ON
+         cmake -S . -B build_pm_gpu_py -DImpactX_COMPUTE=CUDA -DImpactX_APP=OFF -DImpactX_FFT=ON -DImpactX_PYTHON=ON -DImpactX_SYNMADX=ON
          cmake --build build_pm_gpu_py -j 16 --target pip_install
 
    .. tab-item:: CPU Nodes
@@ -185,7 +185,7 @@ Use the following :ref:`cmake commands <building-cmake>` to compile the applicat
 
          rm -rf build_pm_cpu_py
 
-         cmake -S . -B build_pm_cpu_py -DImpactX_COMPUTE=OMP -DImpactX_APP=OFF -DImpactX_FFT=ON -DImpactX_PYTHON=ON
+         cmake -S . -B build_pm_cpu_py -DImpactX_COMPUTE=OMP -DImpactX_APP=OFF -DImpactX_FFT=ON -DImpactX_PYTHON=ON -DImpactX_SYNMADX=ON
          cmake --build build_pm_cpu_py -j 16 --target pip_install
 
 Now, you can :ref:`submit Perlmutter compute jobs <running-cpp-perlmutter>` for ImpactX :ref:`Python scripts <usage-python>` (:ref:`example scripts <usage-examples>`).

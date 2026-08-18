@@ -51,6 +51,19 @@ curl -Lo ${build_dir}/ccache.tar.xz https://github.com/ccache/ccache/releases/do
 tar -xf ${build_dir}/ccache.tar.xz -C ${build_dir}
 mv ${build_dir}/ccache-4.10.2-linux-x86_64 ${SW_DIR}/ccache-4.10.2
 
+# Boost (header-only libraries, for the synmadx MAD-X lattice parser)
+#   unpacked in $HOME: the Boost sources are too large for the tmpfs build dir
+rm -rf $HOME/src/boost-temp
+mkdir -p $HOME/src/boost-temp
+curl -Lo $HOME/src/boost-temp/boost.tar.gz https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.gz
+tar -xzf $HOME/src/boost-temp/boost.tar.gz -C $HOME/src/boost-temp
+(
+  cd $HOME/src/boost-temp/boost_1_82_0
+  ./bootstrap.sh --with-libraries=headers --prefix=${SW_DIR}/boost-1.82.0
+  ./b2 install -j 16
+)
+rm -rf $HOME/src/boost-temp
+
 # c-blosc (I/O compression)
 if [ -d $HOME/src/c-blosc ]
 then

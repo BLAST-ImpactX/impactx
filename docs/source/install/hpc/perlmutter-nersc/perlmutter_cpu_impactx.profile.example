@@ -10,6 +10,10 @@ module load cpu
 module load cmake/3.30.2
 module load cray-fftw/3.3.10.6
 
+# optional: for the synmadx MAD-X lattice parser
+#   header-only Boost, thus no LD_LIBRARY_PATH entry needed
+export CMAKE_PREFIX_PATH=${CFS}/${proj}/${USER}/sw/perlmutter/cpu/boost-1.82.0:$CMAKE_PREFIX_PATH
+
 # optional: for openPMD support
 module load cray-hdf5-parallel/1.12.2.9
 export CMAKE_PREFIX_PATH=${CFS}/${proj}/${USER}/sw/perlmutter/cpu/c-blosc-1.21.1:$CMAKE_PREFIX_PATH

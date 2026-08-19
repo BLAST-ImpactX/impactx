@@ -1035,6 +1035,11 @@ and momenta :math:`(px,py,pt)` are dimensionless.  So, for example, :math:`R(1,1
 
 The internal tracking methods used by ImpactX are symplectic.  However, if a user-defined linear map :math:`R` is provided, it is up to the user to ensure that the matrix :math:`R` is symplectic.  Otherwise, this condition may be violated.
 
+.. note::
+
+   This element cannot be sliced, so a collective effect kick (space charge, CSR, ISR) is applied as ``K(ds/2) M(ds) K(ds/2)``: half a kick, the element map, then the other half, at two collective solves per element (see :pp:param:`algo.strang_split`).
+   Model it as several shorter elements to resolve collective effects along its length.
+
 This element is defined via ``<linear_map_name>.type = linear_map`` and requires these additional parameters:
 
 .. pp:param:: <linear_map_name>.R(i,j)
@@ -2091,6 +2096,11 @@ The vector :math:`v` and the matrix :math:`A` are defaulted to zero, so only ent
 The matrix :math:`A` multiplies the phase space vector :math:`(x,p_x,y,p_y,t,p_t)`, where coordinates :math:`(x,y,t)` have units of m
 and momenta :math:`(p_x,p_y,p_t)` are dimensionless.  The three components output are dimensionless.  So, for example, :math:`A(1,1)` has units of 1/m, and :math:`A(1,2)` is dimensionless.
 All three components of :math:`v` are dimensionless.
+
+.. note::
+
+   This element cannot be sliced, so a collective effect kick (space charge, CSR, ISR) is applied as ``K(ds/2) M(ds) K(ds/2)``: half a kick, the element map, then the other half, at two collective solves per element (see :pp:param:`algo.strang_split`).
+   Model it as several shorter elements to resolve collective effects along its length.
 
 This element is defined via ``<spin_map_name>.type = spin_map`` and requires these additional parameters:
 

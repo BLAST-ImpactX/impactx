@@ -1714,6 +1714,15 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
+   .. note::
+
+      This element cannot be sliced, so a collective effect kick (space charge,
+      CSR, ISR) is applied as ``K(ds/2) M(ds) K(ds/2)``: half a kick, the element
+      map, then the other half, at two collective solves per element
+      (see :py:attr:`~impactx.ImpactX.strang_split`).
+      Model it as several shorter elements to resolve collective effects along
+      its length.
+
 .. py:class:: impactx.elements.Multipole(multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, name=None)
 
    A general thin multipole element.
@@ -1934,6 +1943,13 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param ds: Segment length in m.
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
+
+   .. note::
+
+      The Strang split (:py:attr:`~impactx.ImpactX.strang_split`) cannot halve this element's
+      push, so it halves the collective effect kick (space charge, CSR, ISR)
+      instead: ``K(ds/2) M(ds) K(ds/2)`` per slice, at two collective solves per
+      slice.
 
    .. note::
 
@@ -2412,6 +2428,15 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param dy: vertical translation error in m (not used, defaults to 0)
    :param rotation: rotation error in the transverse plane [degrees] (not used, defaults to 0)
    :param name: an optional name for the element
+
+   .. note::
+
+      This element cannot be sliced, so a collective effect kick (space charge,
+      CSR, ISR) is applied as ``K(ds/2) M(ds) K(ds/2)``: half a kick, the element
+      map, then the other half, at two collective solves per element
+      (see :py:attr:`~impactx.ImpactX.strang_split`).
+      Model it as several shorter elements to resolve collective effects along
+      its length.
 
 .. py:class:: impactx.elements.ThinDipole(theta, rc, dx=0, dy=0, rotation=0, name=None)
 

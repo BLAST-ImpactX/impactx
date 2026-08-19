@@ -41,17 +41,19 @@ namespace impactx
      *  element slice) and the @p slice_diagnostics book-keeping (boundary conditions,
      *  lost particles, slice diagnostics), which runs once per slice.
      *
-     *  With collective effects active (@p collective_effects), each slice of an element
-     *  that can be subdivided (@see elements::can_slice) is composed as the second-order,
-     *  time-symmetric Strang split
+     *  With collective effects active (@p collective_effects) and @p strang_split on, every
+     *  slice is composed as a second-order, time-symmetric Strang split. Which of the two
+     *  operators is halved depends on the element:
      *      ``M(ds/2) K(ds) M(ds/2)``
-     *  half of the slice transport, the collective kick at the slice midpoint, then the
-     *  other half. The half transports are realized by temporarily doubling the element's
-     *  ``nslice``, which simply halves the ds per slice. The expensive collective solve
-     *  still runs only once per slice.
-     *  Elements that cannot be subdivided, and all elements once the split is turned off
-     *  (@p strang_split), are composed to first order instead: ``K(ds) M(ds)`` forward and
-     *  ``M(ds) K(ds)`` backward.
+     *  for an element that can be subdivided (@see elements::can_slice): half of the slice
+     *  transport, the collective kick at the slice midpoint, then the other half. The half
+     *  transports are realized by temporarily doubling the element's ``nslice``, which simply
+     *  halves the ds per slice. The expensive collective solve still runs only once per slice.
+     *      ``K(ds/2) M(ds) K(ds/2)``
+     *  for every other element: the kick is linear in the slice length, so halving it needs no
+     *  subdivision, at the price of a second collective solve per slice.
+     *  Turning the split off composes kick and transport to first order instead:
+     *  ``K(ds) M(ds)`` forward and ``M(ds) K(ds)`` backward.
      *  Zero-length elements and runs without collective effects apply ``M`` alone, since a
      *  kick over zero length leaves the momenta unchanged. Typically, thin elements are
      *  embedded in drift elements, which experience the collective effect kicks.
@@ -149,9 +151,13 @@ namespace impactx
             // zero-length elements receive no kick: it would leave the momenta unchanged
             bool const kick = collective_effects && slice_ds != amrex::ParticleReal(0);
 
-            // Strang-split the transport ``M`` around the kick ``K`` wherever
-            // the element can be subdivided into the two half-maps
-            bool const split = kick && strang_split && elements::can_slice(element_variant);
+            // second-order, time-symmetric Strang split of the kick ``K`` and transport ``M``
+            bool const strang = kick && strang_split;
+
+            // which of the two is halved: an element that can be subdivided puts the
+            // transport outside (MKM), any other one halves the kick instead (KMK)
+            bool const split_transport = strang && elements::can_slice(element_variant);
+            bool const split_kick = strang && !split_transport;
 
             // sub-steps for space charge within the element
             for (int s = 0; s < nslice; ++s)
@@ -171,7 +177,7 @@ namespace impactx
                     call_hook("before_slice");
                 }
 
-                if (split)
+                if (split_transport)
                 {
                     // M(ds/2) K(ds) M(ds/2): the doubled slice count halves each transport
                     elements::ScopedNslice const half_slices(element_variant, 2 * nslice);
@@ -179,10 +185,18 @@ namespace impactx
                     collective_kicks(element_variant, slice_ds);
                     element_push(element_variant, step, period);
                 }
+                else if (split_kick)
+                {
+                    // K(ds/2) M(ds) K(ds/2): the kick is linear in the slice length, so
+                    // halving it needs no subdivision of the element
+                    amrex::ParticleReal const half_ds = amrex::ParticleReal(0.5) * slice_ds;
+                    collective_kicks(element_variant, half_ds);
+                    element_push(element_variant, step, period);
+                    collective_kicks(element_variant, half_ds);
+                }
                 else if (kick)
                 {
-                    // finite length, but the element cannot be subdivided:
-                    // first-order composition
+                    // the split is turned off: first-order composition
                     if (forward)
                     {
                         collective_kicks(element_variant, slice_ds);

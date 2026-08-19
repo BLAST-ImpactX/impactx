@@ -137,8 +137,8 @@ def test_programmable_receives_collective_kick():
     """A Programmable element with a finite ``ds`` must receive the collective kick.
 
     A Programmable element carries its own ``ds`` and ``nslice`` instead of deriving from
-    the ``Thick`` mixin. It is therefore not eligible for the Strang split, but it is
-    eligible for the kick itself: it must not be tracked as pure optics.
+    the ``Thick`` mixin, so it is the halved kick that Strang-splits it. It must receive
+    that kick: it must not be tracked as pure optics.
     """
     prog_sc = _run(programmable=True, space_charge=True)
     prog_no_sc = _run(programmable=True, space_charge=False)
@@ -160,8 +160,8 @@ def test_programmable_transports_like_an_equivalent_drift():
     A Programmable element cannot be subdivided by overriding its slice count. Its push is a
     Python callback that reads ``ds`` and ``nslice`` from the user's own object, while the
     lattice holds a copy, so the override is invisible to it and each half-map would transport
-    a full slice. It therefore uses the first-order composition, which agrees with the
-    Strang-split Drift only in the converged limit.
+    a full slice. It is composed as ``K(ds/2) M(ds) K(ds/2)`` instead, which is second order
+    like the Drift's split and differs from it only in the leading error coefficient.
     """
     # without collective effects both take the identical, unsplit path
     drift = _run(programmable=False, space_charge=False)
@@ -171,14 +171,14 @@ def test_programmable_transports_like_an_equivalent_drift():
             f"{key}: Drift={drift[key]:.8e} vs Programmable={prog[key]:.8e}"
         )
 
-    # with space charge the two integrators differ at O(1/nslice), but must converge to the
-    # same physics. A double-length transport would not shrink with nslice.
+    # with space charge the two integrators differ at O(1/nslice^2), but must converge to
+    # the same physics. A double-length transport would not shrink with nslice.
     coarse = _relative_difference(NSLICE)
     fine = _relative_difference(4 * NSLICE)
     assert fine < coarse, (
         f"not converging: {coarse:.4%} at nslice={NSLICE} -> {fine:.4%}"
     )
-    assert fine < 0.02, (
+    assert fine < 1.0e-5, (
         f"Drift and Programmable differ by {fine:.4%} at nslice={4 * NSLICE}"
     )
 

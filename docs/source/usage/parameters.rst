@@ -2277,10 +2277,10 @@ Collective Effects
     Per slice, this applies ``M(ds/2) K(ds) M(ds/2)``: half of the slice transport ``M``, the collective kick ``K`` at the slice midpoint, then the other half.
     The collective solve still runs once per slice, so the second order comes at the cost of the first-order composition and far fewer slices are needed for the same accuracy.
 
+    Elements that cannot be subdivided (``Programmable``, ``LinearMap`` and ``SpinMap``) halve the kick instead, ``K(ds/2) M(ds) K(ds/2)``, which needs two collective solves per slice.
+
     Setting this to ``false`` composes kick and transport to first order, ``K(ds) M(ds)``, as most other beam dynamics codes do.
     This is useful to compare against those codes and to study the convergence with ``nslice``.
-
-    Elements that cannot be subdivided (``Programmable``, ``LinearMap`` and ``SpinMap``) always use the first-order composition.
 
 .. _running-cpp-parameters-collective-spacecharge:
 

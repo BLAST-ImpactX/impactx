@@ -8,7 +8,7 @@ if [ -z ${proj-} ]; then echo "WARNING: The 'proj' variable is not yet set in yo
 # these module versions are current and compatible as of Cray Programming Environment 24.07 (module cpe)
 
 # required dependencies
-module load gcc-native/13.2  # default gcc-native/14 breaks pybind11 builds with NVCC 12.9.41
+module load gcc-native/13.2  # default gcc-native/14 breaks pybind11 builds with NVCC 13.2.78
 module load cmake/3.30.2
 
 # optional: for the synmadx MAD-X lattice parser

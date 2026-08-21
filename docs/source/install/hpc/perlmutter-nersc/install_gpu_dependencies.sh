@@ -120,8 +120,8 @@ python3 -m pip install --upgrade matplotlib
 python3 -m pip install --upgrade yt
 # install or update impactx dependencies
 python3 -m pip install --upgrade -r $HOME/src/impactx/requirements.txt
-python3 -m pip install --upgrade cupy-cuda12x  # CUDA 12 compatible wheel
-python3 -m pip install --upgrade torch  # CUDA 12 compatible wheel
+python3 -m pip install --upgrade cupy-cuda13x  # CUDA 13 compatible wheel
+python3 -m pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu132  # CUDA 13.2 compatible wheel
 
 
 # remove build temporary directory

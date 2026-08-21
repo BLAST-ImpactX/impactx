@@ -39,6 +39,10 @@ mkdir -p ${SW_DIR}
 python3 -m pip uninstall -qq -y impactx
 python3 -m pip uninstall -qqq -y mpi4py 2>/dev/null || true
 
+# clean out caches, e.g., depending on old system modules
+python3 -m pip cache purge || true
+rm -rf ${HOME}/.cupy/kernel_cache ${HOME}/.nv/ComputeCache ${HOME}/.cache/numba ${HOME}/.triton
+
 
 # General extra dependencies ##################################################
 #
@@ -98,7 +102,6 @@ rm -rf ${build_dir}/adios2-pm-gpu-build
 #
 python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade virtualenv
-python3 -m pip cache purge
 rm -rf ${SW_DIR}/venvs/impactx
 python3 -m venv ${SW_DIR}/venvs/impactx
 source ${SW_DIR}/venvs/impactx/bin/activate

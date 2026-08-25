@@ -211,8 +211,9 @@ jobs:
         IS_CODESPEED_CPU_SIMULATION: 1
         # Force uniform glibc CPU dispatch so malloc/memcpy behave identically across Intel/AMD runner CPUs
         # Ref: https://codspeed.io/blog/why-glibc-faster-github-actions
-        # Note that we keep AVX2, which is a subset of -march=x86-64-v3, and present on all GH Ubuntu runners
-        GLIBC_TUNABLES: glibc.cpu.hwcaps=-AVX_Fast_Unaligned_Load,-ERMS,-Prefer_FSRM
+        # Note that we keep AVX2, which is a subset of -march=x86-64-v3, and present on all GH Ubuntu runners.
+        # Adding instead skip for AVX512 to guard against newer runners.
+        GLIBC_TUNABLES: glibc.cpu.hwcaps=-AVX512F,-AVX512VL,-AVX512BW,-AVX512DQ,-AVX_Fast_Unaligned_Load,-ERMS,-Prefer_FSRM
       with:
         mode: simulation
         # v5 enabled cycle estimation by default, which re-weights the simulated

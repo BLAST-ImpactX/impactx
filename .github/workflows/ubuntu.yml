@@ -130,6 +130,7 @@ jobs:
       run: |
         cat /proc/cpuinfo
         lscpu
+        grep -q '\bavx2\b' /proc/cpuinfo || { echo "runner lacks AVX2"; exit 1; }
 
     - name: Free More Disk Space
       uses: ax3l/free-disk-space@main
@@ -210,7 +211,8 @@ jobs:
         IS_CODESPEED_CPU_SIMULATION: 1
         # Force uniform glibc CPU dispatch so malloc/memcpy behave identically across Intel/AMD runner CPUs
         # Ref: https://codspeed.io/blog/why-glibc-faster-github-actions
-        GLIBC_TUNABLES: glibc.cpu.hwcaps=-AVX2,-AVX_Fast_Unaligned_Load,-ERMS,-Prefer_FSRM
+        # Note that we keep AVX2, which is a subset of -march=x86-64-v3, and present on all GH Ubuntu runners
+        GLIBC_TUNABLES: glibc.cpu.hwcaps=-AVX_Fast_Unaligned_Load,-ERMS,-Prefer_FSRM
       with:
         mode: simulation
         # v5 enabled cycle estimation by default, which re-weights the simulated

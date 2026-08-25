@@ -229,7 +229,7 @@ namespace impactx::elements
                    amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask2);
                    {
                        T_Real const pzf = sqrt(powi<2>(pperp)-powi<2>(pxout));
-                       T_Real const theta = m_slice_phi + asin(px/pperp) - asin(pxout/pperp);
+                       T_Real const theta = m_slice_phi + amrex::Math::asin(px/pperp) - amrex::Math::asin(pxout/pperp);
 
                        // update position coordinates
                        x = -m_rc + rho*m_cos_phi + m_rc*(pzf + px*m_sin_phi - pzi*m_cos_phi);

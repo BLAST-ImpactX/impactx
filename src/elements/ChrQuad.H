@@ -178,19 +178,19 @@ namespace impactx::elements
                 bool const focusing = m_g > 0_prt;
                 // raw off-diagonal trig: oscillatory (sin) for the focusing plane,
                 // hyperbolic (sinh) for the defocusing plane (delta1 > 0 always).
-                T_Real const sx = focusing ? sin(omega  * m_slice_ds) : sinh(omega * m_slice_ds);
-                T_Real const sy = focusing ? sinh(omega * m_slice_ds) : sin(omega  * m_slice_ds);
+                T_Real const sx = focusing ? amrex::Math::sin(omega  * m_slice_ds) : amrex::Math::sinh(omega * m_slice_ds);
+                T_Real const sy = focusing ? amrex::Math::sinh(omega * m_slice_ds) : amrex::Math::sin(omega  * m_slice_ds);
                 // sign on the px,py kick: -1 (x focusing) / +1 (x defocusing)
                 T_Real const ax = focusing ? -1_prt : 1_prt;
 
                 // per-particle 2x2 transfer-map blocks. omega is chromatic (it depends
                 // on delta1), so unlike our linear Quad these cannot be cached in compute_constants.
                 T_Real const w = omega * delta1;
-                T_Real const R11 = focusing ? cos(omega * m_slice_ds) : cosh(omega * m_slice_ds);
+                T_Real const R11 = focusing ? amrex::Math::cos(omega * m_slice_ds) : amrex::Math::cosh(omega * m_slice_ds);
                 T_Real const R12 = sx / w;
                 T_Real const R21 = ax * w * sx;
                 T_Real const R22 = R11;
-                T_Real const R33 = focusing ? cosh(omega * m_slice_ds) : cos(omega * m_slice_ds);
+                T_Real const R33 = focusing ? amrex::Math::cosh(omega * m_slice_ds) : amrex::Math::cos(omega * m_slice_ds);
                 T_Real const R34 = sy / w;
                 T_Real const R43 = -ax * w * sy;
                 T_Real const R44 = R33;
@@ -212,10 +212,10 @@ namespace impactx::elements
                 T_Real const term = pt + delta / m_beta;
                 T_Real const t0 = tout - term * m_slice_ds / delta1;
 
-                T_Real const term1 = -(powi<2>(p2) + powi<2>(q2) * powi<2>(w)) * sinh(2_prt * m_slice_ds * omega);
-                T_Real const term2 = -(powi<2>(p1) - powi<2>(q1) * powi<2>(w)) * sin(2_prt  * m_slice_ds * omega);
-                T_Real const term3 = -2_prt * q2 * p2 * w * cosh(2_prt * m_slice_ds * omega);
-                T_Real const term4 = -2_prt * q1 * p1 * w * cos(2_prt  * m_slice_ds * omega);
+                T_Real const term1 = -(powi<2>(p2) + powi<2>(q2) * powi<2>(w)) * amrex::Math::sinh(2_prt * m_slice_ds * omega);
+                T_Real const term2 = -(powi<2>(p1) - powi<2>(q1) * powi<2>(w)) * amrex::Math::sin(2_prt  * m_slice_ds * omega);
+                T_Real const term3 = -2_prt * q2 * p2 * w * amrex::Math::cosh(2_prt * m_slice_ds * omega);
+                T_Real const term4 = -2_prt * q1 * p1 * w * amrex::Math::cos(2_prt  * m_slice_ds * omega);
                 T_Real const term5 =  2_prt * omega * (
                     q1 * p1 * delta1 + q2 * p2 * delta1
                     -(powi<2>(p1) + powi<2>(p2)) * m_slice_ds
@@ -337,8 +337,8 @@ namespace impactx::elements
 
             // compute trigonometric quantities
             auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega_ds);
-            T_Real const sinh_omega_ds = sinh(omega_ds);
-            T_Real const cosh_omega_ds = cosh(omega_ds);
+            T_Real const sinh_omega_ds = amrex::Math::sinh(omega_ds);
+            T_Real const cosh_omega_ds = amrex::Math::cosh(omega_ds);
 
             // The focusing/defocusing/drift cases differ only by which plane is
             // oscillatory vs. hyperbolic and by an overall sign. omega is real

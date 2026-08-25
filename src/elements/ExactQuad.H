@@ -231,10 +231,10 @@ namespace impactx::elements
             T_Real tout = t;
             T_Real ptout = pt;
 
-            amrex::ParticleReal const sin_omega_ds = sin(m_omega*tau);
-            amrex::ParticleReal const cos_omega_ds = cos(m_omega*tau);
-            amrex::ParticleReal const sinh_omega_ds = sinh(m_omega*tau);
-            amrex::ParticleReal const cosh_omega_ds = cosh(m_omega*tau);
+            amrex::ParticleReal const sin_omega_ds = amrex::Math::sin(m_omega*tau);
+            amrex::ParticleReal const cos_omega_ds = amrex::Math::cos(m_omega*tau);
+            amrex::ParticleReal const sinh_omega_ds = amrex::Math::sinh(m_omega*tau);
+            amrex::ParticleReal const cosh_omega_ds = amrex::Math::cosh(m_omega*tau);
             amrex::ParticleReal const slice_bg = tau / m_betgam2;
 
             if (m_g > 0.0_prt)

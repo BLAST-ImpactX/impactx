@@ -183,10 +183,13 @@ set(ImpactX_ablastr_branch "26.08"
     "Repository branch for ImpactX_ablastr_repo if(ImpactX_ablastr_internal)")
 
 # AMReX is transitively pulled through ABLASTR
-set(ImpactX_amrex_repo "https://github.com/AMReX-Codes/amrex.git"
+# TODO: back to AMReX-Codes/amrex once the SIMD transcendentals land there.
+#       https://github.com/AMReX-Codes/amrex/pull/5644 adds the amrex::Math
+#       overloads the vectorized elements call.
+set(ImpactX_amrex_repo "https://github.com/ax3l/amrex.git"
     CACHE STRING
     "Repository URI to pull and build AMReX from if(ImpactX_amrex_internal)")
-set(ImpactX_amrex_branch "26.08"
+set(ImpactX_amrex_branch "topic-simd-vecmath"
     CACHE STRING
     "Repository branch for ImpactX_amrex_repo if(ImpactX_amrex_internal)")
 

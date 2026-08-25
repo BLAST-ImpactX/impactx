@@ -175,7 +175,7 @@ namespace impactx::elements
                 // compute focusing constant (1/m) and rotation angle (in rad)
                 T_Real const theta_ialpha = m_acc == 0_prt
                     ? m_slice_ds / pzi_tot
-                    : log(numer / denom) / m_ez;
+                    : amrex::Math::log(numer / denom) / m_ez;
                 T_Real const theta = m_alpha * theta_ialpha;
                 auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
                 T_Real const sin_theta_ialpha = m_alpha == 0_prt
@@ -355,7 +355,7 @@ namespace impactx::elements
                 // compute focusing constant (1/m) and rotation angle (in rad)
                 T_Real const theta_over_alpha = (m_ez == 0_prt) ?
                     m_slice_ds / pzi_tot :
-                    log(numer / denom) / m_ez;
+                    amrex::Math::log(numer / denom) / m_ez;
                 T_Real const theta = m_alpha * theta_over_alpha;
                 auto const [sin2Gth, cos2Gth] = amrex::Math::sincos(2_prt * refpart.gyromagnetic_anomaly * theta);
 

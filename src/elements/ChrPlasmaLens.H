@@ -188,10 +188,10 @@ namespace impactx::elements
                 T_Real const t0 = t - term*m_slice_ds/delta1;
 
                 T_Real const w = omega*delta1;
-                T_Real const term1 = -(powi<2>(p2) - powi<2>(q2) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
-                T_Real const term2 = -(powi<2>(p1) - powi<2>(q1) * powi<2>(w)) * sin(2_prt*m_slice_ds*omega);
-                T_Real const term3 = -2_prt * q2 * p2 * w * cos(2_prt*m_slice_ds*omega);
-                T_Real const term4 = -2_prt * q1 * p1 * w * cos(2_prt*m_slice_ds*omega);
+                T_Real const term1 = -(powi<2>(p2) - powi<2>(q2) * powi<2>(w)) * amrex::Math::sin(2_prt*m_slice_ds*omega);
+                T_Real const term2 = -(powi<2>(p1) - powi<2>(q1) * powi<2>(w)) * amrex::Math::sin(2_prt*m_slice_ds*omega);
+                T_Real const term3 = -2_prt * q2 * p2 * w * amrex::Math::cos(2_prt*m_slice_ds*omega);
+                T_Real const term4 = -2_prt * q1 * p1 * w * amrex::Math::cos(2_prt*m_slice_ds*omega);
                 T_Real const term5 = 2_prt * omega * (q1*p1*delta1 + q2*p2*delta1
                     -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
                 tout = t0 + (-1_prt+m_beta*pt)
@@ -201,8 +201,8 @@ namespace impactx::elements
             }
             else if (m_g < 0_prt)
             {
-                auto const sinh_ods = sinh(omega*m_slice_ds);
-                auto const cosh_ods = cosh(omega*m_slice_ds);
+                auto const sinh_ods = amrex::Math::sinh(omega*m_slice_ds);
+                auto const cosh_ods = amrex::Math::cosh(omega*m_slice_ds);
 
                 // advance transverse position and momentum (defocusing)
                 xout = cosh_ods * x + sinh_ods / (omega * delta1) * px;
@@ -216,10 +216,10 @@ namespace impactx::elements
                 T_Real const t0 = t - term*m_slice_ds/delta1;
 
                 T_Real const w = omega*delta1;
-                T_Real const term1 = -(powi<2>(p2) + powi<2>(q2) * powi<2>(w)) * sinh(2_prt*m_slice_ds*omega);
-                T_Real const term2 = -(powi<2>(p1) + powi<2>(q1) * powi<2>(w)) * sinh(2_prt*m_slice_ds*omega);
-                T_Real const term3 = -2_prt * q2 * p2 * w * cosh(2_prt*m_slice_ds*omega);
-                T_Real const term4 = -2_prt * q1 * p1 * w * cosh(2_prt*m_slice_ds*omega);
+                T_Real const term1 = -(powi<2>(p2) + powi<2>(q2) * powi<2>(w)) * amrex::Math::sinh(2_prt*m_slice_ds*omega);
+                T_Real const term2 = -(powi<2>(p1) + powi<2>(q1) * powi<2>(w)) * amrex::Math::sinh(2_prt*m_slice_ds*omega);
+                T_Real const term3 = -2_prt * q2 * p2 * w * amrex::Math::cosh(2_prt*m_slice_ds*omega);
+                T_Real const term4 = -2_prt * q1 * p1 * w * amrex::Math::cosh(2_prt*m_slice_ds*omega);
                 T_Real const term5 = 2_prt * omega * (q1*p1*delta1 + q2*p2*delta1
                     -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
                 tout = t0 + (-1_prt+m_beta*pt)
@@ -344,8 +344,8 @@ namespace impactx::elements
 
             // compute trigonometric quantities
             auto const [sin_omega_ds, cos_omega_ds] = amrex::Math::sincos(omega*m_slice_ds);
-            T_Real const sinh_omega_ds = sinh(omega*m_slice_ds);
-            T_Real const cosh_omega_ds = cosh(omega*m_slice_ds);
+            T_Real const sinh_omega_ds = amrex::Math::sinh(omega*m_slice_ds);
+            T_Real const cosh_omega_ds = amrex::Math::cosh(omega*m_slice_ds);
 
             if (m_g > 0.0_prt)
             {

@@ -24,10 +24,11 @@ sudo apt-get install -y \
     wget
 
 # vir-simd
-wget https://github.com/mattkretz/vir-simd/archive/refs/tags/v0.4.4.tar.gz
-tar -xvf v0.4.4.tar.gz
-rm -rf v0.4.4.tar.gz
-cmake -S vir-simd-0.4.4 -B vir-simd-build
+# TODO: back to the release tarball once vir/simd_vecmath.h is in one. It is
+#       what makes the SIMD transcendentals call a vector math library instead
+#       of evaluating them one lane at a time.
+git clone --depth 1 --branch topic-vecmath https://github.com/ax3l/vir-simd.git vir-simd-src
+cmake -S vir-simd-src -B vir-simd-build
 sudo cmake --build vir-simd-build --target install
 
 python3 -m pip install -U pip

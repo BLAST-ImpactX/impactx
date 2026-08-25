@@ -157,7 +157,7 @@ namespace impactx::elements
             // pyout = py;
 
             // tout = t;
-            ptout = pt - m_V * cos(m_k * t + m_phi) + m_V_cos_phi;
+            ptout = pt - m_V * amrex::Math::cos(m_k * t + m_phi) + m_V_cos_phi;
 
             // assign updated values
             // x = xout;
@@ -281,7 +281,7 @@ namespace impactx::elements
             // Integrated electric field normalized by q/mc^2 (half-step):
             T_Real const Ex = 0.0_prt;
             T_Real const Ey = 0.0_prt;
-            T_Real const Ez = 0.5_prt * m_V * cos(m_k * t + m_phi);
+            T_Real const Ez = 0.5_prt * m_V * amrex::Math::cos(m_k * t + m_phi);
 
             // Quantities required to evaluate the full Thomas-BMT precession vector (before phase space kick).
             amrex::ParticleReal beta = m_bgi / gami;

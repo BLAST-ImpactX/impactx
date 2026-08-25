@@ -6,7 +6,7 @@ Dependencies
 ImpactX depends on the following popular third party software.
 Please see installation instructions below.
 
-- a mature `C++20 <https://en.wikipedia.org/wiki/C%2B%2B20>`__ compiler, e.g., GCC 12+, Clang 14, NVCC 12.4, MSVC 19.39 or newer
+- a mature `C++20 <https://en.wikipedia.org/wiki/C%2B%2B20>`__ compiler, e.g., GCC 12+, Clang 14, NVCC 12.4, MSVC 19.44 or newer
 - `CMake 3.24.0+ <https://cmake.org>`__
 - `Git 2.18+ <https://git-scm.com>`__
 - `AMReX <https://amrex-codes.github.io>`__: we automatically download and compile a copy
@@ -20,7 +20,7 @@ Optional dependencies include:
   - `OpenMP 3.1+ <https://www.openmp.org>`__: for threaded CPU execution or
   - `CUDA Toolkit 12.2+ <https://developer.nvidia.com/cuda-downloads>`__: for Nvidia GPU support (see `matching host-compilers <https://gist.github.com/ax3l/9489132>`_) or
   - `ROCm 6.0+ <https://gpuopen.com/learn/amd-lab-notes/amd-lab-notes-rocm-installation-readme/>`__: for AMD GPU support or
-  - `oneAPI <https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html>`__: for Intel GPU support
+  - `oneAPI 2025.2+ <https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html>`__: for Intel GPU support
 - `vir::stdx::simd <https://github.com/mattkretz/vir-simd>`__: for SIMD-accelerated CPU acceleration, can be combined with OpenMP
 - `Boost 1.70.0+ <https://www.boost.org>`__: header-only libraries, for the standalone MAD-X lattice parser (``ImpactX_SYNMADX``)
 - `FFTW3 <http://www.fftw.org>`__: for algorithms such as IGF space charge solver or CSR when running on CPU or with SYCL

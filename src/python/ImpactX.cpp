@@ -9,6 +9,7 @@
 #include <diagnostics/FilePrefix.H>
 #include <initialization/Algorithms.H>
 #include <initialization/InitDistribution.H>
+#include <initialization/InitMeshRefinement.H>
 #include <particles/ChargeDeposition.H>
 #include <particles/CovarianceMatrix.H>
 #include <particles/transformation/CoordinateTransformation.H>
@@ -246,6 +247,56 @@ void init_ImpactX (py::module& m)
                   pp_geometry.add("dynamic_size", dynamic_size);
               },
               "Use dynamic (``true``) resizing of the field mesh or static sizing (``false``)."
+        )
+
+        .def_property("prob_relative_max",
+              [](ImpactX & /* ix */) {
+                  amrex::ParmParse const pp_geometry("geometry");
+                  amrex::Real prob_relative_max = 0.0;
+                  if (pp_geometry.query("prob_relative_max", prob_relative_max)) {
+                      return prob_relative_max;
+                  }
+                  // not set yet: report the default that tracking would use
+                  std::vector<amrex::Real> frac;
+                  pp_geometry.getarr("prob_relative", frac);
+                  std::string poisson_solver = "fft";
+                  amrex::ParmParse const pp_algo("algo");
+                  pp_algo.query("poisson_solver", poisson_solver);
+                  return (poisson_solver == "fft") ? frac.at(0) * amrex::Real(1.1) : frac.at(0);
+              },
+              [](ImpactX & /* ix */, amrex::Real const prob_relative_max) {
+                  amrex::ParmParse pp_geometry("geometry");
+                  pp_geometry.add("prob_relative_max", prob_relative_max);
+              },
+              "The largest the field mesh may be, as a multiple of the maximum physical extent of "
+              "beam particles, while ``prob_relative`` is the smallest. Leaving room between the "
+              "two lets the mesh be chosen from a fixed set of sizes, so that a beam of nearly the "
+              "same size lands on exactly the same mesh and the space-charge solver can reuse its "
+              "Green's function. Setting it equal to ``prob_relative[0]`` fits the beam exactly. "
+              "Defaults to 10% above ``prob_relative[0]`` for the FFT solver, and to "
+              "``prob_relative[0]`` otherwise.\n\n"
+              "Because the mesh comes back exactly, the reused Green's function is still the right "
+              "one for it and the result is bit-identical to rebuilding: the price is resolution, "
+              "up to one allowed length of extra padding, rather than accuracy. The solver also "
+              "accepts ``ablastr.igf_cache_tolerance``, which reuses a Green's function across "
+              "meshes that merely nearly agree and costs an error of that order. Reach for this "
+              "parameter first; ImpactX chooses its own mesh, so it does not need the tolerance."
+        )
+
+        .def_property("igf_cache_max_entries",
+              [](ImpactX & /* ix */) {
+                  amrex::ParmParse pp_ablastr("ablastr");
+                  int entries = 8;  // ABLASTR's default
+                  pp_ablastr.query("igf_cache_max_entries", entries);
+                  return entries;
+              },
+              [](ImpactX & /* ix */, int const entries) {
+                  amrex::ParmParse pp_ablastr("ablastr");
+                  pp_ablastr.add("igf_cache_max_entries", entries);
+              },
+              "Number of Green's functions the FFT space-charge solver keeps, evicting the least "
+              "recently used one beyond that. ``0`` keeps only the one in use, which is still "
+              "reused for as long as the mesh does not change."
         )
 
         .def_property("particle_shape",

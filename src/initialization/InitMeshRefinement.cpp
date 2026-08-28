@@ -10,6 +10,7 @@
 #include "ImpactX.H"
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
+#include "initialization/InitMeshRefinement.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/Waterbag.H"
 
@@ -17,9 +18,11 @@
 
 #include <AMReX.H>
 #include <AMReX_BLProfiler.H>
+#include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Utility.H>
 
+#include <cmath>
 #include <limits>
 #include <stdexcept>
 #include <string>
@@ -28,55 +31,6 @@
 
 namespace impactx
 {
-namespace detail
-{
-    amrex::Vector<amrex::Real>
-    read_mr_prob_relative ()
-    {
-        amrex::ParmParse pp_algo("algo");
-        amrex::ParmParse pp_amr("amr");
-        amrex::ParmParse pp_geometry("geometry");
-
-        int max_level = 0;
-        pp_amr.queryWithParser("max_level", max_level);
-
-        std::string poisson_solver = "fft";
-        pp_algo.queryAdd("poisson_solver", poisson_solver);
-
-        // The box is expanded beyond the min and max of the particle beam.
-        amrex::Vector<amrex::Real> prob_relative(max_level + 1, 1.0);
-        prob_relative[0] = 3.0;  // top/bottom pad the beam on the lowest level by default by its width
-        pp_geometry.queryarr("prob_relative", prob_relative);
-
-        if (prob_relative[0] < 3.0 && poisson_solver == "multigrid")
-            ablastr::warn_manager::WMRecordWarning(
-                    "ImpactX::read_mr_prob_relative",
-                    "Dynamic resizing of the mesh uses a geometry.prob_relative "
-                    "padding of less than 3 for level 0. This might result in boundary "
-                    "artifacts for space charge calculation. "
-                    "There is no minimum good value for this parameter, consider "
-                    "doing a convergence test.",
-                    ablastr::warn_manager::WarnPriority::high
-            );
-
-        if (prob_relative[0] < 1.0)
-            throw std::runtime_error("geometry.prob_relative must be >= 1.0 (the beam size) on the coarsest level");
-
-        // check that prob_relative[0] > prob_relative[1] > prob_relative[2] ...
-        amrex::Real last_lev_rel = std::numeric_limits<amrex::Real>::max();
-        for (int lev = 0; lev <= max_level; ++lev) {
-            amrex::Real const prob_relative_lvl = prob_relative[lev];
-            if (prob_relative_lvl <= 0.0)
-                throw std::runtime_error("geometry.prob_relative must be strictly positive for all levels");
-            if (prob_relative_lvl > last_lev_rel)
-                throw std::runtime_error("geometry.prob_relative must be descending over refinement levels");
-
-            last_lev_rel = prob_relative_lvl;
-        }
-
-        return prob_relative;
-    }
-}
 
     void ImpactX::ResizeMesh ()
     {
@@ -112,22 +66,69 @@ namespace detail
         if (dynamic_size)
         {
             // The coarsest level is expanded (or reduced) relative the min and max of particles.
-            auto const prob_relative = detail::read_mr_prob_relative();
+            auto const prob_relative = initialization::read_mr_prob_relative();
 
             amrex::Real const frac = prob_relative[0];
             amrex::RealVect const beam_min(x_min, y_min, z_min);
             amrex::RealVect const beam_max(x_max, y_max, z_max);
             amrex::RealVect const beam_width(beam_max - beam_min);
+            amrex::RealVect const beam_center = (beam_min + beam_max) * 0.5_rt;
 
-            amrex::RealVect const beam_padding = beam_width * (frac - 1_rt) * 0.5_rt;
-            //                           added to the beam extent --^         ^-- box half above/below the beam
+            auto const quant = initialization::read_grid_quantization();
+
+            amrex::RealVect box_lo;
+            amrex::RealVect box_hi;
+
+            if (!quant.enabled)
+            {
+                amrex::RealVect const beam_padding = beam_width * (frac - 1_rt) * 0.5_rt;
+                //                       added to the beam extent --^         ^-- box half above/below the beam
+                box_lo = beam_min - beam_padding;
+                box_hi = beam_max + beam_padding;
+            }
+            else
+            {
+                amrex::RealVect box_width = beam_width * frac;
+
+                // Round the box up to an allowed length, so that a beam of nearly the
+                // same size lands on exactly the same grid and the space-charge solver
+                // can reuse its Green's function. geometry.prob_relative stays the
+                // minimum padding and geometry.prob_relative_max bounds the result.
+                // The stretch the space-charge solver applies longitudinally. It reaches
+                // the solver as a velocity and is turned back into a stretch there, which
+                // for an ultrarelativistic beam loses about eps*gamma^2 of precision in
+                // the round trip: 1 - 1/gamma^2 cancels away the leading digits. Deriving
+                // it here the same way, rather than from gamma directly, makes that loss
+                // identical on both sides so it cancels, and the mesh the solver sees is
+                // the one we chose.
+                amrex::ParticleReal const pt_ref =
+                    amr_data->track_particles.m_particle_container->GetRefParticle().pt;
+                amrex::ParticleReal const beta_s =
+                    std::sqrt(1.0_prt - 1.0_prt / amrex::Math::powi<2>(pt_ref));
+                auto const beta_z = static_cast<amrex::Real>(beta_s);
+                amrex::Real const gamma_z = 1.0_rt / std::sqrt(1.0_rt - beta_z * beta_z);
+
+                for (int d = 0; d < AMREX_SPACEDIM; ++d)
+                {
+                    // The solver sees the longitudinal direction stretched, so that is the
+                    // length which has to be an allowed one. A change of the reference
+                    // energy then resizes the mesh by itself, with no separate tolerance.
+                    amrex::Real const boost = (d == 2) ? gamma_z : 1.0_rt;
+                    box_width[d] = initialization::smallest_fit_length(
+                        box_width[d] * boost, quant.fit_lengths_per_doubling) / boost;
+                }
+
+                amrex::RealVect const box_half = box_width * 0.5_rt;
+                box_lo = beam_center - box_half;
+                box_hi = beam_center + box_half;
+            }
 
             // In AMReX, all levels have the same problem domain, that of the
             // coarsest level, even if only partly covered.
             for (int lev = 0; lev <= amr_data->finestLevel(); ++lev)
             {
-                rb[lev].setLo(beam_min - beam_padding);
-                rb[lev].setHi(beam_max + beam_padding);
+                rb[lev].setLo(box_lo);
+                rb[lev].setHi(box_hi);
             }
         }
         else

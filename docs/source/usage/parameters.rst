@@ -2477,6 +2477,74 @@ See there ``nslice`` option on lattice elements for slicing.
     For instance, ``1.2`` means the mesh will span 10% above and 10% below the beam;
     ``1.0`` means the beam is exactly covered with the mesh.
 
+.. pp:param:: geometry.prob_relative_max
+    :type: ``float``
+    :unit: dimensionless
+    :optional:
+    :default: 10% above ``prob_relative[0]`` for :pp:param:`algo.poisson_solver` ``fft``, ``prob_relative[0]`` otherwise
+
+    The largest the field mesh may be, as a multiple of the maximum physical extent of
+    beam particles, while :pp:param:`geometry.prob_relative` is the smallest.
+    Setting it equal to ``prob_relative[0]`` fits the beam exactly, which is the behavior
+    when this is not used.
+
+    Leaving room between the two matters for the FFT solver. Fitting the mesh exactly
+    means it changes with every fluctuation of the beam extent, and the solver then has
+    to rebuild its Green's function on every slice step. Given a band, the mesh is
+    instead chosen from a fixed set of lengths, so a beam of nearly the same size lands
+    on exactly the same mesh and the solver reuses the Green's function it already has.
+    On a constant-focusing channel this takes the number of Green's functions built from
+    one per slice step to a handful.
+
+    The allowed lengths are
+
+    .. math::
+
+        L_k = 2^{k/m}\ \mathrm{m}, \qquad
+        m = \left\lceil \frac{1}{\log_2 r} \right\rceil, \qquad
+        r = \frac{\texttt{prob\_relative\_max}}{\texttt{prob\_relative[0]}}
+
+    where :math:`L_k` is the mesh edge length along one axis, :math:`k` is a whole number
+    chosen so that :math:`L_k` is the smallest such length still covering the padded
+    beam, :math:`m` is how many allowed lengths there are per factor of two in size, and
+    :math:`r` is the width of the band. Rounding :math:`m` up guarantees the mesh never
+    exceeds ``prob_relative_max``. The default band of 10% gives :math:`m = 8`, so the
+    mesh is at most 9.1% above ``prob_relative[0]``.
+
+    A wider band reuses the Green's function more often, at the price of a mesh that can
+    be coarser than requested. There is no generally right value, so consider a
+    convergence test if in doubt. The longitudinal direction is treated in the frame the
+    solver works in, so a changing reference energy resizes the mesh on its own.
+
+    The solver offers a second, weaker way to reuse a Green's function,
+    :pp:param:`ablastr.igf_cache_tolerance`, which lets one serve a grid slightly
+    different from the one it was built for. The two are not interchangeable, and this
+    parameter is the one to reach for first:
+
+    .. list-table::
+        :header-rows: 1
+        :widths: 22 39 39
+
+        * -
+          - ``geometry.prob_relative_max``
+          - ``ablastr.igf_cache_tolerance``
+        * - changes
+          - which mesh is solved on
+          - nothing about the mesh
+        * - Green's function
+          - matches its mesh exactly
+          - built for a slightly different mesh
+        * - price
+          - resolution, up to one allowed length of extra padding
+          - an error of the order of the tolerance
+        * - reuse is
+          - bit-identical
+          - not bit-identical
+
+    ImpactX chooses its own mesh, so it can make one come back exactly and never needs
+    the tolerance. That option is open only to a caller that owns the mesh; where the
+    quantity that varies is measured rather than chosen, the tolerance is the only way.
+
 .. pp:param:: geometry.prob_lo/hi
     :link_aliases: geometry.prob_lo geometry.prob_hi
     :type: ``3 floats``
@@ -2523,6 +2591,77 @@ See there ``nslice`` option on lattice elements for slicing.
       Field boundaries for MLMG space charge calculation are located at the outer ends of the field mesh.
       For the MLMG solver, we assume `Dirichlet boundary conditions <https://en.wikipedia.org/wiki/Dirichlet_boundary_condition>`__ with zero potential (a mirror charge).
       Thus, to emulate open boundaries, consider adding enough vacuum padding to the beam.
+
+.. pp:param:: ablastr.igf_cache_max_entries
+    :type: ``integer``
+    :optional:
+    :default: ``8``
+
+    Number of Green's functions the ``fft`` solver keeps for reuse, evicting the least
+    recently used one beyond that.
+
+    The Green's function depends only on the mesh, so it can be reused whenever the mesh
+    returns to a size it has had before, which is what the padding band set by
+    :pp:param:`geometry.prob_relative_max` arranges. Keeping several is what lets a beam
+    that breathes, as in a periodic lattice, cycle through its sizes without rebuilding.
+
+    ``0`` keeps only the Green's function currently in use, which is still reused for as
+    long as the mesh does not change. Each entry costs :math:`32 n^3` bytes in single and
+    :math:`64 n^3` in double precision, which is a sizable fraction of a GPU at large
+    mesh sizes, so consider lowering this or setting
+    :pp:param:`ablastr.igf_cache_max_bytes` there.
+
+.. pp:param:: ablastr.igf_cache_max_bytes
+    :type: ``integer``
+    :unit: bytes
+    :optional:
+    :default: a quarter of the free GPU memory; unlimited on CPU
+
+    Memory budget for the Green's functions kept by the ``fft`` solver.
+    Entries are evicted, least recently used first, to stay within it.
+    ``0`` means no limit, in which case only :pp:param:`ablastr.igf_cache_max_entries`
+    bounds the cache.
+
+.. pp:param:: ablastr.igf_cache_tolerance
+    :type: ``float``
+    :unit: dimensionless
+    :optional:
+    :default: 64 times the machine epsilon of the precision in use
+
+    How closely two cell sizes must agree for one Green's function to serve both.
+    The default only absorbs round-off, so it never trades accuracy for reuse.
+
+    ImpactX does not need to raise this. Because
+    :pp:param:`geometry.prob_relative_max` makes the mesh come back exactly, a reused
+    Green's function is still the right one for the mesh it is used on. Raising this
+    instead reuses one across meshes that merely nearly agree, which costs an error of
+    the order of the tolerance, so raise it only deliberately.
+
+    It exists for callers that cannot choose their mesh, where the quantity that varies
+    is measured rather than chosen. The relativistic electrostatic solver in WarpX is
+    the example: it derives the longitudinal stretch from a velocity, and recovering it
+    costs about :math:`\epsilon\gamma^2`.
+
+.. pp:param:: ablastr.igf_rebuild_always
+    :type: ``integer``
+    :optional:
+    :default: ``0``
+
+    Set to ``1`` to rebuild the Green's function on every solve, as the ``fft`` solver
+    did before it reused them.
+    This is the reference to compare against when checking that reuse leaves results
+    unchanged, and is not otherwise useful.
+
+.. pp:param:: ablastr.igf_cache_verbose
+    :type: ``integer``
+    :optional:
+    :default: ``0``
+
+    Set to ``1`` to report, at the end of the run, how many Green's functions the ``fft``
+    solver reused, built and evicted.
+    A cache that is too small for a periodic lattice keeps evicting the entry it is about
+    to need again, which costs time without ever showing up as a wrong answer, so this is
+    worth checking when tuning :pp:param:`ablastr.igf_cache_max_entries`.
 
 Multigrid-specific numerical options:
 

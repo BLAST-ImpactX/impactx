@@ -87,6 +87,38 @@ Collective Effects & Overall Simulation Parameters
 
       Use dynamic (``True``) resizing of the field mesh or static sizing (``False``).
 
+   .. py:property:: prob_relative_max
+
+      The largest the field mesh may be, as a multiple of the maximum physical extent of
+      beam particles, while ``prob_relative`` is the smallest.
+      Setting it equal to ``prob_relative[0]`` fits the beam exactly.
+
+      Leaving room between the two lets the mesh be chosen from a fixed set of sizes, so
+      that a beam of nearly the same size lands on exactly the same mesh and the FFT
+      space-charge solver reuses the Green's function it already has instead of
+      rebuilding it on every slice step.
+
+      Because the mesh comes back exactly, the reused Green's function is still the right
+      one for it and the result is bit-identical to rebuilding. The price is paid in
+      resolution, up to one allowed length of extra padding, rather than in accuracy.
+      The solver also accepts ``ablastr.igf_cache_tolerance``, which reuses a Green's
+      function across meshes that merely nearly agree, at the price of an error of that
+      order. ImpactX does not need it, since it chooses its own mesh.
+
+      Default: 10% above ``prob_relative[0]`` for ``poisson_solver = "fft"``, and
+      ``prob_relative[0]`` otherwise.
+
+   .. py:property:: igf_cache_max_entries
+
+      Number of Green's functions the FFT space-charge solver keeps for reuse, evicting
+      the least recently used one beyond that. ``0`` keeps only the one in use, which is
+      still reused for as long as the mesh does not change.
+
+      Each entry costs ``32 * n**3`` bytes in single and ``64 * n**3`` in double
+      precision, so consider lowering this on a GPU with a large mesh.
+
+      Default: ``8``.
+
    .. py:property:: space_charge
 
       The physical model of space charge used.

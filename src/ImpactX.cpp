@@ -58,7 +58,30 @@ namespace impactx {
             amr_data.reset();
 
             if (amrex::Initialized())
+            {
+                // By default, write the AMReX tiny profiler report into the
+                // diagnostics directory (<diag.file_prefix>/performance.txt)
+                // instead of stdout. When diagnostics are disabled, keep the
+                // profiler silent (/dev/null) so that no diagnostics folder is
+                // created. A user-set tiny_profiler.output_file (input file or
+                // sim.tiny_profiler_file) always takes precedence. AMReX reads
+                // output_file lazily at Finalize, so setting it here is early enough.
+                {
+                    amrex::ParmParse pp_tiny_profiler("tiny_profiler");
+                    std::string output_file;
+                    if (!pp_tiny_profiler.query("output_file", output_file))
+                    {
+                        bool diag_enable = true;
+                        amrex::ParmParse("diag").queryAdd("enable", diag_enable);
+                        output_file = diag_enable
+                            ? diagnostics::FilePrefixPath("performance.txt")
+                            : std::string("/dev/null");
+                        pp_tiny_profiler.add("output_file", output_file);
+                    }
+                }
+
                 amrex::Finalize();
+            }
 
             // only finalize once
             m_grids_initialized = false;

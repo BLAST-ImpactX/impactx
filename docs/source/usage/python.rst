@@ -453,14 +453,19 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: memory_profiler
 
       This parameter can be used to disable tiny profiler's memory arena profiling at runtime.
-      If ```tiny_profiler`` is ``False``, this parameter has no effects.
+      If ``tiny_profiler`` is ``False``, this parameter has no effects.
       Default is ``True``.
 
    .. py:property:: tiny_profiler_file
 
-      If this parameter is empty (default), the output of tiny profiling is dumped on the default out stream of AMReX.
-      If it's not empty, it specifies the file name for the output.
-      Note that ``"/dev/null"`` is a special name that mean no output.
+      File name for the tiny profiler report.
+      If it is not set, ImpactX writes the report to ``<diag_file_prefix>/performance.txt``
+      (e.g. ``diags/performance.txt``) instead of stdout.
+      When diagnostics are disabled (:py:attr:`diagnostics` is ``False``), the profiler is turned
+      off so that no diagnostics folder is created.
+      Set this to a path to choose a specific file, to an empty string (``""``) to dump the report
+      on the default out stream of AMReX (stdout), or to ``"/dev/null"`` (a special name) to
+      disable the output.
 
    .. py:method:: evolve()
 

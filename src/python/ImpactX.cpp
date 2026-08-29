@@ -692,9 +692,12 @@ void init_ImpactX (py::module& m)
                 amrex::ParmParse pp_tiny_profiler("tiny_profiler");
                 pp_tiny_profiler.add("output_file", output_file);
             },
-            "If this parameter is empty, the output of tiny profiling is dumped on the default out stream of AMReX. "
-            "If it's not empty, it specifies the file name for the output. "
-            "Note that /dev/null is a special name that mean a null file."
+            "File name for the tiny profiler output. "
+            "If not set, ImpactX writes the report to ``<diag_file_prefix>/performance.txt`` "
+            "(e.g. ``diags/performance.txt``); when diagnostics are disabled (see ``diagnostics``) "
+            "the profiler is turned off so that no diagnostics folder is created. "
+            "Set to a path to choose a file, to an empty string to dump on the default out stream "
+            "of AMReX (stdout), or to /dev/null (a special name) to disable the output."
         )
         .def_readwrite("hook",
             &ImpactX::m_hook,

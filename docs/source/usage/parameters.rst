@@ -2838,6 +2838,20 @@ Diagnostics and output
     If this flag is enabled, the 3 eigenemittances of the 6D beam distribution are computed and written as diagnostics.
     This flag is disabled by default to reduce computational cost.
 
+.. pp:param:: tiny_profiler.output_file
+    :type: ``string``
+    :optional:
+    :default: ``<diag.file_prefix>/performance.txt``
+
+    File name for the AMReX tiny profiler report (an AMReX ``tiny_profiler.*`` parameter).
+    By default, ImpactX writes the report to ``<diag.file_prefix>/performance.txt``
+    (e.g. ``diags/performance.txt``) instead of stdout.
+    When diagnostics are disabled (:pp:param:`diag.enable` is ``false``), the profiler is turned
+    off (``/dev/null``) so that no :pp:param:`diag.file_prefix` folder is created.
+
+    Set this to a path to choose a specific file, to an empty string to dump the report on the
+    default out stream of AMReX (stdout), or to ``/dev/null`` (a special name) to disable the output.
+
 
 .. _running-cpp-parameters-cp-restart:
 

@@ -759,6 +759,67 @@ def test_clone_element_covers_all_element_types(all_elements):
     assert not failures, "elements that cannot be cloned:\n  " + "\n  ".join(failures)
 
 
+def test_clone_zero_length_thick_element(all_elements):
+    """Thick elements with ``ds=0.0`` must survive the clone as well.
+
+    ``to_dict()`` reports ``ds`` for thin and thick elements alike, so its value alone
+    cannot tell whether the constructor accepts it. Dropping ``ds`` whenever it was
+    zero left every zero-length thick element unconstructible, which broke
+    ``delete()``, ``replace_each()`` and ``replace_with_drifts()`` on such a lattice.
+    """
+    from impactx.extensions.KnownElementsList import _clone_element
+
+    lattice, _ = all_elements
+
+    tested = []
+    failures = []
+    for element in lattice:
+        type_name = type(element).__name__
+        if type_name in SKIP_ELEMENTS:
+            continue
+        constructor_params = get_constructor_params(type(element))
+        if constructor_params is None or "ds" not in constructor_params:
+            continue
+
+        element.ds = 0.0
+        tested.append(type_name)
+        try:
+            clone = _clone_element(element)
+        except Exception as e:  # noqa: BLE001 - report every offender at once
+            failures.append(f"{type_name}: {type(e).__name__}: {e}")
+            continue
+        assert type(clone) is type(element), type_name
+        assert clone.ds == 0.0, type_name
+
+    assert tested, "no thick element in the fixture"
+    assert not failures, (
+        "zero-length elements that cannot be cloned:\n  " + "\n  ".join(failures)
+    )
+
+
+def test_lattice_rebuild_with_zero_length_thick_elements():
+    """A lattice rebuild keeps zero-length thick elements intact."""
+    lattice = elements.KnownElementsList(
+        [
+            elements.Marker(name="m1"),
+            elements.Drift(ds=0.0, name="d0"),
+            elements.Quad(ds=0.0, k=1.0, name="q0"),
+            elements.Drift(ds=1.0, name="d1"),
+        ]
+    )
+
+    lattice.select(kind="Marker").delete()
+
+    assert [type(e).__name__ for e in lattice] == ["Drift", "Quad", "Drift"]
+    assert [e.name for e in lattice] == ["d0", "q0", "d1"]
+    assert [e.ds for e in lattice] == [0.0, 0.0, 1.0]
+
+    # the generated source has to keep ``ds`` as well to stay executable
+    namespace = {}
+    exec(lattice.to_py(), namespace)
+    assert [e.ds for e in namespace["get_lattice"]()] == [0.0, 0.0, 1.0]
+
+
 def test_lattice_rebuild_covers_all_element_types(all_elements):
     """The same coverage through the public API that depends on cloning."""
     lattice, _ = all_elements

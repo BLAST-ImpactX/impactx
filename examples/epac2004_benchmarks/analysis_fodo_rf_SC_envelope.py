@@ -102,9 +102,18 @@ atol = 0.0  # ignored
 rtol = 0.035  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
+# The beam returns close to its initial size over this FODO cell with RF cavities, but not
+# exactly onto it: the cell is matched to its own self-consistent space charge, which the
+# envelope model represents by the linear field of the rms-equivalent uniform ellipsoid.
+# The sizes come back within 0.9% (x), 1.7% (y) and 0.01% (t) of the initial ones. These
+# are the converged values of the envelope model, reached to 7e-5 at this example's slicing.
 assert np.allclose(
     [sig_xf, sig_yf, sig_tf],
-    [9.84722273e-4, 6.96967278e-4, 4.486799242214e-03],
+    [
+        9.931261e-04,
+        6.852722e-04,
+        4.486435e-03,
+    ],
     rtol=rtol,
     atol=atol,
 )

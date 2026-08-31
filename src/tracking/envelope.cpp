@@ -127,6 +127,58 @@ namespace impactx
         }
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR effects are not yet implemented for envelope tracking.");
 
+        // whether any collective effect is active: only then is a kick applied per slice
+        bool const collective_effects =
+            space_charge == SpaceChargeAlgo::True_2D ||
+            space_charge == SpaceChargeAlgo::True_3D;
+
+        // second-order Strang split of the collective kicks, on by default
+        //   Disabling it composes kick and transport to first order instead, which is what
+        //   most other codes do: useful to compare against them and to show convergence.
+        //   This is the same option as in particle tracking, so that both models compose
+        //   their collective kicks to the same order and stay comparable.
+        bool strang_split = true;
+        pp_algo.query("strang_split", strang_split);
+        if (verbose > 0 && collective_effects)
+        {
+            amrex::Print() << " Strang split: " << strang_split << "\n";
+        }
+
+        // the collective effect kick ``K`` of one element slice
+        auto collective_kicks = [&ref, &cm, &intensity, space_charge] (
+            amrex::ParticleReal kick_ds
+        )
+        {
+            if (space_charge == SpaceChargeAlgo::True_2D)
+            {
+                // push Covariance Matrix in 2D space charge fields
+                envelope::spacecharge::space_charge2D_push(ref, cm, intensity, kick_ds);
+            } else if (space_charge == SpaceChargeAlgo::True_3D)
+            {
+                // push Covariance Matrix in 3D space charge fields
+                envelope::spacecharge::space_charge3D_push(ref, cm, intensity, kick_ds);
+            }
+        };
+
+        // the external-field transport map ``M`` of one element slice
+        //   The Strang split around collective effects applies this twice per slice, once
+        //   per half-map, so it carries no book-keeping.
+        auto element_push = [&ref, &cm] (elements::KnownElements & element_variant)
+        {
+            std::visit([&ref, &cm](auto&& element)
+            {
+                // push reference particle in global coordinates
+                {
+                    BL_PROFILE("impactx::push::RefPart");
+                    element(ref);
+                }
+
+                // push Covariance Matrix in external fields
+                element(cm, ref);
+
+            }, element_variant);
+        };
+
         // periods through the lattice
         int num_periods = 1;
         amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
@@ -151,6 +203,17 @@ namespace impactx
                 int const nslice = elements::nslice(element_variant);
                 amrex::ParticleReal const slice_ds = elements::slice_ds(element_variant); // in meters
 
+                // zero-length elements receive no kick: it would leave the momenta unchanged
+                bool const kick = collective_effects && slice_ds != amrex::ParticleReal(0);
+
+                // second-order, time-symmetric Strang split of the kick ``K`` and transport ``M``
+                bool const strang = kick && strang_split;
+
+                // which of the two is halved: an element that can be subdivided puts the
+                // transport outside (MKM), any other one halves the kick instead (KMK)
+                bool const split_transport = strang && elements::can_slice(element_variant);
+                bool const split_kick = strang && !split_transport;
+
                 // sub-steps for space charge within the element
                 for (int slice_step = 0; slice_step < nslice; ++slice_step)
                 {
@@ -165,28 +228,34 @@ namespace impactx
                     // optional, user-defined function call
                     call_hook("before_slice");
 
-                    if (space_charge == SpaceChargeAlgo::True_2D)
+                    if (split_transport)
                     {
-                        // push Covariance Matrix in 2D space charge fields
-                        envelope::spacecharge::space_charge2D_push(ref, cm, intensity, slice_ds);
-                    } else if (space_charge == SpaceChargeAlgo::True_3D)
-                    {
-                        // push Covariance Matrix in 3D space charge fields
-                        envelope::spacecharge::space_charge3D_push(ref, cm, intensity, slice_ds);
+                        // M(ds/2) K(ds) M(ds/2): the doubled slice count halves each transport
+                        elements::ScopedNslice const half_slices(element_variant, 2 * nslice);
+                        element_push(element_variant);
+                        collective_kicks(slice_ds);
+                        element_push(element_variant);
                     }
-
-                    std::visit([&ref, &cm](auto&& element)
+                    else if (split_kick)
                     {
-                        // push reference particle in global coordinates
-                        {
-                            BL_PROFILE("impactx::push::RefPart");
-                            element(ref);
-                        }
-
-                        // push Covariance Matrix in external fields
-                        element(cm, ref);
-
-                    }, element_variant);
+                        // K(ds/2) M(ds) K(ds/2): the kick is linear in the slice length, so
+                        // halving it needs no subdivision of the element
+                        amrex::ParticleReal const half_ds = amrex::ParticleReal(0.5) * slice_ds;
+                        collective_kicks(half_ds);
+                        element_push(element_variant);
+                        collective_kicks(half_ds);
+                    }
+                    else if (kick)
+                    {
+                        // the split is turned off: first-order composition
+                        collective_kicks(slice_ds);
+                        element_push(element_variant);
+                    }
+                    else
+                    {
+                        // zero-length slice or no collective effects: transport only
+                        element_push(element_variant);
+                    }
 
                     // just prints an empty newline at the end of the slice_step
                     if (verbose > 0)

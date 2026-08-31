@@ -78,9 +78,7 @@ rbc_particles = sim.beam.beam_moments()
 
 # set up envelope simulation
 sim.lattice.clear()
-sim.lattice.extend(
-    [elements.ChrAcc(name="acc_section", ds=ds_value, ez=ez_value, bz=0.0, nslice=2000)]
-)
+sim.lattice.extend([acc_section])
 
 # run envelope simulation
 sim.init_envelope(ref_for_envelope, distr, bunch_charge_C)

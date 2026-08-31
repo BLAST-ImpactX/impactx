@@ -101,12 +101,14 @@ atol = 0.0  # ignored
 rtol = 1.0e-3
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
+# the analytic solution: this beam expands to exactly twice its initial size over the
+# 6 m drift, the same reference the particle tracking of this example is checked against
 assert np.allclose(
     [sigma_xf, sigma_yf, sigma_tf],
     [
-        9.029112e-04,
-        9.029112e-04,
-        1.841402e-06,
+        8.9442719100e-004,
+        8.9442719100e-004,
+        1.8244837370e-006,
     ],
     rtol=rtol,
     atol=atol,

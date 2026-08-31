@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 import amrex.space3d as amr
-from impactx import ImpactX, Map6x6, elements
+from impactx import ImpactX, Map6x6, distribution, elements
 
 # beam and lattice parameters, shared by all runs below
 KIN_ENERGY_MEV = 250.0
@@ -77,6 +77,38 @@ def _new_sim(strang_split):
     return sim
 
 
+def _new_envelope_sim(strang_split):
+    """A simulation with space charge enabled, set up for envelope tracking.
+
+    The beam is diverging: with a finite ``lambdaPx``, the leading half transport of the
+    Strang split changes the envelope before the first collective kick is applied.
+    """
+    sim = ImpactX()
+
+    sim.particle_shape = 2
+    sim.space_charge = "3D"
+    sim.strang_split = strang_split
+    sim.slice_step_diagnostics = False
+    sim.diagnostics = False
+
+    sim.init_grids()
+
+    ref = sim.beam.ref
+    ref.set_species("electron").set_kin_energy_MeV(KIN_ENERGY_MEV)
+
+    distr = distribution.Kurth6D(
+        lambdaX=4.472135955e-4,
+        lambdaY=4.472135955e-4,
+        lambdaT=9.12241869e-7,
+        lambdaPx=1.0e-4,
+        lambdaPy=1.0e-4,
+        lambdaPt=0.0,
+    )
+    sim.init_envelope(ref, distr, BUNCH_CHARGE_C)
+
+    return sim
+
+
 def _drift_map(sim, ds):
     """The 6x6 transport map of a drift of length ``ds``, as a LinearMap would apply it."""
     betgam2 = sim.beam.ref.pt**2 - 1.0
@@ -108,6 +140,25 @@ def _run(strang_split, nslice):
     return moments
 
 
+def _run_envelope(strang_split, nslice):
+    """Track the covariance matrix through a single drift under space charge.
+
+    :param strang_split: second-order Strang split (True) or first-order composition
+    :param nslice: number of slices through the drift
+    :return: the beam characteristics after the drift
+    """
+    sim = _new_envelope_sim(strang_split)
+
+    sim.lattice.extend([elements.Drift(name="d1", ds=DS, nslice=nslice)])
+
+    sim.track_envelope()
+
+    moments = sim.envelope.beam_moments(sim.beam.ref)
+    sim.finalize()
+
+    return moments
+
+
 def _chain(sim, sliceable, n_elements):
     """A chain of ``n_elements`` drift-equivalent elements adding up to a length of ``DS``.
 
@@ -134,6 +185,20 @@ def _run_chain(strang_split, sliceable, n_elements):
     sim.track_particles()
 
     moments = sim.beam.beam_moments()
+    sim.finalize()
+
+    return moments
+
+
+def _run_envelope_chain(strang_split, sliceable, n_elements):
+    """Track the covariance matrix through a chain of elements under space charge."""
+    sim = _new_envelope_sim(strang_split)
+
+    sim.lattice.extend(_chain(sim, sliceable, n_elements))
+
+    sim.track_envelope()
+
+    moments = sim.envelope.beam_moments(sim.beam.ref)
     sim.finalize()
 
     return moments
@@ -192,6 +257,32 @@ def _relative_difference(nslice):
     """Relative sig_x difference between the second-order and first-order composition."""
     split = _run(strang_split=True, nslice=nslice)["sig_x"]
     first = _run(strang_split=False, nslice=nslice)["sig_x"]
+
+    return abs(split / first - 1.0)
+
+
+def _observed_order_envelope(strang_split, nslice=4):
+    """Estimate the order of convergence in the slice length, @see _observed_order."""
+    coarse = _run_envelope(strang_split, nslice)["sig_x"]
+    medium = _run_envelope(strang_split, 2 * nslice)["sig_x"]
+    fine = _run_envelope(strang_split, 4 * nslice)["sig_x"]
+
+    return math.log2(abs(coarse - medium) / abs(medium - fine))
+
+
+def _observed_order_envelope_chain(strang_split, sliceable, n_elements=4):
+    """Estimate the order of convergence in the element length, @see _observed_order."""
+    coarse = _run_envelope_chain(strang_split, sliceable, n_elements)["sig_x"]
+    medium = _run_envelope_chain(strang_split, sliceable, 2 * n_elements)["sig_x"]
+    fine = _run_envelope_chain(strang_split, sliceable, 4 * n_elements)["sig_x"]
+
+    return math.log2(abs(coarse - medium) / abs(medium - fine))
+
+
+def _relative_difference_envelope(nslice):
+    """Relative sig_x difference between the second-order and first-order composition."""
+    split = _run_envelope(strang_split=True, nslice=nslice)["sig_x"]
+    first = _run_envelope(strang_split=False, nslice=nslice)["sig_x"]
 
     return abs(split / first - 1.0)
 
@@ -268,4 +359,52 @@ def test_first_order_composition_is_not_time_symmetric(sliceable):
 
     assert residual > 1.0e-4, (
         f"expected a residual from the first-order composition: {residual:.3e}"
+    )
+
+
+def test_envelope_strang_split_is_second_order():
+    """Envelope tracking composes its collective kicks the same way particle tracking does.
+
+    The two models are compared against each other in the ``expanding_beam`` examples, so a
+    composition of a different order in one of them shows up there as a physics discrepancy
+    that no slice count removes.
+    """
+    order = _observed_order_envelope(strang_split=True)
+
+    assert order > 1.7, f"Strang split converges at order {order:.2f}, expected ~2"
+
+
+def test_envelope_first_order_composition():
+    """Disabling the split falls back to first-order convergence in envelope tracking."""
+    order = _observed_order_envelope(strang_split=False)
+
+    assert order < 1.3, (
+        f"first-order composition converges at order {order:.2f}, expected ~1"
+    )
+
+
+def test_envelope_both_compositions_converge_to_the_same_result():
+    """The two compositions differ at a given slicing, but not in the converged limit."""
+    coarse = _relative_difference_envelope(nslice=8)
+    fine = _relative_difference_envelope(nslice=32)
+
+    assert coarse > 1.0e-4, "algo.strang_split had no effect on the tracked envelope"
+
+    # the gap is dominated by the first-order error, so it shrinks with the slice length
+    assert fine < coarse / 2.5, f"not converging: {coarse:.4%} -> {fine:.4%}"
+
+
+def test_envelope_element_that_cannot_be_sliced_is_second_order():
+    """An element that cannot be sliced halves the kick, which is second order as well."""
+    order = _observed_order_envelope_chain(strang_split=True, sliceable=False)
+
+    assert order > 1.7, f"halved kick converges at order {order:.2f}, expected ~2"
+
+
+def test_envelope_element_that_cannot_be_sliced_is_first_order_when_disabled():
+    """Disabling the split falls back to first order for those elements, too."""
+    order = _observed_order_envelope_chain(strang_split=False, sliceable=False)
+
+    assert order < 1.3, (
+        f"first-order composition converges at order {order:.2f}, expected ~1"
     )

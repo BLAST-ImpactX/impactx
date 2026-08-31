@@ -75,6 +75,18 @@ namespace impactx
             if (keep_charge) { charge = old_charge; }
         }
 
+        /** Set the element edge to the current path length
+         *
+         * Call this when entering a beamline element: s-dependent (soft-edge) maps
+         * integrate their on-axis field profile relative to this edge.
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void
+        set_edge ()
+        {
+            sedge = s;
+        }
+
         /** Set reference particle species by name
          *
          * Sets charge, mass, and gyromagnetic anomaly for a known particle species.

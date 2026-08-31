@@ -427,12 +427,6 @@ namespace impactx
         return m_refpart;
     }
 
-    void
-    ImpactXParticleContainer::SetRefParticleEdge ()
-    {
-        m_refpart.sedge = m_refpart.s;
-    }
-
     std::tuple<
             amrex::ParticleReal, amrex::ParticleReal,
             amrex::ParticleReal, amrex::ParticleReal,

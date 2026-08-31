@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -7,12 +7,12 @@
  * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
-#ifndef IMPACTX_TRACKING_PARTICLES_H
-#define IMPACTX_TRACKING_PARTICLES_H
+#ifndef IMPACTX_TRACKING_COMMON_H
+#define IMPACTX_TRACKING_COMMON_H
 
 #include "elements/All.H"
 #include "elements/mixin/accessors.H"
-#include "particles/ImpactXParticleContainer.H"
+#include "particles/ReferenceParticle.H"
 #include "tracking/TrackingDirection.H"
 #include "tracking/TrackingState.H"
 
@@ -22,12 +22,13 @@
 #include <AMReX_REAL.H>
 
 #include <list>
+#include <stdexcept>
 #include <string>
 
 
 namespace impactx
 {
-    /** Traverse the lattice for particle (beam + reference) tracking.
+    /** Traverse the lattice, for any of the tracking models.
      *
      *  This function performs the nested lattice traversal (looping over periods,
      *  then over the beamline elements in each period, then over the
@@ -35,11 +36,19 @@ namespace impactx
      *  user-defined hooks, the reference-particle edge update and the global step
      *  counter.
      *
+     *  The tracked quantity enters only through the callables below, so that particle
+     *  tracking (@see ImpactX::track_particles), envelope tracking
+     *  (@see ImpactX::track_envelope) and reference-particle tracking
+     *  (@see ImpactX::track_reference) traverse the lattice identically and compose their
+     *  collective kicks to the same order.
+     *
      *  The caller supplies the per-slice physics as three composable operations: the
      *  collective kick @p collective_kicks ``K`` (space charge, CSR, ISR, ...), the
      *  element transport @p element_push ``M`` (the external-field map of one
      *  element slice) and the @p slice_diagnostics book-keeping (boundary conditions,
-     *  lost particles, slice diagnostics), which runs once per slice.
+     *  lost particles, slice diagnostics), which runs once per slice. A model without
+     *  collective effects passes @p collective_effects false, and its @p collective_kicks
+     *  is then never called.
      *
      *  With collective effects active (@p collective_effects) and @p strang_split on, every
      *  slice is composed as a second-order, time-symmetric Strang split. Which of the two
@@ -48,10 +57,10 @@ namespace impactx
      *  for an element that can be subdivided (@see elements::can_slice): half of the slice
      *  transport, the collective kick at the slice midpoint, then the other half. The half
      *  transports are realized by temporarily doubling the element's ``nslice``, which simply
-     *  halves the ds per slice. The expensive collective solve still runs only once per slice.
+     *  halves the ds per slice. The collective kick still runs only once per slice.
      *      ``K(ds/2) M(ds) K(ds/2)``
      *  for every other element: the kick is linear in the slice length, so halving it needs no
-     *  subdivision, at the price of a second collective solve per slice.
+     *  subdivision, at the price of a second collective kick per slice.
      *  Turning the split off composes kick and transport to first order instead:
      *  ``K(ds) M(ds)`` forward and ``M(ds) K(ds)`` backward.
      *  Zero-length elements and runs without collective effects apply ``M`` alone, since a
@@ -70,7 +79,9 @@ namespace impactx
      *
      *  The number of periods (``lattice.periods``) and verbosity (``impactx.verbose``)
      *  are read from the inputs. The step counter is advanced from its current value,
-     *  so the caller is expected to reset it (to 0) before a forward run.
+     *  so the caller is expected to reset it (to 0) before a forward run. At least one
+     *  period is always traversed, so on return ``tracking_state.m_period`` holds the
+     *  last period that was tracked.
      *
      *  @tparam HookFn callable ``void (std::string const & name)`` invoking a named hook
      *  @tparam CollectiveKicks callable
@@ -82,7 +93,7 @@ namespace impactx
      *  @tparam SliceDiagnostics callable ``void (int step, int period)`` running the
      *    once-per-slice book-keeping (boundary conditions, lost particles, slice diagnostics)
      *  @param[in,out] lattice the beamline elements to traverse
-     *  @param[in,out] pc beam particle container (reference particle / edge update)
+     *  @param[in,out] ref reference particle, its element edge is set once per element
      *  @param[in,out] tracking_state tracking state shared with hooks (element, step, period);
      *                 its ``m_direction`` selects the traversal direction
      *  @param[in] collective_effects whether any collective kick is active in this run
@@ -97,9 +108,9 @@ namespace impactx
         typename HookFn, typename CollectiveKicks,
         typename ElementPush, typename SliceDiagnostics
     >
-    void track_lattice_particles (
+    void track_lattice (
         std::list<elements::KnownElements> & lattice,
-        ImpactXParticleContainer & pc,
+        RefPart & ref,
         TrackingState & tracking_state,
         bool collective_effects,
         bool strang_split,
@@ -109,11 +120,19 @@ namespace impactx
         SliceDiagnostics && slice_diagnostics
     )
     {
+        // the period loop below takes the address of the first element; only
+        // ImpactX::track_particles runs validate(), which rejects this earlier
+        if (lattice.empty())
+        {
+            throw std::runtime_error("Beamline lattice has zero elements. Not yet initialized?");
+        }
+
         bool const forward = tracking_state.forward();
 
         // periods through the lattice (turns/cycles) and verbosity
         int num_periods = 1;
         amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(num_periods >= 1, "lattice.periods must be >= 1");
         int verbose = 1;
         amrex::ParmParse("impactx").queryAddWithParser("verbose", verbose);
 
@@ -127,7 +146,7 @@ namespace impactx
         {
             // set the reference-particle edge to the entrance of this element: s-dependent
             // (soft-edge) maps integrate their on-axis field profile relative to it
-            pc.SetRefParticleEdge();
+            ref.set_edge();
 
             if (forward)
             {
@@ -235,10 +254,12 @@ namespace impactx
         {
             int const period = forward ? p : (num_periods - 1 - p);
 
+            // the period is the position in the lattice, tracked in both directions
+            tracking_state.m_period = period;
+
             if (forward)
             {
                 // book-keeping update
-                tracking_state.m_period = period;
                 tracking_state.m_element = &lattice.front();
 
                 // optional, user-defined function call
@@ -273,4 +294,4 @@ namespace impactx
     }
 } // namespace impactx
 
-#endif // IMPACTX_TRACKING_PARTICLES_H
+#endif // IMPACTX_TRACKING_COMMON_H

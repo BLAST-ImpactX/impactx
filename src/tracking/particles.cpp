@@ -18,7 +18,7 @@
 #include "particles/spacecharge/HandleSpacecharge.H"
 #include "particles/wakefields/HandleISR.H"
 #include "particles/wakefields/HandleWakefield.H"
-#include "tracking/particles.H"
+#include "tracking/common.H"
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
@@ -202,10 +202,10 @@ namespace impactx
         };
 
         // traverse the lattice, applying the collective kick and the
-        // element transport per element slice (\see track_lattice_particles)
-        track_lattice_particles(
+        // element transport per element slice (\see track_lattice)
+        track_lattice(
             m_lattice,
-            *pc,
+            pc->GetRefParticle(),
             m_tracking_state,
             collective_effects,
             strang_split,

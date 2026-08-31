@@ -233,11 +233,6 @@ namespace impactx
         RefPart const &
         GetRefParticle () const;
 
-        /** Update reference particle element edge
-         *
-         */
-        void SetRefParticleEdge ();
-
         /** Get particle shape
          */
         int

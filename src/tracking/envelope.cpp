@@ -9,12 +9,12 @@
  */
 #include "ImpactX.H"
 #include "diagnostics/DiagnosticOutput.H"
-#include "elements/mixin/accessors.H"
 #include "envelope/spacecharge/EnvelopeSpaceChargePush.H"
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
+#include "tracking/common.H"
 
 #include <ablastr/warn_manager/WarnManager.H>
 
@@ -47,10 +47,7 @@ namespace impactx
         //   before we start the tracking loop, we are in "step 0" (initial state)
         int & step = m_tracking_state.m_step;
         step = 0;
-
-        // period in the lattice (e.g., turns)
-        int & period = m_tracking_state.m_period;
-        period = 0;
+        m_tracking_state.m_direction = TrackingDirection::Forward;
 
         // check typos in inputs after step 1
         bool early_params_checked = false;
@@ -155,6 +152,8 @@ namespace impactx
 
         // the collective effect kick ``K`` of one element slice
         auto collective_kicks = [&ref, &cm, &intensity, space_charge] (
+            //! (unused) the kick does not depend on the element
+            [[maybe_unused]] elements::KnownElements & element_variant,
             amrex::ParticleReal kick_ds
         )
         {
@@ -171,8 +170,13 @@ namespace impactx
 
         // the external-field transport map ``M`` of one element slice
         //   The Strang split around collective effects applies this twice per slice, once
-        //   per half-map, so it carries no book-keeping.
-        auto element_push = [&ref, &cm] (elements::KnownElements & element_variant)
+        //   per half-map, so it carries no book-keeping: that lives in @see
+        //   slice_diagnostics below.
+        auto element_push = [&ref, &cm] (
+            elements::KnownElements & element_variant,
+            [[maybe_unused]] int step_,   //! (unused) the envelope has no per-step element output
+            [[maybe_unused]] int period_  //! (unused) the envelope has no per-period element output
+        )
         {
             std::visit([&ref, &cm](auto&& element)
             {
@@ -188,123 +192,51 @@ namespace impactx
             }, element_variant);
         };
 
-        // periods through the lattice
-        int num_periods = 1;
-        amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
-
-        for (period=0; period < num_periods; ++period)
+        // book-keeping and diagnostics, applied once at the end of each slice
+        auto slice_diagnostics = [
+            this, &ref, &cm, verbose, &pp_diag, diag_enable, &early_params_checked
+        ] (
+            int step_,
+            int period_
+        )
         {
-            // optional, user-defined function call
-            m_tracking_state.m_element = &m_lattice.front();
-            call_hook("before_period");
-
-            // loop over all beamline elements
-            for (auto &element_variant: m_lattice)
+            // just prints an empty newline at the end of the slice_step
+            if (verbose > 0)
             {
-                // update element edge of the reference particle
-                ref.sedge = ref.s;
+                amrex::Print() << "\n";
+            }
 
-                // optional, user-defined function call
-                m_tracking_state.m_element = &element_variant;
-                call_hook("before_element");
+            // slice-step diagnostics
+            bool slice_step_diagnostics = false;
+            pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
 
-                // number of slices used for the application of space charge
-                int const nslice = elements::nslice(element_variant);
-                amrex::ParticleReal const slice_ds = elements::slice_ds(element_variant); // in meters
+            if (diag_enable && slice_step_diagnostics)
+            {
+                // print slice step reference particle to file
+                diagnostics::DiagnosticOutput(ref, "ref_particle", step_, true);
 
-                // zero-length elements receive no kick: it would leave the momenta unchanged
-                bool const kick = collective_effects && slice_ds != amrex::ParticleReal(0);
+                // print slice step reduced beam characteristics to file
+                diagnostics::DiagnosticOutput(
+                    cm, ref, "reduced_beam_characteristics", step_, period_, true);
+            }
 
-                // second-order, time-symmetric Strang split of the kick ``K`` and transport ``M``
-                bool const strang = kick && strang_split;
+            // inputs: unused parameters (e.g. typos) check after step 1 has finished
+            if (!early_params_checked) { early_params_checked = early_param_check(); }
+        };
 
-                // which of the two is halved: an element that can be subdivided puts the
-                // transport outside (MKM), any other one halves the kick instead (KMK)
-                bool const split_transport = strang && elements::can_slice(element_variant);
-                bool const split_kick = strang && !split_transport;
-
-                // sub-steps for space charge within the element
-                for (int slice_step = 0; slice_step < nslice; ++slice_step)
-                {
-                    BL_PROFILE("ImpactX::track_envelope::slice_step");
-                    step++;
-                    if (verbose > 0)
-                    {
-                        amrex::Print() << "\n++++ Starting step=" << step
-                                       << " slice_step=" << slice_step;
-                    }
-
-                    // optional, user-defined function call
-                    call_hook("before_slice");
-
-                    if (split_transport)
-                    {
-                        // M(ds/2) K(ds) M(ds/2): the doubled slice count halves each transport
-                        elements::ScopedNslice const half_slices(element_variant, 2 * nslice);
-                        element_push(element_variant);
-                        collective_kicks(slice_ds);
-                        element_push(element_variant);
-                    }
-                    else if (split_kick)
-                    {
-                        // K(ds/2) M(ds) K(ds/2): the kick is linear in the slice length, so
-                        // halving it needs no subdivision of the element
-                        amrex::ParticleReal const half_ds = amrex::ParticleReal(0.5) * slice_ds;
-                        collective_kicks(half_ds);
-                        element_push(element_variant);
-                        collective_kicks(half_ds);
-                    }
-                    else if (kick)
-                    {
-                        // the split is turned off: first-order composition
-                        collective_kicks(slice_ds);
-                        element_push(element_variant);
-                    }
-                    else
-                    {
-                        // zero-length slice or no collective effects: transport only
-                        element_push(element_variant);
-                    }
-
-                    // just prints an empty newline at the end of the slice_step
-                    if (verbose > 0)
-                    {
-                        amrex::Print() << "\n";
-                    }
-
-                    // slice-step diagnostics
-                    bool slice_step_diagnostics = false;
-                    pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
-
-
-                    if (diag_enable && slice_step_diagnostics)
-                    {
-                        // print slice step reference particle to file
-                        diagnostics::DiagnosticOutput(ref, "ref_particle", step, true);
-
-                        // print slice step reduced beam characteristics to file
-                        diagnostics::DiagnosticOutput(
-                            cm, ref, "reduced_beam_characteristics", step, period, true);
-
-                    }
-
-                    // inputs: unused parameters (e.g. typos) check after step 1 has finished
-                    if (!early_params_checked) { early_params_checked = early_param_check(); }
-
-                } // end in-element space-charge slice-step loop
-
-                // optional, user-defined function call
-                call_hook("after_element");
-
-            } // end beamline element loop
-
-            // optional, user-defined function call
-            call_hook("after_period");
-
-        } // end periods though the lattice loop
-
-        // avoid dangling references if users manipulate the lattice
-        m_tracking_state.set_no_element();
+        // traverse the lattice, applying the collective kick and the
+        // element transport per element slice (\see track_lattice)
+        track_lattice(
+            m_lattice,
+            ref,
+            m_tracking_state,
+            collective_effects,
+            strang_split,
+            [this](std::string const & name) { call_hook(name); },
+            collective_kicks,
+            element_push,
+            slice_diagnostics
+        );
 
         if (diag_enable)
         {
@@ -313,7 +245,7 @@ namespace impactx
 
             // print the final values of the reduced beam characteristics
             diagnostics::DiagnosticOutput(
-                cm, ref, "reduced_beam_characteristics_final", step, period);
+                cm, ref, "reduced_beam_characteristics_final", step, m_tracking_state.m_period);
         }
     }
 } // namespace impactx

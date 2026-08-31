@@ -127,7 +127,7 @@ namespace
                     // private copy: the caller's reference particle is not modified
                     RefPart ref_slice = ref;
                     // the element starts at the current s, as in walk_lattice
-                    ref_slice.sedge = ref_slice.s;
+                    ref_slice.set_edge();
                     el(ref_slice);
                     return el.transport_map(ref_slice);
                 } else {

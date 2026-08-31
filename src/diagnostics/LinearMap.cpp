@@ -129,8 +129,8 @@ namespace
      *  deduplication set is maintained per call.
      *
      *  Uses the same per-element advance / linear-map evaluation
-     *  convention as the envelope tracker in
-     *  @c src/tracking/envelope.cpp , so the resulting linear optics
+     *  convention as the lattice traversal in
+     *  @c src/tracking/common.H , so the resulting linear optics
      *  is consistent with the tracker for edge-sensitive elements
      *  such as @c RFCavity, @c SoftQuad, and @c SoftSol.
      *
@@ -163,10 +163,11 @@ namespace
         // warn only once per element type
         std::set<std::string> warned_types;
 
-        // The element loop mirrors src/tracking/envelope.cpp
+        // The element loop mirrors the lattice traversal in src/tracking/common.H,
+        // without its period loop and collective-effect slices
         for (auto const & element_variant : lattice)
         {
-            ref.sedge = ref.s;
+            ref.set_edge();
 
             std::visit([&](auto && element)
             {

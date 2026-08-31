@@ -112,10 +112,15 @@ namespace impactx
                 ablastr::warn_manager::WarnPriority::high
             );
         }
-        if (space_charge == SpaceChargeAlgo::Gauss3D) {
+        // envelope tracking models space charge as the linear field of the rms-equivalent
+        //   uniform beam ellipse (2D) or ellipsoid (3D); the other models are particle-only
+        if (space_charge == SpaceChargeAlgo::Gauss3D ||
+            space_charge == SpaceChargeAlgo::Gauss2p5D ||
+            space_charge == SpaceChargeAlgo::True_2p5D)
+        {
             throw std::runtime_error(
-                "Gauss3D space charge force calculation is only supported with particle tracking. "
-                "For envelope tracking, use: 3D"
+                to_string(space_charge) + " space charge force calculation is only supported "
+                "with particle tracking. For envelope tracking, use: 2D or 3D"
             );
         }
 
@@ -128,9 +133,13 @@ namespace impactx
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR effects are not yet implemented for envelope tracking.");
 
         // whether any collective effect is active: only then is a kick applied per slice
+        //   At zero intensity the kick leaves the covariance matrix unchanged, so it is
+        //   skipped entirely: that is what the warning above announces, and it keeps the
+        //   element transport of such a run unsplit.
         bool const collective_effects =
-            space_charge == SpaceChargeAlgo::True_2D ||
-            space_charge == SpaceChargeAlgo::True_3D;
+            (space_charge == SpaceChargeAlgo::True_2D ||
+             space_charge == SpaceChargeAlgo::True_3D) &&
+            intensity != 0_prt;
 
         // second-order Strang split of the collective kicks, on by default
         //   Disabling it composes kick and transport to first order instead, which is what

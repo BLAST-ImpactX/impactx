@@ -347,6 +347,11 @@ This requires these additional parameters:
 
     Horizontal / vertical half-aperture (elliptical or rectangular).
 
+    A value of zero or less disables the boundary in that plane, so a rectangular
+    aperture with only ``aperture_y`` set acts as a horizontal slit.
+    Note that with ``action = absorb`` a disabled plane makes the absorbing domain
+    unbounded in that direction.
+
 .. pp:param:: <aperture_name>.repeat_x/y
     :link_aliases: <aperture_name>.repeat_x <aperture_name>.repeat_y
     :type: ``float``

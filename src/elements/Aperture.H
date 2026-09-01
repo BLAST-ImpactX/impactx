@@ -62,10 +62,18 @@ namespace impactx::elements
         /** A thin collimator element that applies a transverse aperture boundary.
          *  Particles outside the boundary are considered lost.
          *
+         *  A half-aperture of zero or less disables the boundary in that plane,
+         *  the same convention as \see mixin::PipeAperture. A rectangular
+         *  aperture with only ``aperture_y`` set is thus a horizontal slit, and
+         *  an elliptical one degenerates into the same slab. Note that with
+         *  ``action = absorb`` a disabled plane makes the absorbing domain
+         *  unbounded in that direction: disabling both planes absorbs the whole
+         *  beam, while for ``action = transmit`` the element becomes a no-op.
+         *
          * @param shape aperture shape
          * @param action specify action of domain (transmit/absorb)
-         * @param aperture_x horizontal half-aperture (m)
-         * @param aperture_y vertical half-aperture (m)
+         * @param aperture_x horizontal half-aperture (m), zero or less disables the horizontal boundary
+         * @param aperture_y vertical half-aperture (m), zero or less disables the vertical boundary
          * @param repeat_x horizontal period for repeated masking, optional (m)
          * @param repeat_y vertical period for repeated masking, optional (m)
          * @param shift_odd_x for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
@@ -93,17 +101,8 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            if (aperture_x > 0_prt) {
-                m_inv_aperture_x = 1_prt / aperture_x;
-            } else {
-                throw std::invalid_argument("Aperture: aperture_x must be > 0!");
-            }
-
-            if (aperture_y > 0_prt) {
-                m_inv_aperture_y = 1_prt / aperture_y;
-            } else {
-                throw std::invalid_argument("Aperture: aperture_y must be > 0!");
-            }
+            set_aperture_x(aperture_x);
+            set_aperture_y(aperture_y);
 
             if (m_repeat_y == 0_prt && m_shift_odd_x) {
                 throw std::invalid_argument("Aperture: shift_odd_x can only be used if repeat_y is set, too!");
@@ -270,13 +269,73 @@ namespace impactx::elements
             return rotate_aligned_map(Map6x6::Identity());
         }
 
+        /** Maximum horizontal coordinate
+         *
+         * @return horizontal half-aperture size [m]; zero if the horizontal
+         *         boundary is disabled
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        amrex::ParticleReal aperture_x () const
+        {
+            using namespace amrex::literals; // for _prt
+            return m_inv_aperture_x > 0_prt ? 1_prt / m_inv_aperture_x : 0_prt;
+        }
+
+        /** Maximum vertical coordinate
+         *
+         * @return vertical half-aperture size [m]; zero if the vertical
+         *         boundary is disabled
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        amrex::ParticleReal aperture_y () const
+        {
+            using namespace amrex::literals; // for _prt
+            return m_inv_aperture_y > 0_prt ? 1_prt / m_inv_aperture_y : 0_prt;
+        }
+
+        /** Set the maximum horizontal coordinate
+         *
+         * A value of zero or less removes the horizontal boundary, the same
+         * convention as \see mixin::PipeAperture::set_aperture_x.
+         *
+         * @param aperture_x horizontal half-aperture size [m]
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void set_aperture_x (amrex::ParticleReal aperture_x)
+        {
+            using namespace amrex::literals; // for _prt
+
+            // performance optimization: we intentionally store the inverse of
+            //   the aperture, @see m_inv_aperture_x
+            m_inv_aperture_x = aperture_x > 0_prt ? 1_prt / aperture_x : 0_prt;
+        }
+
+        /** Set the maximum vertical coordinate
+         *
+         * A value of zero or less removes the vertical boundary, the same
+         * convention as \see mixin::PipeAperture::set_aperture_y.
+         *
+         * @param aperture_y vertical half-aperture size [m]
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void set_aperture_y (amrex::ParticleReal aperture_y)
+        {
+            using namespace amrex::literals; // for _prt
+
+            // performance optimization: we intentionally store the inverse of
+            //   the aperture, @see m_inv_aperture_y
+            m_inv_aperture_y = aperture_y > 0_prt ? 1_prt / aperture_y : 0_prt;
+        }
+
         Shape m_shape; //! aperture type (rectangular, elliptical)
         Action m_action; //! action type (transmit, absorb)
         // performance optimization: we intentionally store the inverse of
         //   the aperture, so we can do a quick multiplication instead of a costly
-        //   division in the comparison operation per particle
-        amrex::ParticleReal m_inv_aperture_x; //! maximum horizontal coordinate
-        amrex::ParticleReal m_inv_aperture_y; //! maximum vertical coordinate
+        //   division in the comparison operation per particle.
+        //   A stored zero scales the coordinate away and thus disables the
+        //   boundary in that plane, @see set_aperture_x
+        amrex::ParticleReal m_inv_aperture_x = 0; //! inverse of the horizontal half-aperture [1/m]
+        amrex::ParticleReal m_inv_aperture_y = 0; //! inverse of the vertical half-aperture [1/m]
         amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
         amrex::ParticleReal m_repeat_y; //! vertical period for repeated masking
         bool m_shift_odd_x; //! for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by m_repeat_x / 2. Use Alignment offsets to move whole mask as needed.

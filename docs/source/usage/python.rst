@@ -2479,12 +2479,18 @@ The aperture is disabled entirely only if both planes are zero or less.
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, repeat_x=0, repeat_y=0, shift_odd_x=False, shape="rectangular", action="transmit", dx=0, dy=0, rotation=0, name=None)
 
    A thin collimator element, applying a transverse aperture boundary.
 
-   :param aperture_x: horizontal half-aperture (rectangular or elliptical) in m
-   :param aperture_y: vertical half-aperture (rectangular or elliptical) in m
+   A half-aperture of zero or less disables the boundary in that plane, the same
+   convention as the ``aperture_x``/``aperture_y`` of the thick elements above.
+   A rectangular aperture with only ``aperture_y`` set is thus a horizontal slit.
+   Note that with ``action="absorb"`` a disabled plane makes the absorbing domain
+   unbounded in that direction, so disabling both planes absorbs the whole beam.
+
+   :param aperture_x: horizontal half-aperture (rectangular or elliptical) in m; zero or less disables the horizontal boundary
+   :param aperture_y: vertical half-aperture (rectangular or elliptical) in m; zero or less disables the vertical boundary
    :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
    :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
    :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
@@ -2503,13 +2509,13 @@ The aperture is disabled entirely only if both planes are zero or less.
 
       aperture type (transmit, absorb)
 
-   .. py:property:: xmax
+   .. py:property:: aperture_x
 
-      maximum horizontal coordinate
+      maximum horizontal coordinate in m; zero or less removes the horizontal boundary
 
-   .. py:property:: ymax
+   .. py:property:: aperture_y
 
-      maximum vertical coordinate
+      maximum vertical coordinate in m; zero or less removes the vertical boundary
 
 .. py:class:: impactx.elements.PolygonAperture(vertices_x, vertices_y, min_radius2=0.0, repeat_x, repeat_y, shift_odd_x, action="transmit", dx=0, dy=0, rotation=0, name=None)
 

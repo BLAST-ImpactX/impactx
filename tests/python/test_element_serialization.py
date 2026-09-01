@@ -734,6 +734,38 @@ def test_mixin_properties_are_settable(all_elements):
     )
 
 
+def test_aperture_disabled_by_nonpositive():
+    """
+    Test that Aperture.aperture_x/aperture_y follow the PipeAperture convention:
+    a half-aperture of zero or less disables the boundary in that plane and
+    reads back as zero, both from the constructor and from assignment.
+    """
+    aperture = elements.Aperture(aperture_x=0.01, aperture_y=0.02)
+
+    # a valid assignment is kept and is visible in to_dict()
+    aperture.aperture_x = 0.03
+    aperture.aperture_y = 0.04
+    assert aperture.aperture_x == pytest.approx(0.03)
+    assert aperture.aperture_y == pytest.approx(0.04)
+    assert aperture.to_dict()["aperture_x"] == pytest.approx(0.03)
+    assert aperture.to_dict()["aperture_y"] == pytest.approx(0.04)
+
+    # zero or less disables the boundary and reads back as an exact zero,
+    # so that a to_dict() roundtrip reproduces the disabled element
+    for disabled in [0.0, -0.01]:
+        aperture.aperture_x = disabled
+        aperture.aperture_y = disabled
+        assert aperture.aperture_x == 0.0
+        assert aperture.aperture_y == 0.0
+        assert aperture.to_dict()["aperture_x"] == 0.0
+        assert aperture.to_dict()["aperture_y"] == 0.0
+
+        # the constructor uses the same convention
+        from_ctor = elements.Aperture(aperture_x=disabled, aperture_y=disabled)
+        assert from_ctor.aperture_x == 0.0
+        assert from_ctor.aperture_y == 0.0
+
+
 def test_individual_element_roundtrip(all_elements):
     """
     Test each element type individually for roundtrip consistency.

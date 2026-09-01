@@ -11,11 +11,11 @@
 #define IMPACTX_ELEMENT_LINEAR_MAP_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
@@ -29,10 +29,9 @@
 
 namespace impactx::elements
 {
-    struct LinearMap
-    : public mixin::Named,
-      public mixin::BeamOptic<LinearMap>,
-      public mixin::LinearTransport<LinearMap>,
+    struct LinearMapGPU
+    : public mixin::BeamOptic<LinearMapGPU>,
+      public mixin::LinearTransport<LinearMapGPU>,
       public mixin::Alignment,
       public mixin::SpinTransport,
       public mixin::NoFinalize,
@@ -53,18 +52,15 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param name a user defined and not necessarily unique name of the element
          */
-        LinearMap (
+        LinearMapGPU (
             Map6x6 const & R,
             amrex::ParticleReal ds = DEFAULT_ds,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
-            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
-            std::optional<std::string> name = DEFAULT_name
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree
         )
-        : Named(std::move(name)),
-          Alignment(dx, dy, rotation_degree)
+        : Alignment(dx, dy, rotation_degree)
         {
             m_transport_map = R;
             m_ds = ds;
@@ -291,8 +287,11 @@ namespace impactx::elements
         amrex::ParticleReal m_ds;  // finite ds allowed for bookkeeping, but we do not allow slicing
     };
 
+    /** LinearMap: GPU state plus common host-only metadata */
+    using LinearMap = Element<LinearMapGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::LinearMap)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::LinearMapGPU)
 
 #endif // IMPACTX_ELEMENT_LINEAR_MAP_H

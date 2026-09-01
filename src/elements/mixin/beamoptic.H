@@ -233,9 +233,10 @@ namespace detail
               m_part_idcpu(part_idcpu),
               m_ref_part(std::move(ref_part))
         {
-            // pre-compute and cache constants that are independent of the
-            // individually tracked particle
-            m_element.compute_constants(m_ref_part);
+            // Note: the element arrives already prepared. Preparation happens exactly
+            // once per element slice in impactx::elements::make_particle_pusher(), and
+            // the result is copied into each tile's launch closure. This constructor
+            // stores and executes; it must not prepare.
         }
 
         PushSingleParticleSpin () = delete;
@@ -387,9 +388,7 @@ namespace detail
               m_part_idcpu(part_idcpu),
               m_ref_part(std::move(ref_part))
         {
-            // pre-compute and cache constants that are independent of the
-            // individually tracked particle
-            m_element.compute_constants(m_ref_part);
+            // Note: the element arrives already prepared, @see PushSingleParticleSpin.
         }
 
         PushSingleParticle () = delete;
@@ -493,7 +492,7 @@ namespace detail
      * particle even when the element is perfectly aligned.
      */
     template< typename T_Element, typename F >
-    void dispatch_misalignment ([[maybe_unused]] T_Element & element, F && f)
+    void dispatch_misalignment ([[maybe_unused]] T_Element const & element, F && f)
     {
         if constexpr (mixin::has_alignment_v<T_Element>) {
 #ifdef ImpactX_OPTIMIZE_ALIGNMENT
@@ -509,12 +508,18 @@ namespace detail
     }
 
     /** This pushes all particles on a particle iterator tile/box
+     *
+     * @param[in,out] pti the particle iterator, pointing at the tile/box to push
+     * @param[in] ref_part the reference particle, already advanced for this slice
+     * @param[in] element an already prepared execution snapshot,
+     *                    @see impactx::elements::make_particle_pusher
+     * @param[in] spin whether to perform spin tracking
      */
     template< typename T_Element >
     void push_all_particles (
         ImpactXParticleContainer::iterator & pti,
         RefPart & AMREX_RESTRICT ref_part,
-        T_Element & element,
+        T_Element const & element,
         bool spin /* = false */
     ) {
         const int np = pti.numParticles();
@@ -558,14 +563,62 @@ namespace detail
     }
 } // namespace detail
 
-    /** Mixin class for a regular beam optics lattice element.
+    /** Push beam particles on one tile, relative to the reference particle.
      *
-     * This element pushes particles relative to a reference particle.
-     * All particles are pushed independently with the same logic.
+     * This is deliberately separate from @see BeamOptic. An execution snapshot -- the
+     * prepared, resource-free thing that is copied into a launch closure -- needs exactly
+     * this and nothing more. It must *not* be able to start a lattice push or advance the
+     * reference particle: those are the canonical element's job, they run once per slice
+     * on the host, and they may need resources the snapshot does not own.
+     *
+     * Ordinary elements are their own snapshot and get this through @see BeamOptic. The
+     * resource-owning elements give it to their core alone.
      */
     template<typename T_Element>
-    struct BeamOptic
+    struct ParticlePush
     {
+        /** This pushes the particles on a particle iterator tile or box.
+         *
+         * Particles are relative to the reference particle.
+         *
+         * @param[in] pti particle iterator for a current tile or box.
+         * @param[in] ref_part reference particle
+         * @param[in] spin whether to perform spin tracking
+         */
+         void operator() (
+            ImpactXParticleContainer::iterator & pti,
+            RefPart & AMREX_RESTRICT ref_part,
+            bool spin
+         ) const
+         {
+            static_assert(
+                std::is_base_of_v<ParticlePush, T_Element>,
+                "ParticlePush can only be used as a mixin class!"
+            );
+
+            // Note: *this must already be a prepared execution snapshot here,
+            // @see impactx::elements::make_particle_pusher and impactx::push_all.
+            T_Element const & element = *static_cast<T_Element const *>(this);
+            detail::push_all_particles<T_Element>(pti, ref_part, element, spin);
+         }
+    };
+
+    /** Mixin class for a regular beam optics lattice element.
+     *
+     * This element pushes particles relative to a reference particle. All particles are
+     * pushed independently with the same logic.
+     *
+     * On top of @see ParticlePush, which pushes the beam particles of one tile, this adds
+     * the whole-container push: it advances the reference particle first and then every
+     * beam particle, once per element slice. An element that owns resources a launch
+     * closure must not carry gives @see ParticlePush to its execution snapshot alone and
+     * keeps this for itself.
+     */
+    template<typename T_Element>
+    struct BeamOptic : ParticlePush<T_Element>
+    {
+        using ParticlePush<T_Element>::operator();
+
         /** Push first the reference particle, then all other particles
          *
          * @param[inout] pc container of the particles to push
@@ -586,29 +639,6 @@ namespace detail
             T_Element& element = *static_cast<T_Element*>(this);
             push_all(pc, element, step, period);
         }
-
-        /** This pushes the particles on a particle iterator tile or box.
-         *
-         * Particles are relative to the reference particle.
-         *
-         * @param[in] pti particle iterator for a current tile or box.
-         * @param[in] ref_part reference particle
-         * @param[in] spin whether to perform spin tracking
-         */
-         void operator() (
-            ImpactXParticleContainer::iterator & pti,
-            RefPart & AMREX_RESTRICT ref_part,
-            bool spin
-         )
-         {
-            static_assert(
-                std::is_base_of_v<BeamOptic, T_Element>,
-                "BeamOptic can only be used as a mixin class!"
-            );
-
-            T_Element& element = *static_cast<T_Element*>(this);
-            detail::push_all_particles<T_Element>(pti, ref_part, element, spin);
-         }
     };
 
 } // namespace impactx::elements::mixin

@@ -39,9 +39,10 @@ ncoef = 25
 dr1 = elements.Drift(name="dr1", ds=0.4, nslice=1)
 dr2 = elements.Drift(name="dr2", ds=0.032997, nslice=1)
 
-#   RF cavity element
+#   RF cavity elements: four physically distinct cavities, built from one template so
+#   that the on-axis field is fitted once
 rf = elements.RFCavity(
-    name="rf",
+    name="rf1",
     ds=1.31879807,
     escale=20.0,
     z=z,
@@ -52,6 +53,7 @@ rf = elements.RFCavity(
     mapsteps=100,
     nslice=4,
 )
+cavities = [rf] + [rf.copy(name=f"rf{i}") for i in range(2, 5)]
 
 
 # add beam diagnostics
@@ -62,16 +64,16 @@ sim.lattice.extend(
         monitor,
         dr1,
         dr2,
-        rf,
+        cavities[0],
         dr2,
         dr2,
-        rf,
+        cavities[1],
         dr2,
         dr2,
-        rf,
+        cavities[2],
         dr2,
         dr2,
-        rf,
+        cavities[3],
         dr2,
         monitor,
     ]

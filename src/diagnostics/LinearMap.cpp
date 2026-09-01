@@ -150,7 +150,7 @@ namespace
     template <typename F_OnElementExit = NoopElementExit>
     Map6x6
     walk_lattice (
-        std::list<elements::KnownElements> const & lattice,
+        Lattice const & lattice,
         RefPart const & ref_part_init,
         OnMissingLinearMap on_missing,
         F_OnElementExit && on_element_exit = NoopElementExit{}
@@ -169,7 +169,7 @@ namespace
         {
             ref.set_edge();
 
-            std::visit([&](auto && element)
+            elements::visit([&](auto && element)
             {
                 using E = std::decay_t<decltype(element)>;
 
@@ -193,7 +193,7 @@ namespace
 
     std::vector<MapTraceEntry>
     map_trace (
-        std::list<elements::KnownElements> const & lattice,
+        Lattice const & lattice,
         RefPart const & ref_part_init,
         OnMissingLinearMap on_missing
     )
@@ -232,7 +232,7 @@ namespace
 
     Map6x6
     linear_map (
-        std::list<elements::KnownElements> const & lattice,
+        Lattice const & lattice,
         RefPart const & ref_part_init,
         OnMissingLinearMap on_missing
     )

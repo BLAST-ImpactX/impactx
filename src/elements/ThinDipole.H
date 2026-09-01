@@ -11,12 +11,12 @@
 #define IMPACTX_THINDIPOLE_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
@@ -29,10 +29,9 @@
 
 namespace impactx::elements
 {
-    struct ThinDipole
-    : public mixin::Named,
-      public mixin::BeamOptic<ThinDipole>,
-      public mixin::LinearTransport<ThinDipole>,
+    struct ThinDipoleGPU
+    : public mixin::BeamOptic<ThinDipoleGPU>,
+      public mixin::LinearTransport<ThinDipoleGPU>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::SpinTransport,
@@ -54,18 +53,15 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param name a user defined and not necessarily unique name of the element
          */
-        ThinDipole (
+        ThinDipoleGPU (
             amrex::ParticleReal theta,
             amrex::ParticleReal rc,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
-            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
-            std::optional<std::string> name = DEFAULT_name
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree
         )
-        : Named(std::move(name)),
-          Alignment(dx, dy, rotation_degree),
+        : Alignment(dx, dy, rotation_degree),
           m_theta(theta * degree2rad),
           m_rc(rc)
         {
@@ -327,8 +323,11 @@ namespace impactx::elements
         amrex::ParticleReal m_kx;    //! effective (equivalent) curvature
     };
 
+    /** ThinDipole: GPU state plus common host-only metadata */
+    using ThinDipole = Element<ThinDipoleGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ThinDipole)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ThinDipoleGPU)
 
 #endif // IMPACTX_THINDIPOLE_H

@@ -11,6 +11,7 @@
 #define IMPACT_X_H
 
 #include "elements/All.H"
+#include "Lattice.H"
 #include "initialization/AmrCoreData.H"
 #include "particles/distribution/All.H"
 #include "tracking/TrackingState.H"
@@ -18,7 +19,6 @@
 #include <AMReX_REAL.H>
 
 #include <functional>
-#include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -142,8 +142,15 @@ namespace impactx
          */
         void ResizeMesh ();
 
-        /** these are elements defining the accelerator lattice */
-        std::list<elements::KnownElements> m_lattice;
+        /** The elements defining the accelerator lattice
+         *
+         * Held indirectly so that it has an address of its own. Python hands out a view of
+         * this lattice and keys that view on where the lattice lives; a lattice that were
+         * part of the simulation would give its address back when the simulation ended, and
+         * a later simulation allocated in the same place would be handed the earlier view.
+         * A share keeps the lattice where it is for as long as anyone refers to it.
+         */
+        std::shared_ptr<Lattice> m_lattice = std::make_shared<Lattice>();
 
         /** Was init_grids already called?
          *

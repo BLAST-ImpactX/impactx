@@ -8,17 +8,10 @@ License: BSD-3-Clause-LBNL
 
 import os
 import re
-import weakref
 
 from impactx import Config, elements
 
 from ..element_models import DRIFT_MODEL_CLASSES, tier_of_class, validate_model
-
-# All live FilteredElementsList views for a lattice (WeakKeyDictionary: key is KnownElementsList).
-_filtered_views_by_lattice: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
-_filtered_views_by_lattice.__repr__ = lambda: (
-    "WeakKeyDictionary()"
-)  # stable repr for .pyi stub generation
 
 FILTERED_ELEMENTS_LIST_INVALID_MSG = (
     "This lattice selection is no longer valid because the lattice was modified; "
@@ -37,31 +30,6 @@ def _drift_class_for_replace_with_drifts(model: str, old_el) -> type:
     else:
         key = model
     return DRIFT_MODEL_CLASSES[key]
-
-
-def _commit_lattice_rebuild(original, new_elements) -> None:
-    """Replace lattice contents with ``new_elements`` and invalidate all FilteredElementsList views."""
-    original.clear()
-    original.extend(new_elements)
-    _invalidate_all_registered_views(original)
-
-
-def _registry_for(lattice):
-    """Return the WeakSet of FilteredElementsList instances for this lattice."""
-    rs = _filtered_views_by_lattice.get(lattice)
-    if rs is None:
-        rs = weakref.WeakSet()
-        _filtered_views_by_lattice[lattice] = rs
-    return rs
-
-
-def _invalidate_all_registered_views(lattice) -> None:
-    """Mark every registered FilteredElementsList for this lattice as invalid."""
-    rs = _filtered_views_by_lattice.get(lattice)
-    if rs is None:
-        return
-    for fel in list(rs):
-        fel._invalidated = True
 
 
 # These report an angle in radians from ``to_dict()`` although their constructors
@@ -84,18 +52,6 @@ def _element_to_dict(element) -> dict:
     if type(element).__name__ in _DEGREE_ELEMENTS:
         return element.to_dict(in_degrees=True)
     return element.to_dict()
-
-
-def _clone_element(template):
-    """Deep-clone a lattice element via ``to_dict`` (pybind elements are not copy.copy-able).
-
-    Goes through ``_element_to_dict`` and ``_element_from_dict`` so that the dict is
-    one the constructor accepts: ``_filter_kwargs`` drops keys that ``to_dict``
-    reports but the constructor rejects (thin elements such as ``Marker`` report
-    ``ds=0.0`` yet take only a name), and angles are converted to the degrees the
-    constructor expects.
-    """
-    return _element_from_dict(_element_to_dict(template))
 
 
 def _make_drift_from_old(
@@ -239,12 +195,14 @@ class FilteredElementsList:
     def __init__(self, original_list, indices):
         self._original_list = original_list
         self._indices = list(indices) if not isinstance(indices, list) else indices
-        self._invalidated = False
-        _registry_for(original_list).add(self)
+        # A selection is a list of positions, so any edit that moves elements makes it
+        # describe something else. The lattice counts those edits, which catches every
+        # edit, whether it was made on the lattice or through another selection.
+        self._generation = original_list.generation
 
     def _require_valid(self) -> None:
-        """Raise if this view was invalidated after a lattice mutation."""
-        if self._invalidated:
+        """Raise if the lattice changed after this view was taken."""
+        if self._original_list.generation != self._generation:
             raise RuntimeError(FILTERED_ELEMENTS_LIST_INVALID_MSG)
 
     def __getitem__(self, key):
@@ -342,14 +300,16 @@ class FilteredElementsList:
         original = self._original_list
         to_remove = set(self._indices)
         if not to_remove:
-            _invalidate_all_registered_views(original)
+            # nothing selected changes nothing, so other selections stay usable
             return None
-        n = len(original)
-        # Clone kept elements before clear(); clear() destroys C++ objects in the list.
-        new_elems = [
-            _clone_element(original[i]) for i in range(n) if i not in to_remove
-        ]
-        _commit_lattice_rebuild(original, new_elems)
+
+        # Keep the rest, in one pass. Deleting the selected positions one at a time moves
+        # everything after each of them, which is quadratic in the length of the lattice.
+        # Elements that were not selected are carried over as they are: they keep their
+        # identity, their Python subclass and their callbacks.
+        kept = [original[i] for i in range(len(original)) if i not in to_remove]
+        original.clear()
+        original.extend(kept)
         return None
 
     def replace_each(self, element, *, keep_name=True, keep_ds=False):
@@ -360,26 +320,29 @@ class FilteredElementsList:
         original = self._original_list
         indices = self._indices
         if not indices:
-            _invalidate_all_registered_views(original)
+            # nothing selected changes nothing, so other selections stay usable
             return FilteredElementsList(original, [])
 
-        n = len(original)
-        idx_set = set(indices)
-        new_row = [None] * n
-        for i in range(n):
-            if i not in idx_set:
-                new_row[i] = _clone_element(original[i])
-                continue
+        # One copy per selected position, so the replacements are independent elements
+        # rather than one element repeated. Unselected positions are left alone.
+        #
+        # Build every replacement before installing any of them: a template that cannot be
+        # copied, or whose name or length cannot be set, must leave the lattice as it was
+        # rather than replacing the positions reached before it failed.
+        replacements = []
+        for i in indices:
             old_el = original[i]
-            new_el = _clone_element(element)
+            new_el = element.copy()
             if keep_name:
                 if hasattr(old_el, "has_name") and old_el.has_name:
                     new_el.name = old_el.name
             if keep_ds and hasattr(old_el, "ds"):
                 new_el.ds = old_el.ds
-            new_row[i] = new_el
+            replacements.append((i, new_el))
 
-        _commit_lattice_rebuild(original, new_row)
+        for i, new_el in replacements:
+            original[i] = new_el
+
         return FilteredElementsList(original, list(indices))
 
     def replace_with_drifts(
@@ -400,30 +363,32 @@ class FilteredElementsList:
         original = self._original_list
         indices = self._indices
         if not indices:
-            _invalidate_all_registered_views(original)
+            # nothing selected changes nothing, so other selections stay usable
             return FilteredElementsList(original, [])
 
         validate_model(model, argument="model", extra_values=("match",))
 
-        n = len(original)
-        idx_set = set(indices)
-        new_row = [None] * n
-        for i in range(n):
-            if i not in idx_set:
-                new_row[i] = _clone_element(original[i])
-                continue
-            old_el = original[i]
-            cls = _drift_class_for_replace_with_drifts(model, old_el)
-            new_row[i] = _make_drift_from_old(
-                cls,
-                old_el,
-                keep_name=True,
-                keep_ds=True,
-                keep_alignment=keep_alignment,
-                keep_aperture=keep_aperture,
+        # Only the selected positions are rewritten; everything else stays as it is. Every
+        # drift is built before any is installed, so a failure part-way leaves the lattice
+        # as it was.
+        replacements = [
+            (
+                i,
+                _make_drift_from_old(
+                    _drift_class_for_replace_with_drifts(model, original[i]),
+                    original[i],
+                    keep_name=True,
+                    keep_ds=True,
+                    keep_alignment=keep_alignment,
+                    keep_aperture=keep_aperture,
+                ),
             )
+            for i in indices
+        ]
 
-        _commit_lattice_rebuild(original, new_row)
+        for i, new_el in replacements:
+            original[i] = new_el
+
         return FilteredElementsList(original, list(indices))
 
     def get_kinds(self) -> list[type]:
@@ -535,12 +500,29 @@ def _matches_kind_pattern(element, kind_pattern):
         bool: True if element matches the pattern
     """
     if isinstance(kind_pattern, str):
-        # String pattern (exact match or regex)
-        return _matches_string(type(element).__name__, kind_pattern)
+        # An element written as a Python subclass is still of its element kind, so match
+        # the kind rather than the name of the user's class.
+        if _matches_string(type(element).__name__, kind_pattern):
+            return True
+        return _matches_string(_element_kind(element), kind_pattern)
     elif isinstance(kind_pattern, type):
-        # Element type (exact match)
-        return type(element) is kind_pattern
+        return isinstance(element, kind_pattern)
     return False
+
+
+def _element_kind(element):
+    """The element kind, which a Python subclass keeps.
+
+    Args:
+        element: The element to inspect
+
+    Returns:
+        str: the name of the element type this is a kind of, e.g. ``"Drift"``
+    """
+    for base in type(element).__mro__:
+        if getattr(elements, base.__name__, None) is base:
+            return base.__name__
+    return type(element).__name__
 
 
 def _matches_name_pattern(element, name_pattern):
@@ -844,7 +826,7 @@ def to_dicts(self) -> list[dict]:
     # return [el.to_dict() for el in self]
 
     # work-around for ExactSbend, PlaneXYRot, PRot, ThinDipole .to_dict() returning
-    # radians not degrees; shared with _clone_element via _element_to_dict
+    # radians not degrees; see _element_to_dict
     return [_element_to_dict(el) for el in self]
 
 
@@ -1062,18 +1044,42 @@ def _lattice_isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=Non
 # patched inside register_KnownElementsList_extension() below, since that is
 # the sole entry point that receives the bound class.
 #
-# We deliberately do NOT touch __hash__: FilteredElementsList instances are
-# tracked in a WeakSet (see ``_registry_for``) and need to remain hashable.
-# Keeping the inherited identity-based hash means two value-equal containers
-# may hash differently, but containers are not intended as dict/set keys for
-# value-based deduplication.
+# We deliberately do NOT touch __hash__: keeping the inherited identity-based
+# hash means two value-equal containers may hash differently, but containers are
+# mutable and are not intended as dict/set keys for value-based deduplication.
 FilteredElementsList.__eq__ = _lattice_eq
 FilteredElementsList.isclose = _lattice_isclose
+
+
+def _lattice_init(self, elements=None):
+    """Create a lattice, optionally filled with elements.
+
+    The elements are shared, not copied, so the caller keeps handles to the very
+    elements the lattice holds. Constructing goes through ``extend`` for exactly that
+    reason: the C++ constructor cannot see the object being constructed, and so cannot
+    record which Python objects own the elements.
+    """
+    _lattice_init_cxx(self)
+    if elements is not None:
+        if isinstance(elements, _elements_module.KnownElementsList) or isinstance(
+            elements, (list, tuple)
+        ):
+            self.extend(elements)
+        else:
+            self.append(elements)
 
 
 def register_KnownElementsList_extension(kel):
     """KnownElementsList helper methods"""
     from ..plot.Survey import plot_survey
+
+    # Construction from an iterable of elements; see _lattice_init.
+    global _lattice_init_cxx, _elements_module
+    _lattice_init_cxx = kel.__init__
+    from .. import impactx_pybind as _ix
+
+    _elements_module = _ix.elements
+    kel.__init__ = _lattice_init
 
     # register member functions for KnownElementsList
     kel.from_pals = from_pals

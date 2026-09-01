@@ -11,12 +11,12 @@
 #define IMPACTX_MULTIPOLE_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
@@ -29,10 +29,9 @@
 
 namespace impactx::elements
 {
-    struct Multipole
-    : public mixin::Named,
-      public mixin::BeamOptic<Multipole>,
-      public mixin::LinearTransport<Multipole>,
+    struct MultipoleGPU
+    : public mixin::BeamOptic<MultipoleGPU>,
+      public mixin::LinearTransport<MultipoleGPU>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::SpinTransport,
@@ -67,19 +66,16 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param name a user defined and not necessarily unique name of the element
          */
-        Multipole (
+        MultipoleGPU (
             int multipole,
             amrex::ParticleReal K_normal,
             amrex::ParticleReal K_skew,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
-            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
-            std::optional<std::string> name = DEFAULT_name
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree
         )
-        : Named(std::move(name)),
-          Alignment(dx, dy, rotation_degree),
+        : Alignment(dx, dy, rotation_degree),
           m_multipole(multipole), m_Kn(K_normal), m_Ks(K_skew)
         {
             compute_factorial();
@@ -361,8 +357,11 @@ namespace impactx::elements
         amrex::ParticleReal m_ibeta;          //! inverse of beta
     };
 
+    /** Multipole: GPU state plus common host-only metadata */
+    using Multipole = Element<MultipoleGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Multipole)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::MultipoleGPU)
 
 #endif // IMPACTX_MULTIPOLE_H

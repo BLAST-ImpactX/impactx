@@ -11,10 +11,10 @@
 #define IMPACTX_SHORTRF_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
@@ -28,10 +28,9 @@
 
 namespace impactx::elements
 {
-    struct ShortRF
-    : public mixin::Named,
-      public mixin::BeamOptic<ShortRF>,
-      public mixin::LinearTransport<ShortRF>,
+    struct ShortRFGPU
+    : public mixin::BeamOptic<ShortRFGPU>,
+      public mixin::LinearTransport<ShortRFGPU>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::SpinTransport,
@@ -54,19 +53,16 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param name a user defined and not necessarily unique name of the element
          */
-        ShortRF (
+        ShortRFGPU (
             amrex::ParticleReal V,
             amrex::ParticleReal freq,
             amrex::ParticleReal phase = DEFAULT_phase,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
-            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
-            std::optional<std::string> name = DEFAULT_name
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree
         )
-        : Named(std::move(name)),
-          Alignment(dx, dy, rotation_degree),
+        : Alignment(dx, dy, rotation_degree),
           m_V(V), m_freq(freq), m_phase(phase)
         {
         }
@@ -376,8 +372,11 @@ namespace impactx::elements
         amrex::ParticleReal m_k, m_phi, m_V_cos_phi, m_bgi, m_bgf;
     };
 
+    /** ShortRF: GPU state plus common host-only metadata */
+    using ShortRF = Element<ShortRFGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ShortRF)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ShortRFGPU)
 
 #endif // IMPACTX_SHORTRF_H

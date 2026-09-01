@@ -11,11 +11,11 @@
 #define IMPACTX_DIPEDGE_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 #include "mixin/spintransport.H"
 
@@ -32,10 +32,9 @@
 
 namespace impactx::elements
 {
-    struct DipEdge
-    : public mixin::Named,
-      public mixin::BeamOptic<DipEdge>,
-      public mixin::LinearTransport<DipEdge>,
+    struct DipEdgeGPU
+    : public mixin::BeamOptic<DipEdgeGPU>,
+      public mixin::LinearTransport<DipEdgeGPU>,
       public mixin::Thin,
       public mixin::Alignment,
       public mixin::SpinTransport,
@@ -94,9 +93,8 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param name a user defined and not necessarily unique name of the element
          */
-        DipEdge (
+        DipEdgeGPU (
             amrex::ParticleReal psi,
             amrex::ParticleReal rc,
             amrex::ParticleReal g,
@@ -113,11 +111,9 @@ namespace impactx::elements
             bool modify_ref_part = DEFAULT_modify_ref_part,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
-            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
-            std::optional<std::string> name = DEFAULT_name
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree
         )
-        : Named(std::move(name)),
-          Alignment(dx, dy, rotation_degree),
+        : Alignment(dx, dy, rotation_degree),
           m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_location(location), m_modify_ref_part(modify_ref_part)
         {
         }
@@ -466,8 +462,11 @@ namespace impactx::elements
         amrex::ParticleReal m_c11_times_1plusdelta, m_c12_times_1plusdelta;
     };
 
+    /** DipEdge: GPU state plus common host-only metadata */
+    using DipEdge = Element<DipEdgeGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::DipEdge)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::DipEdgeGPU)
 
 #endif // IMPACTX_DIPEDGE_H

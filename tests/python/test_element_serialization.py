@@ -651,6 +651,53 @@ def test_element_dict_has_constructor_params(all_elements):
         assert not extra, f"{element_type}: to_dict() has extra keys: {extra}"
 
 
+def test_mixin_properties_are_settable(all_elements):
+    """
+    Test that the read/write properties inherited from the mixin classes can be
+    assigned after construction, and that to_dict() sees the new value.
+    """
+    lattice, _ = all_elements
+
+    # property name -> value to assign
+    settable = {
+        "aperture_x": 0.05,
+        "aperture_y": 0.06,
+        "dx": 0.007,
+        "dy": 0.008,
+        "rotation": 0.09,
+    }
+    # apertures are stored inverted, so a set/get pair costs two divisions
+    rtol = 1e-5 if Config.precision == "SINGLE" else 1e-12
+
+    covered = set()
+    for element in lattice:
+        element_type = type(element).__name__
+
+        if element_type in SKIP_ELEMENTS:
+            continue
+
+        for prop, value in settable.items():
+            if not hasattr(element, prop):
+                continue
+
+            setattr(element, prop, value)
+            assert getattr(element, prop) == pytest.approx(value, rel=rtol), (
+                f"{element_type}.{prop} did not keep the assigned value"
+            )
+
+            d = element.to_dict()
+            assert prop in d, f"{element_type}: to_dict() is missing {prop}"
+            assert d[prop] == pytest.approx(value, rel=rtol), (
+                f"{element_type}: to_dict()[{prop!r}] does not reflect the assignment"
+            )
+
+            covered.add(prop)
+
+    assert covered == set(settable), (
+        f"no element exercised: {sorted(set(settable) - covered)}"
+    )
+
+
 def test_individual_element_roundtrip(all_elements):
     """
     Test each element type individually for roundtrip consistency.

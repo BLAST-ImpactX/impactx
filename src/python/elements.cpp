@@ -423,13 +423,21 @@ void init_elements(py::module& m)
     ;
 
     py::class_<elements::mixin::PipeAperture>(mx, "PipeAperture")
-        .def_property_readonly("aperture_x",
-            &elements::mixin::PipeAperture::aperture_x,
-            "horizontal aperture in m"
+        .def_property("aperture_x",
+            [](elements::mixin::PipeAperture & pa) { return pa.aperture_x(); },
+            [](elements::mixin::PipeAperture & pa, amrex::ParticleReal aperture_x)
+            {
+                pa.set_aperture_x(aperture_x);
+            },
+            "horizontal aperture in m; zero or less removes the aperture restriction"
         )
-        .def_property_readonly("aperture_y",
-            &elements::mixin::PipeAperture::aperture_y,
-            "vertical aperture in m"
+        .def_property("aperture_y",
+            [](elements::mixin::PipeAperture & pa) { return pa.aperture_y(); },
+            [](elements::mixin::PipeAperture & pa, amrex::ParticleReal aperture_y)
+            {
+                pa.set_aperture_y(aperture_y);
+            },
+            "vertical aperture in m; zero or less removes the aperture restriction"
         )
     ;
 

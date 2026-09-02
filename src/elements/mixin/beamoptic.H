@@ -179,6 +179,50 @@ namespace detail
         amrex::ignore_unused(val, ptr, i);
     }
 
+    /** Store the particle index back to memory, if anything can have changed it
+     *
+     * Unlike the phase space slots, idcpu is only ever modified when a particle
+     * is lost. If the push method itself does not write it, the only writer left
+     * is \see PipeAperture::apply_aperture - which is a no-op unless an aperture
+     * is actually set on this element. That is a runtime property, so guard the
+     * write-back with it: an unset aperture then costs neither the store nor,
+     * once the compiler sinks it into the branch, the load.
+     *
+     * @tparam P_Method the push method of the element, to inspect argument constness
+     * @tparam N the argument position of idcpu in the push method
+     * @tparam T_HasAperture whether the element carries the \see PipeAperture mixin
+     * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
+     * @tparam IndexType int or SIMD index
+     * @tparam ValType the type of the value to store
+     * @param val the value to store
+     * @param ptr pointer to the SoA data
+     * @param i index or SIMD index
+     * @param element the beamline element that was pushed through
+     */
+    template <auto P_Method, int N, bool T_HasAperture,
+              typename T, typename IndexType, typename ValType, typename T_Element>
+    AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+    void store_idcpu (
+        ValType const & AMREX_RESTRICT val,
+        T * const AMREX_RESTRICT ptr,
+        IndexType const i,
+        [[maybe_unused]] T_Element const & AMREX_RESTRICT element
+    )
+    {
+#ifdef AMREX_USE_SIMD
+        // the push method writes idcpu itself: always store, as before
+        if constexpr (amrex::simd::is_nth_arg_non_const(P_Method, N)) {
+            store_pdata<P_Method, N, true>(val, ptr, i);
+        } else if constexpr (T_HasAperture) {
+            // only apply_aperture can have written idcpu, and only if it is set
+            if (element.aperture_active()) {
+                store_pdata<P_Method, N, true>(val, ptr, i);
+            }
+        }
+#endif
+        amrex::ignore_unused(val, ptr, i);
+    }
+
     /** Push a single particle through an element
      *
      * Note: we usually would just write a C++ lambda below in ParallelFor. But, due to restrictions
@@ -308,19 +352,18 @@ namespace detail
                 // write sx, sy; apply_aperture writes idcpu.
                 // These wrapper-modified slots must be stored regardless of the push
                 // method's argument constness.
-                constexpr bool wb_align    = has_alignment;
-                constexpr bool wb_aperture = has_aperture;
+                constexpr bool wb_align = has_alignment;
 
-                store_pdata<P_Method, 0, wb_align>   (x,     m_part_x,     i);
-                store_pdata<P_Method, 1, wb_align>   (y,     m_part_y,     i);
-                store_pdata<P_Method, 2>             (t,     m_part_t,     i);
-                store_pdata<P_Method, 3, wb_align>   (px,    m_part_px,    i);
-                store_pdata<P_Method, 4, wb_align>   (py,    m_part_py,    i);
-                store_pdata<P_Method, 5>             (pt,    m_part_pt,    i);
-                store_pdata<P_Method, 6, wb_align>   (sx,    m_part_sx,    i);
-                store_pdata<P_Method, 7, wb_align>   (sy,    m_part_sy,    i);
-                store_pdata<P_Method, 8>             (sz,    m_part_sz,    i);
-                store_pdata<P_Method, 9, wb_aperture>(idcpu, m_part_idcpu, i);
+                store_pdata<P_Method, 0, wb_align>(x,  m_part_x,  i);
+                store_pdata<P_Method, 1, wb_align>(y,  m_part_y,  i);
+                store_pdata<P_Method, 2>          (t,  m_part_t,  i);
+                store_pdata<P_Method, 3, wb_align>(px, m_part_px, i);
+                store_pdata<P_Method, 4, wb_align>(py, m_part_py, i);
+                store_pdata<P_Method, 5>          (pt, m_part_pt, i);
+                store_pdata<P_Method, 6, wb_align>(sx, m_part_sx, i);
+                store_pdata<P_Method, 7, wb_align>(sy, m_part_sy, i);
+                store_pdata<P_Method, 8>          (sz, m_part_sz, i);
+                store_idcpu<P_Method, 9, has_aperture>(idcpu, m_part_idcpu, i, m_element);
             }
 #endif
         }
@@ -456,16 +499,15 @@ namespace detail
                 // shift_in/shift_out write x, y, px, py; apply_aperture writes idcpu.
                 // These wrapper-modified slots must be stored regardless of the push
                 // method's argument constness.
-                constexpr bool wb_align    = has_alignment;
-                constexpr bool wb_aperture = has_aperture;
+                constexpr bool wb_align = has_alignment;
 
-                store_pdata<P_Method, 0, wb_align>   (x,     m_part_x,     i);
-                store_pdata<P_Method, 1, wb_align>   (y,     m_part_y,     i);
-                store_pdata<P_Method, 2>             (t,     m_part_t,     i);
-                store_pdata<P_Method, 3, wb_align>   (px,    m_part_px,    i);
-                store_pdata<P_Method, 4, wb_align>   (py,    m_part_py,    i);
-                store_pdata<P_Method, 5>             (pt,    m_part_pt,    i);
-                store_pdata<P_Method, 6, wb_aperture>(idcpu, m_part_idcpu, i);
+                store_pdata<P_Method, 0, wb_align>(x,  m_part_x,  i);
+                store_pdata<P_Method, 1, wb_align>(y,  m_part_y,  i);
+                store_pdata<P_Method, 2>          (t,  m_part_t,  i);
+                store_pdata<P_Method, 3, wb_align>(px, m_part_px, i);
+                store_pdata<P_Method, 4, wb_align>(py, m_part_py, i);
+                store_pdata<P_Method, 5>          (pt, m_part_pt, i);
+                store_idcpu<P_Method, 6, has_aperture>(idcpu, m_part_idcpu, i, m_element);
             }
 #endif
         }

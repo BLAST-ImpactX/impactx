@@ -18,6 +18,7 @@
 #include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
+#include "mixin/pipeaperture.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -35,6 +36,7 @@ namespace impactx::elements
       public mixin::LinearTransport<TaperedPL>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::PipeAperture,
       public mixin::SpinTransport,
       public mixin::NoFinalize,
       // At least on Intel AVX512, there is a small overhead to vectorize this element
@@ -61,6 +63,8 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
          * @param name a user defined and not necessarily unique name of the element
          */
         TaperedPL (
@@ -70,10 +74,13 @@ namespace impactx::elements
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
             amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
             std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
           Alignment(dx, dy, rotation_degree),
+          PipeAperture(aperture_x, aperture_y),
           m_k(k), m_taper(taper), m_unit(unit)
         {
         }

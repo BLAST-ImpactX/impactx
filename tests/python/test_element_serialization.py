@@ -431,13 +431,7 @@ def all_elements():
 
     lattice.append(
         elements.PlaneXYRot(
-            angle=45.0,
-            dx=0.001,
-            dy=0.002,
-            rotation=0.05,
-            aperture_x=0.03,
-            aperture_y=0.04,
-            name="test_planexyrot",
+            angle=45.0, dx=0.001, dy=0.002, rotation=0.05, name="test_planexyrot"
         )
     )
 
@@ -460,15 +454,7 @@ def all_elements():
 
     lattice.append(elements.Programmable(ds=0.5, nslice=2, name="test_programmable"))
 
-    lattice.append(
-        elements.PRot(
-            phi_in=0.1,
-            phi_out=-0.1,
-            aperture_x=0.02,
-            aperture_y=0.03,
-            name="test_prot",
-        )
-    )
+    lattice.append(elements.PRot(phi_in=0.1, phi_out=-0.1, name="test_prot"))
 
     lattice.append(
         elements.Quad(
@@ -606,8 +592,6 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
-            aperture_x=0.02,
-            aperture_y=0.03,
             name="test_spinmap",
         )
     )

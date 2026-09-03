@@ -18,7 +18,6 @@
 #include "mixin/spintransport.H"
 #include "mixin/named.H"
 #include "mixin/nofinalize.H"
-#include "mixin/pipeaperture.H"
 
 #include <ablastr/constant.H>
 
@@ -37,7 +36,6 @@ namespace impactx::elements
       public mixin::BeamOptic<PRot>,
       public mixin::LinearTransport<PRot>,
       public mixin::Thin,
-      public mixin::PipeAperture,
       public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -52,19 +50,14 @@ namespace impactx::elements
          *
          * @param phi_in Initial angle of reference trajectory w/r/t z (degrees)
          * @param phi_out Final angle of reference trajectory w/r/t/ z (degrees)
-         * @param aperture_x horizontal half-aperture in m
-         * @param aperture_y vertical half-aperture in m
          * @param name a user defined and not necessarily unique name of the element
          */
         PRot (
             amrex::ParticleReal phi_in,
             amrex::ParticleReal phi_out,
-            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
-            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
             std::optional<std::string> name = DEFAULT_name
         )
         : Named(std::move(name)),
-          PipeAperture(aperture_x, aperture_y),
           m_phi_in(phi_in * mixin::Alignment::degree2rad),
           m_phi_out(phi_out * mixin::Alignment::degree2rad)
         {

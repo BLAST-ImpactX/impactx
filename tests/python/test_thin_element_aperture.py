@@ -15,7 +15,7 @@ aperture, just like the finite-length (thick) elements do.
 import numpy as np
 import pytest
 
-from impactx import ImpactX, Map3x6, Map6x6, Vector3, distribution, elements
+from impactx import ImpactX, Map6x6, distribution, elements
 
 # beam sizes, chosen so that a 1 sigma aperture cuts a sizable fraction
 LAMBDA_X = 1.0e-3
@@ -57,23 +57,11 @@ def thin_elements(aperture_x, aperture_y):
         "NonlinearLens": elements.NonlinearLens(
             knll=0.0, cnll=1.0, aperture_x=aperture_x, aperture_y=aperture_y
         ),
-        "PRot": elements.PRot(
-            phi_in=0.0, phi_out=0.0, aperture_x=aperture_x, aperture_y=aperture_y
-        ),
-        "PlaneXYRot": elements.PlaneXYRot(
-            angle=0.0, aperture_x=aperture_x, aperture_y=aperture_y
-        ),
         "QuadEdge": elements.QuadEdge(
             k=0.0, aperture_x=aperture_x, aperture_y=aperture_y
         ),
         "ShortRF": elements.ShortRF(
             V=0.0, freq=1.0e6, aperture_x=aperture_x, aperture_y=aperture_y
-        ),
-        "SpinMap": elements.SpinMap(
-            v=Vector3(),
-            A=Map3x6(),
-            aperture_x=aperture_x,
-            aperture_y=aperture_y,
         ),
         "TaperedPL": elements.TaperedPL(
             k=0.0, taper=0.0, aperture_x=aperture_x, aperture_y=aperture_y

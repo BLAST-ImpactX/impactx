@@ -2455,17 +2455,15 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.PRot(phi_in, phi_out, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.PRot(phi_in, phi_out, name=None)
 
    Exact map for a pole-face rotation in the x-z plane.
 
    :param phi_in: angle of the reference particle with respect to the longitudinal (z) axis in the original frame in degrees
    :param phi_out: angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees
-   :param aperture_x: horizontal half-aperture (elliptical) in m
-   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.PlaneXYRot(angle, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.PlaneXYRot(angle, dx=0, dy=0, rotation=0, name=None)
 
    Map for a transverse rotation in the x-y plane (i.e., about the reference velocity vector).
 
@@ -2473,8 +2471,6 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
-   :param aperture_x: horizontal half-aperture (elliptical) in m
-   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
 .. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
@@ -2566,7 +2562,7 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SpinMap(v, A, ds=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.SpinMap(v, A, ds=0, dx=0, dy=0, rotation=0, name=None)
 
    A custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.  Spin maps are specified in the Lie-algebraic form:
 
@@ -2590,8 +2586,6 @@ For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/n
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
-   :param aperture_x: horizontal half-aperture (elliptical) in m
-   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
    .. note::

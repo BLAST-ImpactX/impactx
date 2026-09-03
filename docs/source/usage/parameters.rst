@@ -1289,13 +1289,6 @@ This requires these additional parameters:
 
     Rotation error in the transverse plane.
 
-.. pp:param:: <plane_xyrotation_name>.aperture_x/y
-    :link_aliases: <plane_xyrotation_name>.aperture_x <plane_xyrotation_name>.aperture_y
-    :type: ``float``
-    :unit: m
-
-    Horizontal / vertical half-aperture (elliptical).
-
 
 ``plasma_lens_chromatic``
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1426,13 +1419,6 @@ This requires these additional parameters:
     :unit: degree
 
     Angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame.
-
-.. pp:param:: <prot_name>.aperture_x/y
-    :link_aliases: <prot_name>.aperture_x <prot_name>.aperture_y
-    :type: ``float``
-    :unit: m
-
-    Horizontal / vertical half-aperture (elliptical).
 
 
 ``quad``
@@ -2235,13 +2221,6 @@ This element is defined via ``<spin_map_name>.type = spin_map`` and requires the
     :default: ``0``
 
     Rotation error in the transverse plane.
-
-.. pp:param:: <spin_map_name>.aperture_x/y
-    :link_aliases: <spin_map_name>.aperture_x <spin_map_name>.aperture_y
-    :type: ``float``
-    :unit: m
-
-    Horizontal / vertical half-aperture (elliptical).
 
 
 ``tapered_pl``

@@ -1808,7 +1808,7 @@ void init_elements(py::module& m)
     register_push(py_NonlinearLens);
     register_reverse(py_NonlinearLens);
 
-    py::class_<PlaneXYRot, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment, elements::mixin::PipeAperture> py_PlaneXYRot(me, "PlaneXYRot");
+    py::class_<PlaneXYRot, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment> py_PlaneXYRot(me, "PlaneXYRot");
     py_PlaneXYRot
         .def("__repr__",
              [](PlaneXYRot const & plane_xyrot) {
@@ -1848,16 +1848,12 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
                 std::optional<std::string>
              >(),
              py::arg("angle"),
              py::arg("dx") = PlaneXYRot::DEFAULT_dx,
              py::arg("dy") = PlaneXYRot::DEFAULT_dy,
              py::arg("rotation") = PlaneXYRot::DEFAULT_rotation_degree,
-             py::arg("aperture_x") = PlaneXYRot::DEFAULT_aperture_x,
-             py::arg("aperture_y") = PlaneXYRot::DEFAULT_aperture_y,
              py::arg("name") = py::none(),
              "A rotation in the x-y plane."
         )
@@ -2663,7 +2659,7 @@ void init_elements(py::module& m)
     register_push(py_Sol);
     register_reverse(py_Sol);
 
-    py::class_<PRot, elements::mixin::Named, elements::mixin::Thin, elements::mixin::PipeAperture> py_PRot(me, "PRot");
+    py::class_<PRot, elements::mixin::Named, elements::mixin::Thin> py_PRot(me, "PRot");
     py_PRot
         .def("__repr__",
              [](PRot const & prot) {
@@ -2704,14 +2700,10 @@ void init_elements(py::module& m)
         .def(py::init<
                 amrex::ParticleReal,
                 amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
                 std::optional<std::string>
              >(),
              py::arg("phi_in"),
              py::arg("phi_out"),
-             py::arg("aperture_x") = PRot::DEFAULT_aperture_x,
-             py::arg("aperture_y") = PRot::DEFAULT_aperture_y,
              py::arg("name") = py::none(),
              "An exact pole-face rotation in the x-z plane. Both angles are in degrees."
         )
@@ -3027,7 +3019,7 @@ void init_elements(py::module& m)
      register_push(py_LinearMap);
      register_reverse(py_LinearMap);
 
-    py::class_<SpinMap, elements::mixin::Named, elements::mixin::Alignment, elements::mixin::PipeAperture> py_SpinMap(me, "SpinMap");
+    py::class_<SpinMap, elements::mixin::Named, elements::mixin::Alignment> py_SpinMap(me, "SpinMap");
     py_SpinMap
         .def("__repr__",
              [](SpinMap const & spinmap) {
@@ -3051,8 +3043,6 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
-                amrex::ParticleReal,
-                amrex::ParticleReal,
                 std::optional<std::string>
              >(),
              py::arg("v"),
@@ -3061,8 +3051,6 @@ void init_elements(py::module& m)
              py::arg("dx") = SpinMap::DEFAULT_dx,
              py::arg("dy") = SpinMap::DEFAULT_dy,
              py::arg("rotation") = SpinMap::DEFAULT_rotation_degree,
-             py::arg("aperture_x") = SpinMap::DEFAULT_aperture_x,
-             py::arg("aperture_y") = SpinMap::DEFAULT_aperture_y,
              py::arg("name") = py::none(),
              "(A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)"
         )

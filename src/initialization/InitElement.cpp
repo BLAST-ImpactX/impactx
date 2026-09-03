@@ -327,22 +327,19 @@ namespace detail
             m_lattice.emplace_back( Sol(ds, ks, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "prot")
         {
-            auto b = detail::query_aperture<PRot>(pp_element);
-
             amrex::ParticleReal phi_in, phi_out;
             pp_element.getWithParser("phi_in", phi_in);
             pp_element.getWithParser("phi_out", phi_out);
 
-            m_lattice.emplace_back( PRot(phi_in, phi_out, b["aperture_x"], b["aperture_y"], element_name) );
+            m_lattice.emplace_back( PRot(phi_in, phi_out, element_name) );
         } else if (element_type == "plane_xyrotation")
         {
             auto a = detail::query_alignment<PlaneXYRot>(pp_element);
-            auto b = detail::query_aperture<PlaneXYRot>(pp_element);
 
             amrex::ParticleReal phi;
             pp_element.getWithParser("angle", phi);
 
-            m_lattice.emplace_back( PlaneXYRot(phi, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], element_name) );
+            m_lattice.emplace_back( PlaneXYRot(phi, a["dx"], a["dy"], a["rotation_degree"], element_name) );
         } else if (element_type == "solenoid_softedge")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
@@ -716,7 +713,6 @@ element_name) );
         } else if (element_type == "spin_map")
         {
             auto a = detail::query_alignment<SpinMap>(pp_element);
-            auto b = detail::query_aperture<SpinMap>(pp_element);
 
             amrex::ParticleReal ds = SpinMap::DEFAULT_ds;
             pp_element.queryAdd("ds", ds);
@@ -738,7 +734,7 @@ element_name) );
                 }
             }
 
-            m_lattice.emplace_back(SpinMap(spin_rotation_vector, spin_orbit_coupling, ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"]) );
+            m_lattice.emplace_back(SpinMap(spin_rotation_vector, spin_orbit_coupling, ds, a["dx"], a["dy"], a["rotation_degree"]) );
 
         } else {
             amrex::Abort("Unknown type for lattice element " + element_name + ": " + element_type);

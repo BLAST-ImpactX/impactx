@@ -667,6 +667,7 @@ element_name) );
         } else if (element_type == "linear_map")
         {
             auto a = detail::query_alignment<LinearMap>(pp_element);
+            auto b = detail::query_aperture<LinearMap>(pp_element);
 
             amrex::ParticleReal ds = LinearMap::DEFAULT_ds;
             pp_element.queryAdd("ds", ds);
@@ -681,7 +682,7 @@ element_name) );
                 }
             }
 
-            m_lattice.emplace_back(LinearMap(transport_map, ds, a["dx"], a["dy"], a["rotation_degree"]) );
+            m_lattice.emplace_back(LinearMap(transport_map, ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"]) );
         } else if (element_type == "polygon_aperture")
         {
             auto a = detail::query_alignment<PolygonAperture>(pp_element);
@@ -715,6 +716,7 @@ element_name) );
         } else if (element_type == "spin_map")
         {
             auto a = detail::query_alignment<SpinMap>(pp_element);
+            auto b = detail::query_aperture<SpinMap>(pp_element);
 
             amrex::ParticleReal ds = SpinMap::DEFAULT_ds;
             pp_element.queryAdd("ds", ds);
@@ -736,7 +738,7 @@ element_name) );
                 }
             }
 
-            m_lattice.emplace_back(SpinMap(spin_rotation_vector, spin_orbit_coupling, ds, a["dx"], a["dy"], a["rotation_degree"]) );
+            m_lattice.emplace_back(SpinMap(spin_rotation_vector, spin_orbit_coupling, ds, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"]) );
 
         } else {
             amrex::Abort("Unknown type for lattice element " + element_name + ": " + element_type);

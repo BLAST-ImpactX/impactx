@@ -1088,6 +1088,13 @@ This element is defined via ``<linear_map_name>.type = linear_map`` and requires
 
     Rotation error in the transverse plane.
 
+.. pp:param:: <linear_map_name>.aperture_x/y
+    :link_aliases: <linear_map_name>.aperture_x <linear_map_name>.aperture_y
+    :type: ``float``
+    :unit: m
+
+    Horizontal / vertical half-aperture (elliptical).
+
 
 ``multipole``
 ^^^^^^^^^^^^^
@@ -2220,14 +2227,21 @@ This element is defined via ``<spin_map_name>.type = spin_map`` and requires the
     :unit: m
     :default: ``0``
 
-    Horizontal / vertical translation error (not used, defaults to 0).
+    Horizontal / vertical translation error.
 
 .. pp:param:: <spin_map_name>.rotation
     :type: ``float``
     :unit: degree
     :default: ``0``
 
-    Rotation error in the transverse plane (not used, defaults to 0).
+    Rotation error in the transverse plane.
+
+.. pp:param:: <spin_map_name>.aperture_x/y
+    :link_aliases: <spin_map_name>.aperture_x <spin_map_name>.aperture_y
+    :type: ``float``
+    :unit: m
+
+    Horizontal / vertical half-aperture (elliptical).
 
 
 ``tapered_pl``

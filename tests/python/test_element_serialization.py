@@ -389,7 +389,14 @@ def all_elements():
     R = getattr(amr, f"SmallMatrix_6x6_F_SI1_{_REAL}").identity()
     lattice.append(
         elements.LinearMap(
-            R=R, ds=0.5, dx=0.001, dy=0.002, rotation=0.05, name="test_linearmap"
+            R=R,
+            ds=0.5,
+            dx=0.001,
+            dy=0.002,
+            rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
+            name="test_linearmap",
         )
     )
 
@@ -593,7 +600,15 @@ def all_elements():
     A.set_val(0.01)
     lattice.append(
         elements.SpinMap(
-            v=v, A=A, ds=0.5, dx=0.001, dy=0.002, rotation=0.05, name="test_spinmap"
+            v=v,
+            A=A,
+            ds=0.5,
+            dx=0.001,
+            dy=0.002,
+            rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
+            name="test_spinmap",
         )
     )
 

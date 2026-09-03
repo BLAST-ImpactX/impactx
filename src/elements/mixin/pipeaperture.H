@@ -20,14 +20,14 @@
 
 namespace impactx::elements::mixin
 {
-    /** This is a helper class for applying a transverse aperture restriction to thick lattice elements
+    /** This is a helper class for applying a transverse aperture restriction to lattice elements
      */
     struct PipeAperture
     {
         static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
         static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
 
-        /** A finite-length element with a constant elliptical aperture over s.
+        /** An element with a constant elliptical aperture.
          *
          * @param aperture_x horizontal half-aperture size [m]
          * @param aperture_y vertical half-aperture size [m]

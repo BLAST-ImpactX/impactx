@@ -15,7 +15,7 @@ aperture, just like the finite-length (thick) elements do.
 import numpy as np
 import pytest
 
-from impactx import ImpactX, distribution, elements
+from impactx import ImpactX, Map3x6, Map6x6, Vector3, distribution, elements
 
 # beam sizes, chosen so that a 1 sigma aperture cuts a sizable fraction
 LAMBDA_X = 1.0e-3
@@ -44,6 +44,9 @@ def thin_elements(aperture_x, aperture_y):
         "Kicker": elements.Kicker(
             xkick=0.0, ykick=0.0, aperture_x=aperture_x, aperture_y=aperture_y
         ),
+        "LinearMap": elements.LinearMap(
+            R=Map6x6.identity(), aperture_x=aperture_x, aperture_y=aperture_y
+        ),
         "Multipole": elements.Multipole(
             multipole=1,
             K_normal=0.0,
@@ -65,6 +68,12 @@ def thin_elements(aperture_x, aperture_y):
         ),
         "ShortRF": elements.ShortRF(
             V=0.0, freq=1.0e6, aperture_x=aperture_x, aperture_y=aperture_y
+        ),
+        "SpinMap": elements.SpinMap(
+            v=Vector3(),
+            A=Map3x6(),
+            aperture_x=aperture_x,
+            aperture_y=aperture_y,
         ),
         "TaperedPL": elements.TaperedPL(
             k=0.0, taper=0.0, aperture_x=aperture_x, aperture_y=aperture_y

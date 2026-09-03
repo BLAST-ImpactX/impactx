@@ -2968,7 +2968,7 @@ void init_elements(py::module& m)
     register_push(py_TaperedPL);
     register_reverse(py_TaperedPL);
 
-    py::class_<LinearMap, elements::mixin::Named, elements::mixin::Alignment> py_LinearMap(me, "LinearMap");
+    py::class_<LinearMap, elements::mixin::Named, elements::mixin::Alignment, elements::mixin::PipeAperture> py_LinearMap(me, "LinearMap");
     py_LinearMap
         .def("__repr__",
              [](LinearMap const & linearmap) {
@@ -2990,6 +2990,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 std::optional<std::string>
              >(),
              py::arg("R"),
@@ -2997,6 +2999,8 @@ void init_elements(py::module& m)
              py::arg("dx") = LinearMap::DEFAULT_dx,
              py::arg("dy") = LinearMap::DEFAULT_dy,
              py::arg("rotation") = LinearMap::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = LinearMap::DEFAULT_aperture_x,
+             py::arg("aperture_y") = LinearMap::DEFAULT_aperture_y,
              py::arg("name") = py::none(),
              "(A user-provided linear map, represented as a 6x6 transport matrix.)"
         )
@@ -3023,7 +3027,7 @@ void init_elements(py::module& m)
      register_push(py_LinearMap);
      register_reverse(py_LinearMap);
 
-    py::class_<SpinMap, elements::mixin::Named, elements::mixin::Alignment> py_SpinMap(me, "SpinMap");
+    py::class_<SpinMap, elements::mixin::Named, elements::mixin::Alignment, elements::mixin::PipeAperture> py_SpinMap(me, "SpinMap");
     py_SpinMap
         .def("__repr__",
              [](SpinMap const & spinmap) {
@@ -3047,6 +3051,8 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
                 std::optional<std::string>
              >(),
              py::arg("v"),
@@ -3055,6 +3061,8 @@ void init_elements(py::module& m)
              py::arg("dx") = SpinMap::DEFAULT_dx,
              py::arg("dy") = SpinMap::DEFAULT_dy,
              py::arg("rotation") = SpinMap::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = SpinMap::DEFAULT_aperture_x,
+             py::arg("aperture_y") = SpinMap::DEFAULT_aperture_y,
              py::arg("name") = py::none(),
              "(A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)"
         )

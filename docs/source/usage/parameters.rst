@@ -326,6 +326,12 @@ Lattice Elements
 
     Indicates the element type for this lattice element. This should be one of the following.
 
+Many elements accept a transverse beam pipe aperture via ``aperture_x`` and ``aperture_y``.
+Each plane is bounded independently: a half-aperture of zero or less (the default) removes the
+constraint in that plane only, while the other plane still cuts.
+Setting only ``aperture_y``, for instance, loses a particle when ``|y| > aperture_y`` at any ``x``.
+The aperture is disabled entirely only if both planes are zero or less.
+
 
 ``aperture``
 ^^^^^^^^^^^^

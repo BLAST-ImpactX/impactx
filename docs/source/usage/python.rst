@@ -1661,6 +1661,12 @@ element's analytic 6x6 linear transport map (phase-space ordering ``(x, px, y, p
 particle ``ref``, (iv) ``reverse()`` to reverse the element in place, and (v) ``to_dict()`` to serialize it.
 For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/nslice`` slice.
 
+Many elements accept a transverse beam pipe aperture via ``aperture_x`` and ``aperture_y``.
+Each plane is bounded independently: a half-aperture of zero or less (the default) removes the
+constraint in that plane only, while the other plane still cuts.
+Setting only ``aperture_y``, for instance, loses a particle when ``|y| > aperture_y`` at any ``x``.
+The aperture is disabled entirely only if both planes are zero or less.
+
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.

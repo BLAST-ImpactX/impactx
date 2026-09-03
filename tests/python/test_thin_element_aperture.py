@@ -135,3 +135,45 @@ def test_thin_element_aperture_off_by_default(element_name):
     )
 
     sim.finalize()
+
+
+@pytest.mark.parametrize(
+    "make_element",
+    [
+        pytest.param(lambda: elements.ShortRF(V=0.0, freq=1.0e6), id="thin"),
+        pytest.param(lambda: elements.Drift(ds=0.1), id="thick"),
+    ],
+)
+@pytest.mark.parametrize("plane", ["x", "y"])
+def test_single_plane_aperture_still_cuts(make_element, plane):
+    """A half-aperture set in one plane only bounds that plane, not both.
+
+    The other plane is left unbounded, so the aperture degenerates into a slab
+    rather than being switched off entirely.
+    """
+    element = make_element()
+    half_aperture = APERTURE_X if plane == "x" else APERTURE_Y
+    setattr(element, f"aperture_{plane}", half_aperture)
+    assert getattr(element, f"aperture_{'y' if plane == 'x' else 'x'}") == 0.0
+
+    sim, pc = _track(element)
+
+    n_final = pc.total_number_of_particles()
+    assert n_final < NPART, (
+        f"aperture_{plane} alone did not scrape: the bounded plane was ignored"
+    )
+
+    df = pc.to_df()
+    # the bounded plane cuts ...
+    bounded = df[f"position_{plane}"].abs()
+    assert np.all(bounded <= half_aperture * (1.0 + 1.0e-5)), (
+        f"a particle beyond aperture_{plane} survived"
+    )
+    # ... while the other plane keeps particles well outside its own beam size
+    other = "y" if plane == "x" else "x"
+    other_sigma = LAMBDA_Y if other == "y" else LAMBDA_X
+    assert df[f"position_{other}"].abs().max() > 2.0 * other_sigma, (
+        f"position_{other} looks bounded, but no aperture_{other} was set"
+    )
+
+    sim.finalize()

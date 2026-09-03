@@ -29,6 +29,8 @@ namespace impactx::elements::mixin
 
         /** An element with a constant elliptical aperture.
          *
+         * A half-aperture of zero or less removes the boundary in that plane.
+         *
          * @param aperture_x horizontal half-aperture size [m]
          * @param aperture_y vertical half-aperture size [m]
          */
@@ -51,6 +53,12 @@ namespace impactx::elements::mixin
 
         /** Apply the transverse aperture
          *
+         * Each plane is bounded independently: a half-aperture of zero or less
+         * removes the constraint in that plane only, while the other plane still
+         * cuts. This falls out of storing the inverse half-aperture: a stored zero
+         * scales its coordinate away, so that plane never contributes to the
+         * boundary comparison and the ellipse degenerates into a slab.
+         *
          * @param[inout] x horizontal position relative to reference particle
          * @param[inout] y vertical position relative to reference particle
          * @param idcpu particle global index
@@ -67,13 +75,15 @@ namespace impactx::elements::mixin
             using amrex::Math::powi;
             namespace stdx = amrex::simd::stdx;
 
-            // skip aperture application if aperture_x <= 0 or aperture_y <= 0
+            // skip aperture application if neither plane is bounded
             if (aperture_active()) {
 
                 // scale horizontal and vertical coordinates
                 // performance optimization: we intentionally store the inverse of
                 //   the aperture, so we can do a quick multiplication (instead of a
                 //   costly division) here.
+                // a stored zero disables that plane: the coordinate is scaled away
+                //   and never contributes to the comparison below
                 T_Real const u = x * m_inv_aperture_x;
                 T_Real const v = y * m_inv_aperture_y;
 
@@ -85,8 +95,8 @@ namespace impactx::elements::mixin
 
         /** Is the aperture restriction active?
          *
-         * A non-positive aperture in either plane removes the restriction,
-         * @see apply_aperture.
+         * The restriction is removed only if both planes are non-positive: a
+         * single bounded plane still cuts, @see apply_aperture.
          *
          * @return true if particles can be lost in this aperture
          */
@@ -94,7 +104,7 @@ namespace impactx::elements::mixin
         bool aperture_active () const
         {
             using namespace amrex::literals; // for _prt
-            return m_inv_aperture_x > 0_prt && m_inv_aperture_y > 0_prt;
+            return m_inv_aperture_x > 0_prt || m_inv_aperture_y > 0_prt;
         }
 
         /** Horizontal aperture size

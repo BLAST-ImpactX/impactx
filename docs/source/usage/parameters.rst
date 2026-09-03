@@ -326,11 +326,14 @@ Lattice Elements
 
     Indicates the element type for this lattice element. This should be one of the following.
 
-Many elements accept a transverse beam pipe aperture via ``aperture_x`` and ``aperture_y``.
-Each plane is bounded independently: a half-aperture of zero or less (the default) removes the
-constraint in that plane only, while the other plane still cuts.
-Setting only ``aperture_y``, for instance, loses a particle when ``|y| > aperture_y`` at any ``x``.
-The aperture is disabled entirely only if both planes are zero or less.
+Many elements take a transverse aperture via ``aperture_x`` and ``aperture_y``: the ``aperture``
+collimator, and as a beam pipe most other elements.
+They all follow the same convention. Each plane is bounded independently: a half-aperture of zero
+or less removes the constraint in that plane only, while the other plane still cuts.
+Bounding a single plane gives a jaw (slit) collimator, bounding both an iris; with only
+``aperture_y`` set, a particle is lost when ``|y| > aperture_y`` at any ``x``, and the
+``rectangular`` and ``elliptical`` shapes degenerate to the same slab.
+The aperture is disabled entirely only if both planes are zero or less, which is the default.
 
 
 ``aperture``
@@ -347,10 +350,9 @@ This requires these additional parameters:
 
     Horizontal / vertical half-aperture (elliptical or rectangular).
 
-    A value of zero or less disables the boundary in that plane, so a rectangular
-    aperture with only ``aperture_y`` set acts as a horizontal slit.
     Note that with ``action = absorb`` a disabled plane makes the absorbing domain
-    unbounded in that direction.
+    unbounded in that direction, so zeroing both planes absorbs the whole beam,
+    while for ``action = transmit`` the element becomes a no-op.
 
 .. pp:param:: <aperture_name>.repeat_x/y
     :link_aliases: <aperture_name>.repeat_x <aperture_name>.repeat_y

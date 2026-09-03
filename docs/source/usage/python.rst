@@ -1661,11 +1661,14 @@ element's analytic 6x6 linear transport map (phase-space ordering ``(x, px, y, p
 particle ``ref``, (iv) ``reverse()`` to reverse the element in place, and (v) ``to_dict()`` to serialize it.
 For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/nslice`` slice.
 
-Many elements accept a transverse beam pipe aperture via ``aperture_x`` and ``aperture_y``.
-Each plane is bounded independently: a half-aperture of zero or less (the default) removes the
-constraint in that plane only, while the other plane still cuts.
-Setting only ``aperture_y``, for instance, loses a particle when ``|y| > aperture_y`` at any ``x``.
-The aperture is disabled entirely only if both planes are zero or less.
+Many elements take a transverse aperture via ``aperture_x`` and ``aperture_y``: the ``Aperture``
+collimator, and as a beam pipe most other elements.
+They all follow the same convention. Each plane is bounded independently: a half-aperture of zero
+or less removes the constraint in that plane only, while the other plane still cuts.
+Bounding a single plane gives a jaw (slit) collimator, bounding both an iris; with only
+``aperture_y`` set, a particle is lost when ``|y| > aperture_y`` at any ``x``, and the
+``rectangular`` and ``elliptical`` shapes degenerate to the same slab.
+The aperture is disabled entirely only if both planes are zero or less, which is the default.
 
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
@@ -2484,10 +2487,10 @@ The aperture is disabled entirely only if both planes are zero or less.
    A thin collimator element, applying a transverse aperture boundary.
 
    A half-aperture of zero or less disables the boundary in that plane, the same
-   convention as the ``aperture_x``/``aperture_y`` of the thick elements above.
-   A rectangular aperture with only ``aperture_y`` set is thus a horizontal slit.
+   convention as every other element's ``aperture_x``/``aperture_y`` above.
    Note that with ``action="absorb"`` a disabled plane makes the absorbing domain
-   unbounded in that direction, so disabling both planes absorbs the whole beam.
+   unbounded in that direction, so disabling both planes absorbs the whole beam,
+   while for ``action="transmit"`` the element becomes a no-op.
 
    :param aperture_x: horizontal half-aperture (rectangular or elliptical) in m; zero or less disables the horizontal boundary
    :param aperture_y: vertical half-aperture (rectangular or elliptical) in m; zero or less disables the vertical boundary

@@ -63,9 +63,11 @@ namespace impactx::elements
          *  Particles outside the boundary are considered lost.
          *
          *  A half-aperture of zero or less disables the boundary in that plane,
-         *  the same convention as \see mixin::PipeAperture. A rectangular
-         *  aperture with only ``aperture_y`` set is thus a horizontal slit, and
-         *  an elliptical one degenerates into the same slab. Note that with
+         *  the same convention as \see mixin::PipeAperture: each plane is bounded
+         *  independently, so bounding a single plane gives a jaw (slit) collimator
+         *  and bounding both an iris. With only ``aperture_y`` set, a particle is
+         *  lost when ``|y| > aperture_y`` at any ``x``, and the rectangular and
+         *  elliptical shapes degenerate to the same slab. Note that with
          *  ``action = absorb`` a disabled plane makes the absorbing domain
          *  unbounded in that direction: disabling both planes absorbs the whole
          *  beam, while for ``action = transmit`` the element becomes a no-op.

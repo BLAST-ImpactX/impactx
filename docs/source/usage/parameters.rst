@@ -352,7 +352,7 @@ This requires these additional parameters:
 
     Note that with ``action = absorb`` a disabled plane makes the absorbing domain
     unbounded in that direction, so zeroing both planes absorbs the whole beam,
-    while for ``action = transmit`` the element becomes a no-op.
+    while for ``action = transmit`` the element has no effect on the beam.
 
 .. pp:param:: <aperture_name>.repeat_x/y
     :link_aliases: <aperture_name>.repeat_x <aperture_name>.repeat_y

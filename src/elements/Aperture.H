@@ -70,7 +70,7 @@ namespace impactx::elements
          *  elliptical shapes degenerate to the same slab. Note that with
          *  ``action = absorb`` a disabled plane makes the absorbing domain
          *  unbounded in that direction: disabling both planes absorbs the whole
-         *  beam, while for ``action = transmit`` the element becomes a no-op.
+         *  beam, while for ``action = transmit`` the element has no effect on the beam.
          *
          * @param shape aperture shape
          * @param action specify action of domain (transmit/absorb)

@@ -2490,7 +2490,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    convention as every other element's ``aperture_x``/``aperture_y`` above.
    Note that with ``action="absorb"`` a disabled plane makes the absorbing domain
    unbounded in that direction, so disabling both planes absorbs the whole beam,
-   while for ``action="transmit"`` the element becomes a no-op.
+   while for ``action="transmit"`` the element has no effect on the beam.
 
    :param aperture_x: horizontal half-aperture (rectangular or elliptical) in m; zero or less disables the horizontal boundary
    :param aperture_y: vertical half-aperture (rectangular or elliptical) in m; zero or less disables the vertical boundary

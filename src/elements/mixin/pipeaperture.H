@@ -98,13 +98,19 @@ namespace impactx::elements::mixin
          * The restriction is removed only if both planes are non-positive: a
          * single bounded plane still cuts, @see apply_aperture.
          *
+         * Both stored inverses are non-negative, @see set_aperture_x, so the sum
+         * is positive exactly if at least one plane is bounded. Written as a sum
+         * rather than the equivalent `||` on purpose: the single comparison keeps
+         * GCC hoisting this loop-invariant test out of the vectorized particle
+         * loop, so an element without an aperture pays nothing per particle.
+         *
          * @return true if particles can be lost in this aperture
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         bool aperture_active () const
         {
             using namespace amrex::literals; // for _prt
-            return m_inv_aperture_x > 0_prt || m_inv_aperture_y > 0_prt;
+            return m_inv_aperture_x + m_inv_aperture_y > 0_prt;
         }
 
         /** Horizontal aperture size

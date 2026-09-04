@@ -12,6 +12,7 @@
 #include "initialization/Algorithms.H"
 #include "particles/ChargeDeposition.H"
 
+#include <ablastr/fields/MLMGOptions.H>
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
@@ -75,21 +76,22 @@ namespace impactx::particles::spacecharge
         }
 
         // MLMG options
+        ablastr::fields::MLMGOptions mlmg_options;
         //   Single precision: achievable relative residual is limited by float32
         //   round-off (machine epsilon ~1.2e-7).
 #ifdef AMREX_USE_FLOAT
-        amrex::Real mlmg_relative_tolerance = 1.e-4_rt; // relative (single precision)
+        mlmg_options.relative_tolerance = 1.e-4_rt; // relative (single precision)
 #else
-        amrex::Real mlmg_relative_tolerance = 1.e-7_rt; // relative (double precision)
+        mlmg_options.relative_tolerance = 1.e-7_rt; // relative (double precision)
 #endif
-        amrex::Real mlmg_absolute_tolerance = 0.0;   // ignored
-        pp_algo.queryAddWithParser("mlmg_relative_tolerance", mlmg_relative_tolerance);
-        pp_algo.queryAddWithParser("mlmg_absolute_tolerance", mlmg_absolute_tolerance);
+        mlmg_options.absolute_tolerance = 0.0;   // ignored
+        mlmg_options.max_iters = 100;
+        mlmg_options.verbosity = 1;
 
-        int mlmg_max_iters = 100;
-        int mlmg_verbosity = 1;
-        pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_max_iters);
-        pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
+        pp_algo.queryAddWithParser("mlmg_relative_tolerance", mlmg_options.relative_tolerance);
+        pp_algo.queryAddWithParser("mlmg_absolute_tolerance", mlmg_options.absolute_tolerance);
+        pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_options.max_iters);
+        pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_options.verbosity);
 
         // flatten rho to 2D; store it in the output so it can be accessed after
         // the solve (e.g. via sim.rho), like the solved potential phi
@@ -135,10 +137,7 @@ namespace impactx::particles::spacecharge
             sorted_rho,
             sorted_phi,
             beta_xyz,
-            mlmg_relative_tolerance,
-            mlmg_absolute_tolerance,
-            mlmg_max_iters,
-            mlmg_verbosity,
+            mlmg_options,
             pc.GetParGDB()->Geom(),
             pc.GetParGDB()->DistributionMap(),
             pc.GetParGDB()->boxArray(),

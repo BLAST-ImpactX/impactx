@@ -175,10 +175,13 @@ set(ImpactX_openpmd_src ""
     "Local path to openPMD-api source directory (preferred if set)")
 
 # Git fetcher
-set(ImpactX_ablastr_repo "https://github.com/BLAST-WarpX/warpx.git"
+# TODO: WIP - temporarily tracking the ABLASTR MLMGOptions branch of
+#       https://github.com/BLAST-WarpX/warpx/pull/7228
+#       Reset to BLAST-WarpX/warpx and a development commit once that PR landed.
+set(ImpactX_ablastr_repo "https://github.com/roelof-groenewald/WarpX.git"
     CACHE STRING
     "Repository URI to pull and build ABLASTR from if(ImpactX_ablastr_internal)")
-set(ImpactX_ablastr_branch "690da5d6997cd91fcad9b5296edace0556422298"
+set(ImpactX_ablastr_branch "mlmg_solver_options"
     CACHE STRING
     "Repository branch for ImpactX_ablastr_repo if(ImpactX_ablastr_internal)")
 

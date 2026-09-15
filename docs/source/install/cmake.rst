@@ -200,7 +200,6 @@ Brew can be used to install dependencies on Linux and macOS.
 .. code-block:: bash
 
    brew update
-   brew tap openpmd/openpmd
    brew install adios2      # for openPMD
    brew install boost       # for synmadx MAD-X parser
    brew install ccache
@@ -214,7 +213,7 @@ Brew can be used to install dependencies on Linux and macOS.
    brew install pkg-config  # for fftw
    brew install open-mpi
    brew install openblas
-   brew install openpmd-api # for openPMD
+   brew install openpmd/openpmd/openpmd-api # for openPMD
 
 Compile ImpactX with ``-DImpactX_MPI=ON``.
 For ``pip``, use ``export IMPACTX_MPI=ON``.

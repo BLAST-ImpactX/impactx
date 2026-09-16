@@ -43,6 +43,15 @@ namespace impactx::initialization
     void
     default_init_AMReX ()
     {
-        default_init_AMReX(0, nullptr);
+        // Pass a program name (argc = 1) so that AMReX runs ParmParse::Initialize.
+        // With argc = 0 and build_parm_parse = true, AMReX skips ParmParse::Initialize
+        // and never registers ParmParse::Finalize. ParmParse state (the global table)
+        // would then leak across AMReX initialize/finalize cycles, e.g. in persistent
+        // Jupyter notebook kernels that run several simulations in one process.
+        int argc = 1;
+        char arg0[] = "impactx";
+        char* argv_storage[] = {arg0, nullptr};
+        char** argv = argv_storage;
+        default_init_AMReX(argc, argv);
     }
 } // namespace impactx::initialization

@@ -697,34 +697,36 @@ namespace impactx::elements
 
             // trigonometry
             auto const [sinx, cosx] = amrex::Math::sincos(omega_x * slice_ds);
-            amrex::ParticleReal const sinhx = std::sinh(omega_x * slice_ds);
+            amrex::ParticleReal const sincx = (omega_x != 0.0)? sinx/omega_x : slice_ds;
+            amrex::ParticleReal const sinhcx = (omega_x != 0.0)? std::sinh(omega_x * slice_ds)/omega_x : slice_ds;
             amrex::ParticleReal const coshx = std::cosh(omega_x * slice_ds);
             auto const [siny, cosy] = amrex::Math::sincos(omega_y * slice_ds);
-            amrex::ParticleReal const sinhy = std::sinh(omega_y * slice_ds);
+            amrex::ParticleReal const sincy = (omega_y != 0.0)? siny/omega_y : slice_ds;
+            amrex::ParticleReal const sinhcy = (omega_y != 0.0)? std::sinh(omega_y * slice_ds)/omega_y : slice_ds;
             amrex::ParticleReal const coshy = std::cosh(omega_y * slice_ds);
 
             amrex::ParticleReal const igbrc = 1_prt / (gx * bet * rc);
-            amrex::ParticleReal const iobrc = 1_prt / (omega_x * bet * rc);
-            amrex::ParticleReal const igobr = 1_prt / (gx * omega_x * b2rc2);
+            amrex::ParticleReal const iobrc = 1_prt / (bet * rc);
+            amrex::ParticleReal const igobr = 1_prt / (gx * b2rc2);
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
             R(1,1) = gx > 0_prt ? cosx : coshx;
-            R(1,2) = gx > 0_prt ? sinx / omega_x : sinhx / omega_x;
+            R(1,2) = gx > 0_prt ? sincx : sinhcx ;
             R(1,6) = gx > 0_prt ? -(1_prt - cosx) * igbrc : -(1_prt - coshx) * igbrc;
-            R(2,1) = gx > 0_prt ? -omega_x * sinx : omega_x * sinhx;
+            R(2,1) = gx > 0_prt ? -omega_x * sinx : omega_x * omega_x * sinhcx;
             R(2,2) = gx > 0_prt ? cosx : coshx;
-            R(2,6) = gx > 0_prt ? -sinx * iobrc : -sinhx * iobrc;
+            R(2,6) = gx > 0_prt ? -sincx * iobrc : -sinhcx * iobrc;
             R(3,3) = gy > 0_prt ? cosy : coshy;
-            R(3,4) = gy > 0_prt ? siny / omega_y : sinhy / omega_y;
-            R(4,3) = gy > 0_prt ? -omega_y * siny : omega_y * sinhy;
+            R(3,4) = gy > 0_prt ? sincy : sinhcy ;
+            R(4,3) = gy > 0_prt ? -omega_y * siny : omega_y * omega_y * sinhcy;
             R(4,4) = gy > 0_prt ? cosy : coshy;
-            R(5,1) = gx > 0_prt ? sinx * iobrc : sinhx * iobrc;
+            R(5,1) = gx > 0_prt ? sincx * iobrc : sinhcx * iobrc;
             R(5,2) = gx > 0_prt ? (1_prt - cosx) * igbrc : (1_prt - coshx) * igbrc;
             R(5,6) = gx > 0_prt ?
-                slice_ds * ibetgam2 + (sinx  - omega_x * slice_ds) * igobr :
-                slice_ds * ibetgam2 + (sinhx - omega_x * slice_ds) * igobr;
+                slice_ds * ibetgam2 + (sincx  - slice_ds) * igobr :
+                slice_ds * ibetgam2 + (sinhcx - slice_ds) * igobr;
 
             // apply the transverse rotation (roll) alignment error
             return rotate_aligned_map(R);

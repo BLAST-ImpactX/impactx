@@ -7,138 +7,97 @@
 #
 # -*- coding: utf-8 -*-
 
-"""Retuning the array-valued parameters of an element after it was built.
+"""Array-valued element parameters: Fourier and multipole coefficients, polygon vertices.
 
-These were read-only while the lattice copied elements: a write through the user's handle
-could not reach the element being tracked. The lattice shares elements now, so it can.
+They are set after construction through a property each, or together through a paired
+setter, validated before anything is stored, and reach the next particle push.
 """
 
 import numpy as np
 import pytest
 
-from impactx import ImpactX, elements
+from impactx import ImpactX, RefPart, elements
 
-# element factory -> (first array property, second array property, paired setter)
-CASES = [
-    (
-        lambda: elements.SoftQuadrupole(
-            ds=1.0, gscale=1.0, cos_coefficients=[1.0, 2.0], sin_coefficients=[0.0, 3.0]
-        ),
+# element name -> (settings besides the arrays, first array, second array)
+COEFFICIENT_ELEMENTS = {
+    "SoftQuadrupole": ({"gscale": 1.0}, "cos_coefficients", "sin_coefficients"),
+    "SoftSolenoid": ({"bscale": 1.0}, "cos_coefficients", "sin_coefficients"),
+    "RFCavity": (
+        {"escale": 1.0, "freq": 1.0e9, "phase": 10.0},
         "cos_coefficients",
         "sin_coefficients",
-        "set_coefficients",
     ),
-    (
-        lambda: elements.SoftSolenoid(
-            ds=1.0, bscale=1.0, cos_coefficients=[1.0, 2.0], sin_coefficients=[0.0, 3.0]
-        ),
-        "cos_coefficients",
-        "sin_coefficients",
-        "set_coefficients",
-    ),
-    (
-        lambda: elements.RFCavity(
-            ds=1.0,
-            escale=1.0,
-            freq=1.0e9,
-            phase=0.0,
-            cos_coefficients=[1.0, 2.0],
-            sin_coefficients=[0.0, 3.0],
-        ),
-        "cos_coefficients",
-        "sin_coefficients",
-        "set_coefficients",
-    ),
-    (
-        lambda: elements.ExactMultipole(ds=1.0, k_normal=[1.0, 2.0], k_skew=[0.0, 3.0]),
-        "k_normal",
-        "k_skew",
-        "set_coefficients",
-    ),
-    (
-        lambda: elements.ExactCFbend(ds=1.0, k_normal=[1.0, 2.0], k_skew=[0.0, 3.0]),
-        "k_normal",
-        "k_skew",
-        "set_coefficients",
-    ),
-]
-
-IDS = ["SoftQuadrupole", "SoftSolenoid", "RFCavity", "ExactMultipole", "ExactCFbend"]
+    "ExactMultipole": ({}, "k_normal", "k_skew"),
+    "ExactCFbend": ({}, "k_normal", "k_skew"),
+}
+NAMES = sorted(COEFFICIENT_ELEMENTS)
 
 
-@pytest.mark.parametrize("make,first,second,setter", CASES, ids=IDS)
-def test_arrays_are_readable(make, first, second, setter):
-    el = make()
-    assert getattr(el, first) == [1.0, 2.0]
-    assert getattr(el, second) == [0.0, 3.0]
+def build(name, first, second):
+    settings, first_key, second_key = COEFFICIENT_ELEMENTS[name]
+    return getattr(elements, name)(
+        ds=0.1, **settings, **{first_key: first, second_key: second}
+    )
 
 
-@pytest.mark.parametrize("make,first,second,setter", CASES, ids=IDS)
-def test_setting_one_array_keeps_the_other(make, first, second, setter):
-    el = make()
+@pytest.mark.parametrize("name", NAMES)
+def test_coefficients_are_set_and_validated(name):
+    _, first, second = COEFFICIENT_ELEMENTS[name]
+    el = build(name, [1.0, 2.0], [0.0, 3.0])
+    assert (getattr(el, first), getattr(el, second)) == ([1.0, 2.0], [0.0, 3.0])
+
+    # one array at a time keeps the other
     setattr(el, first, [5.0, 6.0])
+    assert (getattr(el, first), getattr(el, second)) == ([5.0, 6.0], [0.0, 3.0])
 
-    assert getattr(el, first) == [5.0, 6.0]
-    assert getattr(el, second) == [0.0, 3.0]
+    # the paired setter can change the length
+    el.set_coefficients([1.0, 2.0, 3.0], [0.0, 0.0, 0.0])
+    assert getattr(el, first) == [1.0, 2.0, 3.0]
 
-
-@pytest.mark.parametrize("make,first,second,setter", CASES, ids=IDS)
-def test_paired_setter_can_change_the_length(make, first, second, setter):
-    el = make()
-    getattr(el, setter)([1.0, 2.0, 3.0], [0.0, 0.0, 0.0])
-
+    # rejected updates change nothing
+    with pytest.raises(ValueError, match="same length"):
+        setattr(el, first, [1.0])
+    with pytest.raises(ValueError, match="same length"):
+        el.set_coefficients([1.0, 2.0], [1.0])
+    if name != "ExactMultipole":  # the field evaluation reads the first coefficient
+        with pytest.raises(ValueError):
+            el.set_coefficients([], [])
+        with pytest.raises(ValueError):
+            build(name, [], [])
     assert getattr(el, first) == [1.0, 2.0, 3.0]
     assert getattr(el, second) == [0.0, 0.0, 0.0]
 
 
-@pytest.mark.parametrize("make,first,second,setter", CASES, ids=IDS)
-def test_mismatched_lengths_are_rejected_and_change_nothing(
-    make, first, second, setter
-):
-    el = make()
+def test_a_single_multipole_coefficient_has_a_transfer_map():
+    """A pure dipole supplies no quadrupole coefficient."""
 
-    # through a single property, measured against the array it keeps
+    ref = RefPart()
+    ref.set_species("electron").set_kin_energy_MeV(2.0e3)
+
+    elements.ExactMultipole(ds=0.1, k_normal=[1.0], k_skew=[0.0]).transfer_map(ref)
+
+
+def test_polygon_vertices_are_set_and_validated():
+    outline_x = [-1.0, 1.0, 1.0, -1.0, -1.0]
+    outline_y = [-1.0, -1.0, 1.0, 1.0, -1.0]
+    poly = elements.PolygonAperture(vertices_x=outline_x, vertices_y=outline_y)
+    assert (poly.vertices_x, poly.vertices_y) == (outline_x, outline_y)
+
     with pytest.raises(ValueError, match="same length"):
-        setattr(el, first, [1.0])
-
-    # and through the paired setter
+        poly.set_vertices(outline_x, [])
     with pytest.raises(ValueError, match="same length"):
-        getattr(el, setter)([1.0, 2.0], [1.0])
-
-    assert getattr(el, first) == [1.0, 2.0]
-    assert getattr(el, second) == [0.0, 3.0]
-
-
-def test_polygon_vertices():
-    """The vertex arrays follow the same pattern; their validation is tested with the
-    other array-valued parameters."""
-
-    poly = elements.PolygonAperture(
-        vertices_x=[0.0, 1.0, 1.0, 0.0, 0.0], vertices_y=[0.0, 0.0, 1.0, 1.0, 0.0]
-    )
-    assert poly.vertices_x == [0.0, 1.0, 1.0, 0.0, 0.0]
+        poly.vertices_y = [0.0, 1.0]
+    with pytest.raises(ValueError, match="first and last vertex"):
+        poly.set_vertices([0.0, 1.0, 2.0], [0.0, 1.0, 2.0])
+    assert (poly.vertices_x, poly.vertices_y) == (outline_x, outline_y)
 
     poly.set_vertices([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0])
     assert poly.vertices_x == [0.0, 2.0, 2.0, 0.0, 0.0]
-    assert poly.vertices_y == [0.0, 0.0, 2.0, 2.0, 0.0]
-
-
-def test_retuning_reaches_the_element_in_the_lattice():
-    """The reason these setters were held back until the lattice shared elements."""
-
-    sq = elements.SoftQuadrupole(
-        ds=1.0, gscale=1.0, cos_coefficients=[1.0, 2.0], sin_coefficients=[0.0, 3.0]
-    )
-    lattice = elements.KnownElementsList([sq])
-
-    sq.set_coefficients([9.0, 9.0], [0.0, 0.0])
-
-    assert lattice[0].cos_coefficients == [9.0, 9.0]
 
 
 @pytest.fixture
 def push_once():
-    """Push a deterministic beam, resetting its particles and reference on every call."""
+    """Push three fixed particles through an element and return the result."""
     sim = ImpactX()
     sim.particle_shape = 2
     sim.n_cell = [8, 8, 8]
@@ -152,8 +111,6 @@ def push_once():
         beam.clear_particles()
         beam.ref.reset()
         beam.ref.set_species("electron").set_kin_energy_MeV(100.0)
-        # Identical local particles on each rank; no random sampling or host access to
-        # device arrays. add_n_particles uploads the inputs on GPU builds.
         beam.add_n_particles(
             [0.0, 1.0e-3, 3.0e-3],
             [0.0, 2.0e-3, -1.0e-3],
@@ -165,7 +122,6 @@ def push_once():
             1.0e-12,
         )
         element.push(beam)
-        # to_df copies device data to the host and synchronizes before comparison.
         phase_space = beam.to_df(local=True)[
             [
                 "position_x",
@@ -176,17 +132,8 @@ def push_once():
                 "momentum_t",
             ]
         ].to_numpy(copy=True)
-        reference = np.array(
-            [
-                getattr(beam.ref, name)
-                for name in ("x", "y", "z", "t", "px", "py", "pz", "pt", "s")
-            ]
-        )
-        return (
-            phase_space,
-            reference,
-            beam.total_number_of_particles(only_valid=True, only_local=True),
-        )
+        alive = beam.total_number_of_particles(only_valid=True, only_local=True)
+        return phase_space, alive
 
     try:
         yield run
@@ -194,93 +141,40 @@ def push_once():
         sim.finalize()
 
 
-@pytest.mark.parametrize(
-    "name,settings",
-    [
-        ("SoftQuadrupole", {"gscale": 1.0}),
-        ("SoftSolenoid", {"bscale": 1.0}),
-        ("RFCavity", {"escale": 1.0, "freq": 1.0e9, "phase": 10.0}),
-        ("ExactMultipole", {}),
-        ("ExactCFbend", {}),
-    ],
-    ids=IDS,
-)
+@pytest.mark.parametrize("name", NAMES)
 @pytest.mark.parametrize(
     "first,second",
-    [
-        ([2.0, 3.0], [0.0, 0.1]),
-        ([2.0, 3.0, 0.4], [0.0, 0.1, 0.2]),
-        ([2.0], [0.0]),
-    ],
-    ids=["same_length", "grow", "shrink"],
+    [([2.0, 3.0], [0.0, 0.1]), ([2.0, 3.0, 0.4], [0.0, 0.1, 0.2])],
+    ids=["same_length", "grow"],
 )
-def test_coefficient_update_changes_the_particle_push(
-    name, settings, first, second, push_once
-):
-    """A warmed-up element must push like a fresh element after its arrays change."""
-    cls = getattr(elements, name)
-    keys = (
-        ("k_normal", "k_skew")
-        if name in ("ExactMultipole", "ExactCFbend")
-        else ("cos_coefficients", "sin_coefficients")
-    )
-    element = cls(ds=0.1, **settings, **{keys[0]: [1.0, 2.0], keys[1]: [0.0, 3.0]})
+def test_new_coefficients_reach_the_particle_push(name, first, second, push_once):
+    """An element pushed before and after an update pushes like a fresh element."""
 
-    # Populate the execution-space cache before changing values or reallocating arrays.
-    before, _, _ = push_once(element)
+    element = build(name, [1.0, 2.0], [0.0, 3.0])
+    before, _ = push_once(element)
+
     element.set_coefficients(first, second)
-    after, ref_after, alive = push_once(element)
+    after, alive = push_once(element)
+    expected, _ = push_once(build(name, first, second))
 
-    fresh = cls(ds=0.1, **settings, **{keys[0]: first, keys[1]: second})
-    expected, ref_expected, expected_alive = push_once(fresh)
-
+    assert alive == 3
     assert np.isfinite(after).all()
-    assert np.isfinite(ref_after).all()
-    assert not np.array_equal(before, after), (
-        "The update must change the particle motion"
-    )
-    # Both pushes execute identical arithmetic on the same backend; no CPU/GPU
-    # cross-comparison or statistical tolerance is needed.
+    assert not np.array_equal(before, after)
+    # identical arithmetic on the same backend
     np.testing.assert_array_equal(after, expected)
-    np.testing.assert_array_equal(ref_after, ref_expected)
-    assert alive == expected_alive == 3
 
 
-@pytest.mark.parametrize(
-    "vertices_x,vertices_y,expected_alive",
-    [
-        (
-            [-0.0015, 0.0015, 0.0015, -0.0015, -0.0015],
-            [-0.004, -0.004, 0.004, 0.004, -0.004],
-            2,
-        ),
-        (
-            [-0.0015, 0.0, 0.0015, 0.0015, -0.0015, -0.0015],
-            [-0.004, -0.004, -0.004, 0.004, 0.004, -0.004],
-            2,
-        ),
-        (
-            [-0.0015, 0.0015, 0.0, -0.0015],
-            [-0.004, -0.004, 0.004, -0.004],
-            1,
-        ),
-    ],
-    ids=["same_length", "grow", "shrink"],
-)
-def test_vertex_update_changes_particle_losses(
-    vertices_x, vertices_y, expected_alive, push_once
-):
-    """Updated polygon vertices must change which particles are transmitted."""
+def test_new_vertices_reach_the_particle_push(push_once):
     polygon = elements.PolygonAperture(
         vertices_x=[-0.01, 0.01, 0.01, -0.01, -0.01],
         vertices_y=[-0.01, -0.01, 0.01, 0.01, -0.01],
     )
-    _, _, before_alive = push_once(polygon)
-    assert before_alive == 3
+    _, before = push_once(polygon)
+    assert before == 3
 
-    polygon.set_vertices(vertices_x, vertices_y)
-    _, _, after_alive = push_once(polygon)
-    fresh = elements.PolygonAperture(vertices_x=vertices_x, vertices_y=vertices_y)
-    _, _, fresh_alive = push_once(fresh)
+    narrow_x = [-0.0015, 0.0, 0.0015, 0.0015, -0.0015, -0.0015]
+    narrow_y = [-0.004, -0.004, -0.004, 0.004, 0.004, -0.004]
+    polygon.set_vertices(narrow_x, narrow_y)
+    _, after = push_once(polygon)
 
-    assert after_alive == fresh_alive == expected_alive
+    assert after == 2

@@ -110,7 +110,7 @@ namespace envelope_detail
      * The failure mode is not a compile error, which is why this guard is easy to lose
      * and important to keep: the variadic would copy-construct only the *GPU* base
      * and default-construct the metadata, so the copy would silently come out unnamed.
-     * See tests/python/test_element_metadata.py for the behavioral regression test.
+     * See tests/python/test_element_copy.py for the behavioral regression test.
      */
     template<typename T_Self, typename... T_Args>
     inline constexpr bool is_self_like_v =

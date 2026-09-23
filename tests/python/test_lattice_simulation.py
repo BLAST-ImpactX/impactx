@@ -10,6 +10,7 @@
 """``sim.lattice``: the lattice of one simulation, tracked, edited and selected from."""
 
 import gc
+import math
 import weakref
 
 import pytest
@@ -229,11 +230,11 @@ def _envelope_through(second_cavity):
     simulation.lattice.extend([rf, drift, second_cavity(rf), drift])
     try:
         simulation.track_envelope()
-        # per-particle extrema are NaN for an envelope; NaN never compares equal
+        # per-particle extrema are NaN for an envelope, and NaN never compares equal
         return {
             name: value
             for name, value in simulation.envelope.beam_moments(ref).items()
-            if value == value
+            if not math.isnan(value)
         }
     finally:
         simulation.finalize()

@@ -325,9 +325,9 @@ namespace impactx
             }
         }
 
-        storage_type m_elements;
-        std::uint64_t m_generation = 0;
-        mutable std::size_t m_active_traversals = 0;
+        storage_type m_elements; //! elements in lattice order; one may occupy several positions
+        std::uint64_t m_generation = 0; //! count of structural edits, @see generation
+        mutable std::size_t m_active_traversals = 0; //! live @see TraversalGuard count
     };
 
 } // namespace impactx

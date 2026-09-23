@@ -17,8 +17,7 @@ import gc
 
 import pytest
 
-import impactx
-from impactx import elements
+from impactx import RefPart, elements, push, reverse
 
 
 def drifts(count):
@@ -252,15 +251,15 @@ def test_extended_slice_assignment_requires_matching_length():
 
 def test_free_functions_act_on_the_element_given():
     d = elements.Drift(ds=1.0)
-    impactx.reverse(d)
+    reverse(d)
     assert d.ds == -1.0
 
     seen = []
     hooked = elements.Programmable()
     hooked.ref_particle = lambda refpart: seen.append(refpart.s)
 
-    ref = impactx.RefPart()
+    ref = RefPart()
     ref.set_species("electron").set_kin_energy_MeV(100.0)
-    impactx.push(ref, hooked)
+    push(ref, hooked)
 
     assert seen == [0.0]

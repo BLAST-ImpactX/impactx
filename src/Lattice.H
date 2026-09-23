@@ -14,8 +14,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <stdexcept>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -31,6 +29,10 @@ namespace impactx
      *
      * Structural edits validate their whole input before changing anything, so a rejected
      * edit leaves the lattice as it was rather than half-applied.
+     *
+     * The edits are defined in Lattice.cpp: each instantiates vector operations over the
+     * variant of every element type, which would otherwise be compiled again in every file
+     * that includes this header.
      */
     class Lattice
     {
@@ -52,40 +54,16 @@ namespace impactx
          * made while the original is being walked would refuse every structural edit for
          * the rest of its life.
          */
-        Lattice (Lattice const & other)
-          : m_elements(other.m_elements), m_generation(other.m_generation)
-        {
-        }
+        Lattice (Lattice const & other);
 
         /** @see Lattice(Lattice const &); a lattice being walked cannot be replaced */
-        Lattice & operator= (Lattice const & other)
-        {
-            if (this != &other)
-            {
-                require_no_traversal("replace the lattice");
-                m_elements = other.m_elements;
-                ++m_generation;
-            }
-            return *this;
-        }
+        Lattice & operator= (Lattice const & other);
 
         /** @see Lattice(Lattice const &) */
-        Lattice (Lattice && other) noexcept
-          : m_elements(std::move(other.m_elements)), m_generation(other.m_generation)
-        {
-        }
+        Lattice (Lattice && other) noexcept;
 
         /** @see Lattice(Lattice const &); a lattice being walked cannot be replaced */
-        Lattice & operator= (Lattice && other) noexcept(false)
-        {
-            if (this != &other)
-            {
-                require_no_traversal("replace the lattice");
-                m_elements = std::move(other.m_elements);
-                ++m_generation;
-            }
-            return *this;
-        }
+        Lattice & operator= (Lattice && other) noexcept(false);
 
         /** Take shared ownership of an element value
          *
@@ -106,27 +84,14 @@ namespace impactx
          *
          * @param handle a non-null element handle
          */
-        void push_back (elements::ElementHandle handle)
-        {
-            elements::require_valid(handle, "insert");
-            require_no_traversal("add an element");
-            m_elements.push_back(std::move(handle));
-            ++m_generation;
-        }
+        void push_back (elements::ElementHandle handle);
 
         /** Insert an element before a position
          *
          * @param i the position to insert before, at most @see size
          * @param handle a non-null element handle
          */
-        void insert (size_type i, elements::ElementHandle handle)
-        {
-            elements::require_valid(handle, "insert");
-            require_insertion_point(i);
-            require_no_traversal("add an element");
-            m_elements.insert(m_elements.begin() + static_cast<std::ptrdiff_t>(i), std::move(handle));
-            ++m_generation;
-        }
+        void insert (size_type i, elements::ElementHandle handle);
 
         /** Replace the element at a position
          *
@@ -135,44 +100,20 @@ namespace impactx
          * @param i the position to replace, less than @see size
          * @param handle a non-null element handle
          */
-        void replace (size_type i, elements::ElementHandle handle)
-        {
-            elements::require_valid(handle, "replace");
-            require_element_at(i, "replace");
-            require_no_traversal("replace an element");
-            m_elements[i] = std::move(handle);
-            ++m_generation;
-        }
+        void replace (size_type i, elements::ElementHandle handle);
 
         /** Remove the element at a position
          *
          * Other positions holding the same element are unaffected: this removes one
          * occurrence, not the element.
          */
-        void erase (size_type i)
-        {
-            require_element_at(i, "remove");
-            require_no_traversal("remove an element");
-            m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(i));
-            ++m_generation;
-        }
+        void erase (size_type i);
 
         /** Remove the last element */
-        void pop_back ()
-        {
-            require_not_empty("remove an element");
-            require_no_traversal("remove an element");
-            m_elements.pop_back();
-            ++m_generation;
-        }
+        void pop_back ();
 
         /** Remove all elements */
-        void clear ()
-        {
-            require_no_traversal("clear the lattice");
-            m_elements.clear();
-            ++m_generation;
-        }
+        void clear ();
 
         [[nodiscard]] size_type size () const noexcept { return m_elements.size(); }
         [[nodiscard]] bool empty () const noexcept { return m_elements.empty(); }
@@ -218,16 +159,7 @@ namespace impactx
          * Every handle is checked before anything is stored, so a null entry anywhere
          * leaves the lattice untouched.
          */
-        void assign (storage_type elements)
-        {
-            for (auto const & handle : elements)
-            {
-                elements::require_valid(handle, "replace the lattice");
-            }
-            require_no_traversal("replace the lattice");
-            m_elements = std::move(elements);
-            ++m_generation;
-        }
+        void assign (storage_type elements);
 
         /** How often the sequence of elements changed
          *
@@ -271,15 +203,7 @@ namespace impactx
          * @param i the position that was asked for
          * @param what the operation that was attempted, used in the error message
          */
-        void require_element_at (size_type i, char const * what) const
-        {
-            if (i >= m_elements.size())
-            {
-                throw std::out_of_range(
-                    std::string("Lattice: cannot ") + what + " position " + std::to_string(i) +
-                    ": the lattice holds " + std::to_string(m_elements.size()) + " elements.");
-            }
-        }
+        void require_element_at (size_type i, char const * what) const;
 
         /** Throw unless @p i is a position an element can be inserted before
          *
@@ -287,43 +211,19 @@ namespace impactx
          *
          * @param i the position that was asked for
          */
-        void require_insertion_point (size_type i) const
-        {
-            if (i > m_elements.size())
-            {
-                throw std::out_of_range(
-                    "Lattice: cannot insert at position " + std::to_string(i) +
-                    ": the lattice holds " + std::to_string(m_elements.size()) + " elements.");
-            }
-        }
+        void require_insertion_point (size_type i) const;
 
         /** Throw if there is no element to operate on
          *
          * @param what the operation that was attempted, used in the error message
          */
-        void require_not_empty (char const * what) const
-        {
-            if (m_elements.empty())
-            {
-                throw std::out_of_range(
-                    std::string("Lattice: cannot ") + what + " an empty lattice.");
-            }
-        }
+        void require_not_empty (char const * what) const;
 
         /** Throw if a tracking traversal is walking this lattice
          *
          * @param what the edit that was attempted, used in the error message
          */
-        void require_no_traversal (char const * what) const
-        {
-            if (m_active_traversals > 0)
-            {
-                throw std::runtime_error(
-                    std::string("Lattice: cannot ") + what + " while tracking through it. "
-                    "Element parameters may be changed during tracking, but the sequence of "
-                    "elements may not.");
-            }
-        }
+        void require_no_traversal (char const * what) const;
 
         storage_type m_elements; //! elements in lattice order; one may occupy several positions
         std::uint64_t m_generation = 0; //! count of structural edits, @see generation

@@ -38,4 +38,5 @@ target_sources(lib
 )
 
 add_subdirectory(diagnostics)
+add_subdirectory(helper)
 add_subdirectory(transformation)

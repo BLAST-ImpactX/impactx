@@ -92,31 +92,18 @@ namespace impactx::elements
         return ElementHandle{std::make_shared<T_Element>(std::forward<T_Args>(args)...)};
     }
 
-    /** Build a handle owning a copy of an element value */
-    [[nodiscard]] inline ElementHandle make_handle (KnownElements const & element)
-    {
-        return std::visit(
-            [](auto const & el) {
-                return ElementHandle{std::make_shared<std::decay_t<decltype(el)>>(el)};
-            },
-            element
-        );
-    }
+    /** Build a handle owning a copy of an element value
+     *
+     * Defined out of line: it instantiates the copy constructor of every element type,
+     * which would otherwise be compiled again in every file that includes this header.
+     */
+    [[nodiscard]] ElementHandle make_handle (KnownElements const & element);
 
     /** Build a handle by moving an element value into it
      *
      * Spares the copy for elements that own arrays: a moved-from array is a pointer swap.
      */
-    [[nodiscard]] inline ElementHandle make_handle (KnownElements && element)
-    {
-        return std::visit(
-            [](auto && el) {
-                return ElementHandle{
-                    std::make_shared<std::decay_t<decltype(el)>>(std::move(el))};
-            },
-            std::move(element)
-        );
-    }
+    [[nodiscard]] ElementHandle make_handle (KnownElements && element);
 
     /** Apply a visitor to the element a handle owns
      *
@@ -213,16 +200,7 @@ namespace impactx::elements
      * It is not the user-facing ``copy()``, which additionally resets state that must not
      * be shared between two elements, such as a beam monitor's open output series.
      */
-    [[nodiscard]] inline ElementHandle copy_element (ElementHandle const & handle)
-    {
-        require_valid(handle, "copy");
-        return std::visit(
-            [](auto const & el) {
-                return ElementHandle{std::make_shared<std::decay_t<decltype(*el)>>(*el)};
-            },
-            handle
-        );
-    }
+    [[nodiscard]] ElementHandle copy_element (ElementHandle const & handle);
 
 } // namespace impactx::elements
 

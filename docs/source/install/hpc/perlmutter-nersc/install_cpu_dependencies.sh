@@ -73,7 +73,7 @@ rm -rf ${build_dir}/boost_1_82_0
 if [ -d $HOME/src/c-blosc2 ]
 then
   cd $HOME/src/c-blosc2
-  git fetch --prune
+  git fetch --prune --tags
   git checkout v2.23.1
   cd -
 else
@@ -87,7 +87,7 @@ rm -rf ${build_dir}/c-blosc2-pm-cpu-build
 if [ -d $HOME/src/adios2 ]
 then
   cd $HOME/src/adios2
-  git fetch --prune
+  git fetch --prune --tags
   git checkout v2.12.1
   cd -
 else

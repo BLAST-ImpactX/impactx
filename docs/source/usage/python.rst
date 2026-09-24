@@ -1254,17 +1254,25 @@ This module provides elements and methods for the accelerator lattice.
       :param min_model: lowest element model to translate into, see
          :py:meth:`~impactx.elements.KnownElementsList.load_file`
 
-   .. py:method:: select(kind=None, name=None)
+   .. py:method:: select(kind=None, name=None, has=None)
 
-      Filter elements by type and/or name.
-      If both are provided, OR-based logic is applied.
+      Filter elements by type, name and/or settable property.
+      If more than one is provided, OR-based logic is applied.
 
       Returns references to original elements, allowing modification and chaining.
       Chained ``.select(...).select(...)`` selections are AND-filtered.
 
       :param kind: Element type(s) to filter by. Can be a string (e.g., ``"Drift"``), regex pattern (e.g., ``r".*Quad"``), element type (e.g., ``elements.Drift``), or list/tuple of these.
       :param name: Element name(s) to filter by. Can be a string, regex pattern, or ``list``/``tuple`` of these.
+      :param has: Property name(s) an element must be able to **set**, matched exactly (no regex). Can be a string or ``list``/``tuple`` of these.
       :rtype: :py:class:`impactx.elements.FilteredElementsList`
+
+      .. note::
+
+         ``has=`` matches on what an element can *set*, not on what it can report.
+         Every element reports ``nslice``, but only thick elements accept a new
+         value, so ``has="nslice"`` matches the thick elements alone.
+         This is what makes ``select(has=...).set(...)`` composable.
 
       **Examples:**
 
@@ -1280,8 +1288,13 @@ This module provides elements and methods for the accelerator lattice.
          # Filter by name
          specific_elements = lattice.select(name="quad1")
 
+         # Filter by what can be set: elements with a symplectic integrator.
+         # kind=r"Exact.*" would over-match, e.g. ExactDrift has no int_order.
+         integrator_elements = lattice.select(has="int_order")
+
          # Chain filters (AND logic)
          drift_named_d1 = lattice.select(kind="Drift").select(name="drift1")
+         exact_bends = lattice.select(kind=r".*bend").select(has="int_order")
 
          # A selection holds the lattice's elements, so changes apply to the lattice
          drift_elements[0].ds = 2.0
@@ -1291,6 +1304,58 @@ This module provides elements and methods for the accelerator lattice.
 
          # replace all Quads with drift equivalents
          lattice.select(kind=r".*Quad").replace_with_drifts()
+
+   .. py:method:: set(*, skip=False, **kwargs)
+
+      Assign element properties in bulk, on every element of the lattice.
+
+      Works for any settable property (``nslice``, ``int_order``, ``mapsteps``,
+      ``ds``, ``k``, ``rotation``, ``aperture_x``, ...).
+
+      By default this **raises** ``AttributeError`` if any element cannot take one
+      of the given properties, naming the property and the offending element
+      kinds. Pass ``skip=True`` to set only where applicable, or narrow the
+      selection first with ``select(has=...)``.
+
+      Assignment is all-or-nothing. Every write is first made on copies of the
+      elements, and only once all of them succeed on the elements themselves. A
+      value or a property that any element rejects therefore leaves every element
+      as it was.
+
+      An element that sits at several positions is written once and counted once,
+      and the new value applies at each of its positions.
+      ``set`` changes parameters only, so it leaves every
+      :py:class:`~impactx.elements.FilteredElementsList` selection usable.
+
+      Properties are assigned one at a time, as ``element.<name> = value`` would.
+      A pair of parameters that has to change length together, such as
+      ``cos_coefficients`` and ``sin_coefficients``, is rejected; give such pairs to
+      each element's ``set_coefficients`` or ``set_vertices``, or build the element
+      with :ref:`copy() <element-copy>`.
+      The Twiss settings of a :py:class:`~impactx.elements.BeamMonitor` are kept by
+      monitor name rather than per element and are rejected as well; set them on the
+      monitor directly.
+      A Python subclass of an element must define ``copy(**overrides)``.
+
+      :param skip: If false (default), raise ``AttributeError`` for elements that cannot take a property; if true, skip them.
+      :param kwargs: Property name/value pairs to assign.
+      :return: Number of distinct elements for which at least one property was written
+      :rtype: int
+      :raises ValueError: If an element rejects a value, e.g. ``nslice=0`` or ``int_order=3``
+      :raises AttributeError: If ``skip`` is false and some element cannot take a property
+
+      **Examples:**
+
+      .. code-block:: python
+
+         # raise more slices everywhere they apply, skipping thin elements
+         sim.lattice.set(nslice=8, skip=True)
+
+         # tune the symplectic integrator only where there is one
+         sim.lattice.select(has="int_order").set(int_order=6, mapsteps=6)
+
+         # a typo raises instead of silently doing nothing
+         sim.lattice.set(nslize=8)  # AttributeError
 
    .. py:method:: get_kinds()
 
@@ -1538,17 +1603,40 @@ This module provides elements and methods for the accelerator lattice.
    that structurally edits the lattice as displaced elements are released can invalidate
    that selection before the method returns. In that case, take a new selection.
 
-   If the selection is empty, ``delete`` is a no-op and ``replace_*`` return
-   an empty ``FilteredElementsList``.
+   :py:meth:`~impactx.elements.FilteredElementsList.set` changes parameters only, so it
+   leaves every selection usable.
 
-   .. py:method:: select(kind=None, name=None)
+   If the selection is empty, ``delete`` is a no-op, ``replace_*`` return
+   an empty ``FilteredElementsList``, and ``set`` returns 0.
+
+   .. py:method:: select(kind=None, name=None, has=None)
 
       Narrow this view with an additional AND filter. OR logic within a single call matches
       :py:meth:`~impactx.elements.KnownElementsList.select`.
 
       :param kind: Same meaning as for :py:meth:`~impactx.elements.KnownElementsList.select`.
       :param name: Same meaning as for :py:meth:`~impactx.elements.KnownElementsList.select`.
+      :param has: Same meaning as for :py:meth:`~impactx.elements.KnownElementsList.select`.
       :rtype: :py:class:`impactx.elements.FilteredElementsList`
+
+   .. py:method:: set(*, skip=False, **kwargs)
+
+      Assign element properties in bulk, on the selected elements only.
+      Same semantics as :py:meth:`impactx.elements.KnownElementsList.set`, and like it,
+      leaves this and every other selection usable.
+
+      :param skip: If false (default), raise ``AttributeError`` for elements that cannot take a property; if true, skip them.
+      :param kwargs: Property name/value pairs to assign.
+      :return: Number of distinct elements for which at least one property was written
+      :rtype: int
+
+      **Example:**
+
+      .. code-block:: python
+
+         quads = sim.lattice.select(kind=r".*Quad")
+         quads.set(nslice=8)
+         quads[0].k  # the view stays valid after set()
 
    .. py:method:: delete()
 

@@ -12,7 +12,7 @@
 
 #include "particles/ImpactXParticleContainer.H"
 #include "ChargeBinning.H"
-#include "CSRBendElement.H"
+#include "BendRadius.H"
 #include "WakeConvolution.H"
 #include "WakePush.H"
 
@@ -53,15 +53,15 @@ namespace impactx::particles::wakefields
         bool csr = false;
         pp_algo.queryAdd("csr", csr);
 
-        // Call the CSR bend function
-        auto const [element_has_csr, R] = impactx::particles::wakefields::CSRBendElement(element_variant, particle_container.GetRefParticle());
+        // CSR is applied only in elements that bend the reference orbit
+        auto const rc = impactx::particles::wakefields::bend_radius(element_variant, particle_container.GetRefParticle());
 
-        // Enter loop if lattice has bend element
-        if (csr && element_has_csr)
+        if (csr && rc.has_value())
         {
 #ifndef ImpactX_USE_FFT
             throw std::runtime_error("algo.csr was requested but ImpactX was not compiled with FFT support. Recompile with ImpactX_FFT=ON.");
 #endif
+            amrex::Real const R = *rc;
 
             int csr_bins = 150;
             pp_algo.queryAddWithParser("csr_bins", csr_bins);

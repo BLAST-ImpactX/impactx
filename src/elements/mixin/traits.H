@@ -14,6 +14,7 @@
 #include "named.H"
 #include "pipeaperture.H"
 #include "spintransport.H"
+#include "synchrotronradiation.H"
 #include "thick.H"
 #include "thin.H"
 
@@ -62,6 +63,11 @@ namespace impactx::elements::mixin
     /** Does this element support spin transport (@see SpinTransport)? */
     template<typename T_Element>
     inline constexpr bool has_spin_transport_v = std::is_base_of_v<SpinTransport, std::decay_t<T_Element>>;
+
+    /** Does this element emit synchrotron radiation (@see SynchrotronRadiation)? */
+    template<typename T_Element>
+    inline constexpr bool has_synchrotron_radiation_v =
+        std::is_base_of_v<SynchrotronRadiation, std::decay_t<T_Element>>;
 
     namespace detail
     {

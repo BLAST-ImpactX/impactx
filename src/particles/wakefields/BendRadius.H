@@ -29,7 +29,7 @@ namespace impactx::particles::wakefields
      * @param[in] element_variant the lattice element to check
      * @param[in] refpart reference particle
      * @returns the magnitude of the radius of curvature of the reference orbit in m, or
-     *          nothing if the element does not emit synchrotron radiation
+     *          nothing if the element does not emit synchrotron radiation or is straight
      */
     template <typename T_Element>
     std::optional<amrex::Real>
@@ -41,7 +41,9 @@ namespace impactx::particles::wakefields
         return elements::visit(
             [&refpart](auto const & element) -> std::optional<amrex::Real> {
                 if constexpr (elements::mixin::has_synchrotron_radiation_v<decltype(element)>) {
-                    return std::abs(element.rc(refpart));
+                    amrex::Real const rc = std::abs(element.signed_rc(refpart));
+                    if (std::isinf(rc)) { return std::nullopt; }  // straight
+                    return rc;
                 } else {
                     return std::nullopt;
                 }

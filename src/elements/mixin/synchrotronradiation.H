@@ -18,8 +18,10 @@ namespace impactx::elements::mixin
      * An element deriving from this class bends the reference orbit, so coherent (CSR) and
      * incoherent (ISR) synchrotron radiation are applied in it when enabled.
      *
-     * If an element derives from this class, then it must implement ``rc(refpart)``, the
-     * signed radius of curvature of the reference orbit in m.
+     * If an element derives from this class, then it must implement ``signed_rc(refpart)``,
+     * the signed radius of curvature of the reference orbit in m. The center of curvature
+     * lies at ``x = -signed_rc``; a straight element returns +infinity, and no synchrotron
+     * radiation is applied in it.
      */
     struct SynchrotronRadiation
     {

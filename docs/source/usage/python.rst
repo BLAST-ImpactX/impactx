@@ -210,7 +210,7 @@ Collective Effects & Overall Simulation Parameters
 
       .. note::
 
-         CSR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+         CSR effects are only calculated for lattice elements that bend the reference orbit: ``Sbend``, ``ExactSbend``, ``CFbend`` and ``ExactCFbend``.
 
          CSR effects require the compilation flag ``-DImpactX_FFT=ON``.
 
@@ -236,7 +236,7 @@ Collective Effects & Overall Simulation Parameters
 
       .. note::
 
-         ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+         ISR effects are only calculated for lattice elements that bend the reference orbit: ``Sbend``, ``ExactSbend``, ``CFbend`` and ``ExactCFbend``.
 
    .. py:property:: isr_order
 
@@ -1671,6 +1671,70 @@ Copying a lattice element
       original. Passing any of these as a ``copy()`` override raises ``ValueError``.
       Construct a monitor with a different name for independent settings.
 
+.. _element-bend-geometry:
+
+Geometry of a bend
+^^^^^^^^^^^^^^^^^^
+
+The bends :py:class:`~impactx.elements.Sbend`, :py:class:`~impactx.elements.ExactSbend` and
+:py:class:`~impactx.elements.CFbend` are specified by their segment length ``ds`` plus exactly one of
+
+* ``rc``: the radius of curvature in m,
+* ``phi``: the bend angle in degrees, so that ``rc = ds / phi``,
+* ``B``: the magnetic field in T, so that ``rc = rigidity / B``,
+
+or by ``phi`` together with ``B``: a bend of fixed angle whose radius follows from the field, as in a cyclotron.
+Its arc length ``rc * phi`` then depends on the beam energy, and ``ds`` only advances the integrated path length ``s``.
+
+:py:class:`~impactx.elements.ExactCFbend` takes the same parameters, or none of them: its dipole field is then its first normal multipole coefficient.
+
+The thin :py:class:`~impactx.elements.ThinDipole` is specified by its bend angle ``theta`` in degrees together with one of ``rc`` or ``B``,
+and the edge :py:class:`~impactx.elements.DipEdge` by one of ``rc`` or ``B``, the radius of curvature of the bend it belongs to.
+
+A bend with ``rc = 0``, ``B = 0`` or a bend angle of 0 is straight: its reference orbit is not bent, and a straight edge does not focus.
+The rigidity carries the sign of the charge, so a bend specified by ``B`` bends particles of opposite charge the opposite way.
+
+.. code-block:: python
+
+   elements.Sbend(ds=0.5, rc=10.0)
+   elements.Sbend(ds=0.5, phi=2.86)
+   elements.Sbend(ds=0.5, B=0.5)
+   elements.ExactSbend(ds=0.25, phi=180.0, B=1.0)  # a half turn in a cyclotron
+
+The parameters that do not specify a bend are ``None``, also in its properties and ``to_dict()``.
+A property can change a parameter that specifies the bend; :py:meth:`~impactx.elements.Element.set_geometry` changes how the bend is specified.
+
+.. py:method:: impactx.elements.Element.set_geometry(rc=..., phi=..., B=...)
+
+   Change how the bend is specified.
+
+   The keyword arguments replace the current values of ``rc`` (m), the bend angle (``phi`` or ``theta``, in degrees) and ``B`` (T),
+   and ``None`` removes one.
+   The result must be one of the combinations described above for the kind of bend.
+   :py:meth:`~impactx.elements.Element.copy` applies these parameters the same way.
+
+   .. code-block:: python
+
+      bend = elements.Sbend(ds=0.5, rc=10.0)
+      bend.set_geometry(rc=None, phi=2.86)
+      stronger = bend.copy(phi=3.0)
+
+   :raises ValueError: if the result is not one of the allowed combinations; the bend is left unchanged then.
+
+.. py:method:: impactx.elements.Element.signed_rc(ref)
+
+   Return the signed radius of curvature of the reference orbit in m.
+   The center of curvature lies at ``x = -signed_rc``, and a straight bend returns ``inf``.
+
+   Available on the bends that support coherent and incoherent synchrotron radiation (CSR/ISR):
+   :py:class:`~impactx.elements.Sbend`, :py:class:`~impactx.elements.ExactSbend`,
+   :py:class:`~impactx.elements.CFbend` and :py:class:`~impactx.elements.ExactCFbend`.
+   For a bend whose radius depends on the beam energy, i.e., one specified by its field ``B``,
+   the reference particle provides the magnetic rigidity.
+
+   :param ref: reference particle
+   :rtype: float
+
 .. _element-comparison-methods:
 
 Common comparison methods on lattice elements
@@ -1860,9 +1924,12 @@ Bounding a single plane gives a jaw (slit) collimator, bounding both an iris; wi
 ``rectangular`` and ``elliptical`` shapes degenerate to the same slab.
 The aperture is disabled entirely only if both planes are zero or less, which is the default.
 
-.. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.CFbend(ds, rc=None, k, phi=None, B=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.
+
+   The bend is specified by exactly one of ``rc``, ``phi`` or ``B``, or by ``phi`` together with ``B``, see :ref:`element-bend-geometry`.
+   ``k`` is required.
 
    :param ds: Segment length in m.
    :param rc: Radius of curvature in m.
@@ -1870,6 +1937,8 @@ The aperture is disabled entirely only if both planes are zero or less, which is
               = (gradient in T/m) / (rigidity in T-m)
               k > 0 horizontal focusing
               k < 0 horizontal defocusing
+   :param phi: Bend angle in degrees.
+   :param B: Magnetic field in T.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -1906,7 +1975,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.DipEdge(psi, rc=None, g, B=None, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
@@ -1942,9 +2011,12 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    * the option ``modify_ref_part = True``, in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
    this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
 
+   The radius of curvature of the bend is specified by one of ``rc`` or ``B``, see :ref:`element-bend-geometry`.
+
    :param psi: Pole face angle [radians]
    :param rc: Radius of curvature [m]
    :param g: Gap parameter [m]
+   :param B: Magnetic field [T]
    :param R: Length scale used in fringe field integrals [m]
    :param K0: Fringe field integral [unitless]
    :param K1: Fringe field integral [unitless]
@@ -2063,7 +2135,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, rc=None, phi=None, B=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
@@ -2082,10 +2154,16 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    The vector potential is obtained from Table XI of the above-cited reference.
 
+   The dipole field is given by the first normal coefficient, or else by exactly one of ``rc``, ``phi`` or ``B``,
+   or by ``phi`` together with ``B``, see :ref:`element-bend-geometry`; the first normal coefficient must then be 0.
+
    :param ds: Segment length in m.
    :param k_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
    :param k_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
    :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
+   :param rc: Radius of curvature in m.
+   :param phi: Bend angle in degrees.
+   :param B: Magnetic field in T.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -2544,12 +2622,16 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Sbend(ds, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Sbend(ds, rc=None, phi=None, B=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal sector bend.
 
+   The bend is specified by exactly one of ``rc``, ``phi`` or ``B``, or by ``phi`` together with ``B``, see :ref:`element-bend-geometry`.
+
    :param ds: Segment length in m.
    :param rc: Radius of curvature in m.
+   :param phi: Bend angle in degrees.
+   :param B: Magnetic field in T.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -2558,7 +2640,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactSbend(ds, phi, B=0.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactSbend(ds, phi=None, B=None, rc=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal sector bend using the exact nonlinear map.  The model consists of a uniform bending field B_y with a hard edge.  Pole faces are
    normal to the entry and exit velocity of the reference particle.
@@ -2568,9 +2650,12 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    * D. L. Bruhwiler et al, in Proc. of EPAC 98, pp. 1171-1173 (1998).
    * E. Forest et al, Part. Accel. 45, pp. 65-94 (1994).
 
+   The bend is specified by exactly one of ``rc``, ``phi`` or ``B``, or by ``phi`` together with ``B``, see :ref:`element-bend-geometry`.
+
    :param ds: Segment length in m.
    :param phi: Bend angle in degrees.
-   :param B: Magnetic field in Tesla; when B = 0 (default), the reference bending radius is defined by r0 = length / (angle in rad),   corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B.
+   :param B: Magnetic field in T.
+   :param rc: Radius of curvature in m.
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -2802,12 +2887,15 @@ The aperture is disabled entirely only if both planes are zero or less, which is
       Model it as several shorter elements to resolve collective effects along
       its length.
 
-.. py:class:: impactx.elements.ThinDipole(theta, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.ThinDipole(theta, rc=None, B=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A general thin dipole element.
 
+   The bend is specified by its angle ``theta`` together with one of ``rc`` or ``B``, see :ref:`element-bend-geometry`.
+
    :param theta: Bend angle (degrees)
    :param rc: Effective curvature radius (meters)
+   :param B: Magnetic field (T)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

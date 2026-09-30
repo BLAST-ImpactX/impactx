@@ -288,7 +288,7 @@ def test_filtered_edits_keep_subclassed_elements():
         [
             keep,
             elements.Quad(ds=0.3, k=1.0, name="drop"),
-            MyBend(ds=1.0, phi=30.0, B=0.0, name="bend"),
+            MyBend(ds=1.0, phi=30.0, name="bend"),
         ]
     )
 

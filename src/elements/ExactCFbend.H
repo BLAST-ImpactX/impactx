@@ -18,8 +18,9 @@
 #include "helper/ArrayValidation.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
+#include "mixin/synchrotronradiation.H"
 #include "mixin/pipeaperture.H"
-#include "mixin/thick.H"
+#include "mixin/bendgeometry.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
@@ -29,7 +30,9 @@
 #include <AMReX_TrackedVector.H>
 
 #include <cmath>
+#include <limits>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <vector>
 
@@ -54,7 +57,7 @@ namespace impactx::elements
      */
     struct ExactCFbendPusher
     : public mixin::ParticlePush<ExactCFbendPusher>,
-      public mixin::Thick,
+      public mixin::ThickBend,
       public mixin::Alignment,
       public mixin::PipeAperture,
       public mixin::SpinTransport
@@ -66,10 +69,16 @@ namespace impactx::elements
         static constexpr int DEFAULT_int_order = 2;
         static constexpr int DEFAULT_mapsteps = 10;
 
+        /** the dipole field is given by rc, phi or B, or else by the first normal coefficient */
+        static constexpr Kind bend_kind = Kind::combined;
+
         /** The particle-facing configuration of an exact combined-function bend
          *
          * @param ds Segment length in m.
          * @param unit unit specification for the multipole strengths
+         * @param rc radius of curvature in m, if given
+         * @param phi bend angle in degrees, if given
+         * @param B magnetic field in T, if given
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -82,6 +91,9 @@ namespace impactx::elements
         ExactCFbendPusher (
             amrex::ParticleReal ds,
             int unit,
+            std::optional<amrex::ParticleReal> rc,
+            std::optional<amrex::ParticleReal> phi,
+            std::optional<amrex::ParticleReal> B,
             amrex::ParticleReal dx,
             amrex::ParticleReal dy,
             amrex::ParticleReal rotation_degree,
@@ -91,15 +103,15 @@ namespace impactx::elements
             int mapsteps,
             int nslice
         )
-          : Thick(ds, nslice),
+          : ThickBend(type, ds, nslice, rc, phi, B, bend_kind),
             Alignment(dx, dy, rotation_degree),
             PipeAperture(aperture_x, aperture_y),
             m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps)
         {
         }
 
-        /** Reverse the element (negate ds) */
-        void reverse () { Thick::reverse(); }
+        /** Reverse the element (negate ds and the bend angle) */
+        void reverse () { ThickBend::reverse(); }
 
         /** Push all particles on a tile */
         using mixin::ParticlePush<ExactCFbendPusher>::operator();
@@ -123,7 +135,7 @@ namespace impactx::elements
             m_ibetgam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
             m_brho = refpart.rigidity_Tm();
 
-            // The curvature comes from the first coefficient, which only a prepared pusher
+            // The curvature may come from the first coefficient, which only a prepared pusher
             // has a view of (@see ExactCFbendGPU::make_particle_pusher). The canonical
             // element inherits this method but never resolves the view, so say so rather
             // than read through a null pointer. Not on the hot path.
@@ -135,12 +147,22 @@ namespace impactx::elements
             }
             amrex::ParticleReal const * k_normal = m_k_normal;
 
-            // find magnetic field and curvature; normalize units to MAD-X convention if needed
-            amrex::ParticleReal curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];
-            m_rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
+            if (has_geometry()) {
+                // the dipole field is given by rc, phi or B (a straight bend has none)
+                amrex::ParticleReal const rc = signed_rc(refpart);
+                m_curvature = is_straight() ? 0.0_prt : 1.0_prt / rc;
+                m_orbit_rc = is_straight() ? 0.0_prt : rc;
 
-            // arc length and angle of the current slice
-            m_slice_ds = m_ds / nslice();
+                // arc length of the current slice
+                m_slice_ds = slice_arc_length(refpart);
+            } else {
+                // find magnetic field and curvature; normalize units to MAD-X convention if needed
+                m_curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];
+                m_orbit_rc = m_curvature == 0.0 ? 0.0_prt : 1.0_prt/m_curvature;
+
+                // arc length of the current slice
+                m_slice_ds = m_ds / nslice();
+            }
         }
 
         /** This is an ExactCFbend functor, so that a variable of this type can be used like an ExactCFbend function.
@@ -231,7 +253,7 @@ namespace impactx::elements
             amrex::ParticleReal ptout = pt;
 
             // treat the special case of zero field
-            if (m_rc==0_prt) {
+            if (m_orbit_rc==0_prt) {
                // compute the radical in the denominator (= pz):
                amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
                    powi<2>(pt - m_ibeta) -
@@ -257,7 +279,7 @@ namespace impactx::elements
                amrex::ParticleReal const px2 = powi<2>(px);
 
                // trigonometric evaluations
-               amrex::ParticleReal const slice_phi = tau / m_rc;
+               amrex::ParticleReal const slice_phi = tau / m_orbit_rc;
                auto const [sin_phi, cos_phi] = amrex::Math::sincos(slice_phi);
 
                // determine if particle lies within the domain of map definition
@@ -265,10 +287,10 @@ namespace impactx::elements
                {
                    amrex::ParticleReal const pperp = std::sqrt(pperp2);
                    amrex::ParticleReal const pzi = std::sqrt(powi<2>(pperp) - powi<2>(px));
-                   amrex::ParticleReal const rho = m_rc + x;
+                   amrex::ParticleReal const rho = m_orbit_rc + x;
 
                    // update momenta
-                   pxout = px * cos_phi + (pzi - rho / m_rc) * sin_phi;
+                   pxout = px * cos_phi + (pzi - rho / m_orbit_rc) * sin_phi;
                    pyout = py;
                    ptout = pt;
 
@@ -281,9 +303,9 @@ namespace impactx::elements
                        amrex::ParticleReal const theta = slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
 
                        // update position coordinates
-                       xout = -m_rc + rho*cos_phi + m_rc*(pzf + px*sin_phi - pzi*cos_phi);
-                       yout = y + theta * m_rc * py;
-                       tout = t - theta * m_rc * (pt - 1.0_prt * m_ibeta) - slice_phi * m_rc * m_ibeta;
+                       xout = -m_orbit_rc + rho*cos_phi + m_orbit_rc*(pzf + px*sin_phi - pzi*cos_phi);
+                       yout = y + theta * m_orbit_rc * py;
+                       tout = t - theta * m_orbit_rc * (pt - 1.0_prt * m_ibeta) - slice_phi * m_orbit_rc * m_ibeta;
 
                    } // else { amrex::Print() << "Warning: outside map domain." << "\n"; }
                } // else { amrex::Print() << "Warning: outside map domain." << "\n"; }
@@ -337,8 +359,8 @@ namespace impactx::elements
             amrex::ParticleReal const * k_skew = m_k_skew;
 
             // defined dimensionless variables scaled by radius of curvature
-            amrex::ParticleReal rho = 1_prt + x / m_rc;
-            amrex::ParticleReal y_scl = y / m_rc;
+            amrex::ParticleReal rho = 1_prt + x / m_orbit_rc;
+            amrex::ParticleReal y_scl = y / m_orbit_rc;
             amrex::ParticleReal ln_rho = std::log(rho);
 
             // initialize the momentum kick
@@ -355,8 +377,8 @@ namespace impactx::elements
                int n = m+1;  // multipole order
 
                // define dimensionless multipole coefficients (scaled by radius of curvature)
-               kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
-               ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
+               kn = std::pow(m_orbit_rc, static_cast<amrex::ParticleReal>(m)) * kn;
+               ks = std::pow(m_orbit_rc, static_cast<amrex::ParticleReal>(m)) * ks;
 
                switch (n) {
 
@@ -453,8 +475,8 @@ namespace impactx::elements
             amrex::ParticleReal const * const k_skew = m_k_skew;
 
             // defined dimensionless variables scaled by radius of curvature
-            amrex::ParticleReal rho = 1_prt + x / m_rc;
-            amrex::ParticleReal y_scl = y / m_rc;
+            amrex::ParticleReal rho = 1_prt + x / m_orbit_rc;
+            amrex::ParticleReal y_scl = y / m_orbit_rc;
             amrex::ParticleReal ln_rho = std::log(rho);
 
             // Initialization of magnetic field variables:
@@ -466,15 +488,17 @@ namespace impactx::elements
             // NOTE:  Here we start at m = 0 in order to include the dipole contribution to the spin
             for (int m = 0; m < m_ncoef; m++) {
 
-               // normalize units to MAD-X convention if needed
-               amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
+               // normalize units to MAD-X convention if needed; the dipole (m = 0) may be
+               // given by rc, phi or B instead, @see compute_constants
+               amrex::ParticleReal kn = m == 0 ? m_curvature
+                                      : m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
                amrex::ParticleReal ks = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
 
                int n = m+1;  // multipole order
 
                // define dimensionless multipole coefficients (scaled by radius of curvature)
-               kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
-               ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
+               kn = std::pow(m_orbit_rc, static_cast<amrex::ParticleReal>(m)) * kn;
+               ks = std::pow(m_orbit_rc, static_cast<amrex::ParticleReal>(m)) * ks;
 
                // Below, we use the consistency relationships Bx = dpy/rho and By = -dpx/rho.  See T. Zolkin, PRAB 20, 043501 (2017).
 
@@ -532,7 +556,7 @@ namespace impactx::elements
             T_Real const uz = Ps * iPnorm;
 
             // Design-orbit curvature
-            amrex::ParticleReal const h = 1_prt/m_rc;
+            amrex::ParticleReal const h = 1_prt/m_orbit_rc;
 
             // Evaluation of the full Thomas-BMT precession vector.
             tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
@@ -637,7 +661,8 @@ namespace impactx::elements
         amrex::ParticleReal m_beta;           //! beta
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m
-        amrex::ParticleReal m_rc;             //! magnet radius of curvature
+        amrex::ParticleReal m_orbit_rc;       //! magnet radius of curvature (0 if straight)
+        amrex::ParticleReal m_curvature;      //! curvature of the reference orbit in 1/m
     };
 
     /** An exact combined-function bend: the canonical element that owns its coefficients.
@@ -648,6 +673,7 @@ namespace impactx::elements
     struct ExactCFbendGPU
     : public mixin::BeamOptic<ExactCFbendGPU>,
       public mixin::LinearTransport<ExactCFbendGPU>,
+      public mixin::SynchrotronRadiation,
       public ExactCFbendPusher
     {
         /** A general (thick) combined-function sector dipole whose field consists
@@ -658,12 +684,19 @@ namespace impactx::elements
          *  supports quadrupole focusing.  Here, symplectic integration
          *  is used based on a splitting of the underlying Hamiltonian.
          *
+         *  The dipole field is given by the first normal coefficient, or else by exactly one
+         *  of rc, phi or B, or by phi together with B (@see mixin::BendGeometry); the first
+         *  normal coefficient must then be 0.
+         *
          * @param ds Segment length in m.
          * @param k_normal Array of normal multipole coefficients (units below)
          * @param k_skew   Array of skew multipole coefficients (units below)
          * @param unit  Unit specification
          *           unit = 0 multipole strengths in units of 1/m^n (default)
          *           unit = 1 multipole strengths in units of T/m^(n-1)
+         * @param rc Radius of curvature in m, if given
+         * @param phi Bend angle in degrees, if given
+         * @param B Magnetic field in T, if given
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -679,6 +712,9 @@ namespace impactx::elements
             std::vector<amrex::ParticleReal> k_normal,
             std::vector<amrex::ParticleReal> k_skew,
             int unit = DEFAULT_unit,
+            std::optional<amrex::ParticleReal> rc = std::nullopt,
+            std::optional<amrex::ParticleReal> phi = std::nullopt,
+            std::optional<amrex::ParticleReal> B = std::nullopt,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
             amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
@@ -688,16 +724,72 @@ namespace impactx::elements
             int mapsteps = DEFAULT_mapsteps,
             int nslice = DEFAULT_nslice
         )
-          : ExactCFbendPusher(ds, unit, dx, dy, rotation_degree, aperture_x, aperture_y, int_order, mapsteps, nslice),
+          : ExactCFbendPusher(ds, unit, rc, phi, B, dx, dy, rotation_degree, aperture_x, aperture_y, int_order, mapsteps, nslice),
             m_coefficients{std::move(k_normal), std::move(k_skew)}
         {
             require_array_pair(m_coefficients.k_normal, m_coefficients.k_skew,
                                "ExactCFbend: normal and skew coefficient", 1);
+            require_one_dipole(has_geometry(), m_coefficients.k_normal.host_const()[0]);
             if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
                 throw std::invalid_argument("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
 
             if (m_mapsteps <= 0)
                 throw std::invalid_argument("ExactCFbend: mapsteps must be > 0!");
+        }
+
+        /** Reject a dipole field that is given twice
+         *
+         * @param geometry_given the dipole field is given by rc, phi or B
+         * @param k0 the first normal coefficient
+         * @throws std::invalid_argument if both are given
+         */
+        static void require_one_dipole (bool geometry_given, amrex::ParticleReal k0)
+        {
+            if (geometry_given && k0 != amrex::ParticleReal(0)) {
+                throw std::invalid_argument(
+                    "ExactCFbend: the dipole field is given by rc, phi or B, so the first "
+                    "normal coefficient k_normal[0] must be 0.");
+            }
+        }
+
+        /** Change how the geometry of the bend is specified
+         *
+         * @see mixin::BendGeometry::set_geometry; also rejects rc, phi or B together with a
+         * dipole coefficient.
+         */
+        void set_geometry (
+            char const * element_type,
+            std::optional<amrex::ParticleReal> rc,
+            std::optional<amrex::ParticleReal> phi,
+            std::optional<amrex::ParticleReal> B
+        )
+        {
+            bool const given = rc.has_value() || phi.has_value() || B.has_value();
+            require_one_dipole(given, m_coefficients.k_normal.host_const()[0]);
+            ThickBend::set_geometry(element_type, rc, phi, B);
+        }
+
+        /** Signed radius of curvature of the reference orbit in m
+         *
+         * Host-only: given by rc, phi or B, or else derived from the first normal
+         * coefficient, read from host storage. A straight bend returns +infinity.
+         *
+         * @param refpart reference particle
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        amrex::ParticleReal
+        signed_rc (RefPart const & refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            if (has_geometry()) { return ThickBend::signed_rc(refpart); }
+
+            amrex::ParticleReal const k0 = m_coefficients.k_normal.host_const()[0];
+
+            // find magnetic field and curvature; normalize units to MAD-X convention if needed
+            amrex::ParticleReal const curvature = m_unit == 1 ? k0 / refpart.rigidity_Tm() : k0;
+            return curvature == 0_prt ? std::numeric_limits<amrex::ParticleReal>::infinity()
+                                      : 1_prt / curvature;
         }
 
         /** Push all particles */
@@ -719,6 +811,9 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
 
+            // a bend specified by rc, phi or B
+            if (has_geometry()) { ThickBend::operator()(refpart); return; }
+
             // assign input reference particle values
             amrex::ParticleReal const x = refpart.x;
             amrex::ParticleReal const px = refpart.px;
@@ -729,19 +824,15 @@ namespace impactx::elements
             amrex::ParticleReal const t = refpart.t;
             amrex::ParticleReal const pt = refpart.pt;
             amrex::ParticleReal const s = refpart.s;
-            amrex::ParticleReal const brho = refpart.rigidity_Tm();
 
-            // host view, obtained at the point of use
-            amrex::ParticleReal const * k_normal = m_coefficients.k_normal.host_const().data();
-            // find magnetic field and curvature; normalize units to MAD-X convention if needed
-            amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / brho : k_normal[0];
-            amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
+            // reference particle's orbital radius
+            amrex::ParticleReal const rc = this->signed_rc(refpart);
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
 
             // special case of zero field = an exact drift
-            if (rc==0_prt) {
+            if (std::isinf(rc)) {
                // advance position and momentum (drift)
                amrex::ParticleReal const step = slice_ds / std::sqrt(amrex::Math::powi<2>(pt) - 1.0_prt);
                refpart.x = x + step*px;
@@ -784,8 +875,8 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
+            // arc length of the current slice
+            amrex::ParticleReal const slice_ds = has_geometry() ? slice_arc_length(refpart) : m_ds / nslice();
 
             // find beta*gamma^2, beta
             amrex::ParticleReal const betgam2 = amrex::Math::powi<2>(refpart.pt) - 1_prt;
@@ -796,15 +887,12 @@ namespace impactx::elements
             auto const & k_normal_h = m_coefficients.k_normal.host_const();
             amrex::ParticleReal const * k_normal = k_normal_h.data();
 
-            // find magnetic field and curvature; normalize units to MAD-X convention if needed
-            // magnetic rigidity of the reference particle
-            // note: read from the reference particle and not from the cached m_brho, because
+            // magnetic rigidity and orbital radius of the reference particle
+            // note: read from the reference particle and not from the cached m_brho/m_orbit_rc, because
             //       compute_constants() does not run on the transport-map paths (map_trace,
             //       envelope tracking, lattice.transfer_map)
             amrex::ParticleReal const brho = refpart.rigidity_Tm();
-
-            amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / brho : k_normal[0];
-            amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
+            amrex::ParticleReal const rc = this->signed_rc(refpart);
             // a pure bend carries no quadrupole component, and then supplies no k_normal[1]
             amrex::ParticleReal const kn_raw = static_cast<int>(k_normal_h.size()) > 1 ? k_normal[1] : 0.0_prt;
             amrex::ParticleReal const kn = m_unit == 1 ? kn_raw / brho : kn_raw;
@@ -899,6 +987,7 @@ namespace impactx::elements
         )
         {
             require_array_pair(first, second, "ExactCFbend: normal and skew coefficient", 1);
+            require_one_dipole(has_geometry(), first[0]);
             m_coefficients.k_normal.host() = std::move(first);
             m_coefficients.k_skew.host() = std::move(second);
         }

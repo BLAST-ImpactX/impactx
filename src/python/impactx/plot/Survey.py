@@ -69,7 +69,6 @@ def plot_survey(
     for i, element in enumerate(self):
         el_dict = element.to_dict()
         el_type = el_dict["type"]
-        el_ds = el_dict["ds"]
         if el_type in skip_names:
             continue
 
@@ -84,14 +83,15 @@ def plot_survey(
             height = 1.0
         if "Quad" in el_type:
             height = copysign(0.8, el_dict["k"] * charge_qe)
-        if "Sbend" in el_type:
-            if ref is not None:
-                height = copysign(0.8, element.rc(ref))
-            else:  # guess
-                if el_type == "Sbend":
-                    el_dict["phi"] = (
-                        el_ds / (2 * np.pi * el_dict["rc"]) * 360
-                    )  # calculate bending angle (in degrees) and add to dict
+        if ref is not None and hasattr(element, "signed_rc"):
+            height = copysign(0.8, element.signed_rc(ref))
+        elif hasattr(element, "set_geometry"):  # a bend, without a reference particle
+            # rc and phi give the direction geometrically, B together with the charge sign
+            if el_dict["rc"] is not None:
+                height = copysign(0.8, el_dict["rc"])
+            elif el_dict["B"] is not None:
+                height = copysign(0.8, el_dict["B"] * charge_qe)
+            else:
                 height = copysign(0.8, el_dict["phi"])
         # TODO: sign dependent, read m_p_scale
         # if el_type == "Kicker":

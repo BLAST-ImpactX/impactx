@@ -24,6 +24,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -123,6 +124,49 @@ namespace detail
         return values;
     }
 
+    /** Read the geometry of a bend from inputs: rc, its angle and B, each optional
+     *
+     * The angle is phi, or theta for thin bends; an edge has none. Which combinations are
+     * allowed is checked by the element, @see mixin::BendGeometry
+     *
+     * @tparam T_Element the element type
+     * @param pp_element the element being read
+     * @return rc in m, the angle in degrees and B in T, each only if given
+     */
+    template <typename T_Element>
+    std::tuple<
+        std::optional<amrex::ParticleReal>,
+        std::optional<amrex::ParticleReal>,
+        std::optional<amrex::ParticleReal>
+    >
+    query_bend_geometry (amrex::ParmParse& pp_element)
+    {
+        using elements::mixin::BendGeometry;
+        constexpr auto kind = T_Element::bend_kind;
+
+        auto query_optional = [&pp_element](char const * name) {
+            std::optional<amrex::ParticleReal> result;
+            amrex::ParticleReal value;
+            if (pp_element.queryWithParser(name, value)) { result = value; }
+            return result;
+        };
+        auto const rc = query_optional("rc");
+        auto const angle = kind == BendGeometry::Kind::edge
+            ? std::nullopt : query_optional(BendGeometry::angle_name(kind));
+        auto const B = query_optional("B");
+
+        if (BendGeometry::is_legacy_unset_B(kind, rc, angle, B)) {
+            ablastr::warn_manager::WMRecordWarning(
+                "ImpactX::read_element",
+                pp_element.getPrefix() + ".B = 0 together with " + pp_element.getPrefix() +
+                ".phi is deprecated and read as phi alone. Remove the B = 0 line.",
+                ablastr::warn_manager::WarnPriority::low
+            );
+        }
+
+        return {rc, angle, B};
+    }
+
 } // namespace detail
 
     /** Read a lattice element
@@ -169,27 +213,26 @@ namespace detail
             auto a = detail::query_alignment<Sbend>(pp_element);
             auto b = detail::query_aperture<Sbend>(pp_element);
 
-            amrex::ParticleReal rc;
-            pp_element.getWithParser("rc", rc);
+            auto const [rc, phi, B] = detail::query_bend_geometry<Sbend>(pp_element);
 
-            m_lattice.emplace_back( Sbend(ds, rc, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
+            m_lattice.emplace_back( Sbend(ds, rc, phi, B, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "cfbend")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment<CFbend>(pp_element);
             auto b = detail::query_aperture<CFbend>(pp_element);
 
-            amrex::ParticleReal rc, k;
-            pp_element.getWithParser("rc", rc);
+            auto const [rc, phi, B] = detail::query_bend_geometry<CFbend>(pp_element);
+            amrex::ParticleReal k;
             pp_element.getWithParser("k", k);
 
-            m_lattice.emplace_back( CFbend(ds, rc, k, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
+            m_lattice.emplace_back( CFbend(ds, rc, k, phi, B, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "dipedge")
         {
             auto a = detail::query_alignment<DipEdge>(pp_element);
             auto b = detail::query_aperture<DipEdge>(pp_element);
 
-            amrex::ParticleReal psi, rc, g;
+            amrex::ParticleReal psi, g;
             amrex::ParticleReal R = DipEdge::DEFAULT_R;
             std::string model_str = amrex::getEnumNameString(DipEdge::DEFAULT_model);
             std::string location_str = amrex::getEnumNameString(DipEdge::DEFAULT_location);
@@ -203,7 +246,7 @@ namespace detail
             amrex::ParticleReal K5 = DipEdge::DEFAULT_K5;
             amrex::ParticleReal K6 = DipEdge::DEFAULT_K6;
             pp_element.getWithParser("psi", psi);
-            pp_element.getWithParser("rc", rc);
+            auto const geometry = detail::query_bend_geometry<DipEdge>(pp_element);  // rc or B
             pp_element.getWithParser("g", g);
             pp_element.queryAddWithParser("R", R);
             pp_element.queryAddWithParser("K0", K0);
@@ -224,7 +267,7 @@ namespace detail
                 throw std::runtime_error(element_name + ".R must be >0 but is: " + std::to_string(R));
             }
 
-            m_lattice.emplace_back( DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, model, location, modify_ref_part, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], element_name) );
+            m_lattice.emplace_back( DipEdge(psi, std::get<0>(geometry), g, std::get<2>(geometry), R, K0, K1, K2, K3, K4, K5, K6, model, location, modify_ref_part, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], element_name) );
         } else if (element_type == "quadedge")
         {
             auto a = detail::query_alignment<QuadEdge>(pp_element);
@@ -479,19 +522,18 @@ element_name) );
             detail::queryAddResize(pp_element, "k_normal", k_normal);
             detail::queryAddResize(pp_element, "k_skew", k_skew);
 
-            m_lattice.emplace_back( ExactCFbend(ds, k_normal, k_skew, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
+            auto const [rc, phi, B] = detail::query_bend_geometry<ExactCFbend>(pp_element);
+
+            m_lattice.emplace_back( ExactCFbend(ds, k_normal, k_skew, units, rc, phi, B, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
         } else if (element_type == "sbend_exact")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
             auto a = detail::query_alignment<ExactSbend>(pp_element);
             auto b = detail::query_aperture<ExactSbend>(pp_element);
 
-            amrex::ParticleReal phi;
-            amrex::ParticleReal B = ExactSbend::DEFAULT_B;
-            pp_element.getWithParser("phi", phi);
-            pp_element.queryAddWithParser("B", B);
+            auto const [rc, phi, B] = detail::query_bend_geometry<ExactSbend>(pp_element);
 
-            m_lattice.emplace_back( ExactSbend(ds, phi, B, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
+            m_lattice.emplace_back( ExactSbend(ds, phi, B, rc, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], nslice, element_name) );
         } else if (element_type == "uniform_acc_chromatic")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
@@ -508,11 +550,12 @@ element_name) );
             auto a = detail::query_alignment<ThinDipole>(pp_element);
             auto b = detail::query_aperture<ThinDipole>(pp_element);
 
-            amrex::ParticleReal theta, rc;
+            // theta is required, together with rc or B
+            amrex::ParticleReal theta;
             pp_element.getWithParser("theta", theta);
-            pp_element.getWithParser("rc", rc);
+            auto const geometry = detail::query_bend_geometry<ThinDipole>(pp_element);
 
-            m_lattice.emplace_back( ThinDipole(theta, rc, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], element_name) );
+            m_lattice.emplace_back( ThinDipole(theta, std::get<0>(geometry), std::get<2>(geometry), a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], element_name) );
         } else if (element_type == "kicker")
         {
             auto a = detail::query_alignment<Kicker>(pp_element);

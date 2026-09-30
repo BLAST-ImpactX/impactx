@@ -249,7 +249,7 @@ def test_ExactQuad(benchmark, sim):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactSbend(benchmark, sim):
-    el = elements.ExactSbend(name="bend", ds=1.0, phi=10.0, B=0.0, nslice=nslice)
+    el = elements.ExactSbend(name="bend", ds=1.0, phi=10.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 

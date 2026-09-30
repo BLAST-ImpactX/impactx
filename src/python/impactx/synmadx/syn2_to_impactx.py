@@ -670,15 +670,15 @@ def unroll_impactx_lattice(lattice):
     output_lattice = "[\n"
     for elem in lattice:
         output_elem = ""
-        edict = elem.to_dict()
+        # ExactSbend.to_dict() gives phi in radians unless asked for the constructor's degrees
+        edict = (
+            elem.to_dict(in_degrees=True)
+            if isinstance(elem, impactx.elements.ExactSbend)
+            else elem.to_dict()
+        )
         etype = edict["type"]
         output_elem = f"impactx.elements.{etype}("
         firstparm = True
-
-        # for ExactSbend the member phi which is the angle has been converted into radians but
-        # I need to convert it back to degrees which is what the contructor needs.
-        if etype == "ExactSbend":
-            edict["phi"] = edict["phi"] * 180 / np.pi
 
         if etype == "DipEdge" or etype == "ShortRF" or etype == "BeamMonitor":
             # remove extra attributes if present

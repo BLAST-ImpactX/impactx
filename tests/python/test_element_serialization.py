@@ -891,8 +891,8 @@ def test_a_subclass_serializes_by_its_element_kind():
     lattice = elements.KnownElementsList()
     lattice.extend(
         [
-            elements.ExactSbend(ds=1.0, phi=30.0, B=0.0),
-            MyBend(ds=1.0, phi=30.0, B=0.0),
+            elements.ExactSbend(ds=1.0, phi=30.0),
+            MyBend(ds=1.0, phi=30.0),
         ]
     )
 

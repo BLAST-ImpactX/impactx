@@ -15,7 +15,7 @@
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
-#include "mixin/thick.H"
+#include "mixin/bendgeometry.H"
 #include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
@@ -27,13 +27,14 @@
 #include <AMReX_SIMD.H>
 
 #include <cmath>
+#include <optional>
 
 namespace impactx::elements
 {
     struct SbendGPU
     : public mixin::BeamOptic<SbendGPU>,
       public mixin::LinearTransport<SbendGPU>,
-      public mixin::Thick,
+      public mixin::ThickBend,
       public mixin::Alignment,
       public mixin::PipeAperture,
       public mixin::SpinTransport,
@@ -48,8 +49,13 @@ namespace impactx::elements
 
         /** An ideal sector bend
          *
+         * The bend is specified by exactly one of rc, phi or B, or by phi together with B,
+         * @see mixin::ThickBend
+         *
          * @param ds Segment length in m.
          * @param rc Radius of curvature in m.
+         * @param phi Bend angle in degrees.
+         * @param B Magnetic field in T.
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -59,7 +65,9 @@ namespace impactx::elements
          */
         SbendGPU (
             amrex::ParticleReal ds,
-            amrex::ParticleReal rc,
+            std::optional<amrex::ParticleReal> rc,
+            std::optional<amrex::ParticleReal> phi = std::nullopt,
+            std::optional<amrex::ParticleReal> B = std::nullopt,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
             amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
@@ -67,26 +75,14 @@ namespace impactx::elements
             amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
             int nslice = DEFAULT_nslice
         )
-        : Thick(ds, nslice),
+        : ThickBend(type, ds, nslice, rc, phi, B),
           Alignment(dx, dy, rotation_degree),
-          PipeAperture(aperture_x, aperture_y),
-          m_rc(rc)
+          PipeAperture(aperture_x, aperture_y)
         {
         }
 
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        amrex::ParticleReal
-        rc ([[maybe_unused]] RefPart const & refpart) const
-        {
-            using namespace amrex::literals; // for _rt and _prt
-
-            // TODO: as in ExactSbend
-            // return m_B != 0_prt ? refpart.rigidity_Tm() / m_B : m_ds / m_phi;
-            return m_rc;
-        }
-
-        /** Reverse the element (negate ds) */
-        void reverse () { Thick::reverse(); }
+        /** Reverse the element (negate ds and the bend angle) */
+        void reverse () { ThickBend::reverse(); }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -113,21 +109,23 @@ namespace impactx::elements
             amrex::ParticleReal const ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
 
             // compute intermediate constants (curvature, bend angle, trigonometry)
-            amrex::ParticleReal const h = (m_rc == 0_prt) ? 0_prt : 1_prt/m_rc;
-            amrex::ParticleReal const theta = h * slice_ds;
+            bool const straight = is_straight();
+            amrex::ParticleReal const rc = signed_rc(refpart);
+            amrex::ParticleReal const h = straight ? 0_prt : 1_prt/rc;
+            amrex::ParticleReal const theta = slice_angle(refpart);
             auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
-            // nonvanishing linear matrix elements (if h = 0, this is equivalent to a drift)
-            m_R11 = (h == 0_prt) ? 1_prt : cos_theta;
-            m_R12 = (h == 0_prt) ? slice_ds : m_rc * sin_theta;
-            m_R16 = (h == 0_prt) ? 0_prt : -m_rc * ibet * (1_prt - cos_theta);
-            m_R21 = (h == 0_prt) ? 0_prt :-sin_theta * h;
+            // nonvanishing linear matrix elements (a straight bend is a drift)
+            m_R11 = straight ? 1_prt : cos_theta;
+            m_R12 = straight ? slice_ds : rc * sin_theta;
+            m_R16 = straight ? 0_prt : -rc * ibet * (1_prt - cos_theta);
+            m_R21 = straight ? 0_prt :-sin_theta * h;
             // m_R22 = m_R11
-            m_R26 = (h == 0_prt) ? 0_prt : -sin_theta * ibet;
-            m_R34 = (h == 0_prt) ? slice_ds : m_rc * theta;
+            m_R26 = straight ? 0_prt : -sin_theta * ibet;
+            m_R34 = straight ? slice_ds : rc * theta;
             // m_R51 = -m_R26
             // m_R52 = -m_R16
-            m_R56 = (h == 0_prt) ? slice_ds * ibetagam2 : m_rc * (-theta + sin_theta * ibet * ibet);
+            m_R56 = straight ? slice_ds * ibetagam2 : rc * (-theta + sin_theta * ibet * ibet);
 
             // access reference particle values for spin calculation
             amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
@@ -223,65 +221,8 @@ namespace impactx::elements
             // pt = ptout;
         }
 
-        /** This pushes the reference particle.
-         *
-         * @param[in,out] refpart reference particle
-         */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const
-        {
-            using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
-
-            // assign input reference particle values
-            amrex::ParticleReal const x = refpart.x;
-            amrex::ParticleReal const px = refpart.px;
-            amrex::ParticleReal const y = refpart.y;
-            amrex::ParticleReal const py = refpart.py;
-            amrex::ParticleReal const z = refpart.z;
-            amrex::ParticleReal const pz = refpart.pz;
-            amrex::ParticleReal const t = refpart.t;
-            amrex::ParticleReal const pt = refpart.pt;
-            amrex::ParticleReal const s = refpart.s;
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // treat the special case of zero field (drift)
-            if (m_rc == 0.0_prt) {
-               // advance position and momentum (drift)
-               amrex::ParticleReal const step = slice_ds /std::sqrt(powi<2>(pt)-1.0_prt);
-               refpart.x = x + step*px;
-               refpart.y = y + step*py;
-               refpart.z = z + step*pz;
-               refpart.t = t - step*pt;
-
-            } else {
-
-               // assign intermediate parameter
-               amrex::ParticleReal const theta = slice_ds/m_rc;
-               amrex::ParticleReal const B = std::sqrt(powi<2>(pt)-1.0_prt)/m_rc;
-
-               // calculate expensive terms once
-               auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
-
-               // advance position and momentum (bend)
-               refpart.px = px*cos_theta - pz*sin_theta;
-               refpart.py = py;
-               refpart.pz = pz*cos_theta + px*sin_theta;
-               refpart.pt = pt;
-
-               refpart.x = x + (refpart.pz - pz)/B;
-               refpart.y = y + (theta/B)*py;
-               refpart.z = z - (refpart.px - px)/B;
-               refpart.t = t - (theta/B)*pt;
-
-            }
-
-            // advance integrated path length
-            refpart.s = s + slice_ds;
-
-        }
+        /** This pushes the reference particle. */
+        using ThickBend::operator();
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -308,8 +249,8 @@ namespace impactx::elements
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            // treat the special case of zero field
-            if (m_rc==0.0_prt) {
+            // treat the special case of a straight bend (drift)
+            if (is_straight()) {
                R(1,2) = slice_ds;
                R(3,4) = slice_ds;
                R(5,6) = slice_ds / betgam2;
@@ -317,20 +258,21 @@ namespace impactx::elements
             } else {
 
                // calculate expensive terms once
-               amrex::ParticleReal const theta = slice_ds/m_rc;
+               amrex::ParticleReal const rc = signed_rc(refpart);
+               amrex::ParticleReal const theta = slice_angle(refpart);
                auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
                // assign linear map matrix elements
                R(1,1) = cos_theta;
-               R(1,2) = m_rc*sin_theta;
-               R(1,6) = - (m_rc/bet)*(1.0_prt - cos_theta);
-               R(2,1) = -sin_theta/m_rc;
+               R(1,2) = rc*sin_theta;
+               R(1,6) = - (rc/bet)*(1.0_prt - cos_theta);
+               R(2,1) = -sin_theta/rc;
                R(2,2) = cos_theta;
                R(2,6) = - sin_theta/bet;
-               R(3,4) = m_rc*theta;
+               R(3,4) = rc*theta;
                R(5,1) = sin_theta/bet;
-               R(5,2) = m_rc/bet*(1.0_prt - cos_theta);
-               R(5,6) = m_rc*(-theta+sin_theta/(bet*bet));
+               R(5,2) = rc/bet*(1.0_prt - cos_theta);
+               R(5,6) = rc*(-theta+sin_theta/(bet*bet));
 
             }
 
@@ -394,8 +336,6 @@ namespace impactx::elements
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
-
-        amrex::ParticleReal m_rc; //! bend radius in m
 
       private:
         // constants that are independent of the individually tracked particle,

@@ -165,17 +165,19 @@ class InputDefaultsHelper:
                 else:
                     parameter_type = type_and_default
 
+            is_optional = parameter_type.endswith("| None")
             for optional_prefix in ("typing.Optional[", "Optional["):
                 if parameter_type.startswith(
                     optional_prefix
                 ) and parameter_type.endswith("]"):
                     parameter_type = parameter_type[len(optional_prefix) : -1]
+                    is_optional = True
                     break
 
             if parameter_type.startswith(("typing.SupportsFloat", "SupportsFloat")):
-                parameter_type = "float"
+                parameter_type = "float | None" if is_optional else "float"
             elif parameter_type.startswith(("typing.SupportsInt", "SupportsInt")):
-                parameter_type = "int"
+                parameter_type = "int | None" if is_optional else "int"
             elif parameter_type == "str | None":
                 parameter_type = "str"
 

@@ -13,6 +13,7 @@ from ... import state
 from ..utils import GeneralFunctions
 
 ALLOWED_INPUT_TYPES = {"int", "float", "str", "bool"}
+OPTIONAL_NUMERIC_TYPES = {"int | None", "float | None"}
 INT_ERROR_MESSAGE = "Must be an integer"
 FLOAT_ERROR_MESSAGE = "Must be a float"
 BOOL_ERROR_MESSAGE = "Must be a boolean: True or False"
@@ -70,6 +71,12 @@ class DashboardValidation:
         input_type = DashboardValidation._get_input_type(
             input_name, category, parameter_type
         )
+
+        # an optional number may be left unset
+        if input_type in OPTIONAL_NUMERIC_TYPES:
+            if input_value is None or str(input_value).strip() in ("", "None"):
+                return []
+            input_type = input_type.removesuffix(" | None")
 
         if input_type not in ALLOWED_INPUT_TYPES:
             return [f"Unknown or unsupported type '{input_type}'"]

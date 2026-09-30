@@ -13,6 +13,7 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
+#include "mixin/bendgeometry.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
@@ -26,6 +27,7 @@
 #include <AMReX_SIMD.H>
 
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 
 namespace impactx::elements
@@ -34,6 +36,7 @@ namespace impactx::elements
     : public mixin::BeamOptic<ThinDipoleGPU>,
       public mixin::LinearTransport<ThinDipoleGPU>,
       public mixin::Thin,
+      public mixin::BendGeometry,
       public mixin::Alignment,
       public mixin::PipeAperture,
       public mixin::SpinTransport,
@@ -43,6 +46,8 @@ namespace impactx::elements
         static constexpr auto type = "ThinDipole";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr Kind bend_kind = Kind::thin;
+
         /** A general thin-kick dipole element with chromatic effects
          *
          * This model is equivalent to the model described in Section 3.1 of
@@ -50,8 +55,12 @@ namespace impactx::elements
          * for Tracking," CERN/SL/95-12 (AP), 1995.  It is intended to replicate
          * the thin-lens dipole model in MAD-X.
          *
+         * The bend is specified by its angle together with one of rc or B,
+         * @see mixin::BendGeometry
+         *
          * @param theta - the total bending angle (degrees)
          * @param rc - the curvature radius (m)
+         * @param B - the magnetic field (T)
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -60,22 +69,22 @@ namespace impactx::elements
          */
         ThinDipoleGPU (
             amrex::ParticleReal theta,
-            amrex::ParticleReal rc,
+            std::optional<amrex::ParticleReal> rc,
+            std::optional<amrex::ParticleReal> B = std::nullopt,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
             amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
             amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
             amrex::ParticleReal aperture_y = DEFAULT_aperture_y
         )
-        : Alignment(dx, dy, rotation_degree),
-          PipeAperture(aperture_x, aperture_y),
-          m_theta(theta * degree2rad),
-          m_rc(rc)
+        : BendGeometry(bend_kind, type, rc, theta, B),
+          Alignment(dx, dy, rotation_degree),
+          PipeAperture(aperture_x, aperture_y)
         {
         }
 
         /** Reverse the element (negate bending angle) */
-        void reverse () { m_theta = -m_theta; }
+        void reverse () { BendGeometry::reverse(); }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -97,8 +106,11 @@ namespace impactx::elements
             m_beta = refpart.beta();
 
             // compute the effective (equivalent) arc length and curvature
-            m_ds = m_theta * m_rc;
-            m_kx = 1.0_prt / m_rc;
+            // (a straight dipole does not kick)
+            bool const straight = is_straight();
+            amrex::ParticleReal const rc = signed_rc(refpart);
+            m_ds = straight ? 0.0_prt : m_phi * rc;
+            m_kx = straight ? 0.0_prt : 1.0_prt / rc;
         }
 
         /** This is a multipole functor, so that a variable of this type can be used like a
@@ -172,12 +184,15 @@ namespace impactx::elements
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
+            using namespace amrex::literals; // for _rt and _prt
+
             // assign input reference particle values
             amrex::ParticleReal const px = refpart.px;
             amrex::ParticleReal const pz = refpart.pz;
 
-            // calculate expensive terms once
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(m_theta);
+            // calculate expensive terms once (a straight dipole does not bend)
+            amrex::ParticleReal const theta = is_straight() ? 0.0_prt : m_phi;
+            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
             // advance position and momentum (thin dipole)
             refpart.px = px*cos_theta - pz*sin_theta;
@@ -307,10 +322,15 @@ namespace impactx::elements
             using amrex::Math::powi;
 
             amrex::ParticleReal const beta = refpart.beta();
-            amrex::ParticleReal const ds = m_theta * m_rc;     // effective arc length
-            amrex::ParticleReal const kx = 1.0_prt / m_rc;     // curvature
 
+            // a straight dipole does not kick
             Map6x6 R = Map6x6::Identity();
+            if (is_straight()) { return rotate_aligned_map(R); }
+
+            amrex::ParticleReal const rc = signed_rc(refpart);
+            amrex::ParticleReal const ds = m_phi * rc;         // effective arc length
+            amrex::ParticleReal const kx = 1.0_prt / rc;       // curvature
+
             R(2,1) = -powi<2>(kx) * ds;      // geometric focusing
             R(2,6) = -kx * ds / beta;        // chromatic dispersion kick
             R(5,1) = +kx * ds / beta;        // path-length coupling to x
@@ -318,9 +338,6 @@ namespace impactx::elements
             // apply the transverse rotation (roll) alignment error
             return rotate_aligned_map(R);
         }
-
-        amrex::ParticleReal m_theta;  //! dipole bending angle (rad)
-        amrex::ParticleReal m_rc;     //! curvature radius (m)
 
       private:
         // constants that are independent of the individually tracked particle,

@@ -30,7 +30,6 @@ monitor.backend = h5
 bend1.type = sbend_exact
 bend1.ds = 1.0
 bend1.phi = 10.0
-bend1.B = 0.0
 
 plasma_lens.type = line
 plasma_lens.elements = drend pl dr pl dr pl dr pl dr pl dr pl dr pl dr pl dr pl dr pl drend

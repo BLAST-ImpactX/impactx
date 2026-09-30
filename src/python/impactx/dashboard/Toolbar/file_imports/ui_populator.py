@@ -12,21 +12,31 @@ from ...Input.lattice.variable_handler import LatticeVariableHandler
 from ...Input.visualization.lattice import update_lattice_statistics
 from .python.parser import DashboardParser
 
+# The import flushes the state part way through (@see _prepare_distribution_update). trame
+# then runs the state.change listeners that are still active, this one included, and would
+# import the same file again, from within the import, for as long as the state keeps changing.
+_import_in_progress = False
+
 
 @state.change("import_file")
 def on_import_file_change(import_file, **kwargs):
-    if import_file:
-        try:
-            state.importing_file = True
-            DashboardParser.file_details(import_file)
-            populate_impactx_simulation_file_to_ui(import_file)
-        except Exception as error:
-            state.import_file_error = True
-            state.import_file_error_message = (
-                f"Unable to parse because of the following error: {error}"
-            )
-        finally:
-            state.importing_file = False
+    global _import_in_progress
+    if not import_file or _import_in_progress:
+        return
+
+    _import_in_progress = True
+    try:
+        state.importing_file = True
+        DashboardParser.file_details(import_file)
+        populate_impactx_simulation_file_to_ui(import_file)
+    except Exception as error:
+        state.import_file_error = True
+        state.import_file_error_message = (
+            f"Unable to parse because of the following error: {error}"
+        )
+    finally:
+        state.importing_file = False
+        _import_in_progress = False
 
 
 def _apply_distribution_inputs():

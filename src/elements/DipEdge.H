@@ -13,6 +13,7 @@
 #include "particles/ImpactXParticleContainer.H"
 #include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
+#include "mixin/bendgeometry.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
@@ -29,6 +30,7 @@
 #include <AMReX_SIMD.H>
 
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 
 namespace impactx::elements
@@ -37,6 +39,7 @@ namespace impactx::elements
     : public mixin::BeamOptic<DipEdgeGPU>,
       public mixin::LinearTransport<DipEdgeGPU>,
       public mixin::Thin,
+      public mixin::BendGeometry,
       public mixin::Alignment,
       public mixin::PipeAperture,
       public mixin::SpinTransport,
@@ -45,6 +48,8 @@ namespace impactx::elements
     {
         static constexpr auto type = "DipEdge";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr Kind bend_kind = Kind::edge;
 
         AMREX_ENUM_IN_CLASS(Model,
             linear,   //! for the linear fringe field model
@@ -78,9 +83,13 @@ namespace impactx::elements
          *   K. L. Brown, SLAC Report No. 75 (1982).
          *   K. Hwang and S. Y. Lee, PRAB 18, 122401 (2015).
          *
+         * The radius of curvature of the bend is specified by one of rc or B,
+         * @see mixin::BendGeometry
+         *
          * @param psi Pole face entry/exit angle in rad.
          * @param rc Radius of curvature in m.
          * @param g Gap parameter in m.
+         * @param B Magnetic field in T.
          * @param R Length scale parameter in m.
          * @param K0 Fringe field integeral (unitless).
          * @param K1 Fringe field integeral (unitless).
@@ -100,8 +109,9 @@ namespace impactx::elements
          */
         DipEdgeGPU (
             amrex::ParticleReal psi,
-            amrex::ParticleReal rc,
+            std::optional<amrex::ParticleReal> rc,
             amrex::ParticleReal g,
+            std::optional<amrex::ParticleReal> B = std::nullopt,
             amrex::ParticleReal R = DEFAULT_R,
             amrex::ParticleReal K0 = DEFAULT_K0,
             amrex::ParticleReal K1 = DEFAULT_K1,
@@ -119,9 +129,10 @@ namespace impactx::elements
             amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
             amrex::ParticleReal aperture_y = DEFAULT_aperture_y
         )
-        : Alignment(dx, dy, rotation_degree),
+        : BendGeometry(bend_kind, type, rc, std::nullopt, B),
+          Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
-          m_psi(psi), m_rc(rc), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_location(location), m_modify_ref_part(modify_ref_part)
+          m_psi(psi), m_g(g), m_R(R), m_K0(K0), m_K1(K1), m_K2(K2), m_K3(K3), m_K4(K4), m_K5(K5), m_K6(K6), m_model(model), m_location(location), m_modify_ref_part(modify_ref_part)
         {
         }
 
@@ -147,25 +158,28 @@ namespace impactx::elements
          * In particular, used to pre-compute and cache variables that are
          * independent of the individually tracked particle.
          *
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
-        void compute_constants ([[maybe_unused]] RefPart const & refpart)
+        void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
+            // radius of curvature of the bend (infinite if straight)
+            m_edge_rc = signed_rc(refpart);
+
             // constants for linear map:
 
             // edge focusing matrix elements (zero gap)
-            m_R21 = std::tan(m_psi) / m_rc;
+            m_R21 = std::tan(m_psi) / m_edge_rc;
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
             amrex::ParticleReal const vf = (1.0_prt + powi<2>(sin_psi))
                 / powi<3>(cos_psi)
-                * m_g * m_K2 / powi<2>(m_rc);
+                * m_g * m_K2 / powi<2>(m_edge_rc);
 
             m_R43 = vf - m_R21;
 
@@ -181,21 +195,21 @@ namespace impactx::elements
             // the scale constant specifying entry or exit
             amrex::ParticleReal const loc = m_location == Location::entry ? 1_prt : -1_prt;
 
-            m_c1 = (m_g / m_rc) * m_K1 / cos_psi;
-            m_c2_times_1plusdelta = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
-            m_c3_times_1plusdelta = loc * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
-            m_c4_times_1plusdelta = loc * (m_g / m_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
-            m_c5 = tan_psi / (2_prt * m_rc);
-            m_c6_times_1plusdelta = 0.5_prt * powi<2>(sin_psi)/(2_prt * m_rc * powi<3>(cos_psi)) * m_g/m_rc * m_K1;
-            m_c7_times_1plusdelta = 0.5_prt * powi<3>(sec_psi) * (m_g * m_K1 / (2_prt*powi<2>(m_rc)) + (1_prt+powi<2>(sin_psi))*m_g*m_K2/powi<2>(m_rc));
-            m_c8_times_1plusdelta = (1_prt/6_prt) * powi<3>(tan_psi) / (2_prt * powi<2>(m_rc));
-            m_c9_times_1plusdelta = 0.5_prt * tan_psi * powi<2>(sec_psi) / (2_prt * powi<2>(m_rc));
-            m_c10_times_1plusdelta = loc * powi<2>(tan_psi) / (2_prt * m_rc);
-            m_c11_times_1plusdelta = loc * 1_prt / (2_prt * m_rc);
-            m_c12_times_1plusdelta = (m_g > 0_prt) ? 1_prt / (24_prt) * (4_prt/cos_psi - 8_prt/(powi<3>(cos_psi))) * m_K3/(powi<2>(m_rc) * m_g) : 0_prt;
-            m_c13 = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
-            m_c14 = 0.5_prt * sin_psi/(powi<3>(cos_psi)) * m_g/(m_rc*m_R) * m_K5;
-            m_c15 = (m_K6 / (m_rc*m_R)) / (powi<3>(cos_psi));
+            m_c1 = (m_g / m_edge_rc) * m_K1 / cos_psi;
+            m_c2_times_1plusdelta = powi<2>(m_g/m_edge_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
+            m_c3_times_1plusdelta = loc * powi<2>(m_g)/m_edge_rc * m_K0 * powi<2>(sec_psi);
+            m_c4_times_1plusdelta = loc * (m_g / m_edge_rc) * m_K1 * sin_psi / (powi<2>(cos_psi));
+            m_c5 = tan_psi / (2_prt * m_edge_rc);
+            m_c6_times_1plusdelta = 0.5_prt * powi<2>(sin_psi)/(2_prt * m_edge_rc * powi<3>(cos_psi)) * m_g/m_edge_rc * m_K1;
+            m_c7_times_1plusdelta = 0.5_prt * powi<3>(sec_psi) * (m_g * m_K1 / (2_prt*powi<2>(m_edge_rc)) + (1_prt+powi<2>(sin_psi))*m_g*m_K2/powi<2>(m_edge_rc));
+            m_c8_times_1plusdelta = (1_prt/6_prt) * powi<3>(tan_psi) / (2_prt * powi<2>(m_edge_rc));
+            m_c9_times_1plusdelta = 0.5_prt * tan_psi * powi<2>(sec_psi) / (2_prt * powi<2>(m_edge_rc));
+            m_c10_times_1plusdelta = loc * powi<2>(tan_psi) / (2_prt * m_edge_rc);
+            m_c11_times_1plusdelta = loc * 1_prt / (2_prt * m_edge_rc);
+            m_c12_times_1plusdelta = (m_g > 0_prt) ? 1_prt / (24_prt) * (4_prt/cos_psi - 8_prt/(powi<3>(cos_psi))) * m_K3/(powi<2>(m_edge_rc) * m_g) : 0_prt;
+            m_c13 = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_edge_rc*m_R) * m_K4;
+            m_c14 = 0.5_prt * sin_psi/(powi<3>(cos_psi)) * m_g/(m_edge_rc*m_R) * m_K5;
+            m_c15 = (m_K6 / (m_edge_rc*m_R)) / (powi<3>(cos_psi));
         }
 
         /** This is a dipedge functor, so that a variable of this type can be used like a
@@ -318,14 +332,15 @@ namespace impactx::elements
 
             if (m_modify_ref_part && m_model == Model::nonlinear) {
                 // calculate expensive terms
+                amrex::ParticleReal const rc = signed_rc(refpart);
                 amrex::ParticleReal const loc = m_location == Location::entry ? 1_prt : -1_prt;
                 auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
                 amrex::ParticleReal const tan_psi = sin_psi/cos_psi;
                 amrex::ParticleReal const sec_psi = 1_prt/cos_psi;
-                amrex::ParticleReal const c2_ref = powi<2>(m_g/m_rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
-                amrex::ParticleReal const c3_ref = loc * powi<2>(m_g)/m_rc * m_K0 * powi<2>(sec_psi);
-                amrex::ParticleReal const c5_ref = tan_psi / (2_prt * m_rc);
-                amrex::ParticleReal const c13_ref = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(m_rc*m_R) * m_K4;
+                amrex::ParticleReal const c2_ref = powi<2>(m_g/rc) * m_K0 * sin_psi * powi<3>(sec_psi)/2_prt;
+                amrex::ParticleReal const c3_ref = loc * powi<2>(m_g)/rc * m_K0 * powi<2>(sec_psi);
+                amrex::ParticleReal const c5_ref = tan_psi / (2_prt * rc);
+                amrex::ParticleReal const c13_ref = powi<2>(sin_psi) / (2_prt*powi<3>(cos_psi)) * powi<2>(m_g)/(rc*m_R) * m_K4;
 
                 amrex::ParticleReal const pnorm = std::sqrt(pt*pt-1_prt);
                 amrex::ParticleReal const dx_ref = -c3_ref;
@@ -391,8 +406,8 @@ namespace impactx::elements
 
             // The axis-angle vector in the coordinate frame defined by the pole-face.
             // This expression is taken from D. Abell, PRAB 18, 024001 (2015), eqs (41-42):
-            T_Real lambdaz_face = -loc / m_rc * (1_prt + gyro_anomaly) * y;
-            T_Real lambdax_face =  loc / m_rc * gyro_anomaly * gamma_minus_1 * px_face;
+            T_Real lambdaz_face = -loc / m_edge_rc * (1_prt + gyro_anomaly) * y;
+            T_Real lambdax_face =  loc / m_edge_rc * gyro_anomaly * gamma_minus_1 * px_face;
 
             // the axis-angle vector in the local coordinate frame defined by the reference particle
             T_Real const lambdax = lambdax_face * cos_psi + lambdaz_face * sin_psi;
@@ -417,7 +432,7 @@ namespace impactx::elements
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
@@ -425,14 +440,17 @@ namespace impactx::elements
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
+            // radius of curvature of the bend (infinite if straight)
+            amrex::ParticleReal const rc = signed_rc(refpart);
+
             // edge focusing matrix elements (zero gap)
-            amrex::ParticleReal const R21 = std::tan(m_psi) / m_rc;
+            amrex::ParticleReal const R21 = std::tan(m_psi) / rc;
 
             // first-order effect of nonzero gap
             auto const [sin_psi, cos_psi] = amrex::Math::sincos(m_psi);
             amrex::ParticleReal const vf = (1.0_prt + powi<2>(sin_psi))
                 / powi<3>(cos_psi)
-                * m_g * m_K2 / powi<2>(m_rc);
+                * m_g * m_K2 / powi<2>(rc);
 
             amrex::ParticleReal const R43 = vf - R21;
 
@@ -445,7 +463,6 @@ namespace impactx::elements
         }
 
         amrex::ParticleReal m_psi; //! pole face angle in rad
-        amrex::ParticleReal m_rc; //! bend radius in m
         amrex::ParticleReal m_g; //! gap parameter in m
         amrex::ParticleReal m_R; //! scale length in m
         amrex::ParticleReal m_K0; //! fringe field integral
@@ -463,6 +480,7 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_R21, m_R43, m_beta;
+        amrex::ParticleReal m_edge_rc; //! radius of curvature of the bend in m
         amrex::ParticleReal m_c1, m_c5, m_c13, m_c14, m_c15;
         amrex::ParticleReal m_c2_times_1plusdelta, m_c3_times_1plusdelta, m_c4_times_1plusdelta, m_c6_times_1plusdelta;
         amrex::ParticleReal m_c7_times_1plusdelta, m_c8_times_1plusdelta, m_c9_times_1plusdelta, m_c10_times_1plusdelta;

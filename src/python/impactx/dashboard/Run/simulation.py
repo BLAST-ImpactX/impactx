@@ -8,6 +8,7 @@ License: BSD-3-Clause-LBNL
 
 from .. import state
 from ..Input.distribution.utils import DistributionFunctions
+from ..Input.validation.inputs import OPTIONAL_NUMERIC_TYPES
 
 TRACKING_MODE_COMMANDS = {
     "Particle Tracking": """\
@@ -71,6 +72,11 @@ def build_lattice_list() -> str:
 
             if param_type == "str":
                 formatted_value = f'"{param_value}"'
+            elif param_type in OPTIONAL_NUMERIC_TYPES and str(param_value).strip() in (
+                "",
+                "None",
+            ):
+                formatted_value = "None"
             elif param_type == "bool":
                 formatted_value = str(param_value).strip().capitalize()
             else:

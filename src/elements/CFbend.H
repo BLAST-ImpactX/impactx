@@ -15,7 +15,7 @@
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
-#include "mixin/thick.H"
+#include "mixin/bendgeometry.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/synchrotronradiation.H"
@@ -27,6 +27,7 @@
 #include <AMReX_SIMD.H>
 
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 
 namespace impactx::elements
@@ -34,7 +35,7 @@ namespace impactx::elements
     struct CFbendGPU
     : public mixin::BeamOptic<CFbendGPU>,
       public mixin::LinearTransport<CFbendGPU>,
-      public mixin::Thick,
+      public mixin::ThickBend,
       public mixin::Alignment,
       public mixin::PipeAperture,
       public mixin::SpinTransport,
@@ -50,12 +51,17 @@ namespace impactx::elements
         /** An combined-function bend, consisting of an ideal sector bend with
          *  an upright quadrupole focusing component.
          *
+         * The bend is specified by exactly one of rc, phi or B, or by phi together with B,
+         * @see mixin::ThickBend
+         *
          * @param ds Segment length in m.
          * @param rc Radius of curvature in m.
          * @param k  Quadrupole strength in m^(-2) (MADX convention)
          *           = (gradient in T/m) / (rigidity in T-m)
          *           k > 0 horizontal focusing
          *           k < 0 horizontal defocusing
+         * @param phi Bend angle in degrees.
+         * @param B Magnetic field in T.
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -65,8 +71,10 @@ namespace impactx::elements
          */
         CFbendGPU (
             amrex::ParticleReal ds,
-            amrex::ParticleReal rc,
+            std::optional<amrex::ParticleReal> rc,
             amrex::ParticleReal k,
+            std::optional<amrex::ParticleReal> phi = std::nullopt,
+            std::optional<amrex::ParticleReal> B = std::nullopt,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
             amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
@@ -74,26 +82,15 @@ namespace impactx::elements
             amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
             int nslice = DEFAULT_nslice
         )
-        : Thick(ds, nslice),
+        : ThickBend(type, ds, nslice, rc, phi, B),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
-          m_rc(rc), m_k(k)
+          m_k(k)
         {
         }
 
-        /** Radius of curvature of the reference orbit in m
-         *
-         * @param refpart reference particle (unused)
-         */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        amrex::ParticleReal
-        rc ([[maybe_unused]] RefPart const & refpart) const
-        {
-            return m_rc;
-        }
-
-        /** Reverse the element (negate ds) */
-        void reverse () { Thick::reverse(); }
+        /** Reverse the element (negate ds and the bend angle) */
+        void reverse () { ThickBend::reverse(); }
 
         /** Push all particles */
         using BeamOptic::operator();
@@ -112,17 +109,18 @@ namespace impactx::elements
 
             Alignment::compute_constants(refpart);
 
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
+            // arc length of the current slice and radius of curvature (infinite if straight)
+            amrex::ParticleReal const slice_ds = slice_arc_length(refpart);
+            amrex::ParticleReal const rc = signed_rc(refpart);
 
             // find beta*gamma^2, beta
             amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
             amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
-            amrex::ParticleReal const b2rc2 = powi<2>(bet) * powi<2>(m_rc);
+            amrex::ParticleReal const b2rc2 = powi<2>(bet) * powi<2>(rc);
 
             // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = m_k + powi<-2>(m_rc);
+            amrex::ParticleReal const gx = m_k + powi<-2>(rc);
             amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
 
             // update vertical phase space variables
@@ -135,8 +133,8 @@ namespace impactx::elements
             amrex::ParticleReal const cy = gy > 0_prt ? std::cos(omega_y * slice_ds) : std::cosh(omega_y * slice_ds);
             amrex::ParticleReal const sy = gy > 0_prt ? std::sin(omega_y * slice_ds)/omega_y : std::sinh(omega_y * slice_ds)/omega_y;
 
-            amrex::ParticleReal const ibrc = 1_prt / (bet * m_rc);
-            amrex::ParticleReal const igbrc = 1_prt / (gx * bet * m_rc);
+            amrex::ParticleReal const ibrc = 1_prt / (bet * rc);
+            amrex::ParticleReal const igbrc = 1_prt / (gx * bet * rc);
             amrex::ParticleReal const igb2r2 = 1_prt / (gx * b2rc2);
 
             // elements of the linear transport matrix
@@ -165,7 +163,7 @@ namespace impactx::elements
             amrex::ParticleReal const gyro_const2 = 1_prt + G * gamma * gamma;
 
             // trigonometry for spin calculation
-            amrex::ParticleReal const h = (m_rc == 0_prt) ? 0_prt : 1_prt/m_rc;
+            amrex::ParticleReal const h = is_straight() ? 0_prt : 1_prt/rc;
             auto const [sinG, cosG] = amrex::Math::sincos(G * h * gamma * slice_ds);
 
             // intermediate constants for spin calculation
@@ -240,51 +238,8 @@ namespace impactx::elements
             // pt = ptout;
         }
 
-        /** This pushes the reference particle.
-         *
-         * @param[in,out] refpart reference particle
-         */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const
-        {
-            using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
-
-            // assign input reference particle values
-            amrex::ParticleReal const x = refpart.x;
-            amrex::ParticleReal const px = refpart.px;
-            amrex::ParticleReal const y = refpart.y;
-            amrex::ParticleReal const py = refpart.py;
-            amrex::ParticleReal const z = refpart.z;
-            amrex::ParticleReal const pz = refpart.pz;
-            amrex::ParticleReal const t = refpart.t;
-            amrex::ParticleReal const pt = refpart.pt;
-            amrex::ParticleReal const s = refpart.s;
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // assign intermediate parameter
-            amrex::ParticleReal const theta = slice_ds/m_rc;
-            amrex::ParticleReal const B = std::sqrt(powi<2>(pt)-1.0_prt)/m_rc;
-
-            // calculate expensive terms once
-            auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
-
-            // advance position and momentum (bend)
-            refpart.px = px*cos_theta - pz*sin_theta;
-            refpart.py = py;
-            refpart.pz = pz*cos_theta + px*sin_theta;
-            refpart.pt = pt;
-
-            refpart.x = x + (refpart.pz - pz)/B;
-            refpart.y = y + (theta/B)*py;
-            refpart.z = z - (refpart.px - px)/B;
-            refpart.t = t - (theta/B)*pt;
-
-            // advance integrated path length
-            refpart.s = s + slice_ds;
-        }
+        /** This pushes the reference particle. */
+        using ThickBend::operator();
 
         /** This operator pushes the particle spin.
          *
@@ -355,22 +310,23 @@ namespace impactx::elements
          */
         AMREX_GPU_HOST AMREX_FORCE_INLINE
         Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        transport_map (RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
 
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
+            // arc length of the current slice and radius of curvature (infinite if straight)
+            amrex::ParticleReal const slice_ds = slice_arc_length(refpart);
+            amrex::ParticleReal const rc = signed_rc(refpart);
 
             // find beta*gamma^2, beta
             amrex::ParticleReal const betgam2 = powi<2>(refpart.pt) - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
             amrex::ParticleReal const ibetgam2 = 1_prt / betgam2;
-            amrex::ParticleReal const b2rc2 = powi<2>(bet) * powi<2>(m_rc);
+            amrex::ParticleReal const b2rc2 = powi<2>(bet) * powi<2>(rc);
 
             // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = m_k + powi<-2>(m_rc);
+            amrex::ParticleReal const gx = m_k + powi<-2>(rc);
             amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
 
             // update vertical phase space variables
@@ -385,8 +341,8 @@ namespace impactx::elements
             amrex::ParticleReal const sinhy = std::sinh(omega_y * slice_ds);
             amrex::ParticleReal const coshy = std::cosh(omega_y * slice_ds);
 
-            amrex::ParticleReal const igbrc = 1_prt / (gx * bet * m_rc);
-            amrex::ParticleReal const iobrc = 1_prt / (omega_x * bet * m_rc);
+            amrex::ParticleReal const igbrc = 1_prt / (gx * bet * rc);
+            amrex::ParticleReal const iobrc = 1_prt / (omega_x * bet * rc);
             amrex::ParticleReal const igobr = 1_prt / (gx * omega_x * b2rc2);
 
             // initialize linear map matrix elements
@@ -412,7 +368,6 @@ namespace impactx::elements
             return rotate_aligned_map(R);
         }
 
-        amrex::ParticleReal m_rc; //! bend radius in m
         amrex::ParticleReal m_k;  //! quadrupole strength in m^(-2)
 
     private:

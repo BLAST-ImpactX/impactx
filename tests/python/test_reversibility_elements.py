@@ -48,6 +48,14 @@ else:
 # standard SINGLE phase tolerance there.
 TIGHT_PHASE_ATOL = 1e-8 if Config.precision != "SINGLE" else phase_atol
 
+# the ways to specify the geometry of a bend, for a radius of about 10 m (ds=0.5 m)
+BEND_GEOMETRIES = {
+    "rc": dict(rc=-10.346),
+    "phi": dict(phi=2.769),
+    "B": dict(B=0.45),
+    "phi_B": dict(phi=10.0, B=0.45),
+}
+
 
 @pytest.fixture(scope="function")
 def sim(request):
@@ -272,14 +280,17 @@ def roundtrip(
 # =============================================================================
 
 
+@pytest.mark.parametrize(
+    "geometry", BEND_GEOMETRIES.values(), ids=BEND_GEOMETRIES.keys()
+)
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
-def test_CFbend(sim):
+def test_CFbend(sim, geometry):
     roundtrip(
         elements.CFbend(
             ds=0.5,
-            rc=7.613657587094493,
             k=-7.057403,
             nslice=nslice,
+            **geometry,
             **PIPE_KWARGS,
         ),
         sim,
@@ -433,6 +444,30 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
     )
 
 
+@pytest.mark.parametrize(
+    "geometry", BEND_GEOMETRIES.values(), ids=BEND_GEOMETRIES.keys()
+)
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_ExactCFbend_geometry(sim, geometry):
+    """the dipole field given by rc, phi or B instead of k_normal[0]"""
+    roundtrip(
+        elements.ExactCFbend(
+            ds=0.5,
+            k_normal=[0.0, 0.015, -0.002],
+            k_skew=[0.0, 0.01, 0.001],
+            int_order=4,
+            mapsteps=mapsteps,
+            nslice=nslice,
+            **geometry,
+            **PIPE_KWARGS,
+        ),
+        sim,
+        phase_atol=1e-4 if Config.precision == "SINGLE" else 1e-8,
+        spin_atol=5e-6 if Config.precision == "SINGLE" else spin_atol,
+        spin=sim.spin,
+    )
+
+
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0), (1, 3.5)], ids=["madx", "marylie"])
 def test_ExactQuad(sim, unit, k):
@@ -453,10 +488,13 @@ def test_ExactQuad(sim, unit, k):
     )
 
 
+@pytest.mark.parametrize(
+    "geometry", BEND_GEOMETRIES.values(), ids=BEND_GEOMETRIES.keys()
+)
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
-def test_ExactSbend(sim):
+def test_ExactSbend(sim, geometry):
     roundtrip(
-        elements.ExactSbend(ds=1.0, phi=10.0, B=0.45, nslice=nslice, **PIPE_KWARGS),
+        elements.ExactSbend(ds=0.5, nslice=nslice, **geometry, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -471,10 +509,13 @@ def test_Quad(sim):
     )
 
 
+@pytest.mark.parametrize(
+    "geometry", BEND_GEOMETRIES.values(), ids=BEND_GEOMETRIES.keys()
+)
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
-def test_Sbend(sim):
+def test_Sbend(sim, geometry):
     roundtrip(
-        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **PIPE_KWARGS),
+        elements.Sbend(ds=0.5, nslice=nslice, **geometry, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -645,10 +686,11 @@ def test_TaperedPL(sim, unit, k):
     )
 
 
+@pytest.mark.parametrize("radius", [dict(rc=1.0), dict(B=-3.0)], ids=["rc", "B"])
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
-def test_ThinDipole(sim):
+def test_ThinDipole(sim, radius):
     roundtrip(
-        elements.ThinDipole(theta=0.45, rc=1.0, **ALIGNMENT_KWARGS),
+        elements.ThinDipole(theta=0.45, **radius, **ALIGNMENT_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -763,17 +805,19 @@ def test_RFCavity(sim):
     ],
     ids=["linear-zero-gap", "linear-finite-gap", "nonlinear-finite-gap"],
 )
+@pytest.mark.parametrize(
+    "radius", [dict(rc=-10.3462283686195526), dict(B=0.3)], ids=["rc", "B"]
+)
 # WARNING:  The orbit in DipEdge is not reversed simply by taking entry->exit. The inverse map needs to be fixed.  See Issue #1562.
 # Spin reversibility is not validated here either: it inherits the same
 # entry->exit inverse-map problem and leaves an O(1e-4) residual in all three
 # models. Keep nospin-only (the benchmark covers the forward spin push).
-def test_DipEdge(sim, model, g, K2):
-    rc = 10.3462283686195526
+def test_DipEdge(sim, model, g, K2, radius):
     psi = 0.048345620280243
     roundtrip(
         elements.DipEdge(
             psi=-psi,
-            rc=-rc,
+            **radius,
             g=g,
             K2=K2,
             model=model,

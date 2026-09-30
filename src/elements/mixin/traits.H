@@ -11,6 +11,7 @@
 #define IMPACTX_ELEMENTS_MIXIN_TRAITS_H
 
 #include "alignment.H"
+#include "bendgeometry.H"
 #include "named.H"
 #include "pipeaperture.H"
 #include "spintransport.H"
@@ -63,6 +64,11 @@ namespace impactx::elements::mixin
     /** Does this element support spin transport (@see SpinTransport)? */
     template<typename T_Element>
     inline constexpr bool has_spin_transport_v = std::is_base_of_v<SpinTransport, std::decay_t<T_Element>>;
+
+    /** Is this an element whose bend is specified by rc, phi or B (@see BendGeometry)? */
+    template<typename T_Element>
+    inline constexpr bool has_bend_geometry_v =
+        std::is_base_of_v<BendGeometry, std::decay_t<T_Element>>;
 
     /** Does this element emit synchrotron radiation (@see SynchrotronRadiation)? */
     template<typename T_Element>

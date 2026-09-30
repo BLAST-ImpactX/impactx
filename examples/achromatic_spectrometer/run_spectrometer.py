@@ -66,7 +66,7 @@ for _ in range(0, num_lenses):
     segment = [dr, pl, dr]
     thick_lens.extend(segment)
 
-bend = elements.ExactSbend(name="bend", ds=1.0, phi=10.0, B=0.0, nslice=ns)
+bend = elements.ExactSbend(name="bend", ds=1.0, phi=10.0, nslice=ns)
 drift = elements.Drift(name="drift", ds=1.0, nslice=ns)
 
 # specify the lattice sequence

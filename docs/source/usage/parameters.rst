@@ -525,6 +525,7 @@ This requires these additional parameters:
 
 ``cfbend`` for a combined function bending magnet,
 e.g. for an element ``<cfbend_name>.type = cfbend``.
+The bend is specified by exactly one of ``rc``, ``phi`` or ``B``, or by ``phi`` together with ``B``, see :ref:`element-bend-geometry`.
 This requires these additional parameters:
 
 .. pp:param:: <cfbend_name>.ds
@@ -537,7 +538,19 @@ This requires these additional parameters:
     :type: ``float``
     :unit: m
 
-    The bend radius.
+    The radius of curvature.
+
+.. pp:param:: <cfbend_name>.phi
+    :type: ``float``
+    :unit: degree
+
+    The bend angle.
+
+.. pp:param:: <cfbend_name>.B
+    :type: ``float``
+    :unit: T
+
+    The magnetic field.
 
 .. pp:param:: <cfbend_name>.k
     :type: ``float``
@@ -595,7 +608,9 @@ and :math:`H_2` is the term containing the vector potential, which is a superpos
 
 The vector potential is obtained from Table XI of the above-cited reference.
 
-This element is defined via ``<cfbend_exact_name>.type = cfbend_exact`` and requires these additional parameters:
+This element is defined via ``<cfbend_exact_name>.type = cfbend_exact``.
+The dipole field is given by the first normal coefficient, or else by exactly one of ``rc``, ``phi`` or ``B``, or by ``phi`` together with ``B``, see :ref:`element-bend-geometry`; the first normal coefficient must then be 0.
+This requires these additional parameters:
 
 .. pp:param:: <cfbend_exact_name>.ds
     :type: ``float``
@@ -619,6 +634,24 @@ This element is defined via ``<cfbend_exact_name>.type = cfbend_exact`` and requ
 
     Specification of units for the multipole coefficients.
     By default, the multipole coefficients are normalized by magnetic rigidity. Use ``unit=1`` to specify using SI units.
+
+.. pp:param:: <cfbend_exact_name>.rc
+    :type: ``float``
+    :unit: m
+
+    The radius of curvature.
+
+.. pp:param:: <cfbend_exact_name>.phi
+    :type: ``float``
+    :unit: degree
+
+    The bend angle.
+
+.. pp:param:: <cfbend_exact_name>.B
+    :type: ``float``
+    :unit: T
+
+    The magnetic field.
 
 .. pp:param:: <cfbend_exact_name>.dx/dy
     :link_aliases: <cfbend_exact_name>.dx <cfbend_exact_name>.dy
@@ -750,7 +783,9 @@ To model this correction, we allow two options in the dipedge model:
 * the option ``modify_ref_part = True`` in which the shift due to the fringe field is applied to the reference particle phase space vector, but not to the beam particle phase space vector --
   this model makes sense if the shift due to the fringe field is considered as part of the baseline design, so that downstream elements are aligned with the "shifted" reference trajectory
 
-This element is defined via ``<dipedge_name>.type = dipedge`` and requires these additional parameters:
+This element is defined via ``<dipedge_name>.type = dipedge``.
+The radius of curvature of the bend is specified by one of ``rc`` or ``B``, see :ref:`element-bend-geometry`.
+This requires these additional parameters:
 
 .. pp:param:: <dipedge_name>.psi
     :type: ``float``
@@ -763,6 +798,12 @@ This element is defined via ``<dipedge_name>.type = dipedge`` and requires these
     :unit: m
 
     The bend radius.
+
+.. pp:param:: <dipedge_name>.B
+    :type: ``float``
+    :unit: T
+
+    The magnetic field of the bend.
 
 .. pp:param:: <dipedge_name>.g
     :type: ``float``
@@ -1826,6 +1867,7 @@ This element is defined via ``<rfcavity_name>.type = rfcavity`` and requires the
 
 ``sbend`` for a bending magnet,
 e.g. for an element ``<sbend_name>.type = sbend``.
+The bend is specified by exactly one of ``rc``, ``phi`` or ``B``, or by ``phi`` together with ``B``, see :ref:`element-bend-geometry`.
 This requires these additional parameters:
 
 .. pp:param:: <sbend_name>.ds
@@ -1838,7 +1880,19 @@ This requires these additional parameters:
     :type: ``float``
     :unit: m
 
-    The bend radius.
+    The radius of curvature.
+
+.. pp:param:: <sbend_name>.phi
+    :type: ``float``
+    :unit: degree
+
+    The bend angle.
+
+.. pp:param:: <sbend_name>.B
+    :type: ``float``
+    :unit: T
+
+    The magnetic field.
 
 .. pp:param:: <sbend_name>.dx/dy
     :link_aliases: <sbend_name>.dx <sbend_name>.dy
@@ -1874,13 +1928,21 @@ This requires these additional parameters:
 D. L. Bruhwiler et al., in Proc. of EPAC 98, pp. 1171-1173 (1998), E. Forest et al., Part. Accel. 45, pp. 65-94 (1994).  The model
 consists of a uniform bending field B_y with a hard edge.  Pole faces are normal to the entry and exit velocity of the reference
 particle.
-This element is defined via ``<sbend_exact_name>.type = sbend_exact`` and requires these additional parameters:
+This element is defined via ``<sbend_exact_name>.type = sbend_exact``.
+The bend is specified by exactly one of ``rc``, ``phi`` or ``B``, or by ``phi`` together with ``B``, see :ref:`element-bend-geometry`.
+This requires these additional parameters:
 
 .. pp:param:: <sbend_exact_name>.ds
     :type: ``float``
     :unit: m
 
     The segment length.
+
+.. pp:param:: <sbend_exact_name>.rc
+    :type: ``float``
+    :unit: m
+
+    The radius of curvature.
 
 .. pp:param:: <sbend_exact_name>.phi
     :type: ``float``
@@ -1891,9 +1953,8 @@ This element is defined via ``<sbend_exact_name>.type = sbend_exact`` and requir
 .. pp:param:: <sbend_exact_name>.B
     :type: ``float``
     :unit: T
-    :default: ``0``
 
-    The bend magnetic field; when ``B = 0`` (default), the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B.
+    The magnetic field.
 
 .. pp:param:: <sbend_exact_name>.dx/dy
     :link_aliases: <sbend_exact_name>.dx <sbend_exact_name>.dy
@@ -2296,6 +2357,7 @@ This element is defined via ``<tapered_pl_name>.type = tapered_pl`` and requires
 
 ``thin_dipole`` for a thin dipole element,
 e.g. for an element ``<thin_dipole_name>.type = thin_dipole``.
+The bend is specified by its angle ``theta`` together with one of ``rc`` or ``B``, see :ref:`element-bend-geometry`.
 This requires these additional parameters:
 
 .. pp:param:: <thin_dipole_name>.theta
@@ -2309,6 +2371,12 @@ This requires these additional parameters:
     :unit: m
 
     Effective radius of curvature.
+
+.. pp:param:: <thin_dipole_name>.B
+    :type: ``float``
+    :unit: T
+
+    Magnetic field.
 
 .. pp:param:: <thin_dipole_name>.dx/dy
     :link_aliases: <thin_dipole_name>.dx <thin_dipole_name>.dy
@@ -2701,7 +2769,7 @@ Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19
 
 .. note::
 
-   CSR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+   CSR effects are only calculated for lattice elements that bend the reference orbit: ``Sbend``, ``ExactSbend``, ``CFbend`` and ``ExactCFbend``.
 
    CSR effects require the compilation flag ``-DImpactX_FFT=ON``.
 
@@ -2746,7 +2814,7 @@ However, a Taylor expansion is used to evaluate the dependence on the quantum pa
 
 .. note::
 
-   ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
+   ISR effects are only calculated for lattice elements that bend the reference orbit: ``Sbend``, ``ExactSbend``, ``CFbend`` and ``ExactCFbend``.
 
 
 .. _running-cpp-parameters-particle-bc:

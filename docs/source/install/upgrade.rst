@@ -154,10 +154,10 @@ They have been finalized by then, so keeping them would leave elements that are 
 e.g., a :py:class:`~impactx.elements.BeamMonitor` with its output closed, still in the
 lattice.
 
-A single aperture plane gives a jaw
+Setting a single aperture plane represents a jaw
 """""""""""""""""""""""""""""""""""
 
-An element that sets only one of ``aperture_x`` or ``aperture_y`` now has a jaw (slit) aperture:
+An element that sets only one of ``aperture_x`` or ``aperture_y`` now represents a jaw (slit) aperture:
 with only ``aperture_x`` set, particles outside the slab ``|x| <= aperture_x``, which is unbounded
 in ``y``, are lost.
 This makes the beam pipe of the thick elements behave like the

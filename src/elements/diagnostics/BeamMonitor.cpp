@@ -441,7 +441,8 @@ namespace detail {
                                   io::Iteration(series.writeIterations()[m_step]) :
                                   series.iterations[m_step];
 
-        // close iteration
+        // close iteration: writes all particle tiles (MPI-collective) while the
+        // pinned particle copy is still alive
         iteration.close();
 #else
         amrex::ignore_unused(pc, step, period);
@@ -518,10 +519,6 @@ namespace detail {
 
         // needs to be higher for next pti; must be reset for next step via prepare
         offset += numParticleOnTile64;
-
-        // TODO could be done once after all pti are processed
-        // TODO at that point, we could also close the iteration/step
-        series.flush();
 #else
         amrex::ignore_unused(pti, real_soa_names, int_soa_names, ref_part);
 #endif   // ImpactX_USE_OPENPMD

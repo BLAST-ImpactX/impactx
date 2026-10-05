@@ -326,13 +326,18 @@ Lattice Elements
 
     Indicates the element type for this lattice element. This should be one of the following.
 
+.. _running-cpp-parameters-aperture-convention:
+
 Many elements take a transverse aperture via ``aperture_x`` and ``aperture_y``: the ``aperture``
 collimator, and as a beam pipe most other elements.
-They all follow the same convention. Each plane is bounded independently: a half-aperture of zero
-or less removes the constraint in that plane only, while the other plane still cuts.
-Bounding a single plane gives a jaw (slit) collimator, bounding both an iris; with only
-``aperture_y`` set, a particle is lost when ``|y| > aperture_y`` at any ``x``, and the
-``rectangular`` and ``elliptical`` shapes degenerate to the same slab.
+They all follow the same convention.
+A half-aperture of zero or less removes the boundary in that plane, while the other plane still
+cuts.
+Bounding a single plane gives a jaw (slit) collimator: with only ``aperture_y`` set, a particle is
+lost when ``|y| > aperture_y`` at any ``x``, and the ``rectangular`` and ``elliptical`` shapes
+degenerate to the same slab.
+Bounding both planes gives an iris of the element's shape: an ellipse for the beam pipe, and a
+rectangle or an ellipse for the ``aperture`` collimator, depending on its ``shape``.
 The aperture is disabled entirely only if both planes are zero or less, which is the default.
 
 

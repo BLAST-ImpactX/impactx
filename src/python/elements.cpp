@@ -397,13 +397,17 @@ namespace
      *
      * The dict always includes a ``type`` string (the element class name) for dispatch;
      * we also include ``ds`` as 0.0 for thin elements for simplicity (plots, etc.);
-     * ``type`` is not a constructor argument and neither is ``ds`` for thin elements,
-     * and must be omitted when unpacking, e.g.:
+     * ``type`` is not a constructor argument and neither is ``ds`` for thin elements
+     * (subclasses of ``elements.mixin.Thin``), so both must be omitted when unpacking.
+     * Decide this from the element type, not from the value: all other elements
+     * require ``ds``, even when it is zero. E.g.:
      * ```py
      * dr = elements.Drift(name="drift1", ds=1.0)
      * d = dr.to_dict()
-     * kwargs = {k: v for k, v in d.items() if k != "type" and (k != "ds" or v != 0.0)}
-     * dr2 = elements.Drift(**kwargs)
+     * cls = getattr(elements, d.pop("type"))
+     * if issubclass(cls, elements.mixin.Thin):
+     *     del d["ds"]
+     * dr2 = cls(**d)
      * ```
      */
     template<typename T_Element, typename... ExtraArgs>

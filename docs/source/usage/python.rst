@@ -1851,13 +1851,18 @@ length, so the paired setter is the one that can change that length:
 
    aperture.set_vertices(x, y)                  # closed outline: x[0] == x[-1], y[0] == y[-1]
 
+.. _usage-python-aperture-convention:
+
 Many elements take a transverse aperture via ``aperture_x`` and ``aperture_y``: the ``Aperture``
 collimator, and as a beam pipe most other elements.
-They all follow the same convention. Each plane is bounded independently: a half-aperture of zero
-or less removes the constraint in that plane only, while the other plane still cuts.
-Bounding a single plane gives a jaw (slit) collimator, bounding both an iris; with only
-``aperture_y`` set, a particle is lost when ``|y| > aperture_y`` at any ``x``, and the
-``rectangular`` and ``elliptical`` shapes degenerate to the same slab.
+They all follow the same convention.
+A half-aperture of zero or less removes the boundary in that plane, while the other plane still
+cuts.
+Bounding a single plane gives a jaw (slit) collimator: with only ``aperture_y`` set, a particle is
+lost when ``|y| > aperture_y`` at any ``x``, and the ``rectangular`` and ``elliptical`` shapes
+degenerate to the same slab.
+Bounding both planes gives an iris of the element's shape: an ellipse for the beam pipe, and a
+rectangle or an ellipse for the ``Aperture`` collimator, depending on its ``shape``.
 The aperture is disabled entirely only if both planes are zero or less, which is the default.
 
 .. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)

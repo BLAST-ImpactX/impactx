@@ -155,7 +155,7 @@ e.g., a :py:class:`~impactx.elements.BeamMonitor` with its output closed, still 
 lattice.
 
 Setting a single aperture plane represents a jaw
-"""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""
 
 An element that sets only one of ``aperture_x`` or ``aperture_y`` now represents a jaw (slit) aperture:
 with only ``aperture_x`` set, particles outside the slab ``|x| <= aperture_x``, which is unbounded

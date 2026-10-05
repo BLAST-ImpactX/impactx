@@ -1851,6 +1851,8 @@ length, so the paired setter is the one that can change that length:
 
    aperture.set_vertices(x, y)                  # closed outline: x[0] == x[-1], y[0] == y[-1]
 
+.. _usage-python-aperture-convention:
+
 Many elements take a transverse aperture via ``aperture_x`` and ``aperture_y``: the ``Aperture``
 collimator, and as a beam pipe most other elements.
 They all follow the same convention. Each plane is bounded independently: a half-aperture of zero

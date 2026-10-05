@@ -326,6 +326,8 @@ Lattice Elements
 
     Indicates the element type for this lattice element. This should be one of the following.
 
+.. _running-cpp-parameters-aperture-convention:
+
 Many elements take a transverse aperture via ``aperture_x`` and ``aperture_y``: the ``aperture``
 collimator, and as a beam pipe most other elements.
 They all follow the same convention. Each plane is bounded independently: a half-aperture of zero

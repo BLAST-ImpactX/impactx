@@ -22,7 +22,7 @@ requirements. Newest release first.
 .. code-block:: python
 
    pge = elements.Programmable(0.5, 2)                # before
-   pge = elements.Programmable(ds=0.5, nslice=2)      # now
+   pge = elements.Programmable(ds=0.5, nslice=2)      # preferred by name, works as before
 
 New in this release
 """""""""""""""""""

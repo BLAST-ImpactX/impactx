@@ -154,15 +154,16 @@ They have been finalized by then, so keeping them would leave elements that are 
 e.g., a :py:class:`~impactx.elements.BeamMonitor` with its output closed, still in the
 lattice.
 
-Apertures bound each plane independently
-""""""""""""""""""""""""""""""""""""""""
+A single aperture plane gives a jaw
+"""""""""""""""""""""""""""""""""""
 
-``aperture_x`` and ``aperture_y`` now bound their transverse plane independently, on the
-beam pipe of the thick elements and on the :py:class:`~impactx.elements.Aperture` collimator
-alike (see the convention for :ref:`inputs files <running-cpp-parameters-aperture-convention>`
-and :ref:`Python <usage-python-aperture-convention>`).
-An element that sets only one of the two now loses the particles outside that plane's
-half-aperture.
+An element that sets only one of ``aperture_x`` or ``aperture_y`` now has a jaw (slit) aperture:
+with only ``aperture_x`` set, particles outside the slab ``|x| <= aperture_x``, which is unbounded
+in ``y``, are lost.
+This makes the beam pipe of the thick elements behave like the
+:py:class:`~impactx.elements.Aperture` collimator (see the convention for
+:ref:`inputs files <running-cpp-parameters-aperture-convention>` and
+:ref:`Python <usage-python-aperture-convention>`).
 Previously, a beam pipe with one plane set and the other left at zero, the default, applied no
 aperture at all, and the whole beam passed.
 
@@ -198,8 +199,8 @@ To bound the beam in both planes, set both:
 The :py:class:`~impactx.elements.Aperture` collimator follows the same convention.
 A half-aperture of zero or less now removes the boundary in that plane, where the constructor
 used to raise.
-For example, ``elements.Aperture(aperture_x=0, aperture_y=1e-3)`` is a slit that cuts only in
-``y``.
+For example, ``elements.Aperture(aperture_x=0, aperture_y=1e-3)`` is a jaw (slit) that cuts
+only in ``y``.
 
 New in this release
 """""""""""""""""""

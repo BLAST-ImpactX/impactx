@@ -24,7 +24,6 @@ def test_copy_is_a_distinct_element():
     c = q.copy()
 
     assert c is not q
-    # the copy holds the stored values exactly, which in SP are the float32-rounded inputs
     assert (c.ds, c.k, c.nslice, c.name) == (q.ds, q.k, q.nslice, q.name)
     assert (c.ds, c.k, c.nslice, c.name) == (pytest.approx(0.3), 2.0, 3, "q1")
 

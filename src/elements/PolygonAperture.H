@@ -208,11 +208,9 @@ namespace impactx::elements
                     v2 = Complex(u - vertices_x[i+1], v-vertices_y[i+1]);
                     thetasum += arg(v2 * v1conj);
                 }
-                // |thetasum / 2 pi| is exactly 1 inside and 0 outside, but only up to the
-                // roundoff of the summed angles: ~1e-16 in double, ~1e-7 in single
-                // precision, growing with the number of vertices. Comparing against the
-                // midpoint 0.5, rather than against zero, rounds it to the nearer of the
-                // two values, so that roundoff cannot turn an outside point into inside.
+                // |thetasum / 2 pi| is exactly 1 inside and 0 outside, but only up to
+                // the roundoff of the summed angles. Comparing against the
+                // midpoint 0.5 is most robust any float reduced precision.
                 inside_aperture = abs(thetasum/(2*ablastr::constant::math::pi)) > 0.5_prt;
             }
 

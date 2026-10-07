@@ -93,7 +93,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: dashboard-screenshots-macos
+        name: dashboard-screenshots-${{ github.job }}
         path: |
           build/**/pytest.ImpactX.dashboard/screenshots/**/*.png
           build/**/screenshots/**/*.png

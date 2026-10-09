@@ -12,6 +12,7 @@
 #include "initialization/Algorithms.H"
 #include "particles/ChargeDeposition.H"
 
+#include <ablastr/fields/MLMGOptions.H>
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
@@ -91,6 +92,12 @@ namespace impactx::particles::spacecharge
         pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_max_iters);
         pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
 
+        ablastr::fields::MLMGOptions mlmg_options;
+        mlmg_options.relative_tolerance = mlmg_relative_tolerance;
+        mlmg_options.absolute_tolerance = mlmg_absolute_tolerance;
+        mlmg_options.max_iters = mlmg_max_iters;
+        mlmg_options.verbosity = mlmg_verbosity;
+
         // flatten rho to 2D; store it in the output so it can be accessed after
         // the solve (e.g. via sim.rho), like the solved potential phi
         if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
@@ -135,10 +142,7 @@ namespace impactx::particles::spacecharge
             sorted_rho,
             sorted_phi,
             beta_xyz,
-            mlmg_relative_tolerance,
-            mlmg_absolute_tolerance,
-            mlmg_max_iters,
-            mlmg_verbosity,
+            mlmg_options,
             pc.GetParGDB()->Geom(),
             pc.GetParGDB()->DistributionMap(),
             pc.GetParGDB()->boxArray(),

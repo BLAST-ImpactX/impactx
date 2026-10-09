@@ -64,6 +64,7 @@ macro(find_ablastr)
         #set(AMReX_CUDA_FASTMATH ${ImpactX_FASTMATH} CACHE BOOL "" FORCE)
         set(ABLASTR_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
         set(AMReX_FFT ${ImpactX_FFT} CACHE BOOL "" FORCE)
+        set(WarpX_EB ${ImpactX_EB} CACHE BOOL "" FORCE)
 
         set(WarpX_APP OFF CACHE BOOL "" FORCE)
         set(WarpX_LIB OFF CACHE BOOL "" FORCE)

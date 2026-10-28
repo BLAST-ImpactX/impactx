@@ -55,7 +55,10 @@ def _track_particle_bc(particle_bc, lattice):
 
     sim.track_particles()
 
-    return pc, bucket_length
+    # the boundary acts on t = c*dt: a bucket of length L spans L/beta_ref in t
+    half_bucket_t = bucket_length / pc.ref.beta / 2.0
+
+    return pc, half_bucket_t
 
 
 def test_particle_bc_periodic():
@@ -63,15 +66,13 @@ def test_particle_bc_periodic():
     This tests the application of longitudinal particle boundary conditions.
     """
     monitor = elements.BeamMonitor("monitor", backend="h5")
-    pc, bucket_length = _track_particle_bc("periodic", [monitor, monitor])
+    pc, half_bucket_t = _track_particle_bc("periodic", [monitor, monitor])
 
     # access particle data
     [xmin, ymin, zmin, xmax, ymax, zmax] = pc.min_and_max_positions()
 
-    half_bucket_length = bucket_length / 2.0
-
     # check that all final particle lie within the bucket
-    np.testing.assert_array_less([zmax], [half_bucket_length])
+    np.testing.assert_array_less([zmax], [half_bucket_t])
 
 
 def test_particle_bc_absorbing():
@@ -79,15 +80,13 @@ def test_particle_bc_absorbing():
     This tests the application of longitudinal particle boundary conditions.
     """
     monitor = elements.BeamMonitor("monitor", backend="h5")
-    pc, bucket_length = _track_particle_bc("absorbing", [monitor, monitor])
+    pc, half_bucket_t = _track_particle_bc("absorbing", [monitor, monitor])
 
     # access particle data
     [xmin, ymin, zmin, xmax, ymax, zmax] = pc.min_and_max_positions()
 
-    half_bucket_length = bucket_length / 2.0
-
     # check that all final particle lie within the bucket
-    np.testing.assert_array_less([zmax], [half_bucket_length])
+    np.testing.assert_array_less([zmax], [half_bucket_t])
 
 
 def test_particle_bc_reflecting():
@@ -96,12 +95,10 @@ def test_particle_bc_reflecting():
     """
     monitor = elements.BeamMonitor("monitor", backend="h5")
     drift = elements.Drift(ds=0.0, nslice=2)
-    pc, bucket_length = _track_particle_bc("reflecting", [monitor, drift, monitor])
+    pc, half_bucket_t = _track_particle_bc("reflecting", [monitor, drift, monitor])
 
     # access particle data
     [xmin, ymin, zmin, xmax, ymax, zmax] = pc.min_and_max_positions()
 
-    half_bucket_length = bucket_length / 2.0
-
     # check that all final particle lie within the bucket
-    np.testing.assert_array_less([zmax], [half_bucket_length])
+    np.testing.assert_array_less([zmax], [half_bucket_t])

@@ -251,17 +251,23 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: particle_bc
 
       The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference
-      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.
+      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``
+      (see :py:meth:`~impactx.ParticleContainer.set_bucket_length`).
+
+      The boundary condition acts on the particle coordinate :math:`t` (:math:`c\,\Delta t`, in m) and is applied at the end of each slice.
+      A bucket of length :math:`L` (``bucket_length``) spans :math:`L/\beta_0` in :math:`t`, where :math:`\beta_0` is the normalized velocity of the reference particle at that slice:
+      this is :math:`c` times the time the reference particle needs to travel the distance :math:`L`.
+      The domain is centered on the reference particle and extends to :math:`t = \pm L/(2\beta_0)`.
 
       Options:
 
       * ``"open"`` (default): no action is applied at the boundary.
 
-      * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+      * ``"periodic"``: each particle's coordinate :math:`t` is treated modulo :math:`L/\beta_0` (phase wrapping).
 
-      * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+      * ``"absorbing"``: a particle whose coordinate :math:`t` falls outside the domain is declared lost.
 
-      * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+      * ``"reflecting"``: a particle whose coordinate :math:`t` crosses the boundary of the domain is reflected about that boundary, with reversed longitudinal momentum.
 
         .. note::
 
@@ -728,7 +734,7 @@ For step-by-step recipes on how to access particle data live during a simulation
 
    .. py:method:: set_bucket_length(bucket_length)
 
-      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions.
+      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions (see :py:attr:`~impactx.ImpactX.particle_bc`).
 
       :param bucket_length: length of the longitudinal particle domain in m
 

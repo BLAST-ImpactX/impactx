@@ -45,6 +45,7 @@ Single Particle Dynamics
    examples/symplectic_integration/README.rst
    examples/active_plasma_lens/README.rst
    examples/edge_effects/README.rst
+   examples/phase_wrapper/README.rst
 
 Spin and Polarization
 ---------------------

@@ -11,9 +11,9 @@ import openpmd_api as io
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
-initial = series.iterations[1].particles["beam"].to_df()
+initial = series.iterations[1].particles["beam"].to_df().set_index("id")
 is_double = initial["position_x"].dtype == np.float64
-final = series.iterations[last_step].particles["beam"].to_df()
+final = series.iterations[last_step].particles["beam"].to_df().set_index("id")
 
 # compare number of particles
 num_particles = 10000

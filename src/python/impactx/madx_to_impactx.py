@@ -1607,7 +1607,7 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
     # Elements whose strength is expressed per unit rigidity rather than in the
     # MAD-X k convention need it, see `ref_beta_gamma` in `lattice`.
     #
-    # Only an ENERGY that the file actually states is used. MAD-X defaults it to
+    # Only a stated energy (ENERGY, PC, GAMMA, BETA or BRHO) is used. MAD-X defaults it to
     # 1 GeV, and translating a rigidity against an assumed energy would bake a
     # wrong field strength into the lattice instead of merely approximating one.
     ref_beta_gamma = None

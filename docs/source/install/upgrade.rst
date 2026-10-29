@@ -122,6 +122,15 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
+MAD-X ``BEAM``: ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` set the reference energy
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+MAD-X files take the reference energy from the first of ``ENERGY``, ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` in a ``BEAM`` command, as MAD-X does; previously only ``ENERGY`` was read and the others left 1 GeV.
+
+**What to check in your scripts:** remove workarounds that set the energy after loading.
+A ``BEAM`` command without a MAD-X ``PARTICLE`` needs ``MASS`` and ``CHARGE``.
+Invalid values, and a later ``BEAM`` command whose particle mass is not below the energy, raise a ``MADXInputError``.
+
 New in this release
 """""""""""""""""""
 

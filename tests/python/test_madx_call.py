@@ -419,6 +419,72 @@ USE, SEQUENCE=ERING;
     assert parser.getEtot() == 5.0
 
 
+@pytest.mark.parametrize(
+    "particle, mass_name, pc", [("proton", "pmass", 2.0), ("electron", "emass", 1e-3)]
+)
+def test_beam_energy_parameters(particle, mass_name, pc):
+    """PC, GAMMA, BETA and BRHO of the same beam give its total energy."""
+    mass = MADXParser().getVariable(mass_name)
+    energy = math.hypot(pc, mass)
+    for param in (
+        f"PC={pc!r}",
+        f"GAMMA={energy / mass!r}",
+        f"BETA={pc / energy!r}",
+        f"BRHO={pc / 0.299792458!r}",
+    ):
+        parser = MADXParser()
+        parser.parse_string(f"BEAM, PARTICLE={particle}, {param};\n")
+        assert parser.getEtot() == pytest.approx(energy, rel=1e-14), param
+
+
+def test_beam_energy_precedence():
+    """Within one BEAM command, ENERGY > PC > GAMMA > BETA > BRHO."""
+    pmass = 0.93827208816
+    for params, energy in (
+        ("ENERGY=3, PC=2", 3.0),
+        ("BRHO=3, GAMMA=5, PC=2", math.hypot(2.0, pmass)),
+        ("BRHO=3, BETA=0.6", 1.25 * pmass),
+        ("ENERGY=3, GAMMA=sqrt(-1)", 3.0),  # an ignored value is not evaluated
+    ):
+        parser = MADXParser()
+        with pytest.warns(MADXInputWarning, match="ignoring"):
+            parser.parse_string(f"BEAM, PARTICLE=PROTON, {params};\n")
+        assert parser.getEtot() == pytest.approx(energy, rel=1e-14), params
+
+
+def test_beam_energy_per_command():
+    """Each BEAM command fixes the energy with the current particle mass."""
+    proton_pc2 = math.hypot(2.0, 0.93827208816)
+
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, ENERGY=3;\nBEAM, PC=2;\n")
+    assert parser.getEtot() == pytest.approx(proton_pc2, rel=1e-14)
+
+    # a new particle keeps the energy
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, PC=2;\nBEAM, PARTICLE=ELECTRON;\n")
+    assert parser.getParticle() == "electron"
+    assert parser.getEtot() == pytest.approx(proton_pc2, rel=1e-14)
+
+    # ... which must exceed its mass
+    with pytest.raises(MADXInputError, match="mass"):
+        MADXParser().parse_string(
+            "BEAM, PARTICLE=ELECTRON, PC=0.01;\nBEAM, PARTICLE=PROTON;\n"
+        )
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, BETA=0;\n")  # at rest: E = m
+    assert parser.getEtot() == 0.93827208816
+    with pytest.raises(MADXInputError, match="mass"):
+        MADXParser().parse_string("BEAM, PARTICLE=PROTON, BETA=0;\nBEAM, BV=-1;\n")
+
+
+@pytest.mark.parametrize("param", ["PC=0", "GAMMA=1", "BETA=1", "BETA=-1", "BRHO=-1"])
+def test_beam_energy_invalid_raises(param):
+    """Invalid energy parameters raise."""
+    with pytest.raises(MADXInputError, match="BEAM"):
+        MADXParser().parse_string(f"BEAM, PARTICLE=PROTON, {param};\n")
+
+
 def test_lenient_commas():
     """Test that missing commas in element and LINE definitions are tolerated."""
     parser = MADXParser()

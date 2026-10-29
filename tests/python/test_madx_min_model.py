@@ -402,11 +402,16 @@ def test_solenoid_exact_floor_warns_but_still_promotes():
     assert len(floor) == 1, [str(w.message) for w in caught]
 
 
-def test_solenoid_promotion_end_to_end_from_madx_file(tmp_path):
+@pytest.mark.parametrize(
+    "beam_energy",
+    # 2 GeV kinetic energy as ENERGY and as PC
+    ["energy=2.93827208816", "pc=sqrt(2 * (2 + 2 * pmass))"],
+)
+def test_solenoid_promotion_end_to_end_from_madx_file(tmp_path, beam_energy):
     """read_lattice derives beta*gamma from BEAM and promotes the solenoid."""
     madx_file = tmp_path / "sol.madx"
     madx_file.write_text(
-        "beam, particle=proton, energy=2.93827208816;\n"  # total energy in GeV
+        f"beam, particle=proton, {beam_energy};\n"
         "s1: solenoid, l=0.5, ks=1.0;\n"
         "cell: line=(s1);\n"
         "use, sequence=cell;\n"

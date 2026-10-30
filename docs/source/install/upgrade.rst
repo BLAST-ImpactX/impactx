@@ -122,6 +122,13 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
+``PolygonAperture``: periodic polygons are repeated by translation
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+With ``repeat_x`` or ``repeat_y``, :py:class:`~impactx.elements.PolygonAperture` now repeats the polygon by translation with that period.
+Previously, it reflected negative coordinates, which mirrored polygons that are not symmetric about :math:`x = 0` or :math:`y = 0`.
+This changes the results of periodic polygon apertures with such polygons.
+
 New in this release
 """""""""""""""""""
 

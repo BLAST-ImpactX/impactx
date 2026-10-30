@@ -147,6 +147,7 @@ namespace impactx::elements
             namespace stdx = amrex::simd::stdx;
             using amrex::Math::powi;
             using std::fmod;
+            using std::floor;
             using std::abs;
             using amrex::arg;
             using VBool = decltype(x>0_prt);
@@ -166,8 +167,10 @@ namespace impactx::elements
 #endif
 
             // if the aperture is periodic, shift sx,sy coordinates to the fundamental domain
-            T_Real const u = (m_repeat_x == 0_prt) ? sx : (fmod(abs(sx)+dx, m_repeat_x)-dx);
-            T_Real const v = (m_repeat_y == 0_prt) ? sy : (fmod(abs(sy)+dy, m_repeat_y)-dy);
+            T_Real const u = (m_repeat_x == 0_prt) ? sx
+                : sx - m_repeat_x * floor((sx+dx)/m_repeat_x);
+            T_Real const v = (m_repeat_y == 0_prt) ? sy
+                : sy - m_repeat_y * floor((sy+dy)/m_repeat_y);
 
             // compare against the aperture boundary
             VBool inside_aperture;

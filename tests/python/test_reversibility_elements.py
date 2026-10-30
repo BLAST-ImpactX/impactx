@@ -299,8 +299,8 @@ def test_ChrDrift(sim):
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k"),
-    [(0, 2.98636067687944129), (1, 5.0)],
-    ids=["madx", "si"],
+    [(0, 2.98636067687944129), (0, -2.98636067687944129), (1, 5.0)],
+    ids=["madx", "madx-defocusing", "si"],
 )
 def test_ChrPlasmaLens(sim, unit, k):
     roundtrip(

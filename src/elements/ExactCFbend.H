@@ -341,9 +341,9 @@ namespace impactx::elements
             amrex::ParticleReal y_scl = y / m_rc;
             amrex::ParticleReal ln_rho = std::log(rho);
 
-            // initialize the momentum kick
+            // initialize the momentum kick with the skew dipole (the normal dipole is in map 1)
             amrex::ParticleReal dpx = 0_prt;
-            amrex::ParticleReal dpy = 0_prt;
+            amrex::ParticleReal dpy = m_unit == 1 ? k_skew[0] / m_brho : k_skew[0];
 
             // loop over array of multipole coefficients
             for (int m = 1; m < m_ncoef; m++) {
@@ -360,10 +360,6 @@ namespace impactx::elements
 
                switch (n) {
 
-                  case 1:   // dipole-like contribution (not used - contributing to map 1)
-                     dpx += -rho * kn;
-                     dpy += ks;
-                     break;
                   case 2:   // quadrupole-like contribution
                      dpx += -rho*ln_rho*kn + y_scl*rho*ks;
                      dpy += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks;

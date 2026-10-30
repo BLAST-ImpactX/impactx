@@ -98,10 +98,12 @@ namespace impactx::elements
             amrex::ParticleReal rotation_degree
         )
           : Alignment(dx, dy, rotation_degree),
-            m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y),
-            m_shift_odd_x(shift_odd_x), m_min_radius2(min_radius2)
+            m_action(action), m_shift_odd_x(shift_odd_x), m_min_radius2(min_radius2)
         {
             using namespace amrex::literals; // for _rt and _prt
+
+            set_repeat_x(repeat_x);
+            set_repeat_y(repeat_y);
 
             if (m_repeat_y == 0_prt && m_shift_odd_x) {
                 throw std::invalid_argument("PolygonAperture: shift_odd_x can only be used if repeat_y is set, too!");
@@ -110,6 +112,34 @@ namespace impactx::elements
 
         /** Reverse the element (no-op: aperture is not invertible for absorbed particles) */
         void reverse () { /* no-op */ }
+
+        /** Set the horizontal period for repeated masking
+         *
+         * @param repeat_x horizontal period [m]; zero disables the repetition
+         */
+        void set_repeat_x (amrex::ParticleReal repeat_x)
+        {
+            using namespace amrex::literals; // for _prt
+
+            if (!(std::isfinite(repeat_x) && repeat_x >= 0_prt)) {
+                throw std::invalid_argument("PolygonAperture: repeat_x must be finite and >= 0");
+            }
+            m_repeat_x = repeat_x;
+        }
+
+        /** Set the vertical period for repeated masking
+         *
+         * @param repeat_y vertical period [m]; zero disables the repetition
+         */
+        void set_repeat_y (amrex::ParticleReal repeat_y)
+        {
+            using namespace amrex::literals; // for _prt
+
+            if (!(std::isfinite(repeat_y) && repeat_y >= 0_prt)) {
+                throw std::invalid_argument("PolygonAperture: repeat_y must be finite and >= 0");
+            }
+            m_repeat_y = repeat_y;
+        }
 
         /** Push all particles on a tile */
         using mixin::ParticlePush<PolygonAperturePusher>::operator();
@@ -147,6 +177,7 @@ namespace impactx::elements
             namespace stdx = amrex::simd::stdx;
             using amrex::Math::powi;
             using std::fmod;
+            using std::floor;
             using std::abs;
             using amrex::arg;
             using VBool = decltype(x>0_prt);
@@ -166,8 +197,10 @@ namespace impactx::elements
 #endif
 
             // if the aperture is periodic, shift sx,sy coordinates to the fundamental domain
-            T_Real const u = (m_repeat_x == 0_prt) ? sx : (fmod(abs(sx)+dx, m_repeat_x)-dx);
-            T_Real const v = (m_repeat_y == 0_prt) ? sy : (fmod(abs(sy)+dy, m_repeat_y)-dy);
+            T_Real const u = (m_repeat_x == 0_prt) ? sx
+                : sx - m_repeat_x * floor((sx+dx)/m_repeat_x);
+            T_Real const v = (m_repeat_y == 0_prt) ? sy
+                : sy - m_repeat_y * floor((sy+dy)/m_repeat_y);
 
             // compare against the aperture boundary
             VBool inside_aperture;

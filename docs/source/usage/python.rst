@@ -1236,9 +1236,7 @@ This module provides elements and methods for the accelerator lattice.
       reference energy that the MAD-X ``BEAM`` command declares.
       Changing the reference energy after the import does not rescale it, and the
       reader warns when it applies this translation.
-      Only an ``ENERGY`` that the file actually states is used for this: MAD-X
-      defaults it to 1 GeV, so a lattice whose ``BEAM`` command omits it keeps
-      ``Sol`` at every floor rather than converting against an assumed energy.
+      Only a stated energy (``ENERGY``, ``PC``, ``GAMMA``, ``BETA`` or ``BRHO``) is used: MAD-X defaults it to 1 GeV, so a lattice without one keeps ``Sol`` at every floor.
 
       Elements that MAD-X itself defines as thin (``MULTIPOLE``, ``KICKER``,
       ``RFCAVITY``, ``NLLENS``) and structural elements (``MARKER``, apertures,

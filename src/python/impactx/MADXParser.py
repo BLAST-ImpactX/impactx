@@ -791,6 +791,17 @@ class EvaluationContext:
         "false": 0.0,
     }
 
+    # MAD-X particles: rest energy [GeV] and charge [e]
+    PARTICLES = {
+        "positron": (PREDEFINED_CONSTANTS["emass"], 1.0),
+        "electron": (PREDEFINED_CONSTANTS["emass"], -1.0),
+        "proton": (PREDEFINED_CONSTANTS["pmass"], 1.0),
+        "antiproton": (PREDEFINED_CONSTANTS["pmass"], -1.0),
+        "posmuon": (PREDEFINED_CONSTANTS["mumass"], 1.0),
+        "negmuon": (PREDEFINED_CONSTANTS["mumass"], -1.0),
+        "ion": (PREDEFINED_CONSTANTS["nmass"], 1.0),
+    }
+
     def __init__(self):
         self.variables: dict[str, Variable] = {}
         self.elements: dict[str, Element] = {}
@@ -2207,11 +2218,13 @@ class MADXParser:
         MAD-X allows multiple BEAM commands for different sequences via
         BEAM, SEQUENCE=name, ...;  The beam is stored per-sequence.
         A BEAM without SEQUENCE= updates the default beam.
+        The energy comes from the first of ENERGY, PC, GAMMA, BETA, BRHO, as in MAD-X.
         """
         self._advance()  # skip 'beam'
 
         # Collect all attributes first, then apply to the right beam
         beam_attrs = {}
+        energy_exprs = {}
         sequence_name = None
 
         while self._current().type == TokenType.COMMA:
@@ -2240,7 +2253,10 @@ class MADXParser:
                         sequence_name = self._advance().value.lower()
                     else:
                         self._parse_expression()  # consume
-                elif attr_name in ("energy", "pc", "mass", "charge", "bv"):
+                elif attr_name in ("energy", "pc", "gamma", "beta", "brho"):
+                    # evaluated after precedence is resolved
+                    energy_exprs[attr_name] = self._parse_expression()
+                elif attr_name in ("mass", "charge", "bv"):
                     expr = self._parse_expression()
                     beam_attrs[attr_name] = self.context.evaluate(expr)
                 elif attr_name == "freq0":
@@ -2258,12 +2274,78 @@ class MADXParser:
 
         self._expect(TokenType.SEMICOLON)
 
+        if "pc" in energy_exprs:
+            beam_attrs["pc"] = self.context.evaluate(energy_exprs["pc"])
+
         # Apply to the appropriate beam
         beam = self.context.get_beam_for_sequence(sequence_name)
         for attr, value in beam_attrs.items():
             setattr(beam, attr, value)
-        if "energy" in beam_attrs:
+
+        energy_params = [
+            attr
+            for attr in ("energy", "pc", "gamma", "beta", "brho")
+            if attr in energy_exprs
+        ]
+        if energy_params:
+            attr, *ignored = energy_params
+            if ignored:
+                self._warn(
+                    f"BEAM sets the energy from {attr.upper()}; "
+                    f"ignoring {', '.join(a.upper() for a in ignored)}"
+                )
+            if attr == "pc":
+                value = beam_attrs["pc"]
+            else:
+                value = self.context.evaluate(energy_exprs[attr])
+            beam.energy = self._beam_total_energy(beam, attr, value)
             beam.energy_is_explicit = True
+        elif beam.energy_is_explicit:
+            # a later command keeps the energy, which must exceed the new mass
+            mass, _ = self._beam_mass_charge(beam)
+            if mass > 0.0 and beam.energy <= mass:
+                raise self._error(
+                    f"BEAM energy {beam.energy} GeV must exceed the mass {mass} GeV"
+                )
+
+    def _beam_mass_charge(self, beam: Beam) -> tuple[float, float]:
+        """Rest energy [GeV] and charge [e] of the beam particle."""
+        if beam.particle in self.context.PARTICLES:
+            return self.context.PARTICLES[beam.particle]
+        return beam.mass, beam.charge
+
+    def _beam_total_energy(self, beam: Beam, attr: str, value: float) -> float:
+        """Total energy [GeV] from a BEAM energy parameter, as MAD-X `update_beam`."""
+        if attr == "energy":
+            return value
+
+        mass, charge = self._beam_mass_charge(beam)
+        if mass <= 0.0:
+            raise self._error(
+                f"BEAM {attr.upper()} requires a known PARTICLE or a MASS > 0"
+            )
+
+        if attr == "pc":
+            if value <= 0.0:
+                raise self._error("BEAM PC must be > 0")
+            pc = value
+        elif attr == "gamma":
+            if value <= 1.0:
+                raise self._error("BEAM GAMMA must be > 1")
+            return value * mass
+        elif attr == "beta":
+            if not -1.0 < value < 1.0:
+                raise self._error("BEAM BETA must be > -1 and < 1")
+            return mass / math.sqrt(1.0 - value * value)
+        else:  # brho
+            if value < 0.0:
+                raise self._error("BEAM BRHO must be >= 0")
+            if charge == 0.0:
+                raise self._error("BEAM BRHO requires a known PARTICLE or a CHARGE")
+            pc = (
+                value * abs(charge) * self.context.PREDEFINED_CONSTANTS["clight"] * 1e-9
+            )
+        return math.sqrt(pc * pc + mass * mass)
 
     def _parse_use_command(self):
         """Parse the USE command."""

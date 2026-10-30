@@ -217,7 +217,7 @@ namespace impactx::elements
                 T_Real const term3 = -2_prt * q2 * p2 * w * cosh(2_prt*m_slice_ds*omega);
                 T_Real const term4 = -2_prt * q1 * p1 * w * cosh(2_prt*m_slice_ds*omega);
                 T_Real const term5 = 2_prt * omega * (q1*p1*delta1 + q2*p2*delta1
-                    -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
+                    -(powi<2>(p1) + powi<2>(p2))*m_slice_ds + (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
                 tout = t0 + (-1_prt+m_beta*pt)
                           / (8_prt*m_beta * powi<3>(delta1)*omega)
                           * (term1+term2+term3+term4+term5);

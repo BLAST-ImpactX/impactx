@@ -218,6 +218,24 @@ Collective Effects & Overall Simulation Parameters
 
       The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
 
+   .. py:property:: short_range_wakefields
+
+      Enable (``True``) or disable (``False``) Short-range wakefield calculations (default: ``False``).
+
+      Whether to calculate short-range wakefield effects (default: disabled).
+
+      Currently, this uses a 1D model based on user-specified tabulated single-particle wake functions.
+
+      .. note::
+
+         Short-range wakefield effects are only calculated for ``RFCavity`` elements.
+
+         Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
+
+   .. py:property:: csr_bins
+
+      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+
    .. py:property:: isr
 
       Enable (``True``) or disable (``False``) Incoherent Synchrotron Radiation (ISR) calculations (default: ``False``).
@@ -2561,7 +2579,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, z_data=None, wake_x_data=None, wake_y_data=None, wake_z_data=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -2586,6 +2604,10 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
    :param field_on_axis: array of on-axis electric field Ez values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
+   :param z_data Optional longitudinal positions of the single-particle wake function in m
+   :param wake_x_data Optional horizontal single-particle wake function data
+   :aram wake_y_data Optional vertical single-particle wake function data
+   :param wake_z_data Optional longitudinal single-particle wake function data in V/(C m), positive where it decelerates a trailing particle
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

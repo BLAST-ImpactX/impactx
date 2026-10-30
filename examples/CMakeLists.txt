@@ -2276,3 +2276,27 @@ add_impactx_test(dipedge-linear-map.py
     examples/edge_effects/analysis_dipedge_linear_map.py
     OFF  # no plot script yet
 )
+
+# Momentum Kick in a 1D User-Specified Longitudinal Wake Model ###########
+if(ImpactX_FFT)
+# copy on-axis RF cavity field data
+file(COPY ${ImpactX_SOURCE_DIR}/examples/wake_csr_kick/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/user-wake-kick.py)
+        add_impactx_test(user-wake-kick.py
+        examples/wake_csr_kick/run_user_wake_kick.py
+        ON    # ImpactX MPI-parallel
+        examples/wake_csr_kick/analysis_user_wake_kick.py
+        examples/wake_csr_kick/plot_user_wake_kick.py
+    )
+endif()
+
+# Acceleration by RF Cavities with Space Charge and Wakefields ###########
+file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-wake-sc.MPI.py)
+add_impactx_test(rfcavity-wake-sc.MPI.py
+    examples/rfcavity/run_rfcavity_wake_sc.py
+    ON   # ImpactX MPI-parallel
+    examples/rfcavity/analysis_rfcavity_wake_sc.py
+    OFF  # no plot script yet
+)
+label_impactx_test(rfcavity-wake-sc.MPI.py slow)

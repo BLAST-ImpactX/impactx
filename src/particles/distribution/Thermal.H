@@ -20,10 +20,13 @@
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <memory>
 #include <random>
+#include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -141,10 +144,8 @@ namespace distribution
             // a search over normalization parameters p1, p2 can be added here
 
             // rescale cdf to ensure the exact range [0,1]
-            for (int n = 0; n < m_nbins; ++n) {
-                m_cdf1[n] = m_cdf1[n] / m_cdf1[m_nbins];
-                m_cdf2[n] = m_cdf2[n] / m_cdf2[m_nbins];
-            }
+            normalize_cdf(cdf1, 1_prt - m_w, "core", "normalize and kT");
+            normalize_cdf(cdf2, m_w, "halo", "normalize_halo and kT_halo");
 
             // copy CFD data to device
             m_d_cdf1 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
@@ -156,6 +157,51 @@ namespace distribution
                                   cdf2.begin(), cdf2.end(),
                                   m_d_cdf2->begin());
             amrex::Gpu::streamSynchronize();
+        }
+
+        /** Rescale a tabulated radial CDF to the exact range [0,1].
+         *
+         * The radial lookup in Thermal::operator() requires cdf[0] == 0,
+         * cdf[nbins] == 1 and a non-decreasing table. The integrated table starts
+         * at 0 and is non-decreasing, since the density is non-negative. Dividing
+         * all entries by the last one keeps that order. The last entry is then
+         * set to exactly 1 and the others are clamped to 1, which also holds if
+         * the division is evaluated as a multiplication with the reciprocal
+         * (fast-math).
+         *
+         * @param[inout] cdf tabulated cumulative distribution of one population
+         * @param[in] weight fraction of the beam in this population
+         * @param[in] population name of the population, for error messages
+         * @param[in] parameters input parameters of the population, for error messages
+         */
+        static void
+        normalize_cdf (
+            std::vector<amrex::ParticleReal> & cdf,
+            amrex::ParticleReal weight,
+            std::string const & population,
+            std::string const & parameters
+        )
+        {
+            using namespace amrex::literals;  // for _rt and _prt
+
+            amrex::ParticleReal const total = cdf.back();
+
+            if (std::isfinite(total) && total > 0_prt)
+            {
+                for (amrex::ParticleReal & c : cdf) {
+                    c = std::min(c / total, 1_prt);
+                }
+                cdf.back() = 1_prt;
+            }
+            // a population with zero weight is never sampled and needs no table
+            else if (weight != 0_prt)
+            {
+                throw std::runtime_error(
+                    "Thermal distribution: the " + population + " population is a fraction of "
+                    + std::to_string(weight) + " of the beam, but its radial density integrates to "
+                    + std::to_string(total) + ". Please check " + parameters + "."
+                );
+            }
         }
 
         amrex::ParticleReal
@@ -373,7 +419,9 @@ namespace distribution
             // Use a Bernoulli random variable to select between core and halo:
             // If u < w, the particle is in the halo population.
             // If u >= w, the particle is in the core population.
+            // Since u is in [0,1), a population with zero weight is never selected.
             uhalo = amrex::Random(engine);
+            bool const is_halo = uhalo < m_w;
 
             // Generate six standard normal random variables using Box-Muller:
             u1 = amrex::Random(engine);
@@ -393,7 +441,7 @@ namespace distribution
             g6 = ln1 * std::sin(2_prt*pi*u2);
 
             // Scale the last three variables to produce the momenta:
-            amrex::ParticleReal const sqrtkT = (uhalo > m_w) ? m_sqrtT1 : m_sqrtT2;  // select core or halo value
+            amrex::ParticleReal const sqrtkT = is_halo ? m_sqrtT2 : m_sqrtT1;  // select core or halo value
             px = sqrtkT*g4;
             py = sqrtkT*g5;
             pz = sqrtkT*g6;
@@ -407,9 +455,10 @@ namespace distribution
             // Collect the radial CDF returned by generate_radial_dist:
 
             // select core or halo CDF
-            amrex::ParticleReal const * cdf = (uhalo > m_w) ? m_cdf1 : m_cdf2;
+            amrex::ParticleReal const * cdf = is_halo ? m_cdf2 : m_cdf1;
 
             // Generate a radial coordinate from the CDF
+            // Since cdf[0] == 0, cdf[m_nbins] == 1 and u is in [0,1), off + 1 <= m_nbins.
             amrex::ParticleReal u = amrex::Random(engine);
             amrex::ParticleReal const * ptr = amrex::lower_bound(cdf, cdf + m_nbins + 1, u);
             int const off = amrex::max(0, int(ptr - cdf - 1));

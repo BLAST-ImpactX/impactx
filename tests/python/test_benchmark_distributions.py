@@ -122,9 +122,11 @@ def run_benchmark(benchmark, sim, distr, spin_distr=None, bunch_charge=bunch_cha
     assert sim.beam.total_number_of_particles() == npart
 
 
-def test_Empty(benchmark, sim):
-    """Baseline without sampling: allocation and copy into the particle container."""
-    run_benchmark(benchmark, sim, distribution.Empty())
+# Not very meaningful and likely to be noisy in CodSpeed comparisons
+#
+# def test_Empty(benchmark, sim):
+#     """Baseline without sampling: allocation and copy into the particle container."""
+#     run_benchmark(benchmark, sim, distribution.Empty())
 
 
 @pytest.mark.parametrize("cut", [0.0, 3.0], ids=["nocut", "cut"])

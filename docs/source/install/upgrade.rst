@@ -122,6 +122,13 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
+``ExactCFbend``: the skew dipole coefficient deflects the particles
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+The skew dipole coefficient ``k_skew[0]`` of :py:class:`~impactx.elements.ExactCFbend` now deflects the particles vertically: it changes ``py`` by ``k_skew[0]`` per meter (divided by the magnetic rigidity with ``unit=1``).
+Previously, only the spin push used it.
+This changes the results of lattices with a nonzero ``k_skew[0]`` in an ``ExactCFbend``.
+
 New in this release
 """""""""""""""""""
 

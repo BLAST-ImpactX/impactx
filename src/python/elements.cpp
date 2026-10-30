@@ -769,12 +769,12 @@ void init_elements(py::module& m)
         )
         .def_property("repeat_x",
             [](Aperture & ap) { return ap.m_repeat_x; },
-            [](Aperture & ap, amrex::ParticleReal repeat_x) { ap.m_repeat_x = repeat_x; },
+            [](Aperture & ap, amrex::ParticleReal repeat_x) { ap.set_repeat_x(repeat_x); },
             "horizontal period for repeated aperture masking"
         )
         .def_property("repeat_y",
             [](Aperture & ap) { return ap.m_repeat_y; },
-            [](Aperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
+            [](Aperture & ap, amrex::ParticleReal repeat_y) { ap.set_repeat_y(repeat_y); },
             "vertical period for repeated aperture masking"
         )
         .def_property("shift_odd_x",
@@ -2167,12 +2167,12 @@ void init_elements(py::module& m)
         )
         .def_property("repeat_x",
             [](PolygonAperture & ap) { return ap.m_repeat_x; },
-            [](PolygonAperture & ap, amrex::ParticleReal repeat_x) { ap.m_repeat_x = repeat_x; },
+            [](PolygonAperture & ap, amrex::ParticleReal repeat_x) { ap.set_repeat_x(repeat_x); },
             "horizontal period for repeated aperture masking"
         )
         .def_property("repeat_y",
             [](PolygonAperture & ap) { return ap.m_repeat_y; },
-            [](PolygonAperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
+            [](PolygonAperture & ap, amrex::ParticleReal repeat_y) { ap.set_repeat_y(repeat_y); },
             "vertical period for repeated aperture masking"
         )
         .def_property("shift_odd_x",

@@ -256,7 +256,7 @@ jobs:
         # tens of percent while the instruction count moves by less than 0.1%.
         cycle-estimation: false
         exclude-allocations: true
-        run: pytest tests/python/test_benchmark_elements.py tests/python/test_benchmark_space_charge.py tests/python/test_benchmark_diagnostics.py --codspeed
+        run: pytest tests/python/test_benchmark_elements.py tests/python/test_benchmark_space_charge.py tests/python/test_benchmark_diagnostics.py tests/python/test_benchmark_distributions.py --codspeed
 
     - name: validate created openPMD files
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}

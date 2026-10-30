@@ -32,6 +32,13 @@ The ``nonlinear`` DipEdge model is unchanged, and is now an alias for ``nonlinea
 
 The new linear default model ``linear_slac75`` was chosen to match the commonly used MAD-X model.
 
+``DipEdge``: reference particle deflection with ``modify_ref_part = True``
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+With ``modify_ref_part = True``, the ``nonlinear`` :py:class:`~impactx.elements.DipEdge` model now deflects the reference particle by the angle by which it deflects a beam particle on the reference orbit with ``modify_ref_part = False``.
+Previously, the sine of the reference deflection angle had an extra factor of :math:`1/(\beta\gamma)`.
+This changes the reference trajectory, and the beam coordinates relative to it, downstream of such an edge.
+
 
 ``Programmable``: ``nslice`` and ``name`` moved to the 3rd and 4th argument
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

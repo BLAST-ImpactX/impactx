@@ -605,7 +605,8 @@ namespace impactx::elements
             amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // call integrator to advance (t,pt)
-            amrex::ParticleReal const zin = s - sedge;
+            // a reversed element (ds < 0) enters its profile at the far end, z = |ds|
+            amrex::ParticleReal const zin = s - sedge + (m_ds < 0_prt ? -m_ds : 0_prt);
             amrex::ParticleReal const zout = zin + slice_ds;
             int const nsteps = m_mapsteps;
 

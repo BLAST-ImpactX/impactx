@@ -122,6 +122,14 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
+Reversed soft-edge elements traverse their field profile backward
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+A reversed :py:class:`~impactx.elements.SoftQuadrupole`, :py:class:`~impactx.elements.SoftSolenoid` or :py:class:`~impactx.elements.RFCavity` enters its on-axis field profile at the far end and traverses it backward.
+Previously, in a lattice, it integrated outside the profile.
+
+**What to check in your scripts:** before pushing a reversed element directly with ``push()``, set the element edge to its entrance once, before its first slice: ``ref.sedge = ref.s``, as lattice tracking does.
+
 New in this release
 """""""""""""""""""
 

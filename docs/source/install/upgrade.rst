@@ -122,6 +122,15 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
+``insert_element_every_ds``: a split ``ExactSbend`` keeps the angle of the bend
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+When :py:func:`~elements.transformation.insert_element_every_ds` splits an :py:class:`~impactx.elements.ExactSbend`, each piece takes the share of the bend angle ``phi`` that its length is of the original length.
+Previously, each piece kept the full ``phi``, so a bend split into :math:`n` pieces turned by :math:`n` times its angle.
+This changes the results of lattices in which an inserted element falls inside an ``ExactSbend``.
+
+**What to check in your scripts:** remove any correction that rescaled the angle of the split pieces after the insertion.
+
 New in this release
 """""""""""""""""""
 

@@ -8,7 +8,11 @@
 # -*- coding: utf-8 -*-
 
 
-from impactx import elements
+import math
+
+import pytest
+
+from impactx import Config, RefPart, elements, push
 
 
 def test_element_insert():
@@ -59,3 +63,31 @@ def test_element_insert_unnamed():
         "_leftover",
         "_leftover_leftover",
     ]
+
+
+def test_element_insert_exact_sbend():
+    """Splitting an ExactSbend keeps its reference arc."""
+
+    def exit_of(lattice):
+        ref = RefPart().set_species("proton").set_kin_energy_MeV(1000.0)
+        for element in lattice:
+            push(ref, element)
+        return [ref.x, ref.z, ref.px, ref.pz, ref.s]
+
+    atol = 1.0e-5 if Config.precision == "SINGLE" else 1.0e-15
+    brho = RefPart().set_species("proton").set_kin_energy_MeV(1000.0).rigidity_Tm
+
+    for B in (0.0, brho * math.radians(20.0)):
+        bend = elements.ExactSbend(ds=1.0, phi=20.0, B=B)
+        phi = bend.phi
+        lattice = elements.KnownElementsList([bend])
+        expected = exit_of(lattice)
+
+        for ds in (0.5, 0.3):
+            split = elements.transformation.insert_element_every_ds(
+                lattice, ds=ds, element=elements.Marker("m")
+            )
+            assert exit_of(split) == pytest.approx(expected, rel=0, abs=atol)
+
+        assert bend.ds == 1.0
+        assert bend.phi == phi

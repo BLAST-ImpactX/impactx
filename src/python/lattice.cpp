@@ -682,6 +682,6 @@ void init_lattice(py::module& me)
         "Returns a new lattice. Elements that are not split are the same objects as\n"
         "in the lattice given; an element that a split falls inside is replaced by two\n"
         "new elements covering its halves, which carry its parameters but not a Python\n"
-        "subclass or attributes."
+        "subclass or attributes. Bend angles are divided proportionally."
     );
 }

@@ -302,6 +302,8 @@ namespace distribution
           m_normalize_halo(normalize_halo),
           m_halo(halo)
         {
+            m_sqrtT1 = std::sqrt(m_T1);
+            m_sqrtT2 = std::sqrt(m_T2);
         }
 
         /** Initialize the distribution.
@@ -391,10 +393,10 @@ namespace distribution
             g6 = ln1 * std::sin(2_prt*pi*u2);
 
             // Scale the last three variables to produce the momenta:
-            amrex::ParticleReal kT = (uhalo > m_w) ? m_T1 : m_T2;  // select core or halo value
-            px = std::sqrt(kT)*g4;
-            py = std::sqrt(kT)*g5;
-            pz = std::sqrt(kT)*g6;
+            amrex::ParticleReal const sqrtkT = (uhalo > m_w) ? m_sqrtT1 : m_sqrtT2;  // select core or halo value
+            px = sqrtkT*g4;
+            py = sqrtkT*g5;
+            pz = sqrtkT*g6;
 
             // Normalize the first three variables to produce uniform samples on the unit 3-sphere:
             norm = std::sqrt(g1*g1+g2*g2+g3*g3);
@@ -436,6 +438,10 @@ namespace distribution
         amrex::ParticleReal m_w;  ///< weight of the secondary (halo) population
 
     private:
+        // constants that are independent of the individually sampled particle,
+        // computed from the parameters above in the constructor
+        amrex::ParticleReal m_sqrtT1, m_sqrtT2; //! sqrt(k*T): rms momentum of each particle population
+
         // radial profile data
         amrex::ParticleReal const * m_cdf1 = nullptr; //! non-owning pointer to device core CDF
         amrex::ParticleReal const * m_cdf2 = nullptr; //! non-owning pointer to device halo CDF

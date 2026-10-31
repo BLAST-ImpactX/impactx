@@ -39,7 +39,9 @@ namespace impactx::distribution
          *
          * Return sampling from a vMF distribution.
          *
-         * @param mux,muy,muz components of a unit vector specifying the mean direction
+         * @param mux,muy,muz components of the polarization vector: its direction is the mean
+         *                    spin direction and its magnitude, less than 1, is the degree of
+         *                    polarization. A zero vector describes an unpolarized beam.
          */
         SpinvMF (
             amrex::ParticleReal mux,
@@ -48,6 +50,8 @@ namespace impactx::distribution
         )
         : m_muX(mux), m_muY(muy), m_muZ(muz)
         {
+            using namespace amrex::literals;  // for _rt and _prt
+
             // magnitude of the polarization vector (= polarization magnitude)
             amrex::ParticleReal const pmag = std::sqrt(
                 mux * mux +
@@ -56,6 +60,23 @@ namespace impactx::distribution
             );
 
             m_kappa = inverse_Langevin(pmag);
+
+            // Mean direction: without polarization, the distribution is uniform
+            // on the sphere (kappa = 0), so any direction is correct.
+            if (pmag == 0_prt) {
+                m_dirX = 0_prt;
+                m_dirY = 0_prt;
+                m_dirZ = 1_prt;
+            } else {
+                m_dirX = mux / pmag;
+                m_dirY = muy / pmag;
+                m_dirZ = muz / pmag;
+            }
+
+            // Transverse part of the mean direction, for the local frame of the sampling:
+            m_dirPerp = std::sqrt(m_dirX * m_dirX + m_dirY * m_dirY);
+            m_a = (m_dirPerp == 0_prt) ? 0_prt : m_dirX / m_dirPerp;
+            m_b = (m_dirPerp == 0_prt) ? 1_prt : m_dirY / m_dirPerp;
         }
 
         /** Return 1 3D spin (unit) vector
@@ -77,17 +98,6 @@ namespace impactx::distribution
             using amrex::Math::powi;
             using ablastr::constant::math::pi;
 
-            // Normalize the mean direction vector just in case:
-            amrex::ParticleReal mu_norm = std::sqrt(powi<2>(m_muX)+powi<2>(m_muY)+powi<2>(m_muZ));
-            amrex::ParticleReal mux = m_muX/mu_norm;
-            amrex::ParticleReal muy = m_muY/mu_norm;
-            amrex::ParticleReal muz = m_muZ/mu_norm;
-
-            // Evaluate constants independent of particle:
-            amrex::ParticleReal const muperp = std::sqrt(powi<2>(mux)+powi<2>(muy));
-            amrex::ParticleReal const a = (muperp==0) ? 0_prt : mux/muperp;
-            amrex::ParticleReal const b = (muperp==0) ? 1_prt : muy/muperp;
-
             // Sample two iid random variables:
             amrex::ParticleReal x1 = amrex::Random(engine);
             amrex::ParticleReal x2 = amrex::Random(engine);
@@ -107,9 +117,9 @@ namespace impactx::distribution
 
             // Evaluation of the spin components
             amrex::ParticleReal u = std::sqrt(1_prt-powi<2>(t));
-            sx = u * (b*c + a*muz*s) + t*mux;
-            sy = u * (-a*c + b*muz*s) + t*muy;
-            sz = u * (-muperp*s) + t*muz;
+            sx = u * (m_b*c + m_a*m_dirZ*s) + t*m_dirX;
+            sy = u * (-m_a*c + m_b*m_dirZ*s) + t*m_dirY;
+            sz = u * (-m_dirPerp*s) + t*m_dirZ;
 
         }
 
@@ -148,8 +158,13 @@ namespace impactx::distribution
             return concentration;
         }
 
-        amrex::ParticleReal m_muX, m_muY, m_muZ;  //! components of a unit vector specifying the mean direction
+        amrex::ParticleReal m_muX, m_muY, m_muZ;  //! components of the polarization vector
         amrex::ParticleReal m_kappa;  //! concentration parameter
+
+    private:
+        amrex::ParticleReal m_dirX, m_dirY, m_dirZ;  //! unit vector of the mean spin direction
+        amrex::ParticleReal m_dirPerp;  //! magnitude of the transverse (x,y) part of the mean direction
+        amrex::ParticleReal m_a, m_b;  //! transverse unit direction (x,y) of the mean direction
     };
 
 } // namespace impactx::distribution

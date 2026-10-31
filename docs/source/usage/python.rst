@@ -256,7 +256,6 @@ Collective Effects & Overall Simulation Parameters
 
       The boundary condition acts on the particle coordinate :math:`t` (:math:`c\,\Delta t`, in m) and is applied at the end of each slice.
       A bucket of length :math:`L` (``bucket_length``) spans :math:`L/\beta_0` in :math:`t`, where :math:`\beta_0` is the normalized velocity of the reference particle at that slice:
-      this is :math:`c` times the time the reference particle needs to travel the distance :math:`L`.
       The domain is centered on the reference particle and extends to :math:`t = \pm L/(2\beta_0)`.
 
       Options:

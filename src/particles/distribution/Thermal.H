@@ -385,7 +385,8 @@ namespace distribution
          *
          * These are the tables that the radius of each particle is sampled from,
          * on ThermalData::nsteps uniform bins in radius. A population with zero
-         * weight is never sampled and its table is not normalized.
+         * weight is never sampled; if its radial density is zero, its table is
+         * not normalized.
          *
          * @param bunch_charge charge of the beam in C
          * @param ref the reference particle

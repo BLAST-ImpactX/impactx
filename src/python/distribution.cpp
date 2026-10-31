@@ -151,8 +151,8 @@ void init_distribution(py::module& m)
              &distribution::Thermal::radial_cdf,
              py::arg("bunch_charge"), py::arg("ref"),
              "Tabulated radial CDFs (core, halo) that the particle radius is sampled from,\n"
-             "on uniform bins in radius. A population with zero weight is never sampled\n"
-             "and its table is not normalized."
+             "on uniform bins in radius. A population with zero weight is never sampled;\n"
+             "if its radial density is zero, its table is not normalized."
         );
 
     py::class_<distribution::Triangle>(md, "Triangle")

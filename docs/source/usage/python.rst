@@ -1047,7 +1047,7 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
 
       :param bunch_charge: bunch charge (C)
       :param ref: the reference particle
-      :return: the core and halo CDF, as a tuple of two lists
+      :return: the radius in the beam rest frame (m), and the core and halo CDF at this radius, as a tuple of three lists
 
 Initial Beam Spin Distribution
 ------------------------------

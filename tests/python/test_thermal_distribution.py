@@ -36,6 +36,13 @@ def thermal_sim():
     return sim
 
 
+def sample_radius(u, cdf, r):
+    """The radius that Thermal samples for uniform draws u in [0, 1)."""
+    off = np.maximum(np.searchsorted(cdf, u, side="left") - 1, 0)
+    tv = (u - cdf[off]) / (cdf[off + 1] - cdf[off])
+    return r[off] + tv * (r[off + 1] - r[off])
+
+
 def test_thermal_without_halo():
     """
     A thermal beam has no halo population: its halo density is zero, but it is
@@ -82,12 +89,17 @@ def test_bithermal_radial_cdf(normalize_halo):
         normalize_halo=normalize_halo,
         halo=0.05,
     )
-    cdfs = distr.radial_cdf(bunch_charge_C, sim.beam.ref)
+    r, *cdfs = distr.radial_cdf(bunch_charge_C, sim.beam.ref)
     sim.finalize()
+
+    r = np.asarray(r)
+    assert r[0] > 0.0
+    assert np.all(np.diff(r) > 0.0)
 
     for cdf in cdfs:
         cdf = np.asarray(cdf)
         nbins = len(cdf) - 1
+        assert len(r) == len(cdf)
         assert cdf[0] == 0.0
         assert cdf[nbins] == 1.0
         assert np.all(np.diff(cdf) >= 0.0)
@@ -116,10 +128,41 @@ def test_thermal_radial_cdf_charge_sign():
         cdfs[species] = distr.radial_cdf(bunch_charge_C, sim.beam.ref)
     sim.finalize()
 
-    core = np.asarray(cdfs["electron"][0])
+    core = np.asarray(cdfs["electron"][1])
     assert np.isfinite(core).all()
     assert core[-1] == 1.0
     assert cdfs["electron"] == cdfs["positron"]
+
+
+def test_thermal_radial_cdf_radius():
+    """The radii of the sampled particles follow the tabulated radial CDF."""
+    sim = thermal_sim()
+
+    distr = distribution.Thermal(
+        k=k,
+        kT=kT,
+        kT_halo=kT,
+        normalize=0.41604661,
+        normalize_halo=0.0,
+        halo=0.0,
+    )
+    r, core, _ = (np.asarray(v) for v in distr.radial_cdf(bunch_charge_C, sim.beam.ref))
+    sim.add_particles(bunch_charge_C, distr, npart)
+
+    # radius in the beam rest frame
+    df = sim.beam.to_df(local=True)
+    bg = sim.beam.ref.beta_gamma
+    r_particles = np.sqrt(
+        df["position_x"] ** 2 + df["position_y"] ** 2 + (bg * df["position_t"]) ** 2
+    )
+    sim.finalize()
+
+    quantiles = np.array([0.25, 0.5, 0.75])
+    assert np.allclose(
+        np.quantile(r_particles, quantiles),
+        sample_radius(quantiles, core, r),
+        rtol=0.03,
+    )
 
 
 @pytest.mark.parametrize(

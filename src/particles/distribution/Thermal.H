@@ -28,6 +28,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -439,15 +440,28 @@ namespace distribution
          *
          * @param bunch_charge charge of the beam in C
          * @param ref the reference particle
-         * @return the core and halo CDF, with ThermalData::nsteps + 1 entries each
+         * @return the radius in m in the beam rest frame, and the core and halo CDF
+         *         at this radius, with ThermalData::nsteps + 1 entries each
          */
-        std::pair<std::vector<amrex::ParticleReal>, std::vector<amrex::ParticleReal>>
+        std::tuple<
+            std::vector<amrex::ParticleReal>,
+            std::vector<amrex::ParticleReal>,
+            std::vector<amrex::ParticleReal>
+        >
         radial_cdf (amrex::ParticleReal bunch_charge, RefPart const & ref) const
         {
             ThermalData data(m_k, m_T1, m_T2, m_normalize, m_normalize_halo, m_halo);
             data.generate_radial_dist(bunch_charge, ref);
 
-            return {std::move(data.m_cdf1), std::move(data.m_cdf2)};
+            // the radius that Thermal::operator() samples at each table entry
+            std::vector<amrex::ParticleReal> r(data.m_nbins + 1);
+            for (int n = 0; n <= data.m_nbins; ++n) {
+                amrex::ParticleReal const xv =
+                    amrex::ParticleReal(n) / amrex::ParticleReal(data.m_nbins);
+                r[n] = data.m_rmin + (data.m_rmax - data.m_rmin) * xv;
+            }
+
+            return {std::move(r), std::move(data.m_cdf1), std::move(data.m_cdf2)};
         }
 
         /** Close and deallocate all data and handles.

@@ -1043,7 +1043,7 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
    .. py:method:: radial_cdf(bunch_charge, ref)
 
       Tabulated radial cumulative distribution functions (CDFs) that the particle radius is sampled from, on uniform bins in radius.
-      A population with zero weight is never sampled; if its radial density is zero or diverges, its table is not normalized.
+      A population with zero weight is never sampled and its table is zero.
 
       :param bunch_charge: bunch charge (C)
       :param ref: the reference particle

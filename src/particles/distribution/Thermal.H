@@ -25,7 +25,6 @@
 #include <cstdint>
 #include <memory>
 #include <random>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -45,6 +44,12 @@ namespace distribution
         static constexpr amrex::ParticleReal rin = 1.0e-10_prt;  ///< initial r value for numerical integration
         static constexpr amrex::ParticleReal rout = 10.0;  ///< final r value for numerical integration
         static constexpr int nsteps = 2000;  ///< number of radial steps for numerical integration
+        /** maximum of -potential/kT, the logarithm of the density relative to the axis
+         *
+         * A stationary beam is densest on the axis. A density that exceeds e times its
+         * value on the axis diverges: space charge exceeds the focusing.
+         */
+        static constexpr amrex::ParticleReal max_exponent = 1.0_prt;
 
         amrex::ParticleReal m_f1;  ///< cumulative distribution of first population
         amrex::ParticleReal m_f2;  ///< cumulative distribution of second population
@@ -106,6 +111,8 @@ namespace distribution
             amrex::ParticleReal Erest = refpart.mass_MeV() * 1.0e6_prt;
             amrex::ParticleReal q_e = refpart.charge_qe();
 
+            check_parameters(bunch_charge, bg, Erest);
+
             // Set space charge intensity: the self-field of the beam is repulsive
             // for either sign of the charge, and bunch_charge is a magnitude
             m_Cintensity = std::abs(q_e)*bunch_charge/(powi<2>(bg)*Erest*ep0);
@@ -140,14 +147,65 @@ namespace distribution
             m_cdf2[0] = 0.0_prt;
 
             // integrate ODEs for the radial density
-            integrate(rmin,rmax,nsteps);
+            if (!integrate(rmin,rmax,nsteps))
+            {
+                std::string const parameters =
+                    m_w == 0_prt ? "normalize and kT" :
+                    m_w == 1_prt ? "normalize_halo and kT_halo" :
+                    "normalize, normalize_halo, kT and kT_halo";
+                throw std::runtime_error(
+                    "Thermal distribution: the radial density diverges, e.g., for a "
+                    "normalization above its self-consistent value. Please check "
+                    + parameters + "."
+                );
+            }
 
             // a search over normalization parameters p1, p2 can be added here
 
             // rescale cdf to ensure the exact range [0,1]
-            check_radial_density();
             normalize_cdf(m_cdf1);
             normalize_cdf(m_cdf2);
+        }
+
+        /** Check the parameters of the distribution and of the beam.
+         *
+         * Valid parameters keep all values in the integration of the radial
+         * density finite.
+         *
+         * @param[in] bunch_charge the bunch charge in C
+         * @param[in] bg relativistic beta*gamma of the reference particle
+         * @param[in] Erest rest energy of the reference particle in eV
+         * @throws std::runtime_error for an invalid parameter
+         */
+        void
+        check_parameters (
+            amrex::ParticleReal bunch_charge,
+            amrex::ParticleReal bg,
+            amrex::ParticleReal Erest
+        ) const
+        {
+            using namespace amrex::literals;  // for _rt and _prt
+
+            auto const require = [] (bool condition, char const * message)
+            {
+                if (!condition) {
+                    throw std::runtime_error(std::string("Thermal distribution: ") + message);
+                }
+            };
+
+            require(m_k > 0_prt, "k must be positive.");
+            require(m_w >= 0_prt && m_w <= 1_prt, "halo must be in [0, 1].");
+            if (m_w < 1_prt) {
+                require(m_T1 > 0_prt, "kT must be positive if halo < 1.");
+                require(m_p1 > 0_prt, "normalize must be positive if halo < 1.");
+            }
+            if (m_w > 0_prt) {
+                require(m_T2 > 0_prt, "kT_halo must be positive if halo > 0.");
+                require(m_p2 > 0_prt, "normalize_halo must be positive if halo > 0.");
+            }
+            require(bunch_charge >= 0_prt, "the bunch charge must not be negative.");
+            require(bg > 0_prt && Erest > 0_prt,
+                    "the reference particle needs a positive mass and kinetic energy.");
         }
 
         /** Copy the radial CDF data from generate_radial_dist to the device.
@@ -166,65 +224,6 @@ namespace distribution
             amrex::Gpu::streamSynchronize();
         }
 
-        /** Check that the radial density of each population in the beam
-         *  integrates to a positive, finite value.
-         *
-         * A population with zero weight is never sampled and needs no table.
-         *
-         * @throws std::runtime_error if the density of a population in the beam
-         *         diverges or does not integrate to a positive value
-         */
-        void
-        check_radial_density () const
-        {
-            using namespace amrex::literals;  // for _rt and _prt
-
-            amrex::ParticleReal const w_core = 1_prt - m_w;
-            amrex::ParticleReal const w_halo = m_w;
-            amrex::ParticleReal const total_core = m_cdf1.back();
-            amrex::ParticleReal const total_halo = m_cdf2.back();
-
-            // Both populations share one potential: if the density of one of them
-            // diverges, the integrals of both are not finite.
-            if ((w_core != 0_prt && !std::isfinite(total_core)) ||
-                (w_halo != 0_prt && !std::isfinite(total_halo)))
-            {
-                std::string const parameters =
-                    w_halo == 0_prt ? "normalize and kT" :
-                    w_core == 0_prt ? "normalize_halo and kT_halo" :
-                    "normalize, normalize_halo, kT and kT_halo";
-                throw std::runtime_error(
-                    "Thermal distribution: the radial density diverges, e.g., for a "
-                    "normalization above its self-consistent value. Please check "
-                    + parameters + "."
-                );
-            }
-
-            auto const to_string = [] (amrex::ParticleReal value)
-            {
-                std::ostringstream ss;
-                ss << value;
-                return ss.str();
-            };
-            auto const check_population = [&] (
-                std::string const & population,
-                amrex::ParticleReal weight,
-                amrex::ParticleReal total,
-                std::string const & parameters
-            )
-            {
-                if (weight != 0_prt && !(total > 0_prt)) {
-                    throw std::runtime_error(
-                        "Thermal distribution: the " + population + " population is a fraction of "
-                        + to_string(weight) + " of the beam, but its radial density integrates to "
-                        + to_string(total) + ". Please check " + parameters + "."
-                    );
-                }
-            };
-            check_population("core", w_core, total_core, "normalize and kT");
-            check_population("halo", w_halo, total_halo, "normalize_halo and kT_halo");
-        }
-
         /** Rescale a tabulated radial CDF to the exact range [0,1].
          *
          * The radial lookup in Thermal::operator() requires cdf[0] == 0,
@@ -235,9 +234,8 @@ namespace distribution
          * the division is evaluated as a multiplication with the reciprocal
          * (fast-math).
          *
-         * A table that does not integrate to a positive, finite value is left
-         * unchanged: check_radial_density ensures that it belongs to a population
-         * with zero weight, which is never sampled.
+         * A population with zero weight has a table of zeros, which is left
+         * unchanged: it is never sampled.
          *
          * @param[inout] cdf tabulated cumulative distribution of one population
          */
@@ -271,7 +269,11 @@ namespace distribution
             return rscale;
         }
 
-        void
+        /** Integrate the radial density and tabulate its CDF.
+         *
+         * @return false if the radial density diverges
+         */
+        bool
         integrate (
             amrex::ParticleReal in,
             amrex::ParticleReal out,
@@ -292,7 +294,9 @@ namespace distribution
             {
                 // for a second-order Strang splitting
                 map1(half, reval);
-                map2(tau, reval);
+                if (!map2(tau, reval)) {
+                    return false;
+                }
                 map1(half, reval);
                 // store tabulated CDF
                 m_cdf1[j+1] = m_f1;
@@ -306,6 +310,7 @@ namespace distribution
                 */
             }
 
+            return true;
         }
 
         void
@@ -331,7 +336,11 @@ namespace distribution
             m_f2 = f2;
         }
 
-        void
+        /** Advance the integrated densities of both populations.
+         *
+         * @return false if the radial density diverges
+         */
+        bool
         map2 (
             amrex::ParticleReal const tau,
             amrex::ParticleReal & reval
@@ -357,8 +366,23 @@ namespace distribution
             // Define intermediate quantities
             amrex::ParticleReal potential = 0_prt;
             potential = amrex::Math::powi<2>(k*r)*0.5_prt + c1*phi1 + c2*phi2;
-            amrex::ParticleReal Pdensity1 = m_p1 * std::exp(-potential/T1);
-            amrex::ParticleReal Pdensity2 = m_p2 * std::exp(-potential/T2);
+
+            // The density of a population is proportional to exp(-potential/T), where
+            // -potential/T is the logarithm of the density relative to the axis. A
+            // population with zero weight carries no charge and is never sampled, so
+            // its density stays zero.
+            amrex::ParticleReal Pdensity1 = 0_prt;
+            amrex::ParticleReal Pdensity2 = 0_prt;
+            if (w < 1_prt) {
+                amrex::ParticleReal const exponent = -potential/T1;
+                if (exponent > max_exponent) { return false; }
+                Pdensity1 = m_p1 * std::exp(exponent);
+            }
+            if (w > 0_prt) {
+                amrex::ParticleReal const exponent = -potential/T2;
+                if (exponent > max_exponent) { return false; }
+                Pdensity2 = m_p2 * std::exp(exponent);
+            }
             // amrex::ParticleReal Pdensity_tot = (1.0_prt-w)*Pdensity1 + w*Pdensity2;
             // amrex::PrintToFile("Pdensity.out") << reval << " " << Pdensity_tot << "\n";
 
@@ -368,6 +392,8 @@ namespace distribution
             m_f1 = f1 + tau*4_prt*pi * amrex::Math::powi<2>(r)*Pdensity1;
             m_f2 = f2 + tau*4_prt*pi * amrex::Math::powi<2>(r)*Pdensity2;
             reval = r;
+
+            return true;
         }
     };
 
@@ -435,8 +461,7 @@ namespace distribution
          *
          * These are the tables that the radius of each particle is sampled from,
          * on ThermalData::nsteps uniform bins in radius. A population with zero
-         * weight is never sampled; if its radial density is zero or diverges, its
-         * table is not normalized.
+         * weight is never sampled and its table is zero.
          *
          * @param bunch_charge charge of the beam in C
          * @param ref the reference particle

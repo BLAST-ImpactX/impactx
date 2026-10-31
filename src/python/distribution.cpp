@@ -152,8 +152,7 @@ void init_distribution(py::module& m)
              py::arg("bunch_charge"), py::arg("ref"),
              "Tabulated radial CDFs that the particle radius is sampled from, on uniform\n"
              "bins in radius: (r, core, halo), with the radius r in m in the beam rest\n"
-             "frame. A population with zero weight is never sampled;\n"
-             "if its radial density is zero or diverges, its table is not normalized."
+             "frame. A population with zero weight is never sampled and its table is zero."
         );
 
     py::class_<distribution::Triangle>(md, "Triangle")

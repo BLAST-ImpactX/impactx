@@ -129,16 +129,15 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
-``Thermal``: populations in the beam need a finite radial density
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+``Thermal``: invalid parameters raise an error
+""""""""""""""""""""""""""""""""""""""""""""""
 
-For a :py:class:`~impactx.distribution.Thermal` distribution, ``sim.add_particles`` raises a ``RuntimeError`` if
-the radial density of a population in the beam diverges or is zero.
-Previously, these particles had NaN coordinates.
+:py:class:`~impactx.distribution.Thermal` parameters that gave NaN coordinates now raise a ``RuntimeError`` in
+``sim.add_particles``.
 
 **What to check in your scripts:**
 
-- ``normalize`` or ``normalize_halo`` above its self-consistent value makes the density diverge: reduce it.
+- ``normalize`` or ``normalize_halo`` above its self-consistent value makes the radial density diverge: reduce it.
 - ``halo > 0`` with ``normalize_halo = 0``, or ``halo < 1`` with ``normalize = 0``: for a beam without a halo, set
   ``halo = 0``.
 

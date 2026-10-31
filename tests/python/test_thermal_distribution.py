@@ -45,8 +45,9 @@ def sample_radius(u, cdf, r):
 
 def test_thermal_without_halo():
     """
-    A thermal beam has no halo population: its halo density is zero, but it is
-    never sampled.
+    A thermal beam has no halo population, also if the halo parameters are set
+    (as in input files, where normalize_halo defaults to normalize): its table
+    is zero and it is never sampled.
     """
     sim = thermal_sim()
 
@@ -55,9 +56,12 @@ def test_thermal_without_halo():
         kT=kT,
         kT_halo=kT,
         normalize=0.41604661,
-        normalize_halo=0.0,
+        normalize_halo=0.41604661,
         halo=0.0,
     )
+    _, _, halo = distr.radial_cdf(bunch_charge_C, sim.beam.ref)
+    assert not np.any(halo)
+
     sim.add_particles(bunch_charge_C, distr, npart)
 
     df = sim.beam.to_df(local=True)
@@ -166,31 +170,30 @@ def test_thermal_radial_cdf_radius():
 
 
 @pytest.mark.parametrize(
-    "population, weight, normalize, normalize_halo",
-    [("core", "0.95", 0.0, 0.08195), ("halo", "0.05", 0.54226, 0.0)],
-    ids=["core", "halo"],
+    "parameters, message",
+    [
+        ({"normalize": 0.0}, "normalize must be positive if halo < 1."),
+        ({"normalize_halo": 0.0}, "normalize_halo must be positive if halo > 0."),
+        ({"kT": 0.0}, "kT must be positive if halo < 1."),
+        ({"kT_halo": 0.0}, "kT_halo must be positive if halo > 0."),
+        ({"k": 0.0}, "k must be positive."),
+        ({"halo": 1.5}, "halo must be in [0, 1]."),
+    ],
+    ids=["normalize", "normalize_halo", "kT", "kT_halo", "k", "halo"],
 )
-def test_bithermal_population_without_density(
-    population, weight, normalize, normalize_halo
-):
-    """
-    A population that is part of the beam cannot be sampled without a radial
-    density.
-    """
+def test_invalid_parameters(parameters, message):
+    """Parameters of a bithermal beam that have no valid radial density."""
     sim = thermal_sim()
 
-    distr = distribution.Thermal(
-        k=k,
-        kT=kT,
-        kT_halo=900.0e-6,
-        normalize=normalize,
-        normalize_halo=normalize_halo,
-        halo=0.05,
-    )
-    message = (
-        f"the {population} population is a fraction of {weight} of the beam, "
-        "but its radial density integrates to 0."
-    )
+    bithermal = {
+        "k": k,
+        "kT": kT,
+        "kT_halo": 900.0e-6,
+        "normalize": 0.54226,
+        "normalize_halo": 0.08195,
+        "halo": 0.05,
+    }
+    distr = distribution.Thermal(**(bithermal | parameters))
     with pytest.raises(RuntimeError, match=re.escape(message)):
         sim.add_particles(bunch_charge_C, distr, npart)
     assert sim.beam.total_number_of_particles() == 0

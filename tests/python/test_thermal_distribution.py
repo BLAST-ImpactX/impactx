@@ -7,6 +7,8 @@
 #
 # -*- coding: utf-8 -*-
 
+import re
+
 import numpy as np
 import pytest
 
@@ -121,11 +123,13 @@ def test_thermal_radial_cdf_charge_sign():
 
 
 @pytest.mark.parametrize(
-    "population, normalize, normalize_halo",
-    [("core", 0.0, 0.08195), ("halo", 0.54226, 0.0)],
+    "population, weight, normalize, normalize_halo",
+    [("core", "0.95", 0.0, 0.08195), ("halo", "0.05", 0.54226, 0.0)],
     ids=["core", "halo"],
 )
-def test_bithermal_population_without_density(population, normalize, normalize_halo):
+def test_bithermal_population_without_density(
+    population, weight, normalize, normalize_halo
+):
     """
     A population that is part of the beam cannot be sampled without a radial
     density.
@@ -140,7 +144,43 @@ def test_bithermal_population_without_density(population, normalize, normalize_h
         normalize_halo=normalize_halo,
         halo=0.05,
     )
-    with pytest.raises(RuntimeError, match=f"the {population} population"):
+    message = (
+        f"the {population} population is a fraction of {weight} of the beam, "
+        "but its radial density integrates to 0."
+    )
+    with pytest.raises(RuntimeError, match=re.escape(message)):
+        sim.add_particles(bunch_charge_C, distr, npart)
+    assert sim.beam.total_number_of_particles() == 0
+
+    sim.finalize()
+
+
+@pytest.mark.parametrize(
+    "normalize, normalize_halo, halo, parameters",
+    [
+        (0.5, 0.0, 0.0, "normalize and kT"),
+        (0.54226, 0.1, 0.05, "normalize, normalize_halo, kT and kT_halo"),
+    ],
+    ids=["thermal", "bithermal"],
+)
+def test_diverging_radial_density(normalize, normalize_halo, halo, parameters):
+    """
+    A normalization above its self-consistent value makes the radial density
+    diverge. Core and halo share one potential, so the error names the
+    parameters of all populations in the beam.
+    """
+    sim = thermal_sim()
+
+    distr = distribution.Thermal(
+        k=k,
+        kT=kT,
+        kT_halo=900.0e-6,
+        normalize=normalize,
+        normalize_halo=normalize_halo,
+        halo=halo,
+    )
+    message = f"the radial density diverges.*Please check {re.escape(parameters)}\\.$"
+    with pytest.raises(RuntimeError, match=message):
         sim.add_particles(bunch_charge_C, distr, npart)
     assert sim.beam.total_number_of_particles() == 0
 

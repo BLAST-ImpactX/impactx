@@ -129,21 +129,18 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
-``Thermal``: populations in the beam need a radial density
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+``Thermal``: populations in the beam need a finite radial density
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 For a :py:class:`~impactx.distribution.Thermal` distribution, ``sim.add_particles`` raises a ``RuntimeError`` if
-the core or halo population is part of the beam, but its radial density is zero.
-Previously, the particles of that population had NaN coordinates.
+the radial density of a population in the beam diverges or is zero.
+Previously, these particles had NaN coordinates.
 
-**What to check in your scripts:** ``halo > 0`` with ``normalize_halo = 0``, or ``halo < 1`` with
-``normalize = 0`` (``beam.halo``, ``beam.normalize_halo`` and ``beam.normalize`` in input files).
-For a beam without a halo, set ``halo = 0``:
+**What to check in your scripts:**
 
-.. code-block:: python
-
-   distribution.Thermal(k=k, kT=kT, kT_halo=kT, normalize=0.416, normalize_halo=0.0, halo=0.05)  # before
-   distribution.Thermal(k=k, kT=kT, kT_halo=kT, normalize=0.416, normalize_halo=0.0, halo=0.0)  # now
+- ``normalize`` or ``normalize_halo`` above its self-consistent value makes the density diverge: reduce it.
+- ``halo > 0`` with ``normalize_halo = 0``, or ``halo < 1`` with ``normalize = 0``: for a beam without a halo, set
+  ``halo = 0``.
 
 New in this release
 """""""""""""""""""

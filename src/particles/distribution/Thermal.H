@@ -162,6 +162,21 @@ namespace distribution
 
             // a search over normalization parameters p1, p2 can be added here
 
+            // The radial grid scales with the size of the beam: the density of a
+            // population that is much colder than the beam can vanish on all of it.
+            if (m_w < 1_prt && m_cdf1.back() <= 0_prt) {
+                throw std::runtime_error(
+                    "Thermal distribution: the core density vanishes on the radial grid, "
+                    "e.g., for a kT much smaller than kT_halo. Please check kT."
+                );
+            }
+            if (m_w > 0_prt && m_cdf2.back() <= 0_prt) {
+                throw std::runtime_error(
+                    "Thermal distribution: the halo density vanishes on the radial grid, "
+                    "e.g., for a kT_halo much smaller than kT. Please check kT_halo."
+                );
+            }
+
             // rescale the cdf of each population in the beam to the exact range [0,1]
             if (m_w < 1_prt) {
                 normalize_cdf(m_cdf1);
@@ -238,8 +253,8 @@ namespace distribution
          * the division is evaluated as a multiplication with the reciprocal
          * (fast-math).
          *
-         * The table must integrate a positive, finite density: check_parameters
-         * and map2 ensure this for each population in the beam.
+         * The table must integrate a positive, finite density, which
+         * generate_radial_dist ensures for each population in the beam.
          *
          * @param[inout] cdf tabulated cumulative distribution of one population
          */

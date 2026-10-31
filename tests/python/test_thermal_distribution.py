@@ -178,8 +178,23 @@ def test_thermal_radial_cdf_radius():
         ({"kT_halo": 0.0}, "kT_halo must be positive if halo > 0."),
         ({"k": 0.0}, "k must be positive."),
         ({"halo": 1.5}, "halo must be in [0, 1]."),
+        ({"kT": 1.0e-12}, "the core density vanishes on the radial grid"),
+        # a core that stays below its self-consistent normalization without the halo
+        (
+            {"kT_halo": 1.0e-12, "normalize": 0.3},
+            "the halo density vanishes on the radial grid",
+        ),
     ],
-    ids=["normalize", "normalize_halo", "kT", "kT_halo", "k", "halo"],
+    ids=[
+        "normalize",
+        "normalize_halo",
+        "kT",
+        "kT_halo",
+        "k",
+        "halo",
+        "kT_unresolved",
+        "kT_halo_unresolved",
+    ],
 )
 def test_invalid_parameters(parameters, message):
     """Parameters of a bithermal beam that have no valid radial density."""

@@ -162,9 +162,13 @@ namespace distribution
 
             // a search over normalization parameters p1, p2 can be added here
 
-            // rescale cdf to ensure the exact range [0,1]
-            normalize_cdf(m_cdf1);
-            normalize_cdf(m_cdf2);
+            // rescale the cdf of each population in the beam to the exact range [0,1]
+            if (m_w < 1_prt) {
+                normalize_cdf(m_cdf1);
+            }
+            if (m_w > 0_prt) {
+                normalize_cdf(m_cdf2);
+            }
         }
 
         /** Check the parameters of the distribution and of the beam.
@@ -234,8 +238,8 @@ namespace distribution
          * the division is evaluated as a multiplication with the reciprocal
          * (fast-math).
          *
-         * A population with zero weight has a table of zeros, which is left
-         * unchanged: it is never sampled.
+         * The table must integrate a positive, finite density: check_parameters
+         * and map2 ensure this for each population in the beam.
          *
          * @param[inout] cdf tabulated cumulative distribution of one population
          */
@@ -245,10 +249,6 @@ namespace distribution
             using namespace amrex::literals;  // for _rt and _prt
 
             amrex::ParticleReal const total = cdf.back();
-            if (!(std::isfinite(total) && total > 0_prt)) {
-                return;
-            }
-
             for (amrex::ParticleReal & c : cdf) {
                 c = std::min(c / total, 1_prt);
             }

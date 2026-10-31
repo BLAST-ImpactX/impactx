@@ -61,6 +61,42 @@ def test_thermal_without_halo():
 
 
 @pytest.mark.parametrize(
+    "normalize_halo",
+    [0.08195, 0.06],
+    ids=["above_1", "below_1"],
+)
+def test_bithermal_radial_cdf(normalize_halo):
+    """
+    The radial CDFs rise monotonically from 0 to exactly 1, also if the radial
+    densities integrate to more (0.08195) or less (0.06) than 1.
+    """
+    sim = thermal_sim()
+
+    distr = distribution.Thermal(
+        k=k,
+        kT=kT,
+        kT_halo=900.0e-6,
+        normalize=0.54226,
+        normalize_halo=normalize_halo,
+        halo=0.05,
+    )
+    cdfs = distr.radial_cdf(bunch_charge_C, sim.beam.ref)
+    sim.finalize()
+
+    for cdf in cdfs:
+        cdf = np.asarray(cdf)
+        nbins = len(cdf) - 1
+        assert cdf[0] == 0.0
+        assert cdf[nbins] == 1.0
+        assert np.all(np.diff(cdf) >= 0.0)
+
+        # the radial lookup of the largest uniform draw below 1 stays in the table
+        u = np.nextafter(1.0, 0.0)
+        off = max(0, np.searchsorted(cdf, u, side="left") - 1)
+        assert off + 1 <= nbins
+
+
+@pytest.mark.parametrize(
     "population, normalize, normalize_halo",
     [("core", 0.0, 0.08195), ("halo", 0.54226, 0.0)],
     ids=["core", "halo"],

@@ -53,8 +53,8 @@ namespace distribution
         amrex::ParticleReal m_rmin;  ///< minimum r value for tabulated cdf
         amrex::ParticleReal m_rmax;  ///< maximum r value for tabulated cdf
         int m_nbins;  ///< number of radial bins for tabulated cdf
-        amrex::ParticleReal* m_cdf1 = nullptr;  ///< tabulated cumulative distribution (first)
-        amrex::ParticleReal* m_cdf2 = nullptr;  ///< tabulated cumulative distribution (second)
+        std::vector<amrex::ParticleReal> m_cdf1;  ///< tabulated cumulative distribution (first)
+        std::vector<amrex::ParticleReal> m_cdf2;  ///< tabulated cumulative distribution (second)
         amrex::ParticleReal m_Cintensity;  ///< space charge intensity parameter
         amrex::ParticleReal m_bg; ///< reference value of relativistic beta*gamma
         amrex::ParticleReal m_k;  ///< linear focusing strength (1/meters)
@@ -125,10 +125,8 @@ namespace distribution
             m_rmax = rmax;
 
             // allocate CDFs
-            std::vector<amrex::ParticleReal> cdf1(m_nbins+1);
-            std::vector<amrex::ParticleReal> cdf2(m_nbins+1);
-            m_cdf1 = cdf1.data();
-            m_cdf2 = cdf2.data();
+            m_cdf1.resize(m_nbins+1);
+            m_cdf2.resize(m_nbins+1);
 
             // set initial conditions
             m_f1 = 0.0_prt;
@@ -144,17 +142,22 @@ namespace distribution
             // a search over normalization parameters p1, p2 can be added here
 
             // rescale cdf to ensure the exact range [0,1]
-            normalize_cdf(cdf1, 1_prt - m_w, "core", "normalize and kT");
-            normalize_cdf(cdf2, m_w, "halo", "normalize_halo and kT_halo");
+            normalize_cdf(m_cdf1, 1_prt - m_w, "core", "normalize and kT");
+            normalize_cdf(m_cdf2, m_w, "halo", "normalize_halo and kT_halo");
+        }
 
-            // copy CFD data to device
+        /** Copy the radial CDF data from generate_radial_dist to the device.
+         */
+        void
+        copy_to_device ()
+        {
             m_d_cdf1 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
             m_d_cdf2 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                  cdf1.begin(), cdf1.end(),
+                                  m_cdf1.begin(), m_cdf1.end(),
                                   m_d_cdf1->begin());
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                  cdf2.begin(), cdf2.end(),
+                                  m_cdf2.begin(), m_cdf2.end(),
                                   m_d_cdf2->begin());
             amrex::Gpu::streamSynchronize();
         }
@@ -364,6 +367,7 @@ namespace distribution
             // Generate the struct "data" containing the radial CDF:
             ThermalData data(m_k, m_T1, m_T2, m_normalize, m_normalize_halo, m_halo);
             data.generate_radial_dist(bunch_charge, ref);
+            data.copy_to_device();
 
             // share data
             m_w = data.m_w;
@@ -375,6 +379,25 @@ namespace distribution
             m_bg = data.m_bg;
             m_cdf1 = data.m_d_cdf1->data();
             m_cdf2 = data.m_d_cdf2->data();
+        }
+
+        /** Tabulated radial CDFs of the core and halo populations.
+         *
+         * These are the tables that the radius of each particle is sampled from,
+         * on ThermalData::nsteps uniform bins in radius. A population with zero
+         * weight is never sampled and its table is not normalized.
+         *
+         * @param bunch_charge charge of the beam in C
+         * @param ref the reference particle
+         * @return the core and halo CDF, with ThermalData::nsteps + 1 entries each
+         */
+        std::pair<std::vector<amrex::ParticleReal>, std::vector<amrex::ParticleReal>>
+        radial_cdf (amrex::ParticleReal bunch_charge, RefPart const & ref) const
+        {
+            ThermalData data(m_k, m_T1, m_T2, m_normalize, m_normalize_halo, m_halo);
+            data.generate_radial_dist(bunch_charge, ref);
+
+            return {std::move(data.m_cdf1), std::move(data.m_cdf2)};
         }
 
         /** Close and deallocate all data and handles.

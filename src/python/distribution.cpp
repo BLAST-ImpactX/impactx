@@ -146,6 +146,13 @@ void init_distribution(py::module& m)
              py::arg("halo")=0.0,
              "A stationary thermal or bithermal distribution\n\n"
              "R. D. Ryne, J. Qiang, and A. Adelmann, in Proc. EPAC2004, pp. 1942-1944 (2004)"
+        )
+        .def("radial_cdf",
+             &distribution::Thermal::radial_cdf,
+             py::arg("bunch_charge"), py::arg("ref"),
+             "Tabulated radial CDFs (core, halo) that the particle radius is sampled from,\n"
+             "on uniform bins in radius. A population with zero weight is never sampled\n"
+             "and its table is not normalized."
         );
 
     py::class_<distribution::Triangle>(md, "Triangle")

@@ -96,6 +96,30 @@ def test_bithermal_radial_cdf(normalize_halo):
         assert off + 1 <= nbins
 
 
+def test_thermal_radial_cdf_charge_sign():
+    """Electrons and positrons have the same radial density."""
+    sim = thermal_sim()
+
+    distr = distribution.Thermal(
+        k=k,
+        kT=kT,
+        kT_halo=kT,
+        normalize=0.41604661,
+        normalize_halo=0.0,
+        halo=0.0,
+    )
+    cdfs = {}
+    for species in ["electron", "positron"]:
+        sim.beam.ref.set_species(species).set_kin_energy_MeV(kin_energy_MeV)
+        cdfs[species] = distr.radial_cdf(bunch_charge_C, sim.beam.ref)
+    sim.finalize()
+
+    core = np.asarray(cdfs["electron"][0])
+    assert np.isfinite(core).all()
+    assert core[-1] == 1.0
+    assert cdfs["electron"] == cdfs["positron"]
+
+
 @pytest.mark.parametrize(
     "population, normalize, normalize_halo",
     [("core", 0.0, 0.08195), ("halo", 0.54226, 0.0)],

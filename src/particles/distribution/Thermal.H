@@ -104,8 +104,9 @@ namespace distribution
             amrex::ParticleReal Erest = refpart.mass_MeV() * 1.0e6_prt;
             amrex::ParticleReal q_e = refpart.charge_qe();
 
-            // Set space charge intensity
-            m_Cintensity = q_e*bunch_charge/(powi<2>(bg)*Erest*ep0);
+            // Set space charge intensity: the self-field of the beam is repulsive
+            // for either sign of the charge, and bunch_charge is a magnitude
+            m_Cintensity = std::abs(q_e)*bunch_charge/(powi<2>(bg)*Erest*ep0);
 
             // Set minimum and maximum radius
             amrex::ParticleReal r_scale = matched_scale_radius();

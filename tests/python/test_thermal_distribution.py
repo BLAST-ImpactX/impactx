@@ -178,8 +178,12 @@ def test_thermal_radial_cdf_radius():
         ({"kT_halo": 0.0}, "kT_halo must be positive if halo > 0."),
         ({"k": 0.0}, "k must be positive."),
         ({"halo": 1.5}, "halo must be in [0, 1]."),
-        ({"kT": 1.0e-12}, "the core density vanishes on the radial grid"),
-        # a core that stays below its self-consistent normalization without the halo
+        # a cold population changes the scale of normalize: reduce it to keep the
+        # space charge below the focusing
+        (
+            {"kT": 1.0e-12, "normalize": 0.3},
+            "the core density vanishes on the radial grid",
+        ),
         (
             {"kT_halo": 1.0e-12, "normalize": 0.3},
             "the halo density vanishes on the radial grid",
@@ -217,32 +221,49 @@ def test_invalid_parameters(parameters, message):
 
 
 @pytest.mark.parametrize(
-    "normalize, normalize_halo, halo, parameters",
+    "normalize, normalize_halo, halo, normalization",
     [
-        (0.5, 0.0, 0.0, "normalize and kT"),
-        (0.54226, 0.1, 0.05, "normalize, normalize_halo, kT and kT_halo"),
+        # 0.08% above the self-consistent normalization 0.41604661
+        (0.41639, 0.0, 0.0, "normalize"),
+        (0.0, 5.0, 1.0, "normalize_halo"),
+        (0.54226, 0.1, 0.05, "(1 - halo) * normalize + halo * normalize_halo"),
     ],
-    ids=["thermal", "bithermal"],
+    ids=["thermal", "halo", "bithermal"],
 )
-def test_diverging_radial_density(normalize, normalize_halo, halo, parameters):
+def test_diverging_radial_density(normalize, normalize_halo, halo, normalization):
     """
-    A normalization above its self-consistent value makes the radial density
-    diverge. Core and halo share one potential, so the error names the
-    parameters of all populations in the beam.
+    The radial density diverges if the space charge exceeds the focusing on the
+    axis. The limit in the error is exact: a normalization just below it is
+    accepted. Core and halo share one potential, so the limit is on their sum,
+    weighted with the charge fraction of each population.
     """
     sim = thermal_sim()
 
-    distr = distribution.Thermal(
-        k=k,
-        kT=kT,
-        kT_halo=900.0e-6,
-        normalize=normalize,
-        normalize_halo=normalize_halo,
-        halo=halo,
+    def thermal(scale):
+        return distribution.Thermal(
+            k=k,
+            kT=kT,
+            kT_halo=900.0e-6,
+            normalize=scale * normalize,
+            normalize_halo=scale * normalize_halo,
+            halo=halo,
+        )
+
+    message = (
+        "the space charge exceeds the focusing on the axis, so the radial density "
+        f"diverges. Reduce {re.escape(normalization)} below ([0-9.e+-]+), the limit"
     )
-    message = f"the radial density diverges.*Please check {re.escape(parameters)}\\.$"
-    with pytest.raises(RuntimeError, match=message):
-        sim.add_particles(bunch_charge_C, distr, npart)
+    with pytest.raises(RuntimeError, match=message) as error:
+        sim.add_particles(bunch_charge_C, thermal(1.0), npart)
     assert sim.beam.total_number_of_particles() == 0
+
+    limit = float(re.search(message, str(error.value)).group(1))
+    value = (1.0 - halo) * normalize + halo * normalize_halo
+    with pytest.raises(RuntimeError, match=message):
+        sim.add_particles(
+            bunch_charge_C, thermal(limit / value * (1.0 + 1.0e-5)), npart
+        )
+    sim.add_particles(bunch_charge_C, thermal(limit / value * (1.0 - 1.0e-5)), npart)
+    assert sim.beam.total_number_of_particles() == npart
 
     sim.finalize()

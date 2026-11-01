@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <memory>
 #include <random>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -46,8 +47,8 @@ namespace distribution
         static constexpr int nsteps = 2000;  ///< number of radial steps for numerical integration
         /** maximum of -potential/kT, the logarithm of the density relative to the axis
          *
-         * A stationary beam is densest on the axis. A density that exceeds e times its
-         * value on the axis diverges: space charge exceeds the focusing.
+         * After check_space_charge, the density stays below its value on the axis, up
+         * to integration errors. This bound keeps std::exp finite regardless.
          */
         static constexpr amrex::ParticleReal max_exponent = 1.0_prt;
 
@@ -129,6 +130,8 @@ namespace distribution
             m_p1 = m_p1*p_scale;
             m_p2 = m_p2*p_scale;
 
+            check_space_charge(p_scale);
+
             // store integration parameters
             m_nbins = nsteps;
             m_rmin = rmin;
@@ -149,14 +152,9 @@ namespace distribution
             // integrate ODEs for the radial density
             if (!integrate(rmin,rmax,nsteps))
             {
-                std::string const parameters =
-                    m_w == 0_prt ? "normalize and kT" :
-                    m_w == 1_prt ? "normalize_halo and kT_halo" :
-                    "normalize, normalize_halo, kT and kT_halo";
                 throw std::runtime_error(
-                    "Thermal distribution: the radial density diverges, e.g., for a "
-                    "normalization above its self-consistent value. Please check "
-                    + parameters + "."
+                    "Thermal distribution: the numerical integration of the radial "
+                    "density diverges."
                 );
             }
 
@@ -225,6 +223,48 @@ namespace distribution
             require(bunch_charge >= 0_prt, "the bunch charge must not be negative.");
             require(bg > 0_prt && Erest > 0_prt,
                     "the reference particle needs a positive mass and kinetic energy.");
+        }
+
+        /** Check that the focusing exceeds the space charge on the axis.
+         *
+         * Near the axis, the potential is (k^2/2 - ((1-w) p1 + w p2) C/6) r^2. If the
+         * space charge ((1-w) p1 + w p2) C is not below 3 k^2, the density grows with
+         * the radius, which lowers the potential further: the density diverges.
+         * Otherwise, the density decreases from the axis outward.
+         *
+         * @param[in] p_scale scale of the normalization constants p1 and p2
+         * @throws std::runtime_error if the radial density diverges
+         */
+        void
+        check_space_charge (amrex::ParticleReal p_scale) const
+        {
+            using namespace amrex::literals;  // for _rt and _prt
+
+            // the density on the axis, weighted with the charge fraction of each population
+            amrex::ParticleReal density = 0_prt;
+            if (m_w < 1_prt) { density += (1_prt - m_w) * m_p1; }
+            if (m_w > 0_prt) { density += m_w * m_p2; }
+
+            amrex::ParticleReal const focusing = 3_prt * amrex::Math::powi<2>(m_k);
+            if (m_Cintensity * density < focusing) { return; }
+
+            std::string const normalization =
+                m_w == 0_prt ? "normalize" :
+                m_w == 1_prt ? "normalize_halo" :
+                "(1 - halo) * normalize + halo * normalize_halo";
+            std::string const parameters =
+                m_w == 0_prt ? "k, kT" :
+                m_w == 1_prt ? "k, kT_halo" :
+                "k, kT, kT_halo, halo";
+            std::ostringstream limit;
+            limit.precision(7);
+            limit << focusing / (m_Cintensity * p_scale);
+            throw std::runtime_error(
+                "Thermal distribution: the space charge exceeds the focusing on the axis, "
+                "so the radial density diverges. Reduce " + normalization + " below "
+                + limit.str() + ", the limit for this " + parameters + ", bunch charge and "
+                "reference particle."
+            );
         }
 
         /** Copy the radial CDF data from generate_radial_dist to the device.

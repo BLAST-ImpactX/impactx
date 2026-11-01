@@ -132,12 +132,13 @@ of the reference particle: the charge density is negative for electrons.
 ``Thermal``: invalid parameters raise an error
 """"""""""""""""""""""""""""""""""""""""""""""
 
-:py:class:`~impactx.distribution.Thermal` parameters that gave NaN coordinates now raise a ``RuntimeError`` in
-``sim.add_particles``.
+:py:class:`~impactx.distribution.Thermal` parameters without a stationary radial density, which mostly gave NaN
+coordinates, now raise a ``RuntimeError`` in ``sim.add_particles``.
 
 **What to check in your scripts:**
 
-- ``normalize`` or ``normalize_halo`` above its self-consistent value makes the radial density diverge: reduce it.
+- ``normalize`` or ``normalize_halo`` for which the space charge exceeds the focusing on the axis makes the radial
+  density diverge: reduce it below the limit in the error message.
 - ``halo > 0`` with ``normalize_halo = 0``, or ``halo < 1`` with ``normalize = 0``: for a beam without a halo, set
   ``halo = 0``.
 

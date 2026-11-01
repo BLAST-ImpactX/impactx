@@ -127,15 +127,25 @@ def test_thermal_radial_cdf_charge_sign():
         halo=0.0,
     )
     cdfs = {}
-    for species in ["electron", "positron"]:
+    for species in ["positron", "electron"]:
         sim.beam.ref.set_species(species).set_kin_energy_MeV(kin_energy_MeV)
         cdfs[species] = distr.radial_cdf(bunch_charge_C, sim.beam.ref)
-    sim.finalize()
 
     core = np.asarray(cdfs["electron"][1])
     assert np.isfinite(core).all()
     assert core[-1] == 1.0
     assert cdfs["electron"] == cdfs["positron"]
+
+    # an electron beam
+    sim.add_particles(bunch_charge_C, distr, npart)
+
+    df = sim.beam.to_df(local=True)
+    assert len(df) == npart
+    phase_space = df.filter(regex="^(position|momentum)_").to_numpy()
+    assert phase_space.shape[1] == 6
+    assert np.isfinite(phase_space).all()
+
+    sim.finalize()
 
 
 def test_thermal_radial_cdf_radius():

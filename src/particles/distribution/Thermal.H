@@ -60,7 +60,7 @@ namespace distribution
         amrex::ParticleReal m_p2; ///< normalization constant of second population
         amrex::ParticleReal m_rmin;  ///< minimum r value for tabulated cdf
         amrex::ParticleReal m_rmax;  ///< maximum r value for tabulated cdf
-        int m_nbins;  ///< number of radial bins for tabulated cdf
+        int m_nbins = 0;  ///< number of radial bins for tabulated cdf
         std::vector<amrex::ParticleReal> m_cdf1;  ///< tabulated cumulative distribution (first)
         std::vector<amrex::ParticleReal> m_cdf2;  ///< tabulated cumulative distribution (second)
         amrex::ParticleReal m_Cintensity;  ///< space charge intensity parameter
@@ -272,8 +272,9 @@ namespace distribution
         void
         copy_to_device ()
         {
-            m_d_cdf1 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
-            m_d_cdf2 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
+            using DeviceVector = amrex::Gpu::DeviceVector<amrex::ParticleReal>;
+            m_d_cdf1 = std::make_unique<DeviceVector>(m_cdf1.size());
+            m_d_cdf2 = std::make_unique<DeviceVector>(m_cdf2.size());
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
                                   m_cdf1.begin(), m_cdf1.end(),
                                   m_d_cdf1->begin());

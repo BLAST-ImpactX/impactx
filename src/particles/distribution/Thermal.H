@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <random>
 #include <sstream>
@@ -160,18 +161,26 @@ namespace distribution
 
             // a search over normalization parameters p1, p2 can be added here
 
-            // The radial grid scales with the size of the beam: the density of a
-            // population that is much colder than the beam can vanish on all of it.
-            if (m_w < 1_prt && m_cdf1.back() <= 0_prt) {
+            // The radial grid does not resolve a population that is much colder than
+            // the beam: its density can vanish on all of it. A total below the smallest
+            // normal number vanishes, too: normalize_cdf can multiply by its reciprocal
+            // (fast-math), which overflows.
+            constexpr amrex::ParticleReal min_total =
+                std::numeric_limits<amrex::ParticleReal>::min();
+            if (m_w < 1_prt && m_cdf1.back() < min_total) {
                 throw std::runtime_error(
-                    "Thermal distribution: the core density vanishes on the radial grid, "
-                    "e.g., for a kT much smaller than kT_halo. Please check kT."
+                    std::string("Thermal distribution: the core density vanishes on the "
+                                "radial grid, e.g., for a ")
+                    + (m_w > 0_prt ? "kT much smaller than kT_halo" : "very small kT")
+                    + ". Please check kT."
                 );
             }
-            if (m_w > 0_prt && m_cdf2.back() <= 0_prt) {
+            if (m_w > 0_prt && m_cdf2.back() < min_total) {
                 throw std::runtime_error(
-                    "Thermal distribution: the halo density vanishes on the radial grid, "
-                    "e.g., for a kT_halo much smaller than kT. Please check kT_halo."
+                    std::string("Thermal distribution: the halo density vanishes on the "
+                                "radial grid, e.g., for a ")
+                    + (m_w < 1_prt ? "kT_halo much smaller than kT" : "very small kT_halo")
+                    + ". Please check kT_halo."
                 );
             }
 
@@ -294,8 +303,9 @@ namespace distribution
          * the division is evaluated as a multiplication with the reciprocal
          * (fast-math).
          *
-         * The table must integrate a positive, finite density, which
-         * generate_radial_dist ensures for each population in the beam.
+         * The last entry must be finite and at least the smallest normal number,
+         * so that its reciprocal is finite, too. generate_radial_dist ensures this
+         * for each population in the beam.
          *
          * @param[inout] cdf tabulated cumulative distribution of one population
          */
@@ -318,7 +328,10 @@ namespace distribution
             using namespace ablastr::constant::math;  // for pi
 
             amrex::ParticleReal k = m_k;
-            amrex::ParticleReal kT = (1_prt - m_w) * m_T1 + m_w * m_T2;
+            // temperature of the beam, weighted with the charge fraction of each population
+            amrex::ParticleReal kT = 0_prt;
+            if (m_w < 1_prt) { kT += (1_prt - m_w) * m_T1; }
+            if (m_w > 0_prt) { kT += m_w * m_T2; }
             amrex::ParticleReal a = m_Cintensity/(4_prt*pi*5_prt*std::sqrt(5_prt));
             amrex::ParticleReal rscale = std::sqrt(kT + std::pow(a*k,2_prt/3_prt))/k;
 
@@ -609,7 +622,8 @@ namespace distribution
             g6 = ln1 * std::sin(2_prt*pi*u2);
 
             // Scale the last three variables to produce the momenta:
-            amrex::ParticleReal const sqrtkT = is_halo ? m_sqrtT2 : m_sqrtT1;  // select core or halo value
+            // select core or halo value
+            amrex::ParticleReal const sqrtkT = is_halo ? m_sqrtT2 : m_sqrtT1;
             px = sqrtkT*g4;
             py = sqrtkT*g5;
             pz = sqrtkT*g6;

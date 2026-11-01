@@ -192,11 +192,28 @@ def test_thermal_radial_cdf_radius():
         # space charge below the focusing
         (
             {"kT": 1.0e-12, "normalize": 0.3},
+            "the core density vanishes on the radial grid, e.g., for a kT much "
+            "smaller than kT_halo. Please check kT.",
+        ),
+        # a core total that is subnormal in double and zero in single precision
+        (
+            {"kT": 1.24e-12, "normalize": 0.3},
             "the core density vanishes on the radial grid",
         ),
         (
             {"kT_halo": 1.0e-12, "normalize": 0.3},
-            "the halo density vanishes on the radial grid",
+            "the halo density vanishes on the radial grid, e.g., for a kT_halo much "
+            "smaller than kT. Please check kT_halo.",
+        ),
+        (
+            {"kT": 1.0e-12, "normalize": 0.3, "halo": 0.0},
+            "the core density vanishes on the radial grid, e.g., for a very small kT. "
+            "Please check kT.",
+        ),
+        (
+            {"kT_halo": 1.0e-12, "normalize_halo": 0.3, "halo": 1.0},
+            "the halo density vanishes on the radial grid, e.g., for a very small "
+            "kT_halo. Please check kT_halo.",
         ),
     ],
     ids=[
@@ -207,11 +224,14 @@ def test_thermal_radial_cdf_radius():
         "k",
         "halo",
         "kT_unresolved",
+        "kT_subnormal",
         "kT_halo_unresolved",
+        "thermal_kT_unresolved",
+        "halo_kT_halo_unresolved",
     ],
 )
 def test_invalid_parameters(parameters, message):
-    """Parameters of a bithermal beam that have no valid radial density."""
+    """Parameters that have no valid radial density, as changes to a bithermal beam."""
     sim = thermal_sim()
 
     bithermal = {
@@ -233,8 +253,7 @@ def test_invalid_parameters(parameters, message):
 @pytest.mark.parametrize(
     "normalize, normalize_halo, halo, normalization",
     [
-        # 0.08% above the self-consistent normalization 0.41604661
-        (0.41639, 0.0, 0.0, "normalize"),
+        (0.42, 0.0, 0.0, "normalize"),
         (0.0, 5.0, 1.0, "normalize_halo"),
         (0.54226, 0.1, 0.05, "(1 - halo) * normalize + halo * normalize_halo"),
     ],

@@ -231,7 +231,10 @@ namespace impactx::particles::wakefields
                     amrex::Real const * const dptr_charge_distribution = charge_distribution.data();
                     amrex::ParallelFor(num_edges, [=] AMREX_GPU_DEVICE(int i) {
                         amrex::Real const s = static_cast<amrex::Real>(i) * bin_size;
-                        dptr_wake_function[i] = -charge * impactx::particles::wakefields::w_user(s, wake.wake_z, wake.n_data, bin_size_user);
+                        // W(0) at half weight: the integral over the charge ahead ends at s = 0
+                        amrex::Real const end_point_weight = (i > 0) ? 1_rt : 0.5_rt;
+                        dptr_wake_function[i] = -charge * end_point_weight *
+                            w_user(s, wake.wake_z, wake.n_data, bin_size_user);
                         amrex::Real const charge_below = (i > 0) ? dptr_charge_distribution[i - 1] : 0_rt;
                         dptr_line_density[i] = 0.5_rt * (charge_below + dptr_charge_distribution[i]);
                     });

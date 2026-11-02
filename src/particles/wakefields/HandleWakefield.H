@@ -95,9 +95,9 @@ namespace impactx::particles::wakefields
                 throw std::runtime_error("algo.wake_bins must be at least 2");
             }
 
-            // No particles left, e.g., all lost at an aperture: nothing to deposit or to kick
+            // No or one particles left, e.g., lost at an aperture
             auto const npart = particle_container.TotalNumberOfParticles(true, false);
-            if (npart == 0) { return; }
+            if (npart < 2) { return; }
 
             // Measure beam size, extract the min, max of particle positions
             [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =

@@ -85,6 +85,9 @@ namespace impactx::particles::wakefields
 
             int csr_bins = 150;
             pp_algo.queryAddWithParser("csr_bins", csr_bins);
+            if (apply_csr && csr_bins < 2) {
+                throw std::runtime_error("algo.csr_bins must be at least 2");
+            }
 
             int wake_bins = 150;
             pp_algo.queryAddWithParser("wake_bins", wake_bins);

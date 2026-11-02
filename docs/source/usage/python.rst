@@ -216,7 +216,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr_bins
 
-      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the CSR calculations, at least ``2`` (default: ``150``).
 
    .. py:property:: short_range_wakefields
 

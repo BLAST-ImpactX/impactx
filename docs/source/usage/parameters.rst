@@ -2735,7 +2735,7 @@ Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19
     :optional:
     :default: ``150``
 
-    The number of bins used for the CSR calculations along the longitudinal direction. Increasing the number of bins can lead to more accurate wakefield resolution at the cost of higher computational expense.
+    The number of bins used for the CSR calculations along the longitudinal direction, at least ``2``. Increasing the number of bins can lead to more accurate wakefield resolution at the cost of higher computational expense.
 
 .. note::
 

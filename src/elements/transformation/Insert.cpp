@@ -73,6 +73,15 @@ namespace impactx::elements::transformation
                 );
                 elements::name(leftover, elements::name(leftover) + "_leftover");
 
+                // divide the bend angle proportionally
+                amrex::ParticleReal const cur_ds = elements::ds(cur_element);
+                if (auto * bend = elements::get_if<elements::ExactSbend>(head)) {
+                    bend->m_phi *= elements::ds(head) / cur_ds;
+                }
+                if (auto * bend = elements::get_if<elements::ExactSbend>(leftover)) {
+                    bend->m_phi *= elements::ds(leftover) / cur_ds;
+                }
+
                 // insert element in between
                 new_lattice.push_back(std::move(head));
                 new_lattice.emplace_back(element);

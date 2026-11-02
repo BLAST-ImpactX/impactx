@@ -1803,6 +1803,7 @@ This element is defined via ``<rfcavity_name>.type = rfcavity`` and requires the
 
     Tabulated array of uniformly-spaced values of the separation z_source - z_observation at which the user-defined single-particle wakefield data is defined (units of m).
     The values must ascend from 0 in uniform steps; other tabulations are not yet implemented and raise an error.
+    The wakefield is zero beyond the last value.
 
 .. pp:param:: <rfcavity_name>.wake_x_data
     :type: ``array of float``
@@ -1823,6 +1824,7 @@ This element is defined via ``<rfcavity_name>.type = rfcavity`` and requires the
     :optional:
 
     Tabulated array of user-defined values of the single-particle wakefield W_z, evaluated at the separation values specified by z_data (units of V/C/m).
+    Positive values decelerate a trailing particle.
 
 .. pp:param:: <rfcavity_name>.dx/dy
     :link_aliases: <rfcavity_name>.dx <rfcavity_name>.dy
@@ -2810,6 +2812,8 @@ Currently, the data used to specify the short-range wakefield is attached to the
     :default: ``150``
 
     The number of longitudinal bins used for the short-range wakefield calculation, at least ``2``.
+    The wakefield is sampled on the bin edges only, so a bin has to be short against the shortest length scale of the wakefield, which is not checked.
+    Coarser bins overestimate the kick of a wakefield that decays with the separation.
 
 .. note::
 

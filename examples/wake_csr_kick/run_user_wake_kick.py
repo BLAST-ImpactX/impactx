@@ -27,7 +27,7 @@ sim.init_grids()
 # three phase planes
 kin_energy_MeV = 230.0  # reference energy
 bunch_charge_C = 1.0e-10  # used with space charge
-npart = 1000000  # number of macro particles (outside tests, use 1e5 or more)
+npart = 1000000  # number of macro particles
 
 #   reference particle
 ref = sim.beam.ref

@@ -14,7 +14,7 @@ import scipy.constants as sc
 
 # options to run this script
 parser = argparse.ArgumentParser(
-    description="Plot the csr-induced energy kick for a bunch propagating in a bending dipole."
+    description="Plot the wake-induced energy kick for a bunch propagating in an RF cavity."
 )
 parser.add_argument(
     "--save-png", action="store_true", help="non-interactive run: save to PNGs"
@@ -116,6 +116,6 @@ plt.plot(zi_scaled, dE_predicted, "ro", markersize=5, label="predicted")
 plt.legend(fontsize=20)
 plt.tight_layout()
 if args.save_png:
-    plt.savefig("CSR_longitudinal_kick.png")
+    plt.savefig("User_wake_longitudinal_kick.png")
 else:
     plt.show()

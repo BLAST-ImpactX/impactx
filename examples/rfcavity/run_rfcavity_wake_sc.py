@@ -18,7 +18,7 @@ sim.n_cell = [64, 64, 128]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [4]
-# one box per level and process: this example runs on a single process
+# one box per MPI process, for two processes
 sim.max_grid_size_x = [64]
 sim.max_grid_size_y = [64]
 sim.max_grid_size_z = [64]
@@ -41,7 +41,7 @@ sim.init_grids()
 # three phase planes
 kin_energy_MeV = 230.0  # reference energy
 bunch_charge_C = 3.0e-10  # used with space charge
-npart = 1000000  # number of macro particles (outside tests, use 1e5 or more)
+npart = 1000000  # number of macro particles
 
 #   reference particle
 ref = sim.beam.ref

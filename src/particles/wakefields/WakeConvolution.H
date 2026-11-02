@@ -154,7 +154,8 @@ namespace impactx::particles::wakefields
      * @param[in] beam_profile_slope derivative of the line density along s that the wake function
      *                               acts on [1/m^2]: for the CSR wake function w_l_csr, between
      *                               two elementary charges, (q/e)^2 times the derivative of the
-     *                               number density of particles with the charge q
+     *                               number density of particles with the charge q; for a
+     *                               user-tabulated wake function, the line density itself
      * @param[in] wake_func wake function along s [J] (before convolution) [N] (after convolution)
      * @param[in] delta_t size of a bin in wake_func [m]
      * @return FFT convolution of beam_profile_slope & wake_func (N = len(beam_profile_slope) = len(wake_func)/2)

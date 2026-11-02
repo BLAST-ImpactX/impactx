@@ -14,9 +14,9 @@ The lattice and beam parameters are based on Example 2 of the IMPACT-Z examples 
 https://github.com/impact-lbl/IMPACT-Z/tree/master/examples/Example2
 
 The final target beam energy and beam moments are based on simulation in
-IMPACT-Z, without space charge.
+IMPACT-Z, with space charge and short-range wakefields.
 
-In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+In this test, the final values of the reference particle energy, :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, :math:`\epsilon_t`, and the mean of :math:`p_t` must agree with nominal values.
 
 
 Run

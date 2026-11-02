@@ -34,7 +34,6 @@ ref = sim.beam.ref
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
 #   particle bunch
-# distr = distribution.Waterbag(
 distr = distribution.Triangle(
     lambdaX=0.352498964601e-3,
     lambdaY=0.207443478142e-3,

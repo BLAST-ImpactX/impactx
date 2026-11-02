@@ -2291,12 +2291,14 @@ file(COPY ${ImpactX_SOURCE_DIR}/examples/wake_csr_kick/onaxis_data.in
 endif()
 
 # Acceleration by RF Cavities with Space Charge and Wakefields ###########
-file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
-     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-wake-sc.MPI.py)
-add_impactx_test(rfcavity-wake-sc.MPI.py
-    examples/rfcavity/run_rfcavity_wake_sc.py
-    ON   # ImpactX MPI-parallel
-    examples/rfcavity/analysis_rfcavity_wake_sc.py
-    OFF  # no plot script yet
-)
-label_impactx_test(rfcavity-wake-sc.MPI.py slow)
+if(ImpactX_FFT)
+    file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-wake-sc.MPI.py)
+    add_impactx_test(rfcavity-wake-sc.MPI.py
+        examples/rfcavity/run_rfcavity_wake_sc.py
+        ON   # ImpactX MPI-parallel
+        examples/rfcavity/analysis_rfcavity_wake_sc.py
+        OFF  # no plot script yet
+    )
+    label_impactx_test(rfcavity-wake-sc.MPI.py slow)
+endif()

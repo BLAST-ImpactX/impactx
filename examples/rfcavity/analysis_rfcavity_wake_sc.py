@@ -56,7 +56,6 @@ initial = series.iterations[1].particles["beam"].to_df()
 final = series.iterations[last_step].particles["beam"].to_df()
 
 rbc_ref = read_time_series("diags/ref_particle.*")
-is_double_ref = data_is_double("diags/ref_particle.*")
 
 rbc = read_time_series("diags/reduced_beam_characteristics.*")
 is_double = data_is_double("diags/reduced_beam_characteristics.*")

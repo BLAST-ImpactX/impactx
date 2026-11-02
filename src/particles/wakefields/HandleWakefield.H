@@ -21,11 +21,10 @@
 #include <AMReX_GpuDevice.H>
 #include <AMReX_GpuParallelReduce.H>
 
-#include <algorithm>
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 
 namespace impactx::particles::wakefields
@@ -65,12 +64,14 @@ namespace impactx::particles::wakefields
         // CSR is applied only in elements that bend the reference orbit
         auto const rc = impactx::particles::wakefields::bend_radius(element_variant, particle_container.GetRefParticle());
 
-        // Short-range structure wakes are applied only in elements that carry one
-        auto const short_range_wake = impactx::particles::wakefields::ShortRangeWakeElement(element_variant);
+        // Short-range structure wakes are applied only in elements that carry one. Requesting the
+        // view uploads the data to the device, so this only happens if the effect is turned on.
+        auto const short_range_wake = short_range_wakefields ?
+            impactx::particles::wakefields::ShortRangeWakeElement(element_variant) : std::nullopt;
 
         // Which effect applies to this very element?
         bool const apply_csr = csr && rc.has_value();
-        bool const apply_short_range_wake = short_range_wakefields && short_range_wake.has_value();
+        bool const apply_short_range_wake = short_range_wake.has_value();
 
         // Enter loop if wakefields are turned on
         if (apply_csr || apply_short_range_wake)
@@ -202,13 +203,9 @@ namespace impactx::particles::wakefields
                     convolved_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
                 }
                 if (apply_short_range_wake){
-                    // Construct wake function on 2N support
+                    // Construct wake function on 2N support: it only acts on trailing particles,
+                    // so the upper half, for negative separations, stays zero
                     auto const wake = *short_range_wake;  // trivially copyable view, captured by value
-
-                    // the view points into device memory: copy to the host before printing
-                    std::vector<amrex::ParticleReal> h_wake_z(wake.n_data);
-                    amrex::Gpu::dtoh_memcpy(h_wake_z.data(), wake.wake_z,
-                                            wake.n_data * sizeof(amrex::ParticleReal));
                     amrex::Real const bin_size_user = wake.dz;
 
                     // The wake function is per unit source charge and positive where it
@@ -226,17 +223,11 @@ namespace impactx::particles::wakefields
 
                     // device pointers for the kernel: a DeviceVector itself cannot be used there
                     amrex::Real const * const dptr_charge_distribution = charge_distribution.data();
-                    amrex::ParallelFor(num_edges*2, [=] AMREX_GPU_DEVICE(int i) {
-                        if (i < num_edges) {
-                            amrex::Real const s = static_cast<amrex::Real>(i) * bin_size;
-                            dptr_wake_function[i] = -charge * impactx::particles::wakefields::w_user(s, wake.wake_z, wake.n_data, bin_size_user);
-                            amrex::Real const charge_below = (i > 0) ? dptr_charge_distribution[i - 1] : 0_rt;
-                            dptr_line_density[i] = 0.5_rt * (charge_below + dptr_charge_distribution[i]);
-                        }
-                        else if (i > num_edges) {
-                            amrex::Real const s = static_cast<amrex::Real>(i - 2*num_edges) * bin_size;
-                            dptr_wake_function[i] = -charge * impactx::particles::wakefields::w_user(s, wake.wake_z, wake.n_data, bin_size_user);
-                        }
+                    amrex::ParallelFor(num_edges, [=] AMREX_GPU_DEVICE(int i) {
+                        amrex::Real const s = static_cast<amrex::Real>(i) * bin_size;
+                        dptr_wake_function[i] = -charge * impactx::particles::wakefields::w_user(s, wake.wake_z, wake.n_data, bin_size_user);
+                        amrex::Real const charge_below = (i > 0) ? dptr_charge_distribution[i - 1] : 0_rt;
+                        dptr_line_density[i] = 0.5_rt * (charge_below + dptr_charge_distribution[i]);
                     });
 
                     // Call convolution function

@@ -32,7 +32,7 @@ dr1.nslice = 1
 
 dr2.type = drift
 dr2.ds = 0.032997
-dr1.nslice = 1
+dr2.nslice = 1
 
 rf.type = rfcavity
 rf.ds = 1.31879807

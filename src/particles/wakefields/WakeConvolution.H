@@ -11,6 +11,7 @@
 #define WAKE_CONVOLUTION_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "InterpolateLinear1D.H"
 
 #include <AMReX_GpuContainers.H>
 #include <AMReX_Math.H>
@@ -91,41 +92,31 @@ namespace impactx::particles::wakefields
 
     /** Interpolated User-Defined Wake Function
      *
-     * TODO: this interpolates onto the deposition grid; the tabulated abscissa
-     *       z_data of the user-supplied wake is not taken into account yet.
+     * The values are tabulated at the separations i * dz, @see elements::mixin::ShortRangeWake
      *
-     * @param[in] s value along s [m]
+     * @param[in] s separation between source and test particle [m]
      * @param[in] wake_data tabulated single-particle wake function supplied by user [V/(C*m)],
      *                      positive where it decelerates a trailing particle
-     * @param[in] n_data number of tabulated values in wake_data
-     * @param[in] bin_size bin size [m]
+     * @param[in] n_data number of tabulated values in wake_data, at least two
+     * @param[in] dz spacing of the tabulated values [m]
      * @return value wake function [V/(C*m)], zero outside the tabulated range
      */
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     amrex::Real
     w_user (
         amrex::Real s,
-        amrex::ParticleReal const * wake_data,
+        amrex::Real const * wake_data,
         int const n_data,
-        amrex::Real const bin_size
+        amrex::Real const dz
     )
     {
         using namespace amrex::literals;
 
-        amrex::Real const pos = s / bin_size;
-
         // outside the tabulated range the wake function is not defined: it is taken as zero
-        if (pos < 0_rt) { return 0_rt; }
-        int const idz = static_cast<int>(pos);
-        if (idz + 1 >= n_data) { return 0_rt; }
+        if (s < 0_rt || s > static_cast<amrex::Real>(n_data - 1) * dz) { return 0_rt; }
 
-        amrex::Real const lambda = pos - static_cast<amrex::Real>(idz);
-        amrex::Real const wake_interp =
-            (1_rt - lambda) * static_cast<amrex::Real>(wake_data[idz]) +
-            lambda * static_cast<amrex::Real>(wake_data[idz+1]);
-
-        return wake_interp;
-     }
+        return InterpolateLinear1D(s, wake_data, n_data, 0_rt, 1_rt / dz);
+    }
 
     /** CSR Wake Function
      *

@@ -25,7 +25,6 @@ sim.max_grid_size_z = [64]
 
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"
-# sim.space_charge = False
 sim.poisson_solver = "fft"
 sim.dynamic_size = True
 sim.prob_relative = [1.01]

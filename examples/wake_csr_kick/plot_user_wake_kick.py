@@ -33,7 +33,6 @@ final_sort = beam_final.to_df().set_index("id")
 qe = sc.elementary_charge
 me = sc.electron_mass
 clite = sc.speed_of_light
-eps0 = sc.epsilon_0
 me_eV = me * clite**2 / qe
 
 # Basic beam parameters
@@ -42,7 +41,6 @@ kin_energy_MeV = 230.0
 gamma = 1.0e6 * kin_energy_MeV / me_eV + 1.0
 beta_gamma_2 = gamma**2 - 1.0
 beta = np.sqrt(beta_gamma_2) / gamma
-Nb = bunch_charge_C / qe
 p0_eVc = me_eV * beta * gamma
 
 # Beam distribution parameters
@@ -60,7 +58,6 @@ Kscale_eV_per_m = K0 * bunch_charge_C
 # Initial particle data
 
 ti = initial_sort["position_t"]
-pti = initial_sort["momentum_t"]
 zi = -beta * ti
 zi_scaled = zi / sigmaz
 
@@ -71,8 +68,6 @@ exp_plus = np.exp(radical)
 exp_minus = np.exp(-radical)
 wake = -Kscale_eV_per_m * exp_minus * (s0 - exp_plus * s0 + radical * s0) / a
 
-# Predicted wake for a 6D waterbag distribution:
-
 # Predicted particle kick: the wake decelerates
 dE_predicted = -wake * L / p0_eVc
 pt_predicted = -dE_predicted
@@ -82,13 +77,11 @@ pt_max = pt_predicted.abs().max()
 
 # Final particle data
 
-tf = final_sort["position_t"]
 ptf = final_sort["momentum_t"]
 dEf = -ptf
 
 # Difference between value and prediction
 
-pt_diff = ptf - pt_predicted
 
 dpt_max = (ptf - pt_predicted).abs().max()
 dpt_rms = np.sqrt(np.mean(np.square(ptf - pt_predicted)))
@@ -110,7 +103,6 @@ print("Difference between predicted and computed final momentum (max), relative:
 print("dpt_max/pt_max", dpt_max / pt_max)
 
 # Plotting
-mm_scale = 1.0e-3
 plt.figure(figsize=(10, 6))
 plt.xlabel(r"initial $z/\sigma_z$", fontsize=25)
 plt.ylabel(r"$\Delta E/cp_0$", fontsize=25)

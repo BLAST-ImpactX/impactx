@@ -95,12 +95,14 @@ namespace impactx::elements
             amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree
         )
         : Alignment(dx, dy, rotation_degree),
-          m_shape(shape), m_action(action), m_repeat_x(repeat_x), m_repeat_y(repeat_y), m_shift_odd_x(shift_odd_x)
+          m_shape(shape), m_action(action), m_shift_odd_x(shift_odd_x)
         {
             using namespace amrex::literals; // for _rt and _prt
 
             set_aperture_x(aperture_x);
             set_aperture_y(aperture_y);
+            set_repeat_x(repeat_x);
+            set_repeat_y(repeat_y);
 
             if (m_repeat_y == 0_prt && m_shift_odd_x) {
                 throw std::invalid_argument("Aperture: shift_odd_x can only be used if repeat_y is set, too!");
@@ -323,6 +325,34 @@ namespace impactx::elements
             // performance optimization: we intentionally store the inverse of
             //   the aperture, @see m_inv_aperture_y
             m_inv_aperture_y = aperture_y > 0_prt ? 1_prt / aperture_y : 0_prt;
+        }
+
+        /** Set the horizontal period for repeated masking
+         *
+         * @param repeat_x horizontal period [m]; zero disables the repetition
+         */
+        void set_repeat_x (amrex::ParticleReal repeat_x)
+        {
+            using namespace amrex::literals; // for _prt
+
+            if (!(std::isfinite(repeat_x) && repeat_x >= 0_prt)) {
+                throw std::invalid_argument("Aperture: repeat_x must be finite and >= 0");
+            }
+            m_repeat_x = repeat_x;
+        }
+
+        /** Set the vertical period for repeated masking
+         *
+         * @param repeat_y vertical period [m]; zero disables the repetition
+         */
+        void set_repeat_y (amrex::ParticleReal repeat_y)
+        {
+            using namespace amrex::literals; // for _prt
+
+            if (!(std::isfinite(repeat_y) && repeat_y >= 0_prt)) {
+                throw std::invalid_argument("Aperture: repeat_y must be finite and >= 0");
+            }
+            m_repeat_y = repeat_y;
         }
 
         Shape m_shape; //! aperture type (rectangular, elliptical)

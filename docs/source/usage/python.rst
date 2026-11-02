@@ -236,7 +236,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: wake_bins
 
-      The number of bins along the longitudinal direction used for the short-range wakefield calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the short-range wakefield calculations, at least ``2`` (default: ``150``).
 
    .. py:property:: isr
 

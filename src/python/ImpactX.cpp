@@ -307,10 +307,14 @@ void init_ImpactX (py::module& m)
                 return detail::get_or_throw<int>("algo", "wake_bins");
             },
             [](ImpactX & /* ix */, int wake_bins) {
+                if (wake_bins < 2) {
+                    throw std::runtime_error("wake_bins must be at least 2");
+                }
+
                 amrex::ParmParse pp_algo("algo");
                 pp_algo.add("wake_bins", wake_bins);
             },
-            "Number of longitudinal bins used for short range wakefield calculations (default: 150)."
+            "Number of longitudinal bins used for short range wakefield calculations, at least 2 (default: 150)."
         )
         .def_property("isr",
             [](ImpactX & /* ix */) {

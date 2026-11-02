@@ -87,6 +87,9 @@ namespace impactx::particles::wakefields
 
             int wake_bins = 150;
             pp_algo.queryAddWithParser("wake_bins", wake_bins);
+            if (apply_short_range_wake && wake_bins < 2) {
+                throw std::runtime_error("algo.wake_bins must be at least 2");
+            }
 
             // Measure beam size, extract the min, max of particle positions
             [[maybe_unused]] auto const [x_min, y_min, t_min, x_max, y_max, t_max] =

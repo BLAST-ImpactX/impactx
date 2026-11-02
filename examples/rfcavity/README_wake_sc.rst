@@ -3,7 +3,7 @@
 Acceleration by RF Cavities with Space Charge and Wakefields
 ============================================================
 
-This test is based on examples-rfcavity, except that collective effects are present (both space charge and short-range wakefields).
+This test is based on :ref:`examples-rfcavity`, except that collective effects are present (both space charge and short-range wakefields).
 
 A 300 pC bunch is accelerated through a sequence of 4 RF cavities.
 

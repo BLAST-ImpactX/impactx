@@ -234,9 +234,9 @@ Collective Effects & Overall Simulation Parameters
 
          Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
 
-   .. py:property:: csr_bins
+   .. py:property:: wake_bins
 
-      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the short-range wakefield calculations (default: ``150``).
 
    .. py:property:: isr
 

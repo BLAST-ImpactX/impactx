@@ -95,18 +95,23 @@ namespace impactx::particles::wakefields
             // Ensure we have a beam with a finite extent in t
             if (t_min == t_max)
             {
+                // the effect that is applied in this element
+                std::string const model = apply_csr ? "CSR" : "Short-range wakefield";
+                std::string const option = apply_csr ? "CSR" : "short_range_wakefields";
+
                 auto const npart = particle_container.TotalNumberOfParticles();
-                std::string error_msg = "Coherent Synchrotron Radiation (CSR) "
-                                        "modeling was enabled, but ";
+                std::string error_msg =
+                    (apply_csr ? "Coherent Synchrotron Radiation (CSR)" : model) +
+                    " modeling was enabled, but ";
                 if (npart == 1) {
                     error_msg.append("there is only one particle in the beam. ");
                 } else {
                     error_msg.append("the beam is flat in t. ");
                 }
                 error_msg.append(
-                    "CSR modeling is a collective effect and requires "
+                    model + " modeling is a collective effect and requires "
                     "a particle beam with a finite extent in t. "
-                    "Please set the CSR option to false."
+                    "Please set the " + option + " option to false."
                 );
                 throw std::runtime_error(error_msg);
             }

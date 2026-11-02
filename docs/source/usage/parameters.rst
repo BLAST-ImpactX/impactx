@@ -278,6 +278,7 @@ Initial Spin Distributions
 The specification of an initial particle spin distribution is optional, and is required only if spin tracking is used.
 The default distribution type is the von Mises-Fisher distribution, uniquely determined by the input polarization vector.
 The polarization vector provided by the user must lie within the unit ball.
+A zero polarization vector describes an unpolarized beam, with spins uniformly distributed on the unit sphere.
 
 .. pp:param:: beam.polarization_x/y/z
     :link_aliases: beam.polarization_x beam.polarization_y beam.polarization_z

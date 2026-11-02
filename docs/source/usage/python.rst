@@ -1055,9 +1055,12 @@ Initial Beam Spin Distribution
    - K. V. Mardia and P. E. Jupp, Directional Statistics, Wiley, 1999;
    - S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat. and Comput. 34, 106 (2024), `DOI:10.1007/s11222-024-10419-3 <https://doi.org/10.1007/s11222-024-10419-3>`__
 
-   :param mux: x component of the unit vector specifying the mean direction
-   :param muy: y component of the unit vector specifying the mean direction
-   :param muz: z component of the unit vector specifying the mean direction
+   The polarization vector ``(mux, muy, muz)`` must lie within the unit ball: its direction is the mean spin direction and its magnitude is the degree of polarization.
+   A zero vector describes an unpolarized beam, with spins uniformly distributed on the unit sphere.
+
+   :param mux: x component of the polarization vector
+   :param muy: y component of the polarization vector
+   :param muz: z component of the polarization vector
 
 
 Lattice

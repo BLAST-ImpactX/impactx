@@ -206,7 +206,10 @@ namespace impactx::particles::wakefields
                     // Construct wake function on 2N support: it only acts on trailing particles,
                     // so the upper half, for negative separations, stays zero
                     auto const wake = *short_range_wake;  // trivially copyable view, captured by value
-                    amrex::Real const bin_size_user = wake.dz;
+                    // The wake function is tabulated in the separation z = beta * c * dt along the
+                    // beam, while the bins are in the coordinate t = c * dt.
+                    amrex::Real const bin_size_user =
+                        wake.dz / particle_container.GetRefParticle().beta();
 
                     // The wake function is per unit source charge and positive where it
                     // decelerates: the longitudinal force on a test particle of charge q is -q

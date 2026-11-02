@@ -110,20 +110,13 @@ namespace impactx::particles::wakefields
                 std::string const model = apply_csr ? "CSR" : "Short-range wakefield";
                 std::string const option = apply_csr ? "CSR" : "short_range_wakefields";
 
-                std::string error_msg =
+                throw std::runtime_error(
                     (apply_csr ? "Coherent Synchrotron Radiation (CSR)" : model) +
-                    " modeling was enabled, but ";
-                if (npart == 1) {
-                    error_msg.append("there is only one particle in the beam. ");
-                } else {
-                    error_msg.append("the beam is flat in t. ");
-                }
-                error_msg.append(
+                    " modeling was enabled, but the beam is flat in t. " +
                     model + " modeling is a collective effect and requires "
                     "a particle beam with a finite extent in t. "
                     "Please set the " + option + " option to false."
                 );
-                throw std::runtime_error(error_msg);
             }
 
             // Set parameters for charge deposition

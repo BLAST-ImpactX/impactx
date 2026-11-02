@@ -219,28 +219,22 @@ namespace impactx::particles::wakefields
                     // times its convolution with the deposited line density q w.
                     amrex::Real const charge = particle_container.GetRefParticle().charge;
 
-                    // Line density at the bin edges, with zero charge density below bin_min: edge k
-                    // lies between bin k-1 and bin k and gets the mean of both. The bin above
-                    // bin_max is empty, so the last edge gets half of the last occupied bin.
-                    amrex::Gpu::DeviceVector<amrex::Real> line_density(num_edges, 0.0);
                     amrex::Gpu::DeviceVector<amrex::Real> wake_function(num_edges*2, 0.0);
                     amrex::Real *const dptr_wake_function = wake_function.data();
-                    amrex::Real *const dptr_line_density = line_density.data();
 
-                    // device pointers for the kernel: a DeviceVector itself cannot be used there
-                    amrex::Real const * const dptr_charge_distribution = charge_distribution.data();
-                    amrex::ParallelFor(num_edges, [=] AMREX_GPU_DEVICE(int i) {
-                        amrex::Real const s = static_cast<amrex::Real>(i) * bin_size;
-                        // W(0) at half weight: the integral over the charge ahead ends at s = 0
-                        amrex::Real const end_point_weight = (i > 0) ? 1_rt : 0.5_rt;
-                        dptr_wake_function[i] = -charge * end_point_weight *
-                            w_user(s, wake.wake_z, wake.n_data, bin_size_user);
-                        amrex::Real const charge_below = (i > 0) ? dptr_charge_distribution[i - 1] : 0_rt;
-                        dptr_line_density[i] = 0.5_rt * (charge_below + dptr_charge_distribution[i]);
+                    // Trapezoidal rule over each bin ahead of an edge: bin j lies between the
+                    // separations (k-j-1) * bin_size and (k-j) * bin_size from edge k. A bin at or
+                    // behind an edge does not act on it, so the first value stays zero.
+                    amrex::ParallelFor(num_edges - 1, [=] AMREX_GPU_DEVICE(int i) {
+                        amrex::Real const s_near = static_cast<amrex::Real>(i) * bin_size;
+                        amrex::Real const s_far = static_cast<amrex::Real>(i + 1) * bin_size;
+                        dptr_wake_function[i + 1] = -charge * 0.5_rt * (
+                            w_user(s_near, wake.wake_z, wake.n_data, bin_size_user) +
+                            w_user(s_far, wake.wake_z, wake.n_data, bin_size_user));
                     });
 
                     // Call convolution function
-                    convolved_wakefield = impactx::particles::wakefields::convolve_fft(line_density, wake_function, bin_size);
+                    convolved_wakefield = impactx::particles::wakefields::convolve_fft(charge_distribution, wake_function, bin_size);
                 }
 
             }

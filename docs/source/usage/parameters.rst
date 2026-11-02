@@ -1802,18 +1802,21 @@ This element is defined via ``<rfcavity_name>.type = rfcavity`` and requires the
     :optional:
 
     Tabulated array of uniformly-spaced values of the separation z_source - z_observation at which the user-defined single-particle wakefield data is defined (units of m).
+    The values must ascend from 0 in uniform steps; other tabulations are not yet implemented and raise an error.
 
 .. pp:param:: <rfcavity_name>.wake_x_data
     :type: ``array of float``
     :optional:
 
     Tabulated array of user-defined values of the single-particle wakefield W_x, evaluated at the separation values specified by z_data (units of V/C/m).
+    Transverse wakefields are not yet implemented: setting this parameter raises an error.
 
 .. pp:param:: <rfcavity_name>.wake_y_data
     :type: ``array of float``
     :optional:
 
     Tabulated array of user-defined values of the single-particle wakefield W_y, evaluated at the separation values specified by z_data (units of V/C/m).
+    Transverse wakefields are not yet implemented: setting this parameter raises an error.
 
 .. pp:param:: <rfcavity_name>.wake_z_data
     :type: ``array of float``
@@ -2810,7 +2813,11 @@ Currently, the data used to specify the short-range wakefield is attached to the
 
 .. note::
 
-   Short-range wakefield effects are currenly only calculated for ``RFCavity`` elements.  Support for additional elements will be added.
+   Short-range wakefield effects are currently only calculated for ``RFCavity`` elements.  Support for additional elements will be added.
+
+   Only the longitudinal wakefield is implemented.  Setting ``wake_x_data`` or ``wake_y_data`` raises an error.
+
+   Short-range wakefield effects are only supported with particle tracking.  Requesting them for envelope or reference particle tracking raises an error.
 
    Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
 

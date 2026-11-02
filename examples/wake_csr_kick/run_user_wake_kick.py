@@ -69,8 +69,6 @@ nz = 5000  # number of longitudinal separation sampling points to be used
 K0 = 4.30355e13  # first fitted parameter
 s0 = 0.00175  # second fitted parameter (in meters)
 z_wake = np.linspace(zmin, zmax, nz)
-wake_x_data = np.zeros(nz)
-wake_y_data = np.zeros(nz)
 wake_z_data = K0 * np.exp(-np.sqrt(z_wake / s0))
 
 #   RF cavity element
@@ -81,8 +79,6 @@ rf = elements.RFCavity(
     z=z,
     field_on_axis=ez_onaxis,
     z_data=z_wake,
-    wake_x_data=wake_x_data,
-    wake_y_data=wake_y_data,
     wake_z_data=wake_z_data,
     ncoef=ncoef,
     freq=1.3e9,

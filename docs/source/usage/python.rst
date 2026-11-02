@@ -228,7 +228,9 @@ Collective Effects & Overall Simulation Parameters
 
       .. note::
 
-         Short-range wakefield effects are only calculated for ``RFCavity`` elements.
+         Short-range wakefield effects are only calculated for ``RFCavity`` elements, and only for the longitudinal wake.
+
+         Short-range wakefield effects are only supported with particle tracking: ``track_envelope`` and ``track_reference`` raise a ``RuntimeError``.
 
          Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
 
@@ -2604,10 +2606,10 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
    :param field_on_axis: array of on-axis electric field Ez values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
-   :param z_data Optional longitudinal positions of the single-particle wake function in m
-   :param wake_x_data Optional horizontal single-particle wake function data
-   :aram wake_y_data Optional vertical single-particle wake function data
-   :param wake_z_data Optional longitudinal single-particle wake function data in V/(C m), positive where it decelerates a trailing particle
+   :param z_data: optional longitudinal positions of the single-particle wake function in m, ascending from 0 in uniform steps; other positions are not yet implemented and raise a ``RuntimeError``
+   :param wake_x_data: optional horizontal single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_y_data: optional vertical single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_z_data: optional longitudinal single-particle wake function data in V/(C m), positive where it decelerates a trailing particle
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

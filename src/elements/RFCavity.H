@@ -532,9 +532,12 @@ namespace impactx::elements
          * @param phase RF driven phase in deg
          * @param cos_coef TODO
          * @param sin_coef TODO
-         * @param z_data Optional longitudinal positions of the single-particle wake function in m
-         * @param wake_x_data Optional horizontal single-particle wake function data
-         * @param wake_y_data Optional vertical single-particle wake function data
+         * @param z_data Optional longitudinal positions of the single-particle wake function in m,
+         *               ascending from 0 in uniform steps
+         * @param wake_x_data Optional horizontal single-particle wake function data: not yet
+         *                    implemented, has to be absent or empty
+         * @param wake_y_data Optional vertical single-particle wake function data: not yet
+         *                    implemented, has to be absent or empty
          * @param wake_z_data Optional longitudinal single-particle wake function data in V/(C m),
          *                    positive where it decelerates a trailing particle
          * @param dx horizontal translation error in m

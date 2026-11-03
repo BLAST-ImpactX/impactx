@@ -376,9 +376,14 @@ class MADXExpressionParser:
     Parser for MAD-X expressions.
 
     Implements operator precedence:
-    1. ^ (exponentiation, right associative)
-    2. * / (multiplication, division)
-    3. + - (addition, subtraction)
+    1. ^ (exponentiation, left associative)
+    2. + - (sign, applies to the whole power: -a^b^c is -((a^b)^c))
+    3. * / (multiplication, division)
+    4. + - (addition, subtraction)
+
+    Beyond MAD-X, which rejects it, the right operand of a binary operator can
+    carry its own sign: a*-b, a--b, a^-b. The sign of an exponent binds to that
+    exponent only: a^-b^c is (a^(-b))^c.
     """
 
     FUNCTIONS: typing.ClassVar[dict]
@@ -399,13 +404,17 @@ class MADXExpressionParser:
         """
         Parse additive expression (+ -).
         """
+    def _parse_exponent(self) -> Expression:
+        """
+        Parse the right operand of ^, which can carry a sign (a^-b).
+        """
     def _parse_multiplicative(self) -> Expression:
         """
         Parse multiplicative expression (* /).
         """
     def _parse_power(self) -> Expression:
         """
-        Parse power expression (^), right associative.
+        Parse power expression (^), left associative.
         """
     def _parse_primary(self) -> Expression:
         """
@@ -413,7 +422,7 @@ class MADXExpressionParser:
         """
     def _parse_unary(self) -> Expression:
         """
-        Parse unary expression (+x, -x).
+        Parse unary expression (+x, -x), where x is a whole power.
         """
     def _peek(self, offset: int = 0) -> Token:
         """

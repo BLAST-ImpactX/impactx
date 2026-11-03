@@ -141,26 +141,21 @@ remove workarounds that set the energy after loading.
 
 .. code-block:: text
 
-   BEAM, ENERGY=2;                   ! now a positron: add PARTICLE
-   BEAM, SEQUENCE=B2, BV=-1;         ! now a positron at 1 GeV, not the default beam: add PARTICLE and ENERGY
+   BEAM, ENERGY=2;                 ! now a positron: add PARTICLE
+   BEAM, SEQUENCE=B2, BV=-1;       ! now a positron at 1 GeV: add PARTICLE and ENERGY
    BEAM, PARTICLE=ION, MASS=193.7, CHARGE=82, ENERGY=574;  ! now uses MASS and CHARGE
-   BEAM, PARTICLE=PROTON, CIRC=100;  ! now sets FREQ0, and takes precedence over it
-   BEAM, BETA;                       ! now at rest: a parameter without a value is zero
-   B1: BEAM, PARTICLE=PROTON, PC=2;  ! now applied; the labels BEAM and RESBEAM skip the statement
-   BEAM, SEQUENCE="A", ENERGY=2;     ! now the beam of a sequence named A, not a
 
    ! now errors
-   BEAM, MASS=2, CHARGE=1;           ! the 1 GeV default is below the mass: add ENERGY
-   BEAM, PARTICLE=PROTN, PC=2;       ! an unknown particle needs a MASS
-   BEAM, PARTICLE="PROTON", PC=2;    ! a quoted name keeps its case
-   BEAM, ENERGIE=3;                  ! an unknown parameter
-   BEAM, ENERGY=2 PC=3;              ! a number without a comma
+   BEAM, MASS=2, CHARGE=1;         ! the 1 GeV default is below the mass: add ENERGY
+   BEAM, PARTICLE=PROTN, PC=2;     ! an unknown particle needs a MASS
+   BEAM, PARTICLE="PROTON", PC=2;  ! a quoted name keeps its case
+   BEAM, ENERGIE=3;                ! an unknown parameter
+   BEAM, ENERGY=2 PC=3;            ! a number without a comma
 
-``RefPart.load_file`` also raises a ``MADXInputError`` for a file without ``BEAM``, and for values that give no reference particle, e.g., a negative ``MASS`` or ``PC=SQRT(-1)``.
-``KnownElementsList.load_file`` warns about these, unless the file has ``USE`` but no ``BEAM`` or an element depends on them: it raises for an ``RFCAVITY`` with ``VOLT`` but no valid mass, and for a NaN or infinite attribute of an element in use.
+``RefPart.load_file`` also raises without ``BEAM`` or a valid reference particle. ``KnownElementsList.load_file`` raises for ``USE`` without ``BEAM``, an ``RFCAVITY`` with ``VOLT`` but no valid mass, and a NaN or infinite attribute of an element in use, and warns otherwise.
 
-Also as in MAD-X: ``RESBEAM`` resets a beam, ``beam->energy`` and ``beam%sequence->energy`` read and set the ``BEAM`` parameters, ``USE`` skips an unknown sequence, redefining a constant is ignored with a warning, math outside of its domain gives NaN or infinity, e.g., ``X = (-2)^0.5;``, and ``FRAC(-2.5)`` is -0.5 instead of 0.5.
-The reference particle uses the MAD-X masses, which differ from the previous values by less than 1 part in :math:`10^9`, and ``MUMASS`` changes by 4 parts in :math:`10^8`.
+Also as in MAD-X: ``USE`` skips an unknown sequence, including a quoted name in another case, ``CIRC`` sets ``FREQ0``, a parameter without a value is zero, a label does not change a command, ``beam->energy`` reads and sets ``BEAM`` parameters, ``RESBEAM`` resets a beam, redefining a constant warns, math outside of its domain gives NaN or infinity, and ``FRAC(-2.5)`` is -0.5.
+Masses now use the MAD-X constants, a change of at most 4 parts in :math:`10^8`.
 
 ``Thermal``: invalid parameters raise an error
 """"""""""""""""""""""""""""""""""""""""""""""
@@ -182,15 +177,16 @@ MAD-X files: evaluation of ``^``
 :py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate powers in MAD-X files as MAD-X does: ``a^b^c`` is
 ``(a^b)^c``, and ``-a^b`` is ``-(a^b)``.
 
-**What to check in your MAD-X files:** more than one ``^`` in an expression, and a sign directly before a power, also after
-another operator as in ``a*-b^2`` or ``a--b^2``. A subtraction, ``a-b^2``, is not affected.
-To keep the previous meaning, add parentheses:
+**What to check in your MAD-X files:** more than one ``^`` in an expression, and a sign directly before a power. A
+subtraction, ``a-b^2``, is not affected. To keep the previous meaning, add parentheses:
 
 .. code-block:: text
 
-   k = a^(b^c);     ! previously a^b^c:   2^3^2 was 512, now 64
-   k = (-a)^b;      ! previously -a^b:    -2^2 was 4, now -4
-   k = a^((-b)^c);  ! previously a^-b^c:  2^-3^2 was 512, now 0.015625
+   k = a^(b^c);  ! previously a^b^c:  2^3^2 was 512, now 64
+   k = (-a)^b;   ! previously -a^b:   -2^2 was 4, now -4
+
+ImpactX also accepts a sign directly after an operator, as in ``a*-b^2`` or ``a^-b^c``, which MAD-X does not support: write
+these with parentheses. Their values change as well, e.g., ``2^-3^2`` was 512 and is now 0.015625, and ``2^((-3)^2)`` is 512.
 
 New in this release
 """""""""""""""""""

@@ -158,6 +158,23 @@ Their values change. To keep the previous meaning, add the parentheses:
    k = a^b^c;    ! now (a^b)^c
    k = a^(b^c);  ! previous meaning of a^b^c
 
+MAD-X files: a sign applies to the whole power
+""""""""""""""""""""""""""""""""""""""""""""""
+
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate ``^`` before a sign in MAD-X files, as MAD-X does:
+``-a^b`` is ``-(a^b)`` and ``-a^b^c`` is ``-((a^b)^c)``, e.g., ``-2^2`` is -4.
+Previously, the sign belonged to the first operand, ``(-a)^b``, which gave 4.
+
+**What to check in your MAD-X files:** a sign directly before an operand that is raised to a power, e.g., after ``=``,
+``(``, ``,``, ``*`` or ``/``. Their values change, e.g., an even power flips its sign. A subtraction, ``a-b^2``, is not
+affected. To keep the previous meaning, add the parentheses:
+
+.. code-block:: text
+
+   k = -a^2;    ! now -(a^2)
+   k = (-a)^2;  ! previous meaning of -a^2
+
 New in this release
 """""""""""""""""""
 

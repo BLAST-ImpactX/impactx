@@ -15,7 +15,6 @@
 
 #include <ablastr/constant.H>
 
-#include <AMReX_Math.H>
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
@@ -108,7 +107,6 @@ namespace impactx::distribution
         ) const
         {
             using namespace amrex::literals;
-            using amrex::Math::powi;
             using ablastr::constant::math::pi;
 
             amrex::ParticleReal v,phi,r,beta,p,u1,u2,ln1;
@@ -124,7 +122,8 @@ namespace impactx::distribution
             // Sample and transform to define (px,py):
             beta = amrex::Random(engine);
             beta = 2_prt*pi*beta;
-            p = std::sqrt(1_prt-powi<2>(r));
+            // p^2 = 1 - r^2 with r^2 = v
+            p = std::sqrt(1_prt-v);
             px = p * std::cos(beta);
             py = p * std::sin(beta);
 

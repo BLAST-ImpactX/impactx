@@ -44,12 +44,12 @@ def _warn(message: str):
     warnings.warn(message, MADXImpactXTranslatorWarning, stacklevel=2)
 
 
-def _selected_beam(madx: MADXParser, madx_file):
-    """The beam of the selected sequence; MAD-X stops on a sequence without one."""
-    madx_beam = madx.context.beam
-    if not madx_beam.defined:
-        raise MADXInputError("The sequence has no BEAM command", file=str(madx_file))
-    return madx_beam
+def _beam_summary(madx_beam) -> str:
+    """Describe a MAD-X beam for an error or warning."""
+    return (
+        f"mass {madx_beam.mass} GeV, charge {madx_beam.charge}, "
+        f"total energy {madx_beam.energy} GeV"
+    )
 
 
 class sc:
@@ -1586,10 +1586,24 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
     """
     madx = MADXParser()
     madx.parse(madx_file)
+    # MAD-X stops at USE without a BEAM command, but reads a file of definitions
+    if madx.context.selected_sequence and not madx.context.beam.defined:
+        raise MADXInputError("The sequence has no BEAM command", file=str(madx_file))
     beamline = madx.getBeamline(line_name=line, sequence_name=sequence)
     freq0 = madx.getFreq0()
-    madx_beam = _selected_beam(madx, madx_file)
-    ref_mass_MeV = madx_beam.mass * 1.0e3
+    # after getBeamline, which selects the sequence if the file did not
+    madx_beam = madx.context.beam
+    # The elements do not need a reference particle, unless they depend on its mass
+    # or energy, which is why this is not an error.
+    has_reference = madx_beam.defined and madx_beam.is_physical
+    if not madx_beam.defined:
+        _warn("The MAD-X file has no BEAM command, so no reference particle is known.")
+    elif not has_reference:
+        _warn(
+            "The MAD-X BEAM command gives no valid reference particle: "
+            f"{_beam_summary(madx_beam)}."
+        )
+    ref_mass_MeV = madx_beam.mass * 1.0e3 if has_reference else None
     all_options = madx.getOptions()
     options = {
         # MAD-X options are numeric in parser context; bool() captures 0/1 and expressions.
@@ -1612,7 +1626,7 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
     # 1 GeV, and translating a rigidity against an assumed energy would bake a
     # wrong field strength into the lattice instead of merely approximating one.
     ref_beta_gamma = None
-    if madx_beam.energy_is_explicit and madx_beam.pc > 0.0:
+    if has_reference and madx_beam.energy_is_explicit and madx_beam.pc > 0.0:
         ref_beta_gamma = madx_beam.pc / madx_beam.mass
 
     return lattice(
@@ -1725,7 +1739,14 @@ def read_beam(ref: RefPart, madx_file):
 
     madx = MADXParser()
     madx.parse(madx_file)
-    madx_beam = _selected_beam(madx, madx_file)
+    madx_beam = madx.context.beam
+    if not madx_beam.defined:
+        raise MADXInputError("The file has no BEAM command", file=str(madx_file))
+    if not madx_beam.is_physical:
+        raise MADXInputError(
+            f"The BEAM command gives no valid reference particle: {_beam_summary(madx_beam)}",
+            file=str(madx_file),
+        )
 
     GeV2MeV = 1.0e3
     ref.set_charge_qe(madx_beam.charge)

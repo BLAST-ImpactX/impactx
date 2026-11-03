@@ -512,19 +512,84 @@ def test_read_beam_low_energy(tmp_path):
     assert ref.beta_gamma == pytest.approx(1.0e-3 / math.sqrt(1.0 - 1.0e-6), rel=rel)
 
 
-def test_readers_need_a_beam_command(tmp_path):
-    """MAD-X stops on a sequence without BEAM, and an empty BEAM is enough."""
-    lattice_text = "d1: drift, l=0.5;\ncell: line=(d1);\nuse, sequence=cell;\n"
+def test_read_lattice_uses_the_beam_of_the_inferred_sequence(tmp_path):
+    """Without USE, the lattice import selects the line, and that line's beam."""
+    madx_file = tmp_path / "sol.madx"
+    madx_file.write_text(
+        "beam, particle=electron, energy=2;\n"
+        "beam, sequence=cell, particle=proton, pc=2;\n"
+        "s1: solenoid, l=0.5, ks=1.0;\n"
+        "cell: line=(s1);\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        paraxial = read_lattice(str(madx_file), min_model="paraxial")
+
+    rel = 1.0e-14 if Config.precision != "SINGLE" else 1.0e-6
+    assert _only(paraxial, elements.ChrAcc).bz == pytest.approx(
+        2.0 / 0.93827208816, rel=rel
+    )
+
+
+def test_read_lattice_without_a_beam_command(tmp_path):
+    """MAD-X stops at USE without BEAM, but reads a file of definitions."""
+    definitions = "d1: drift, l=0.5;\ncell: line=(d1);\n"
     madx_file = tmp_path / "no_beam.madx"
-    madx_file.write_text(lattice_text)
+
+    madx_file.write_text(definitions)
+    with pytest.warns(MADXImpactXTranslatorWarning, match="no BEAM command"):
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
+
+    madx_file.write_text(f"{definitions}use, sequence=cell;\n")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         with pytest.raises(MADXInputError, match="no BEAM command"):
             read_lattice(str(madx_file))
+
+    # an empty BEAM is enough
+    madx_file.write_text(f"beam;\n{definitions}use, sequence=cell;\n")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
+
+
+def test_read_beam_without_a_beam_command(tmp_path):
+    """There is no reference particle to load from a file without BEAM."""
+    madx_file = tmp_path / "no_beam.madx"
+    madx_file.write_text("d1: drift, l=0.5;\ncell: line=(d1);\n")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
         with pytest.raises(MADXInputError, match="no BEAM command"):
             read_beam(RefPart(), str(madx_file))
 
-        madx_file.write_text(f"beam;\n{lattice_text}")
+
+@pytest.mark.parametrize(
+    "beam_command",
+    [
+        "beam, mass=-1, charge=1;",
+        "beam, mass=-1, charge=1, energy=0.5;",
+        "beam, particle=proton, beta=-1;",
+        "beam, particle=proton, beta=-2;",
+        "beam, particle=proton, pc=sqrt(-1);",
+        "beam, particle=proton, gamma=asin(2);",
+        "beam, mass=sqrt(-1), charge=1, energy=3;",
+        "beam, mass=2, charge=sqrt(-1), energy=3;",
+    ],
+)
+def test_beam_that_is_no_reference_particle(tmp_path, beam_command):
+    """MAD-X reads these, and so does the lattice import: only RefPart cannot use them."""
+    madx_file = tmp_path / "beam.madx"
+    madx_file.write_text(
+        f"{beam_command}\nd1: drift, l=0.5;\ncell: line=(d1);\nuse, sequence=cell;\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(MADXInputError, match="no valid reference particle"):
+            read_beam(RefPart(), str(madx_file))
+
+    with pytest.warns(
+        MADXImpactXTranslatorWarning, match="no valid reference particle"
+    ):
         assert _types(read_lattice(str(madx_file))) == ["Drift"]
 
 

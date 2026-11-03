@@ -164,8 +164,9 @@ energy of each ``BEAM`` command of a MAD-X file following MAD-X. Previously, onl
    BEAM, SEQUENCE=B2, BV=-1;                                  ! a positron at 1 GeV
    BEAM, SEQUENCE=B2, BV=-1, PARTICLE=PROTON, ENERGY=7000;    ! state both
 
-   ! a quoted name now keeps its case
-   BEAM, PARTICLE="PROTON", PC=2;     ! an unknown particle with a warning
+   ! an unknown particle needs a MASS, and a quoted name now keeps its case
+   BEAM, PARTICLE=PROTN, PC=2;        ! an error
+   BEAM, PARTICLE="PROTON", PC=2;     ! an error
    BEAM, PARTICLE=PROTON, PC=2;
    BEAM, SEQUENCE="A", ENERGY=2;      ! the beam of a sequence named A, not a
 
@@ -189,8 +190,10 @@ energy of each ``BEAM`` command of a MAD-X file following MAD-X. Previously, onl
    ! the labels BEAM and RESBEAM: now skip the statement with a warning
    BEAM: BEAM, PARTICLE=PROTON, PC=2;
 
-These now also raise a ``MADXInputError``: a file without a ``BEAM`` command, a negative ``MASS``, ``BETA`` of -1 or below, an expression without a value such as ``PC=sqrt(-1)``, and ``EXN``, ``EYN`` or ``BCURRENT`` with ``FREQ0`` for a particle at rest.
+A ``BEAM`` command that gives no valid reference particle, e.g., with a negative ``MASS``, ``BETA`` of -1 or below, or ``PC=sqrt(-1)``, now raises a ``MADXInputError`` in ``RefPart.load_file``, and a warning in ``KnownElementsList.load_file``.
+A file without a ``BEAM`` command raises this error in ``RefPart.load_file``, and in ``KnownElementsList.load_file`` if it has a ``USE`` command, and otherwise a warning.
 ``RESBEAM`` now resets the beam, and ``beam->energy``, ``beam%sequence->energy`` and the other ``BEAM`` parameters now give their value instead of 0.
+Math outside of its domain, e.g., ``X = SQRT(-1);`` or ``X = (-2)^0.5;``, now gives NaN or infinity with a warning for functions, as in MAD-X, instead of a Python exception or a complex number.
 
 The reference particle takes its mass from the MAD-X constants, e.g., ``PMASS``, which differ from the previous values by less than 1 part in :math:`10^9`.
 The ``MUMASS`` constant in MAD-X files changed by 4 parts in :math:`10^8`, to the MAD-X value.

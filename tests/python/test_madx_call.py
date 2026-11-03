@@ -480,7 +480,7 @@ def test_beam_energy_per_command():
         MADXParser().parse_string("BEAM, PARTICLE=PROTON, BETA=0;\nBEAM, BV=-1;\n")
 
 
-@pytest.mark.parametrize("param", ["PC=0", "GAMMA=1", "BETA=1", "BETA=-1", "BRHO=-1"])
+@pytest.mark.parametrize("param", ["PC=0", "GAMMA=1", "BETA=1", "BRHO=-1"])
 def test_beam_energy_invalid_raises(param):
     """Invalid energy parameters raise."""
     with pytest.raises(MADXInputError, match="BEAM"):
@@ -564,15 +564,22 @@ def test_beam_energy_invalid_raises(param):
             2.0,
             1.0,
         ),
-        # an unknown particle needs MASS and CHARGE in each command
+        # a name can continue with signs and numbers, and the charge defaults to +1
         (
-            "BEAM, PARTICLE=FOO, MASS=2, CHARGE=3, PC=1; BEAM, PARTICLE=FOO, PC=1;",
+            "BEAM, PARTICLE=H-, MASS=0.9, CHARGE=-1, PC=2;",
             None,
-            1.0000001305599548,
-            0.00051099895,
-            1.0,
+            2.1931712199461311,
+            0.9,
+            -1.0,
         ),
-        ("BEAM, PARTICLE=FOO, GAMMA=5;", None, 0.00255499475, 0.00051099895, 1.0),
+        (
+            "BEAM, PARTICLE=PB208+82, MASS=193, CHARGE=82, GAMMA=3;",
+            None,
+            579.0,
+            193.0,
+            82.0,
+        ),
+        ("BEAM, PARTICLE=H- ENERGY=2, MASS=0.9, CHARGE=-1;", None, 2.0, 0.9, -1.0),
         ("BEAM, MASS=2, BRHO=10;", None, 3.60382460552233, 2.0, 1.0),
         # the default particle is a positron at 1 GeV
         ("BEAM;", None, 1.0, 0.00051099895, 1.0),
@@ -625,14 +632,7 @@ def test_beam_energy_invalid_raises(param):
             0.93827208816,
             1.0,
         ),
-        # only an unquoted particle name is case-insensitive
-        (
-            'BEAM, PARTICLE="PROTON", PC=2;',
-            None,
-            2.0000000652799805,
-            0.00051099895,
-            1.0,
-        ),
+        # a quoted name is case-sensitive
         (
             "BEAM, PARTICLE='proton', PC=2;",
             None,
@@ -673,19 +673,115 @@ def test_beam_energy_must_exceed_mass(script):
             MADXParser().parse_string(f"{script}\n")
 
 
+def test_beam_number_without_a_comma_raises():
+    """MAD-X stops on this, which would otherwise drop what follows the number."""
+    with pytest.raises(MADXInputError, match="comma"):
+        MADXParser().parse_string("BEAM, PARTICLE=PROTON, ENERGY=2 PC=3;\n")
+
+
 @pytest.mark.parametrize(
-    "script, match",
+    "script",
     [
-        ("BEAM, PARTICLE=PROTON, PC=sqrt(-1);", "BEAM PC"),
-        ("BEAM, PARTICLE=PROTON, GAMMA=asin(2);", "BEAM GAMMA"),
-        ("BEAM, PARTICLE=FOO, MASS=sqrt(-1), CHARGE=1, PC=1;", "BEAM MASS"),
-        ("BEAM, PARTICLE=PROTON, ENERGY=2 PC=3;", "comma"),
+        "BEAM, PARTICLE=PROTN, PC=2;",
+        "BEAM, PARTICLE=FOO, GAMMA=5;",
+        "BEAM, PARTICLE=FOO, CHARGE=1, ENERGY=2;",
+        'BEAM, PARTICLE="PROTON", PC=2;',
+        "BEAM, PARTICLE=FOO, MASS=2, CHARGE=3, PC=1; BEAM, PARTICLE=FOO, PC=1;",
     ],
 )
-def test_beam_invalid_values_raise(script, match):
-    """Invalid values in a BEAM command raise an input error with its location."""
-    with pytest.raises(MADXInputError, match=match):
+def test_beam_unknown_particle_without_a_mass_raises(script):
+    """Stricter than MAD-X, where a typo would turn into a particle of electron mass."""
+    with pytest.raises(MADXInputError, match="unknown and has no MASS"):
         MADXParser().parse_string(f"{script}\n")
+
+
+@pytest.mark.parametrize(
+    "script, name, is_nan",
+    [
+        ("BEAM, PARTICLE=PROTON, PC=sqrt(-1);", "energy", True),
+        ("BEAM, PARTICLE=PROTON, GAMMA=asin(2);", "energy", True),
+        ("BEAM, PARTICLE=PROTON, BETA=-2;", "energy", True),
+        ("BEAM, MASS=sqrt(-1), CHARGE=1, ENERGY=3;", "gamma", True),
+        ("BEAM, MASS=2, CHARGE=sqrt(-1), ENERGY=3;", "brho", True),
+        ("BEAM, PARTICLE=PROTON, BETA=-1;", "energy", False),
+        ("BEAM, PARTICLE=PROTON, BETA=0, EXN=1e-6;", "ex", False),
+        ("BEAM, PARTICLE=PROTON, BETA=0, BCURRENT=1e-3, FREQ0=1;", "npart", False),
+    ],
+)
+def test_beam_non_finite_values_match_madx(script, name, is_nan):
+    """MAD-X 5.09.03 continues with NaN or infinity, which the parser also keeps."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"{script}\n")
+    value = parser.context.get_beam_attribute("beam", name)
+    assert math.isnan(value) if is_nan else value == math.inf
+
+
+@pytest.mark.parametrize(
+    "script, values",
+    [
+        (
+            "BEAM, MASS=-1, CHARGE=1;",
+            {"energy": 1.0, "mass": -1.0, "gamma": -1.0, "pc": 0.0},
+        ),
+        (
+            "BEAM, MASS=-1, CHARGE=1, ENERGY=0.5;",
+            {"energy": 0.5, "mass": -1.0, "gamma": -0.5},
+        ),
+        (
+            "BEAM, PARTICLE=ION, MASS=-1, CHARGE=1, ENERGY=2;",
+            {"energy": 2.0, "mass": -1.0, "gamma": -2.0},
+        ),
+    ],
+)
+def test_beam_negative_mass_matches_madx(script, values):
+    """MAD-X 5.09.03 reads a negative mass."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"{script}\n")
+    assert not parser.context.beam.is_physical
+    for name, value in values.items():
+        assert parser.context.get_beam_attribute("beam", name) == value, name
+
+
+@pytest.mark.parametrize(
+    "expression, expected",
+    [
+        ("sqrt(-1)", math.nan),
+        ("log(-1)", math.nan),
+        ("log10(-1)", math.nan),
+        ("log(0)", -math.inf),
+        ("log10(0)", -math.inf),
+        ("asin(2)", math.nan),
+        ("acos(2)", math.nan),
+        ("exp(1000)", math.inf),
+        ("sinh(1000)", math.inf),
+        ("sinh(-1000)", -math.inf),
+        ("cosh(1000)", math.inf),
+        ("cosh(-1000)", math.inf),
+        ("floor(1e400)", math.inf),
+        ("round(1e400)", math.inf),
+        ("0^(-1)", math.inf),
+        ("(-2)^0.5", math.nan),
+        ("(-8)^(1/3)", math.nan),
+        ("10^400", math.inf),
+        ("(-10)^401", -math.inf),
+        ("(-10)^400", math.inf),
+        ("0^0", 1.0),
+        ("frac(2.5)", 0.5),
+        ("frac(-2.5)", -0.5),
+        ("frac(1e400)", 0.0),
+    ],
+)
+def test_math_edges_match_madx(expression, expected):
+    """MAD-X 5.09.03 continues with what its C math functions return."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"X = {expression};\n")
+    assert parser.getVariable("x") == pytest.approx(expected, nan_ok=True)
 
 
 def test_beam_known_particle_ignores_invalid_mass():
@@ -1000,7 +1096,7 @@ def test_beam_illegal_keyword_raises(script, match):
 
 
 def test_beam_illegal_keyword_after_a_string_raises():
-    """MAD-X reads this as the odd particle `proton,energie=3`, here it is a typo."""
+    """Stricter than MAD-X, which reads the unknown particle `proton,energie=3`."""
     with pytest.raises(MADXInputError, match="Illegal keyword: energie"):
         MADXParser().parse_string("BEAM, PARTICLE=PROTON, ENERGIE=3;\n")
 
@@ -1019,28 +1115,6 @@ def test_beam_parameter_without_a_value_stops(param, match):
     """MAD-X reads these as zero, and stops as for a stated zero."""
     with pytest.raises(MADXInputError, match=match):
         MADXParser().parse_string(f"BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, {param};\n")
-
-
-@pytest.mark.parametrize(
-    "script",
-    [
-        "BEAM, MASS=-1, CHARGE=1;",
-        "BEAM, MASS=-1, CHARGE=1, ENERGY=0.5;",
-        "BEAM, PARTICLE=FOO, MASS=-1, CHARGE=1, ENERGY=2;",
-        "BEAM, PARTICLE=ION, MASS=-1, CHARGE=1, ENERGY=2;",
-    ],
-)
-def test_beam_negative_mass_raises(script):
-    """Stricter than MAD-X, whose negative mass gives a non-finite reference."""
-    with pytest.raises(MADXInputError, match="MASS must be > 0"):
-        MADXParser().parse_string(f"{script}\n")
-
-
-@pytest.mark.parametrize("params", ["EXN=1e-6", "EYN=1e-6", "BCURRENT=1e-3, FREQ0=1"])
-def test_beam_at_rest_with_moving_parameters_raises(params):
-    """Stricter than MAD-X, whose values for this input are infinite."""
-    with pytest.raises(MADXInputError, match="not at rest"):
-        MADXParser().parse_string(f"BEAM, PARTICLE=PROTON, BETA=0, {params};\n")
 
 
 def test_predefined_constants_match_madx():

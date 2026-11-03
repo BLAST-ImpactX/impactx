@@ -11,6 +11,7 @@
 #define IMPACTX_DISTRIBUTION_KURTH4D
 
 #include "particles/ReferenceParticle.H"
+#include "particles/distribution/BoxMuller.H"
 #include "particles/distribution/mixin/beamellipse.H"
 
 #include <ablastr/constant.H>
@@ -111,7 +112,7 @@ namespace impactx::distribution
             using amrex::Math::powi;
             using ablastr::constant::math::pi;
 
-            amrex::ParticleReal v,phi,r,u1,u2,ln1;
+            amrex::ParticleReal v,phi,r;
             amrex::ParticleReal alpha,u,pmax,pr,pphi;
 
             // Sample and transform to define (x,y):
@@ -140,10 +141,7 @@ namespace impactx::distribution
             // Sample and transform to define (t,pt):
             t = amrex::Random(engine);
             t = 2.0_prt*(t-0.5_prt);
-            u1 = amrex::RandomPositive(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            pt = ln1 * std::cos(2_prt*pi*u2);
+            pt = box_muller::single(engine);
 
             // Scale to produce the identity covariance matrix:
             amrex::ParticleReal const c = std::sqrt(3.0_prt);

@@ -11,9 +11,8 @@
 #define IMPACTX_DISTRIBUTION_GAUSSIAN
 
 #include "particles/ReferenceParticle.H"
+#include "particles/distribution/BoxMuller.H"
 #include "particles/distribution/mixin/beamellipse.H"
-
-#include <ablastr/constant.H>
 
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
@@ -141,47 +140,10 @@ namespace impactx::distribution
             amrex::RandomEngine const & engine
         ) const
         {
-            using namespace amrex::literals;
-            using ablastr::constant::math::pi;
-
-            amrex::ParticleReal ln1,u1,u2;
-
             // Generate three pairs of (optionally truncated) normal random variables using Box-Muller:
-            // The radius of a truncated pair is r^2 = -2 ln(w), with w = u1 + (1 - u1)*outside_cut
-            // uniform in (outside_cut, 1]. w >= u1 > 0 holds also if outside_cut rounds to 0.
-
-            u1 = amrex::RandomPositive(engine);
-            u2 = amrex::Random(engine);
-            if (m_outside_cutX > 0.0_prt) {
-                amrex::ParticleReal r2 = -2_prt * std::log(u1 + (1_prt - u1)*m_outside_cutX);
-                ln1 = std::sqrt(r2 / m_r2scaleX);
-            } else {
-                ln1 = std::sqrt(-2_prt*std::log(u1));
-            }
-            x = ln1 * std::cos(2_prt*pi*u2);
-            px = ln1 * std::sin(2_prt*pi*u2);
-
-            u1 = amrex::RandomPositive(engine);
-            u2 = amrex::Random(engine);
-            if (m_outside_cutY > 0.0_prt) {
-                amrex::ParticleReal r2 = -2_prt * std::log(u1 + (1_prt - u1)*m_outside_cutY);
-                ln1 = std::sqrt(r2 / m_r2scaleY);
-            } else {
-                ln1 = std::sqrt(-2_prt*std::log(u1));
-            }
-            y = ln1 * std::cos(2_prt*pi*u2);
-            py = ln1 * std::sin(2_prt*pi*u2);
-
-            u1 = amrex::RandomPositive(engine);
-            u2 = amrex::Random(engine);
-            if (m_outside_cutT > 0.0_prt) {
-                amrex::ParticleReal r2 = -2_prt * std::log(u1 + (1_prt - u1)*m_outside_cutT);
-                ln1 = std::sqrt(r2 / m_r2scaleT);
-            } else {
-                ln1 = std::sqrt(-2_prt*std::log(u1));
-            }
-            t = ln1 * std::cos(2_prt*pi*u2);
-            pt = ln1 * std::sin(2_prt*pi*u2);
+            box_muller::truncated_pair(x, px, m_outside_cutX, m_r2scaleX, engine);
+            box_muller::truncated_pair(y, py, m_outside_cutY, m_r2scaleY, engine);
+            box_muller::truncated_pair(t, pt, m_outside_cutT, m_r2scaleT, engine);
 
             // Transform to the beam ellipse:
             to_beam_ellipse(x, y, t, px, py, pt);

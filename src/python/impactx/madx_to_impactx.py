@@ -1620,7 +1620,9 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
             "The MAD-X BEAM command gives no valid reference particle: "
             f"{_beam_summary(madx_beam)}."
         )
-    ref_mass_MeV = madx_beam.mass * 1.0e3 if has_reference else None
+    # Normalizing an RF voltage only needs the mass, whatever else the beam gets wrong
+    has_mass = madx_beam.defined and madx_beam.mass > 0.0
+    ref_mass_MeV = madx_beam.mass * 1.0e3 if has_mass else None
     all_options = madx.getOptions()
     options = {
         # MAD-X options are numeric in parser context; bool() captures 0/1 and expressions.

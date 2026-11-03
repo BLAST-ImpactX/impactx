@@ -512,7 +512,34 @@ def test_read_beam_low_energy(tmp_path):
     assert ref.beta_gamma == pytest.approx(1.0e-3 / math.sqrt(1.0 - 1.0e-6), rel=rel)
 
 
-@pytest.mark.parametrize("beam_command", ["", "beam, mass=-1, charge=1;"])
+@pytest.mark.parametrize(
+    "beam_commands, mass_MeV",
+    [
+        ("beam, particle=proton, pc=sqrt(-1);", 938.27208816),
+        ("beam, particle=proton, beta=-1;", 938.27208816),
+        ("beam, particle=proton, energy=2;\nbeam->energy=0.5;", 938.27208816),
+        ("beam, particle=proton, energy=2;\nbeam->mass=3;", 3000.0),
+        ("beam, mass=2, charge=sqrt(-1), energy=3;", 2000.0),
+    ],
+)
+def test_rf_voltage_only_needs_the_mass(tmp_path, beam_commands, mass_MeV):
+    """A valid mass normalizes the voltage, also if the beam is no reference particle."""
+    madx_file = tmp_path / "rf.madx"
+    madx_file.write_text(
+        f"{beam_commands}\nrf: rfcavity, volt=5, freq=100;\ns1: line=(rf);\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        short_rf = _only(read_lattice(str(madx_file)), elements.ShortRF)
+
+    rel = 1.0e-14 if Config.precision != "SINGLE" else 1.0e-6
+    assert short_rf.V == pytest.approx(5.0 / mass_MeV, rel=rel)
+
+
+@pytest.mark.parametrize(
+    "beam_command",
+    ["", "beam, mass=-1, charge=1;", "beam, mass=sqrt(-1), charge=1, energy=3;"],
+)
 def test_rf_voltage_needs_the_reference_mass(tmp_path, beam_command):
     """A voltage cannot be normalized without a mass, unlike a cavity that is off."""
     madx_file = tmp_path / "rf.madx"

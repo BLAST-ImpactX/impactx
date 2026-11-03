@@ -629,3 +629,43 @@ def test_continuation_midline_raises():
     parser = MADXParser()
     with pytest.raises(MADXInputError, match="line-continuation"):
         parser.parse_string("A = 1 & 2;\n")
+
+
+@pytest.mark.parametrize(
+    "expression, expected",
+    [
+        ("2^3^2", 64.0),
+        ("2^2^3^2", 4096.0),
+        ("(2^3)^2", 64.0),
+        ("2^(3^2)", 512.0),
+        ("3*2^3^2", 192.0),
+        ("2^3^2*3", 192.0),
+        ("2^-1", 0.5),
+    ],
+)
+def test_power_left_associative(expression, expected):
+    """``^`` is left associative, as in MAD-X (polish_expr, src/mad_eval.c)."""
+    parser = MADXParser()
+    parser.parse_string(f"X = {expression};\n")
+    assert parser.getVariable("x") == pytest.approx(expected)
+
+
+def test_power_left_associative_deferred():
+    """Chained ``^`` through variables, a deferred expression and an element."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+A = 2;
+B = 3;
+NOW = A^B^2;
+LATER := A^B^2;
+QF: QUADRUPOLE, L=1.0, K1:=A^B^2;
+FODO: LINE=(QF);
+USE, SEQUENCE=FODO;
+A = 3;
+"""
+    )
+    assert parser.getVariable("now") == pytest.approx(64.0)
+    # the deferred expressions see the updated A: (3^3)^2
+    assert parser.getVariable("later") == pytest.approx(729.0)
+    assert parser.getBeamline()[0]["k1"] == pytest.approx(729.0)

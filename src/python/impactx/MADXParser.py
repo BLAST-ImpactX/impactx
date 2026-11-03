@@ -509,7 +509,7 @@ class MADXExpressionParser:
     Parser for MAD-X expressions.
 
     Implements operator precedence:
-    1. ^ (exponentiation, right associative)
+    1. ^ (exponentiation, left associative)
     2. * / (multiplication, division)
     3. + - (addition, subtraction)
     """
@@ -615,12 +615,12 @@ class MADXExpressionParser:
         return left
 
     def _parse_power(self) -> Expression:
-        """Parse power expression (^), right associative."""
+        """Parse power expression (^), left associative."""
         left = self._parse_unary()
 
-        if self._current().type == TokenType.CARET:
+        while self._current().type == TokenType.CARET:
             self._advance()
-            right = self._parse_power()  # Right associative
+            right = self._parse_unary()
             left = BinaryExpr("^", left, right)
 
         return left

@@ -142,6 +142,22 @@ coordinates, now raise an error, e.g., a ``RuntimeError`` in ``sim.add_particles
 - ``halo > 0`` with ``normalize_halo = 0``: for a beam without a halo, set ``halo = 0``.
 - ``halo < 1`` with ``normalize = 0``: for a beam without a core, set ``halo = 1``.
 
+MAD-X files: ``^`` is left associative
+""""""""""""""""""""""""""""""""""""""
+
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate chained powers in MAD-X files from the left, as
+MAD-X does: ``a^b^c`` is ``(a^b)^c``, e.g., ``2^3^2`` is 64.
+Previously, it was ``a^(b^c)``, which gave 512.
+
+**What to check in your MAD-X files:** expressions with more than one ``^`` and no parentheses around the exponent.
+Their values change. To keep the previous meaning, add the parentheses:
+
+.. code-block:: text
+
+   k = a^b^c;    ! now (a^b)^c
+   k = a^(b^c);  ! previous meaning of a^b^c
+
 New in this release
 """""""""""""""""""
 

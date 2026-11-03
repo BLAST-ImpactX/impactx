@@ -216,7 +216,28 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr_bins
 
-      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the CSR calculations, at least ``2`` (default: ``150``).
+
+   .. py:property:: short_range_wakefields
+
+      Enable (``True``) or disable (``False``) Short-range wakefield calculations (default: ``False``).
+
+      Currently, this uses a 1D model based on user-specified tabulated single-particle wake functions.
+
+      .. note::
+
+         Short-range wakefield effects are only calculated for ``RFCavity`` elements, and only for the longitudinal wake.
+
+         Short-range wakefield effects are only supported with particle tracking: ``track_envelope`` and ``track_reference`` raise a ``RuntimeError``.
+
+         Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
+
+   .. py:property:: wake_bins
+
+      The number of bins along the longitudinal direction used for the short-range wakefield calculations, at least ``2`` (default: ``150``).
+
+      The wakefield is sampled on the bin edges only, so a bin has to be short against the shortest length scale of the wakefield, which is not checked.
+      Coarser bins overestimate the kick of a wakefield that decays with the separation.
 
    .. py:property:: isr
 
@@ -2569,7 +2590,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, z_data=None, wake_x_data=None, wake_y_data=None, wake_z_data=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -2594,6 +2615,10 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
    :param field_on_axis: array of on-axis electric field Ez values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
+   :param z_data: optional longitudinal positions of the single-particle wake function in m, ascending from 0 in uniform steps; other positions are not yet implemented and raise a ``RuntimeError``; the wake function is zero beyond the last position
+   :param wake_x_data: optional horizontal single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_y_data: optional vertical single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_z_data: optional longitudinal single-particle wake function data in V/(C m), positive where it decelerates a trailing particle
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

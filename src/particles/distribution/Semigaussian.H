@@ -131,13 +131,13 @@ namespace impactx::distribution
 
             // Generate three normal random variables (px,py,pt) using Box-Muller:
 
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             ln1 = std::sqrt(-2_prt*std::log(u1));
             px = ln1 * std::cos(2_prt*pi*u2);
             py = ln1 * std::sin(2_prt*pi*u2);
 
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             ln1 = std::sqrt(-2_prt*std::log(u1));
             pt = ln1 * std::cos(2_prt*pi*u2);

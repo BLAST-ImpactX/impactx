@@ -131,7 +131,7 @@ namespace impactx::distribution
             // Sample and transform to define (t,pt):
             t = amrex::Random(engine);
             t = 2.0_prt*(t-0.5_prt);
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             ln1 = std::sqrt(-2_prt*std::log(u1));
             pt = ln1 * std::cos(2_prt*pi*u2);

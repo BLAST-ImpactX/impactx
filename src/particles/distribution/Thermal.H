@@ -605,17 +605,17 @@ namespace distribution
             bool const is_halo = uhalo < m_w;
 
             // Generate six standard normal random variables using Box-Muller:
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             ln1 = std::sqrt(-2_prt*std::log(u1));
             g1 = ln1 * std::cos(2_prt*pi*u2);
             g2 = ln1 * std::sin(2_prt*pi*u2);
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             ln1 = std::sqrt(-2_prt*std::log(u1));
             g3 = ln1 * std::cos(2_prt*pi*u2);
             g4 = ln1 * std::sin(2_prt*pi*u2);
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             ln1 = std::sqrt(-2_prt*std::log(u1));
             g5 = ln1 * std::cos(2_prt*pi*u2);

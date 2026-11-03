@@ -15,6 +15,7 @@
 
 #include <ablastr/constant.H>
 
+#include <AMReX_Algorithm.H>
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
@@ -111,7 +112,8 @@ namespace impactx::distribution
             if (cut > 0.0_prt) {
                 amrex::ParticleReal f = cut*cut/2.0_prt;
                 amrex::ParticleReal ef = std::exp(-f);
-                inside_cut = 1_prt - ef;
+                // < 1 also if 1 - ef rounds to 1: log(1 - u*inside_cut) is finite for u in (0,1]
+                inside_cut = amrex::min(1_prt - ef, std::nextafter(1_prt, 0_prt));
                 r2scale = 1_prt - f*ef/(1_prt - ef);
             } else {
                 // not used
@@ -148,7 +150,7 @@ namespace impactx::distribution
 
             // Generate three pairs of (optionally truncated) normal random variables using Box-Muller:
 
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             if (m_cutX > 0.0_prt) {
                 amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutX);
@@ -159,7 +161,7 @@ namespace impactx::distribution
             x = ln1 * std::cos(2_prt*pi*u2);
             px = ln1 * std::sin(2_prt*pi*u2);
 
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             if (m_cutY > 0.0_prt) {
                 amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutY);
@@ -170,7 +172,7 @@ namespace impactx::distribution
             y = ln1 * std::cos(2_prt*pi*u2);
             py = ln1 * std::sin(2_prt*pi*u2);
 
-            u1 = amrex::Random(engine);
+            u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
             if (m_cutT > 0.0_prt) {
                 amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutT);

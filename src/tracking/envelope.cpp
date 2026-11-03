@@ -135,6 +135,16 @@ namespace impactx
         }
         AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR effects are not yet implemented for envelope tracking.");
 
+        bool short_range_wakefields = false;
+        pp_algo.query("short_range_wakefields", short_range_wakefields);
+        if (short_range_wakefields)
+        {
+            throw std::runtime_error(
+                "Short-range wakefields are not yet implemented for envelope tracking. "
+                "Please set the short_range_wakefields option to false."
+            );
+        }
+
         // whether any collective effect is active: only then is a kick applied per slice
         //   At zero intensity the kick leaves the covariance matrix unchanged, so it is
         //   skipped entirely: that is what the warning above announces, and it keeps the

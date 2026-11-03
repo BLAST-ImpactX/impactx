@@ -127,8 +127,8 @@ def test_dipedge_modify_ref_part_true():
     This tests the application of longitudinal particle boundary conditions.
     """
     edge_angle = math.pi / 8.0
-    rc = 10.0
-    g = 1.0e-2
+    rc = 1.0
+    g = 0.1
 
     K0 = np.pi**2 / 6.0
     c2 = (1.0 / np.cos(edge_angle)) ** 3 * np.sin(edge_angle) / 2.0 * g**2 / rc**2 * K0
@@ -157,7 +157,7 @@ def test_dipedge_modify_ref_part_true():
 
     # access reference particle
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py, ref.t])
-    vec_ref_pred = [x_shift, px_shift, 0, 0, t_shift]
+    vec_ref_pred = [x_shift, ref.beta_gamma * px_shift, 0, 0, t_shift]
     vec_ref_on_shell = (
         (ref.px) ** 2 + (ref.py) ** 2 + (ref.pz) ** 2 - (ref.pt) ** 2 + 1.0
     )

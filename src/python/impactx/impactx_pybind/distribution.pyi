@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import typing
 
+import impactx.impactx_pybind
+
 __all__: list[str] = [
     "Empty",
     "Gaussian",
@@ -182,6 +184,16 @@ class Thermal:
         A stationary thermal or bithermal distribution
 
         R. D. Ryne, J. Qiang, and A. Adelmann, in Proc. EPAC2004, pp. 1942-1944 (2004)
+        """
+    def radial_cdf(
+        self,
+        bunch_charge: typing.SupportsFloat | typing.SupportsIndex,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> tuple[list[float], list[float], list[float]]:
+        """
+        Tabulated radial CDFs that the particle radius is sampled from, on uniform
+        bins in radius: (r, core, halo), with the radius r in m in the beam rest
+        frame. A population with zero weight is never sampled and its table is zero.
         """
 
 class Triangle:

@@ -42,7 +42,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Setup Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: "3.11"
 
@@ -161,7 +161,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Setup Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: "3.13"
 
@@ -239,7 +239,7 @@ jobs:
         python3 examples/fodo/run_fodo.py
 
     - name: Python CodSpeedHQ Benchmarks
-      uses: CodSpeedHQ/action@821a40cd6c80e3cfe387caf55668287addd808da # v5.5.0
+      uses: CodSpeedHQ/action@78102a468f96d8e0ccb92d0ec49425753fc42062 # v5.6.0
       env:
         OMP_NUM_THREADS: 1
         IS_CODESPEED_CPU_SIMULATION: 1
@@ -256,7 +256,7 @@ jobs:
         # tens of percent while the instruction count moves by less than 0.1%.
         cycle-estimation: false
         exclude-allocations: true
-        run: pytest tests/python/test_benchmark_elements.py tests/python/test_benchmark_space_charge.py tests/python/test_benchmark_diagnostics.py --codspeed
+        run: pytest tests/python/test_benchmark_elements.py tests/python/test_benchmark_space_charge.py tests/python/test_benchmark_diagnostics.py tests/python/test_benchmark_distributions.py --codspeed
 
     - name: validate created openPMD files
       run: find build -name *.h5 | xargs -n1 -I{} openPMD_check_h5 -i {}
@@ -292,7 +292,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Setup Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: "3.12"
 

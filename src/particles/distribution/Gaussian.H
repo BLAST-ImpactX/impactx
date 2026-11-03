@@ -11,6 +11,7 @@
 #define IMPACTX_DISTRIBUTION_GAUSSIAN
 
 #include "particles/ReferenceParticle.H"
+#include "particles/distribution/mixin/beamellipse.H"
 
 #include <ablastr/constant.H>
 
@@ -23,6 +24,7 @@
 namespace impactx::distribution
 {
     struct Gaussian
+    : public mixin::BeamEllipse
     {
         /** A Gaussian distribution
          *
@@ -63,11 +65,13 @@ namespace impactx::distribution
             amrex::ParticleReal cuty=0.0,
             amrex::ParticleReal cutt=0.0
         )
-        : m_lambdaX(lambdax), m_lambdaY(lambday), m_lambdaT(lambdat), m_lambdaPx(lambdapx), m_lambdaPy(lambdapy),
-          m_lambdaPt(lambdapt), m_muxpx(muxpx), m_muypy(muypy), m_mutpt(mutpt), m_meanx(meanx), m_meany(meany),
-          m_meant(meant), m_meanpx(meanpx), m_meanpy(meanpy), m_meanpt(meanpt), m_dispx(dispx), m_disppx(disppx),
-          m_dispy(dispy), m_disppy(disppy), m_cutX(cutx), m_cutY(cuty), m_cutT(cutt)
+        : BeamEllipse(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx, muypy, mutpt,
+                      meanx, meany, meant, meanpx, meanpy, meanpt, dispx, disppx, dispy, disppy),
+          m_cutX(cutx), m_cutY(cuty), m_cutT(cutt)
         {
+            truncation_constants(m_cutX, m_inside_cutX, m_r2scaleX);
+            truncation_constants(m_cutY, m_inside_cutY, m_r2scaleY);
+            truncation_constants(m_cutT, m_inside_cutT, m_r2scaleT);
         }
 
         /** Initialize the distribution.
@@ -88,6 +92,32 @@ namespace impactx::distribution
         void
         finalize ()
         {
+        }
+
+        /** Constants of the radius in a phase plane, for a Gaussian truncated at a cut
+         *
+         * @param[in] cut dimensionless cut parameter (number of sigma); 0 means no truncation
+         * @param[out] inside_cut fraction of the untruncated distribution inside the cut
+         * @param[out] r2scale variance of the truncated distribution, relative to the untruncated one
+         */
+        static void truncation_constants (
+            amrex::ParticleReal cut,
+            amrex::ParticleReal & inside_cut,
+            amrex::ParticleReal & r2scale
+        )
+        {
+            using namespace amrex::literals;
+
+            if (cut > 0.0_prt) {
+                amrex::ParticleReal f = cut*cut/2.0_prt;
+                amrex::ParticleReal ef = std::exp(-f);
+                inside_cut = 1_prt - ef;
+                r2scale = 1_prt - f*ef/(1_prt - ef);
+            } else {
+                // not used
+                inside_cut = 1_prt;
+                r2scale = 1_prt;
+            }
         }
 
         /** Return 1 6D particle coordinate
@@ -115,18 +145,14 @@ namespace impactx::distribution
             using ablastr::constant::math::pi;
 
             amrex::ParticleReal ln1,u1,u2;
-            amrex::ParticleReal root,a1,a2;
 
             // Generate three pairs of (optionally truncated) normal random variables using Box-Muller:
 
             u1 = amrex::Random(engine);
             u2 = amrex::Random(engine);
             if (m_cutX > 0.0_prt) {
-                amrex::ParticleReal f = m_cutX*m_cutX/2.0_prt;
-                amrex::ParticleReal ef = std::exp(-f);
-                amrex::ParticleReal r2scale = 1_prt - f*ef/(1_prt - ef);
-                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*(1_prt - ef));
-                ln1 = std::sqrt(r2 / r2scale);
+                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutX);
+                ln1 = std::sqrt(r2 / m_r2scaleX);
             } else {
                 ln1 = std::sqrt(-2_prt*std::log(u1));
             }
@@ -136,11 +162,8 @@ namespace impactx::distribution
             u1 = amrex::Random(engine);
             u2 = amrex::Random(engine);
             if (m_cutY > 0.0_prt) {
-                amrex::ParticleReal f = m_cutY*m_cutY/2.0_prt;
-                amrex::ParticleReal ef = std::exp(-f);
-                amrex::ParticleReal r2scale = 1_prt - f*ef/(1_prt - ef);
-                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*(1_prt - ef));
-                ln1 = std::sqrt(r2 / r2scale);
+                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutY);
+                ln1 = std::sqrt(r2 / m_r2scaleY);
             } else {
                 ln1 = std::sqrt(-2_prt*std::log(u1));
             }
@@ -150,56 +173,25 @@ namespace impactx::distribution
             u1 = amrex::Random(engine);
             u2 = amrex::Random(engine);
             if (m_cutT > 0.0_prt) {
-                amrex::ParticleReal f = m_cutT*m_cutT/2.0_prt;
-                amrex::ParticleReal ef = std::exp(-f);
-                amrex::ParticleReal r2scale = 1_prt - f*ef/(1_prt - ef);
-                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*(1_prt - ef));
-                ln1 = std::sqrt(r2 / r2scale);
+                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutT);
+                ln1 = std::sqrt(r2 / m_r2scaleT);
             } else {
                 ln1 = std::sqrt(-2_prt*std::log(u1));
             }
             t = ln1 * std::cos(2_prt*pi*u2);
             pt = ln1 * std::sin(2_prt*pi*u2);
 
-            // Transform to produce the desired second moments/correlations:
-            root = std::sqrt(1.0_prt-m_muxpx*m_muxpx);
-            a1 = m_lambdaX * x / root;
-            a2 = m_lambdaPx * (-m_muxpx * x / root + px);
-            x = a1;
-            px = a2;
-            root = std::sqrt(1.0_prt-m_muypy*m_muypy);
-            a1 = m_lambdaY * y / root;
-            a2 = m_lambdaPy * (-m_muypy * y / root + py);
-            y = a1;
-            py = a2;
-            root = std::sqrt(1.0_prt-m_mutpt*m_mutpt);
-            a1 = m_lambdaT * t / root;
-            a2 = m_lambdaPt * (-m_mutpt * t / root + pt);
-            t = a1;
-            pt = a2;
-
-            // Apply dispersive correlations
-            x = x - m_dispx * pt;
-            px = px - m_disppx * pt;
-            y = y - m_dispy * pt;
-            py = py - m_disppy * pt;
-
-            // Apply centroid translation
-            x = x + m_meanx;
-            px = px + m_meanpx;
-            y = y + m_meany;
-            py = py + m_meanpy;
-            t = t + m_meant;
-            pt = pt + m_meanpt;
+            // Transform to the beam ellipse:
+            to_beam_ellipse(x, y, t, px, py, pt);
         }
 
-        amrex::ParticleReal m_lambdaX, m_lambdaY, m_lambdaT;  //! related position axis intercepts (length) of the phase space ellipse
-        amrex::ParticleReal m_lambdaPx, m_lambdaPy, m_lambdaPt;  //! related momentum axis intercepts of the phase space ellipse
-        amrex::ParticleReal m_muxpx, m_muypy, m_mutpt;  //! correlation length-momentum
-        amrex::ParticleReal m_meanx, m_meany, m_meant;  //! spatial coordinates of centroid offset
-        amrex::ParticleReal m_meanpx, m_meanpy, m_meanpt;  //! momentum coordinates of centroid offset
-        amrex::ParticleReal m_dispx, m_disppx, m_dispy, m_disppy;  //! dispersion and its derivative
         amrex::ParticleReal m_cutX, m_cutY, m_cutT;  //! dimensionless cutoff for each phase plane; 0 means no cut
+
+    private:
+        // constants that are independent of the individually sampled particle,
+        // computed from the parameters above in the constructor
+        amrex::ParticleReal m_inside_cutX, m_inside_cutY, m_inside_cutT;  //! fraction of the untruncated distribution inside the cut
+        amrex::ParticleReal m_r2scaleX, m_r2scaleY, m_r2scaleT;  //! variance of the truncated distribution, relative to the untruncated one
     };
 
 } // namespace impactx::distribution

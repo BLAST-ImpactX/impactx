@@ -32,6 +32,13 @@ The ``nonlinear`` DipEdge model is unchanged, and is now an alias for ``nonlinea
 
 The new linear default model ``linear_slac75`` was chosen to match the commonly used MAD-X model.
 
+``DipEdge``: reference particle deflection with ``modify_ref_part = True``
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+With ``modify_ref_part = True``, the ``nonlinear`` :py:class:`~impactx.elements.DipEdge` model now deflects the reference particle by the angle by which it deflects a beam particle on the reference orbit with ``modify_ref_part = False``.
+Previously, the sine of the reference deflection angle had an extra factor of :math:`1/(\beta\gamma)`.
+This changes the reference trajectory, and the beam coordinates relative to it, downstream of such an edge.
+
 
 ``Programmable``: ``nslice`` and ``name`` moved to the 3rd and 4th argument
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -130,6 +137,19 @@ MAD-X files take the reference energy from the first of ``ENERGY``, ``PC``, ``GA
 **What to check in your scripts:** remove workarounds that set the energy after loading.
 A ``BEAM`` command without a MAD-X ``PARTICLE`` needs ``MASS`` and ``CHARGE``.
 Invalid values, and a later ``BEAM`` command whose particle mass is not below the energy, raise a ``MADXInputError``.
+
+``Thermal``: invalid parameters raise an error
+""""""""""""""""""""""""""""""""""""""""""""""
+
+:py:class:`~impactx.distribution.Thermal` parameters without a stationary radial density, which mostly gave NaN
+coordinates, now raise an error, e.g., a ``RuntimeError`` in ``sim.add_particles``.
+
+**What to check in your scripts and inputs files:**
+
+- ``normalize`` or ``normalize_halo`` for which the space charge exceeds the focusing on the axis makes the radial
+  density diverge: reduce it below the limit in the error message.
+- ``halo > 0`` with ``normalize_halo = 0``: for a beam without a halo, set ``halo = 0``.
+- ``halo < 1`` with ``normalize = 0``: for a beam without a core, set ``halo = 1``.
 
 New in this release
 """""""""""""""""""

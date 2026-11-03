@@ -2535,6 +2535,20 @@ See there ``nslice`` option on lattice elements for slicing.
           Number of bins (grid points) for longitudinal line density deposition, at least ``2``.
           The grid points are equidistant, with the first and the last on the ends of the bunch.
 
+.. pp:param:: algo.space_charge.sort_interval
+    :type: ``integer``
+    :optional:
+    :default: ``10`` with CUDA and HIP, otherwise ``0``
+
+    Sort particles in memory every this many space charge steps, ``0`` to disable.
+    This applies to the space charge models ``2D``, ``2p5D`` and ``3D`` in particle tracking mode.
+
+    With CUDA and HIP, particles are sorted with ``SortParticlesForDeposition`` from AMReX, which speeds up the charge deposition and the field gather.
+    Sorting much more often than the default can cost more than it saves.
+    With other backends, particles are sorted by cell. This is off by default, because on CPU it costs more than it saves.
+
+    Sorting changes the order of particles in memory, but not the physics.
+
 .. pp:param:: amr.n_cell
     :type: ``3 integers``
     :optional:

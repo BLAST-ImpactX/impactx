@@ -150,6 +150,11 @@ Collective Effects & Overall Simulation Parameters
 
       Enable or disable the longitudinal space charge kick (default: ``True``).
 
+   .. py:property:: space_charge_sort_interval
+
+      Sort particles in memory every this many space charge steps, ``0`` to disable (default: ``10`` with CUDA and HIP, otherwise ``0``).
+      See :pp:param:`algo.space_charge.sort_interval`.
+
    .. py:property:: poisson_solver
 
       The numerical solver to solve the Poisson equation when calculating space charge effects.

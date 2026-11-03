@@ -10,6 +10,15 @@ requirements. Newest release first.
 26.11
 -----
 
+Particle order on GPU with space charge
+"""""""""""""""""""""""""""""""""""""""
+
+With CUDA and HIP, particles are now sorted in memory every 10 steps of the ``2D``, ``2p5D`` and ``3D`` space charge models.
+
+**What to check in your scripts:** do not rely on the position of a particle in the particle arrays or in ``to_df()``.
+Use the particle ``idcpu`` to identify particles instead.
+Set :py:attr:`~impactx.ImpactX.space_charge_sort_interval` to ``0`` to turn sorting off.
+
 ``DipEdge``: default linear model changed to ``linear_slac75``
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 

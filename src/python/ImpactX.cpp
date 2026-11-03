@@ -475,6 +475,20 @@ void init_ImpactX (py::module& m)
             },
             "Number of longitudinal bins (grid points) for 2.5D space charge calculation, at least 2 (default: ``100``)."
         )
+        .def_property("space_charge_sort_interval",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo.space_charge", "sort_interval");
+            },
+            [](ImpactX & /* ix */, int const sort_interval) {
+                if (sort_interval < 0) {
+                    throw std::runtime_error("space_charge_sort_interval must not be negative");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("sort_interval", sort_interval);
+            },
+            "Sort particles in memory every this many space charge steps, ``0`` to disable "
+            "(default: ``10`` with CUDA and HIP, otherwise ``0``)."
+        )
         .def_property("space_charge_apply_longitudinal_kick",
              [](ImpactX & /* ix */) {
                  return detail::get_or_throw<bool>("algo.space_charge", "apply_longitudinal_kick");

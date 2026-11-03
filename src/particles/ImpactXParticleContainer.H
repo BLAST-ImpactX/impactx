@@ -293,6 +293,15 @@ namespace impactx
         DepositCharge (std::unordered_map<int, amrex::MultiFab> & rho,
                        amrex::Vector<amrex::IntVect> const & ref_ratio);
 
+        /** Sort the particles in memory for a faster charge deposition and field gather
+         *
+         * Particles are only sorted every algo.space_charge.sort_interval calls, starting with
+         * the first call. This must be called right after Redistribute, which defines the
+         * particle tiles of all boxes: the sort functions of AMReX access all of them.
+         */
+        void
+        SortForSpaceCharge ();
+
         /** Get the current coordinate system of particles in this container */
         CoordSystem
         GetCoordSystem () const;
@@ -349,6 +358,9 @@ namespace impactx
 
         //! the particle shape
         std::optional<int> m_particle_shape;
+
+        //! how often SortForSpaceCharge was called
+        int m_num_sort_for_space_charge_calls = 0;
 
         //! a non-owning reference to lost particles, i.e., due to apertures
         ImpactXParticleContainer* m_particles_lost = nullptr;

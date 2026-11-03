@@ -211,38 +211,22 @@ coordinates, now raise an error, e.g., a ``RuntimeError`` in ``sim.add_particles
 - ``halo > 0`` with ``normalize_halo = 0``: for a beam without a halo, set ``halo = 0``.
 - ``halo < 1`` with ``normalize = 0``: for a beam without a core, set ``halo = 1``.
 
-MAD-X files: ``^`` is left associative
-""""""""""""""""""""""""""""""""""""""
+MAD-X files: evaluation of ``^``
+""""""""""""""""""""""""""""""""
 
 :py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
-:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate chained powers in MAD-X files from the left, as
-MAD-X does: ``a^b^c`` is ``(a^b)^c``, e.g., ``2^3^2`` is 64.
-Previously, it was ``a^(b^c)``, which gave 512.
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate powers in MAD-X files as MAD-X does: ``a^b^c`` is
+``(a^b)^c``, and ``-a^b`` is ``-(a^b)``.
 
-**What to check in your MAD-X files:** expressions with more than one ``^`` and no parentheses around the exponent.
-Their values change. To keep the previous meaning, add the parentheses:
+**What to check in your MAD-X files:** more than one ``^`` in an expression, and a sign directly before a power, also after
+another operator as in ``a*-b^2`` or ``a--b^2``. A subtraction, ``a-b^2``, is not affected.
+To keep the previous meaning, add parentheses:
 
 .. code-block:: text
 
-   k = a^b^c;    ! now (a^b)^c
-   k = a^(b^c);  ! previous meaning of a^b^c
-
-MAD-X files: a sign applies to the whole power
-""""""""""""""""""""""""""""""""""""""""""""""
-
-:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
-:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate ``^`` before a sign in MAD-X files, as MAD-X does:
-``-a^b`` is ``-(a^b)`` and ``-a^b^c`` is ``-((a^b)^c)``, e.g., ``-2^2`` is -4.
-Previously, the sign belonged to the first operand, ``(-a)^b``, which gave 4.
-
-**What to check in your MAD-X files:** a sign directly before an operand that is raised to a power, e.g., after ``=``,
-``(``, ``,``, ``*`` or ``/``. Their values change, e.g., an even power flips its sign. A subtraction, ``a-b^2``, is not
-affected. To keep the previous meaning, add the parentheses:
-
-.. code-block:: text
-
-   k = -a^2;    ! now -(a^2)
-   k = (-a)^2;  ! previous meaning of -a^2
+   k = a^(b^c);     ! previously a^b^c:   2^3^2 was 512, now 64
+   k = (-a)^b;      ! previously -a^b:    -2^2 was 4, now -4
+   k = a^((-b)^c);  ! previously a^-b^c:  2^-3^2 was 512, now 0.015625
 
 New in this release
 """""""""""""""""""

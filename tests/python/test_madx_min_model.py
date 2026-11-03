@@ -584,14 +584,47 @@ def test_read_lattice_uses_the_beam_of_the_requested_line(tmp_path, argument):
         assert _types(read_lattice(str(madx_file), **{argument: "b"})) == ["Drift"]
 
 
-def test_quoted_sequence_name_in_beam_and_use(tmp_path):
-    """Both keep the case: USE skips the name with a warning, and the file still loads."""
-    madx_file = tmp_path / "quoted.madx"
+@pytest.mark.parametrize(
+    "use_commands, name",
+    [
+        ("use, sequence=food;", "food"),
+        ("use, sequence=fodo;\nuse, sequence=food;", "food"),
+        ('use, sequence="FODO";', "FODO"),
+    ],
+)
+def test_use_of_an_unknown_sequence_raises_in_the_lattice_import(
+    tmp_path, use_commands, name
+):
+    """Stricter than MAD-X, which warns: a typo in USE must not load another line."""
+    madx_file = tmp_path / "use.madx"
     madx_file.write_text(
         "d1: drift, l=1;\n"
-        "s1: line=(d1);\n"
-        'beam, sequence="S1", particle=proton, energy=2;\n'
-        'use, sequence="S1";\n'
+        "fodo: line=(d1);\n"
+        "beam, particle=proton, energy=2;\n"
+        f"{use_commands}\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(MADXInputError, match=f"sequence '{name}' is not defined"):
+            read_lattice(str(madx_file))
+
+        # a requested line does not depend on it, and neither does the reference particle
+        assert _types(read_lattice(str(madx_file), line="fodo")) == ["Drift"]
+        ref = RefPart()
+        read_beam(ref, str(madx_file))
+    rel = 1.0e-14 if Config.precision != "SINGLE" else 1.0e-6
+    assert ref.mass_MeV == pytest.approx(938.27208816, rel=rel)
+
+
+def test_use_of_a_known_sequence_replaces_an_unknown_one(tmp_path):
+    """Only the last USE counts, also for a sequence that an earlier one could not find."""
+    madx_file = tmp_path / "use.madx"
+    madx_file.write_text(
+        "d1: drift, l=1;\n"
+        "fodo: line=(d1);\n"
+        "beam, particle=proton, energy=2;\n"
+        "use, sequence=food;\n"
+        "use, sequence=fodo;\n"
     )
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

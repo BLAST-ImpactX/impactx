@@ -148,13 +148,14 @@ remove workarounds that set the energy after loading.
    ! now errors
    BEAM, MASS=2, CHARGE=1;         ! the 1 GeV default is below the mass: add ENERGY
    BEAM, PARTICLE=PROTN, PC=2;     ! an unknown particle needs a MASS
-   BEAM, PARTICLE="PROTON", PC=2;  ! a quoted name keeps its case
+   BEAM, PARTICLE="PROTON", PC=2;  ! a quoted name keeps its case, also in SEQUENCE and USE
    BEAM, ENERGIE=3;                ! an unknown parameter
    BEAM, ENERGY=2 PC=3;            ! a number without a comma
+   USE, SEQUENCE=FOOD;             ! an unknown sequence, in KnownElementsList.load_file
 
 ``RefPart.load_file`` also raises without ``BEAM`` or a valid reference particle. ``KnownElementsList.load_file`` raises for ``USE`` without ``BEAM``, an ``RFCAVITY`` with ``VOLT`` but no valid mass, and a NaN or infinite attribute of an element in use, and warns otherwise.
 
-Also as in MAD-X: ``USE`` skips an unknown sequence, including a quoted name in another case, ``CIRC`` sets ``FREQ0``, a parameter without a value is zero, a label does not change a command, ``beam->energy`` reads and sets ``BEAM`` parameters, ``RESBEAM`` resets a beam, redefining a constant warns, math outside of its domain gives NaN or infinity, and ``FRAC(-2.5)`` is -0.5.
+Also as in MAD-X: ``CIRC`` sets ``FREQ0``, a parameter without a value is zero, a label does not change a command, ``beam->energy`` reads and sets ``BEAM`` parameters, ``RESBEAM`` resets a beam, redefining a constant warns, math outside of its domain gives NaN or infinity, and ``FRAC(-2.5)`` is -0.5.
 Masses now use the MAD-X constants, a change of at most 4 parts in :math:`10^8`.
 
 ``Thermal``: invalid parameters raise an error

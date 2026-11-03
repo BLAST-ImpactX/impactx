@@ -991,6 +991,8 @@ class EvaluationContext:
         ] = {}  # name -> (params, body_text)
         self.beams: dict[Optional[str], Beam] = {None: Beam()}  # key=sequence name
         self.selected_sequence: Optional[str] = None
+        # The error for the last USE, if it named an unknown sequence
+        self.unknown_use_error: Optional[MADXInputError] = None
 
         # Tracking for warning messages (updated by the parser)
         self.current_file: Optional[str] = None
@@ -2717,8 +2719,12 @@ class MADXParser:
                     name = self._advance().value
                     if name in self.context.lines:
                         self.context.selected_sequence = name
+                        self.context.unknown_use_error = None
                     else:
                         self.context._warn(f"unknown sequence skipped: {name}")
+                        self.context.unknown_use_error = self.context._error(
+                            f"USE: sequence '{name}' is not defined"
+                        )
             else:
                 if self._current().type == TokenType.EQUALS:
                     self._advance()
@@ -2991,6 +2997,12 @@ class MADXParser:
             raise MADXInputError(
                 "Specify at most one of 'line_name' or 'sequence_name'."
             )
+
+        # Stricter than MAD-X, which warns and continues without this sequence: a typo
+        # in USE must not expand another line.
+        if line_name is None and sequence_name is None:
+            if self.context.unknown_use_error is not None:
+                raise self.context.unknown_use_error
 
         selected = sequence_name or line_name or self.context.selected_sequence
         if selected is not None:

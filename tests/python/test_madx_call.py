@@ -1351,3 +1351,149 @@ def test_continuation_midline_raises():
     parser = MADXParser()
     with pytest.raises(MADXInputError, match="line-continuation"):
         parser.parse_string("A = 1 & 2;\n")
+
+
+def tight_approx(expected):
+    """Agree to rounding: ``rel`` alone keeps the default ``abs`` of 1e-12."""
+    return pytest.approx(expected, rel=1e-15, abs=0.0)
+
+
+@pytest.mark.parametrize(
+    "expression, expected",
+    [
+        ("2^3^2", 64.0),
+        ("2^2^3^2", 4096.0),
+        ("(2^3)^2", 64.0),
+        ("2^(3^2)", 512.0),
+        ("3*2^3^2", 192.0),
+        ("2^3^2*3", 192.0),
+        ("2^(-1)", 0.5),
+        ("-2^2", -4.0),
+        ("-2^3^2", -64.0),
+        ("-2^2*3", -12.0),
+        ("-2^2+1", -3.0),
+        ("(-2^2)", -4.0),
+        ("2*(-3^2)", -18.0),
+        ("sqrt(-2^2+8)", 2.0),
+        ("-2^0.5", -1.4142135623730951),
+        ("(-2)^2", 4.0),
+        ("-(2^2)", -4.0),
+        ("1-2^2", -3.0),
+    ],
+)
+def test_power_as_in_madx(expression, expected):
+    """``^`` is left associative and binds tighter than a sign, as in MAD-X.
+
+    See polish_expr and polish_value in src/mad_eval.c. The expected values
+    are from MAD-X 5.09.03.
+    """
+    parser = MADXParser()
+    parser.parse_string(f"X = {expression};\n")
+    assert parser.getVariable("x") == tight_approx(expected)
+
+
+@pytest.mark.parametrize(
+    "expression, expected",
+    [
+        ("2^-1", 0.5),
+        ("2^-1^2", 0.25),
+        ("-2^-2", -0.25),
+        ("3*-2", -6.0),
+        ("3*-2^2", -12.0),
+        ("2--3", 5.0),
+        ("2+-3", -1.0),
+    ],
+)
+def test_signed_operand_impactx_only(expression, expected):
+    """ImpactX-only leniency: a sign directly after a binary operator.
+
+    MAD-X rejects these as illegal expressions (loc_expr, src/mad_expr.c), so
+    there is no MAD-X value to compare with. The sign belongs to the operand
+    that follows it: ``a^-b^c`` is ``(a^(-b))^c`` and ``a*-b^c`` is
+    ``a*(-(b^c))``.
+    """
+    parser = MADXParser()
+    parser.parse_string(f"X = {expression};\n")
+    assert parser.getVariable("x") == tight_approx(expected)
+
+
+def test_power_left_associative_deferred():
+    """Chained ``^`` through variables, a deferred expression and an element."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+A = 2;
+B = 3;
+NOW = A^B^2;
+LATER := A^B^2;
+QF: QUADRUPOLE, L=1.0, K1:=A^B^2;
+FODO: LINE=(QF);
+USE, SEQUENCE=FODO;
+A = 3;
+"""
+    )
+    assert parser.getVariable("now") == tight_approx(64.0)
+    # the deferred expressions see the updated A: (3^3)^2
+    assert parser.getVariable("later") == tight_approx(729.0)
+    assert parser.getBeamline()[0]["k1"] == tight_approx(729.0)
+
+
+def test_power_sign_deferred():
+    """A deferred ``-a^2`` follows ``a`` and stays negative, as in MAD-X."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+A = 2;
+X := -A^2;
+AT2 = X;
+A = 3;
+AT3 = X;
+"""
+    )
+    assert parser.getVariable("at2") == tight_approx(-4.0)
+    assert parser.getVariable("at3") == tight_approx(-9.0)
+    assert parser.getVariable("x") == tight_approx(-9.0)
+
+
+def test_power_sign_element_parameter():
+    """A sign in an element parameter applies to the whole power, as in MAD-X."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+QF: QUADRUPOLE, L=1.0, K1=-2^2;
+FODO: LINE=(QF);
+USE, SEQUENCE=FODO;
+"""
+    )
+    assert parser.getBeamline()[0]["k1"] == tight_approx(-4.0)
+
+
+def test_power_sign_condition():
+    """IF and WHILE conditions use the same grammar, as in MAD-X: -2^2 is -4."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+IF (-2^2 < 0) { Y1 = 1; } ELSE { Y1 = 2; };
+IF (-2^2 == -4) { Y2 = 1; } ELSE { Y2 = 2; };
+IF (-2^2 > 0) { Y3 = 1; } ELSEIF (-2^2 < 0) { Y3 = 3; } ELSE { Y3 = 2; };
+N = 0;
+WHILE (-(N+1)^2 > -10) { N = N + 1; };
+"""
+    )
+    assert parser.getVariable("y1") == 1.0
+    assert parser.getVariable("y2") == 1.0
+    assert parser.getVariable("y3") == 3.0
+    assert parser.getVariable("n") == 3.0
+
+
+def test_power_sign_add2expr():
+    """A quoted ``ADD2EXPR`` expression uses the same grammar as other input."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+A = 2;
+X := 1;
+ADD2EXPR, VAR=X, EXPR="-A^2";
+"""
+    )
+    assert parser.getVariable("x") == tight_approx(-3.0)

@@ -510,9 +510,14 @@ class MADXExpressionParser:
     Parser for MAD-X expressions.
 
     Implements operator precedence:
-    1. ^ (exponentiation, right associative)
-    2. * / (multiplication, division)
-    3. + - (addition, subtraction)
+    1. ^ (exponentiation, left associative)
+    2. + - (sign, applies to the whole power: -a^b^c is -((a^b)^c))
+    3. * / (multiplication, division)
+    4. + - (addition, subtraction)
+
+    Beyond MAD-X, which rejects it, the right operand of a binary operator can
+    carry its own sign: a*-b, a--b, a^-b. The sign of an exponent binds to that
+    exponent only: a^-b^c is (a^(-b))^c.
     """
 
     # MAD-X built-in functions
@@ -606,31 +611,40 @@ class MADXExpressionParser:
 
     def _parse_multiplicative(self) -> Expression:
         """Parse multiplicative expression (* /)."""
-        left = self._parse_power()
+        left = self._parse_unary()
 
         while self._current().type in (TokenType.STAR, TokenType.SLASH):
             op = self._advance().value
-            right = self._parse_power()
+            right = self._parse_unary()
             left = BinaryExpr(op, left, right)
 
         return left
 
-    def _parse_power(self) -> Expression:
-        """Parse power expression (^), right associative."""
-        left = self._parse_unary()
+    def _parse_unary(self) -> Expression:
+        """Parse unary expression (+x, -x), where x is a whole power."""
+        if self._current().type in (TokenType.PLUS, TokenType.MINUS):
+            op = self._advance().value
+            operand = self._parse_unary()
+            return UnaryExpr(op, operand)
 
-        if self._current().type == TokenType.CARET:
+        return self._parse_power()
+
+    def _parse_power(self) -> Expression:
+        """Parse power expression (^), left associative."""
+        left = self._parse_primary()
+
+        while self._current().type == TokenType.CARET:
             self._advance()
-            right = self._parse_power()  # Right associative
+            right = self._parse_exponent()
             left = BinaryExpr("^", left, right)
 
         return left
 
-    def _parse_unary(self) -> Expression:
-        """Parse unary expression (+x, -x)."""
+    def _parse_exponent(self) -> Expression:
+        """Parse the right operand of ^, which can carry a sign (a^-b)."""
         if self._current().type in (TokenType.PLUS, TokenType.MINUS):
             op = self._advance().value
-            operand = self._parse_unary()
+            operand = self._parse_exponent()
             return UnaryExpr(op, operand)
 
         return self._parse_primary()

@@ -1066,6 +1066,15 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
 
    A 6D stationary thermal or bithermal distribution.
 
+   .. py:method:: radial_cdf(bunch_charge, ref)
+
+      Tabulated radial cumulative distribution functions (CDFs) that the particle radius is sampled from, on uniform bins in radius.
+      A population with zero weight is never sampled and its table is zero.
+
+      :param bunch_charge: bunch charge (C)
+      :param ref: the reference particle
+      :return: the radius in the beam rest frame (m), and the core and halo CDF at this radius, as a tuple of three lists
+
 Initial Beam Spin Distribution
 ------------------------------
 

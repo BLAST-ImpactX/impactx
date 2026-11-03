@@ -251,8 +251,9 @@ def roundtrip(
     if spin and after_forward is not None:
         after_forward(beam, initial)
 
-    # reverse and push again
+    # reverse and push again, entering at the current s as lattice tracking does
     el.reverse()
+    beam.ref.sedge = beam.ref.s
     el.push(beam)
 
     # verify roundtrip

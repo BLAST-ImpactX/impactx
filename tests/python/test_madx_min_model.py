@@ -512,6 +512,92 @@ def test_read_beam_low_energy(tmp_path):
     assert ref.beta_gamma == pytest.approx(1.0e-3 / math.sqrt(1.0 - 1.0e-6), rel=rel)
 
 
+@pytest.mark.parametrize("beam_command", ["", "beam, mass=-1, charge=1;"])
+def test_rf_voltage_needs_the_reference_mass(tmp_path, beam_command):
+    """A voltage cannot be normalized without a mass, unlike a cavity that is off."""
+    madx_file = tmp_path / "rf.madx"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        madx_file.write_text(
+            f"{beam_command}\nrf: rfcavity, volt=5, freq=100;\ns1: line=(rf);\n"
+        )
+        with pytest.raises(MADXInputError, match="RFCAVITY with VOLT=5"):
+            read_lattice(str(madx_file))
+
+        madx_file.write_text(
+            f"{beam_command}\nrf: rfcavity, volt=0, freq=100;\ns1: line=(rf);\n"
+        )
+        assert _only(read_lattice(str(madx_file)), elements.ShortRF).V == 0.0
+
+
+@pytest.mark.parametrize(
+    "definition",
+    [
+        "drift, l=sqrt(-1)",
+        "drift, l=(-1)^0.5",
+        "quadrupole, l=1, k1=sqrt(-1)",
+        "sbend, l=1, angle=sqrt(-1)",
+        "drift, l=exp(1000)",
+    ],
+)
+def test_element_in_use_with_a_non_finite_attribute_raises(tmp_path, definition):
+    """The translation would treat NaN like zero, and drop or replace the element."""
+    madx_file = tmp_path / "element.madx"
+    madx_file.write_text(
+        f"beam, particle=proton, energy=2;\ne1: {definition};\ns1: line=(e1);\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(MADXInputError, match="'e1'.*not finite"):
+            read_lattice(str(madx_file))
+
+
+def test_element_not_in_use_with_a_non_finite_attribute(tmp_path):
+    """An element that is only defined does not matter, as in MAD-X."""
+    madx_file = tmp_path / "element.madx"
+    madx_file.write_text(
+        "beam, particle=proton, energy=2;\n"
+        "unused: drift, l=sqrt(-1);\n"
+        "d1: drift, l=1;\n"
+        "s1: line=(d1);\n"
+        "use, sequence=s1;\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
+
+
+@pytest.mark.parametrize("argument", ["line", "sequence"])
+def test_read_lattice_uses_the_beam_of_the_requested_line(tmp_path, argument):
+    """The requested line counts, not the one of USE, which has no beam here."""
+    madx_file = tmp_path / "lines.madx"
+    madx_file.write_text(
+        "d1: drift, l=1;\n"
+        "a: line=(d1);\n"
+        "b: line=(d1);\n"
+        "beam, sequence=b, particle=proton, energy=2;\n"
+        "use, period=a;\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert _types(read_lattice(str(madx_file), **{argument: "b"})) == ["Drift"]
+
+
+def test_quoted_sequence_name_in_beam_and_use(tmp_path):
+    """Both keep the case: USE skips the name with a warning, and the file still loads."""
+    madx_file = tmp_path / "quoted.madx"
+    madx_file.write_text(
+        "d1: drift, l=1;\n"
+        "s1: line=(d1);\n"
+        'beam, sequence="S1", particle=proton, energy=2;\n'
+        'use, sequence="S1";\n'
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
+
+
 def test_read_lattice_uses_the_beam_of_the_inferred_sequence(tmp_path):
     """Without USE, the lattice import selects the line, and that line's beam."""
     madx_file = tmp_path / "sol.madx"

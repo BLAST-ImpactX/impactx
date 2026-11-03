@@ -663,6 +663,9 @@ def test_beam_matches_madx(script, sequence, energy, mass, charge):
         "BEAM, MASS=2, CHARGE=1;",
         "BEAM, PARTICLE=ION, MASS=200, CHARGE=82;",
         "BEAM, PARTICLE=ELECTRON, ENERGY=1; BEAM, MASS=2;",
+        # a reference in the command reads the previous mass, of the electron
+        "BEAM, PARTICLE=ELECTRON, ENERGY=2; BEAM, PARTICLE=PROTON, ENERGY=4*BEAM->MASS;",
+        "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->MASS=2; BEAM, EX=1;",
     ],
 )
 def test_beam_energy_must_exceed_mass(script):
@@ -773,6 +776,9 @@ def test_beam_negative_mass_matches_madx(script, values):
         ("frac(2.5)", 0.5),
         ("frac(-2.5)", -0.5),
         ("frac(1e400)", 0.0),
+        ("tgauss(sqrt(-1))", 0.0),
+        ("tgauss(0)", 0.0),
+        ("tgauss(-1)", 0.0),
     ],
 )
 def test_math_edges_match_madx(expression, expected):
@@ -1044,6 +1050,101 @@ TOTAL_NONE = BEAM%NOSUCH->ENERGY;
             "x",
             {"energy": 3.0, "mass": 0.00051099895},
         ),
+        # a reference in a BEAM command reads the beam before this command
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; BEAM, MASS=2, CHARGE=1, ENERGY=4*BEAM->MASS;",
+            None,
+            {"energy": 3.7530883526399998, "mass": 2.0, "charge": 1.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; BEAM, MASS=2, CHARGE=1, ENERGY:=4*BEAM->MASS;",
+            None,
+            {"energy": 3.7530883526399998, "mass": 2.0, "charge": 1.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; BEAM, PC=BEAM->ENERGY;",
+            None,
+            {"energy": 3.1433031211482176, "pc": 3.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3, EX=2; "
+            "BEAM, ENERGY=5, EY=BEAM->ENERGY, ET=BEAM->EXN;",
+            None,
+            {
+                "energy": 5.0,
+                "ey": 3.0,
+                "et": 6.073929301476829,
+                "exn": 10.46855306240483,
+            },
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; "
+            "BEAM, ENERGY=5, CIRC=BEAM->ENERGY, NPART=BEAM->GAMMA;",
+            None,
+            {"energy": 5.0, "circ": 3.0, "npart": 3.1973667743683549},
+        ),
+        (
+            "BEAM, PARTICLE=ION, MASS=2*BEAM->MASS, CHARGE=3, ENERGY=9;",
+            None,
+            {"mass": 0.0010219979, "charge": 3.0, "energy": 9.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; "
+            "BEAM, MASS=BEAM->ENERGY, CHARGE=BEAM->MASS, ENERGY=9;",
+            None,
+            {"mass": 3.0, "charge": 0.93827208816, "energy": 9.0},
+        ),
+        (
+            "BEAM, SEQUENCE=S, PARTICLE=PROTON, ENERGY=3; "
+            "BEAM, SEQUENCE=S, PC=BEAM%S->ENERGY;",
+            "s",
+            {"energy": 3.1433031211482176, "pc": 3.0},
+        ),
+        # ... which falls back to the default beam for a new sequence
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; "
+            "BEAM, SEQUENCE=S, PARTICLE=PROTON, ENERGY=2*BEAM%S->ENERGY;",
+            "s",
+            {"energy": 6.0},
+        ),
+        # an assignment stores only this value, until the next BEAM command
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->ENERGY=7;",
+            None,
+            {
+                "energy": 7.0,
+                "pc": 1.7662518191299543,
+                "gamma": 2.1315778495789033,
+            },
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->ENERGY=7; BEAM, EX=1;",
+            None,
+            {"energy": 7.0, "pc": 6.9368325256257899},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; X=3; BEAM->EX:=X; X=5;",
+            None,
+            {"ex": 3.0},
+        ),
+        (
+            "BEAM, SEQUENCE=S, PARTICLE=PROTON, ENERGY=2; BEAM%S->ENERGY=7;",
+            "s",
+            {"energy": 7.0},
+        ),
+        (
+            "BEAM, SEQUENCE=S, PARTICLE=PROTON, ENERGY=2; BEAM%S->ENERGY=7;",
+            None,
+            {"energy": 1.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM%NOSUCH->ENERGY=7;",
+            None,
+            {"energy": 7.0},
+        ),
+        ("BEAM->ENERGY=7;", None, {"energy": 7.0}),
+        ("BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->FREQ0=7;", None, {"freq0": 7.0}),
+        ("BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->FOO=7;", None, {"foo": 0.0}),
         # a label does not change a command, but BEAM and RESBEAM are protected
         (
             "BEAM, PARTICLE=PROTON, PC=2; r: resbeam;",
@@ -1139,6 +1240,46 @@ def test_predefined_constants_match_madx():
         "prad": 1.5346982671888944e-18,
     }.items():
         assert parser.getVariable(name) == pytest.approx(value, rel=1e-15), name
+
+
+@pytest.mark.parametrize(
+    "script, name, value",
+    [
+        ("PI=3;", "pi", math.pi),
+        ("PI:=3;", "pi", math.pi),
+        ("AMU0=1;", "amu0", 4.0e-7 * math.pi),
+        ("CONST EMASS=3;", "emass", 0.51099895000e-3),
+        ("CONST C1=2; C1=3;", "c1", 2.0),
+    ],
+)
+def test_redefining_a_constant_is_ignored(script, name, value):
+    """MAD-X warns and continues with the constant."""
+    parser = MADXParser()
+    with pytest.warns(MADXInputWarning, match="redefine constant"):
+        parser.parse_string(f"{script}\n")
+    assert parser.getVariable(name) == value
+
+
+def test_beam_assignment_does_not_state_the_energy():
+    """What follows from an assigned value is out of date, as in MAD-X."""
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, PC=2;\n")
+    assert parser.context.beam.energy_is_explicit
+    parser.parse_string("BEAM->ENERGY=7;\n")
+    assert not parser.context.beam.energy_is_explicit
+
+
+@pytest.mark.parametrize(
+    "statement, skipped",
+    [("USE, SEQUENCE=NOPE;", "nope"), ('USE, SEQUENCE="A";', "A")],
+)
+def test_use_skips_an_unknown_sequence(statement, skipped):
+    """MAD-X warns and keeps the current sequence, and a quoted name keeps its case."""
+    parser = MADXParser()
+    parser.parse_string("D1: DRIFT, L=1;\nA: LINE=(D1);\nBEAM;\nUSE, SEQUENCE=A;\n")
+    with pytest.warns(MADXInputWarning, match=f"unknown sequence skipped: {skipped}"):
+        parser.parse_string(f"{statement}\n")
+    assert parser.sequence["name"] == "a"
 
 
 def test_lenient_commas():

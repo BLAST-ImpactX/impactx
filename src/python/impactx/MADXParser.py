@@ -14,6 +14,7 @@ References:
     - https://github.com/MethodicalAcceleratorDesign/MAD-X/blob/master/src/mad_parse.c (and related files)
 """
 
+import copy
 import math
 import os
 import random
@@ -551,8 +552,11 @@ class MADXExpressionParser:
         "gauss": (0, lambda: random.gauss(0, 1)),
         "tgauss": (
             1,
-            lambda cut: next(
-                s for s in iter(lambda: random.gauss(0, 1), None) if abs(s) < cut
+            # zero for a cut that is not positive, also NaN, as in MAD-X
+            lambda cut: (
+                next(s for s in iter(lambda: random.gauss(0, 1), None) if abs(s) < cut)
+                if cut > 0.0
+                else 0.0
             ),
         ),
     }
@@ -1003,12 +1007,6 @@ class EvaluationContext:
             return self.beams[self.selected_sequence]
         return self.beams[None]
 
-    def get_beam_for_sequence(self, sequence_name: Optional[str] = None) -> Beam:
-        """Get a sequence's beam; a new beam starts from the MAD-X defaults."""
-        if sequence_name not in self.beams:
-            self.beams[sequence_name] = Beam()
-        return self.beams[sequence_name]
-
     def _warn(self, message: str):
         """Emit a warning with current file and line context."""
         loc = ""
@@ -1036,13 +1034,10 @@ class EvaluationContext:
         """Set a variable value."""
         name = name.lower()
 
-        # Check if trying to modify a constant
+        # A constant keeps its value, and MAD-X continues
         if name in self.variables and self.variables[name].constant:
-            if constant:
-                # Allow redefining constants
-                pass
-            else:
-                raise self._error(f"Cannot modify constant: {name}")
+            self._warn(f"ignored: attempt to redefine constant: {name}")
+            return
 
         if deferred and expression is not None:
             self.variables[name] = Variable(
@@ -1068,13 +1063,17 @@ class EvaluationContext:
             return self.evaluate(var.expression)
         return var.value
 
-    def get_beam_attribute(self, name: str, attr_name: str) -> float:
-        """Value of `beam->attr` or `beam%sequence->attr`.
+    def _referenced_beam(self, name: str) -> Beam:
+        """The beam of `beam` or `beam%sequence`.
 
         `beam` is the default beam, as is the beam of a sequence that has none.
         """
         _, _, sequence_name = name.partition("%")
-        beam = self.beams.get(sequence_name or None, self.beams[None])
+        return self.beams.get(sequence_name or None, self.beams[None])
+
+    def get_beam_attribute(self, name: str, attr_name: str) -> float:
+        """Value of `beam->attr` or `beam%sequence->attr`."""
+        beam = self._referenced_beam(name)
 
         if attr_name == "freq0":  # MHz in MAD-X
             return beam.freq0 * 1.0e-6
@@ -1082,6 +1081,21 @@ class EvaluationContext:
             return getattr(beam, attr_name)
 
         return 0.0
+
+    def set_beam_attribute(self, name: str, attr_name: str, value: float):
+        """Set `beam->attr` or `beam%sequence->attr`, as in MAD-X.
+
+        Only this value changes. What follows from it, such as `pc` from `energy`, keeps
+        its value until the next BEAM command, so that consumers cannot rely on them.
+        """
+        beam = self._referenced_beam(name)
+
+        if attr_name == "freq0":  # MHz in MAD-X
+            beam.freq0 = value * 1.0e6
+        elif attr_name in BEAM_VALUES:
+            setattr(beam, attr_name, value)
+            if attr_name in ("mass", "energy", "pc", "gamma", "beta", "brho"):
+                beam.energy_is_explicit = False
 
     def get_element_attribute(self, element_name: str, attr_name: str) -> Any:
         """Get an element's attribute value."""
@@ -1367,6 +1381,12 @@ class MADXParser:
             return
 
         # Check for commands
+        if self._peek(1).type == TokenType.ARROW and (
+            name == "beam" or name.startswith("beam%")
+        ):
+            self._parse_beam_assignment()
+            return
+
         if name == "beam":
             self._advance()  # skip 'beam'
             self._parse_beam_command()
@@ -2509,6 +2529,21 @@ class MADXParser:
         _, _, sequence_name = self._parse_beam_parameters(allowed=("sequence",))
         self.context.beams[sequence_name] = Beam(defined=True)
 
+    def _parse_beam_assignment(self):
+        """Parse `beam->name = value` or `beam%sequence->name = value`.
+
+        As in MAD-X, also `:=` evaluates the value now.
+        """
+        beam_name = self._advance().value
+        self._expect(TokenType.ARROW)
+        attr_name = self._expect(TokenType.IDENTIFIER).value.lower()
+        self._expect(TokenType.EQUALS, TokenType.COLON_EQUALS)
+        expr = self._parse_expression()
+        self._expect(TokenType.SEMICOLON)
+
+        value = self._parse_beam_value(attr_name, expr)
+        self.context.set_beam_attribute(beam_name, attr_name, value)
+
     def _parse_beam_command(self):
         """Parse a BEAM command, after its name, and apply it as MAD-X `update_beam`.
 
@@ -2516,10 +2551,15 @@ class MADXParser:
         BEAM, SEQUENCE=name, ...;  The beam is stored per-sequence.
         A BEAM without SEQUENCE= updates the default beam.
         The energy comes from the first of ENERGY, PC, GAMMA, BETA, BRHO.
+
+        The values of the command are computed on a copy, which replaces the beam at the
+        end: as in MAD-X, `beam->name` in the command reads the beam before the command.
+        A new beam starts from the MAD-X defaults.
         """
         particle, exprs, sequence_name = self._parse_beam_parameters()
 
-        beam = self.context.get_beam_for_sequence(sequence_name)
+        previous = self.context.beams.get(sequence_name)
+        beam = copy.copy(previous) if previous is not None else Beam()
         beam.defined = True
 
         beam.particle, beam.mass, beam.charge = self._resolve_beam_particle(
@@ -2545,6 +2585,8 @@ class MADXParser:
             beam.set_energy("energy", beam.energy)
 
         self._apply_beam_parameters(beam, exprs)
+
+        self.context.beams[sequence_name] = beam
 
     def _apply_beam_parameters(self, beam: Beam, exprs: dict):
         """Apply the parameters of a BEAM command that follow from its energy."""
@@ -2670,10 +2712,13 @@ class MADXParser:
 
             if attr_name in ("sequence", "period"):
                 self._expect(TokenType.EQUALS)
-                if self._current().type == TokenType.IDENTIFIER:
-                    self.context.selected_sequence = self._advance().value
-                elif self._current().type == TokenType.STRING:
-                    self.context.selected_sequence = self._advance().value.lower()
+                if self._current().type in (TokenType.IDENTIFIER, TokenType.STRING):
+                    # a quoted name keeps its case, and MAD-X skips an unknown one
+                    name = self._advance().value
+                    if name in self.context.lines:
+                        self.context.selected_sequence = name
+                    else:
+                        self.context._warn(f"unknown sequence skipped: {name}")
             else:
                 if self._current().type == TokenType.EQUALS:
                     self._advance()

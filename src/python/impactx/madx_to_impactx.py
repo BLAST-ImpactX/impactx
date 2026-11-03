@@ -52,6 +52,19 @@ def _beam_summary(madx_beam) -> str:
     )
 
 
+def _require_finite_attributes(element: dict):
+    """Stop on a NaN or infinite attribute, as of `L=SQRT(-1)`, of an element in use.
+
+    MAD-X carries it along, but the translation below would treat it like zero.
+    """
+    for attr, value in element.items():
+        for item in value if isinstance(value, (list, tuple)) else (value,):
+            if isinstance(item, float) and not math.isfinite(item):
+                raise MADXInputError(
+                    f"MAD-X element '{element.get('name')}': {attr.upper()} is not finite"
+                )
+
+
 class sc:
     """
     This class is used in lieu of scipy.constants
@@ -535,11 +548,13 @@ def lattice(
 
     def normalized_rf_voltage(volt_MV):
         """Convert MAD-X VOLT [MV] to ImpactX ShortRF normalized voltage."""
+        if volt_MV == 0.0:
+            return 0.0
         if ref_mass_MeV is None or ref_mass_MeV <= 0.0:
-            _warn(
-                "RFCAVITY reference particle mass is unavailable; using unnormalized MAD-X VOLT value as a fallback."
+            raise MADXInputError(
+                f"RFCAVITY with VOLT={volt_MV} needs the mass of the reference "
+                "particle, from a valid BEAM command."
             )
-            return volt_MV
         return volt_MV / ref_mass_MeV
 
     def make_bend_body_element(
@@ -684,6 +699,7 @@ def lattice(
             )
 
     for d_raw in parsed_beamline:
+        _require_finite_attributes(d_raw)
         d = _TrackedElement(d_raw)
         # print(d)
         if d["type"] in supported_madx_element_types:
@@ -1586,15 +1602,16 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
     """
     madx = MADXParser()
     madx.parse(madx_file)
-    # MAD-X stops at USE without a BEAM command, but reads a file of definitions
-    if madx.context.selected_sequence and not madx.context.beam.defined:
-        raise MADXInputError("The sequence has no BEAM command", file=str(madx_file))
+    has_use_command = madx.context.selected_sequence is not None
     beamline = madx.getBeamline(line_name=line, sequence_name=sequence)
     freq0 = madx.getFreq0()
-    # after getBeamline, which selects the sequence if the file did not
+    # after getBeamline, which selects the requested line, or one if the file did not
     madx_beam = madx.context.beam
-    # The elements do not need a reference particle, unless they depend on its mass
-    # or energy, which is why this is not an error.
+    # MAD-X stops at USE without a BEAM command, but reads a file of definitions
+    if has_use_command and not madx_beam.defined:
+        raise MADXInputError("The sequence has no BEAM command", file=str(madx_file))
+    # Only an element that depends on the mass or energy needs a reference particle:
+    # the translation stops at such an element, or says that it does not use it.
     has_reference = madx_beam.defined and madx_beam.is_physical
     if not madx_beam.defined:
         _warn("The MAD-X file has no BEAM command, so no reference particle is known.")

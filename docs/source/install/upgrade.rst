@@ -133,70 +133,34 @@ MAD-X ``BEAM``: reference particle and energy as in MAD-X
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 :py:meth:`RefPart.load_file <impactx.RefPart.load_file>` and
-:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` now resolve the particle and the
-energy of each ``BEAM`` command of a MAD-X file following MAD-X. Previously, only ``ENERGY`` was read, so ``PC``, ``GAMMA``,
-``BETA`` and ``BRHO`` left 1 GeV.
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` now resolve each ``BEAM`` command of a
+MAD-X file following MAD-X. Previously, only ``ENERGY`` was read, so ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` left 1 GeV:
+remove workarounds that set the energy after loading.
 
-**What to check in your scripts:** remove workarounds that set the energy after loading a file whose ``BEAM`` command gives the energy:
-
-.. code-block:: python
-
-   ref.load_file("lattice.madx")
-   ref.set_kin_energy_MeV(1.0e3)  # remove: BEAM, PARTICLE=PROTON, PC=1.696;
-
-**What to check in your MAD-X files:** the following commands now behave differently.
+**What to check in your MAD-X files:**
 
 .. code-block:: text
 
-   ! no PARTICLE or MASS: previously an error, now a positron
-   BEAM, ENERGY=2;
-   BEAM, PARTICLE=PROTON, ENERGY=2;   ! state the particle
+   BEAM, ENERGY=2;                   ! now a positron: add PARTICLE
+   BEAM, SEQUENCE=B2, BV=-1;         ! now a positron at 1 GeV, not the default beam: add PARTICLE and ENERGY
+   BEAM, PARTICLE=ION, MASS=193.7, CHARGE=82, ENERGY=574;  ! now uses MASS and CHARGE
+   BEAM, PARTICLE=PROTON, CIRC=100;  ! now sets FREQ0, and takes precedence over it
+   BEAM, BETA;                       ! now at rest: a parameter without a value is zero
+   B1: BEAM, PARTICLE=PROTON, PC=2;  ! now applied; the labels BEAM and RESBEAM skip the statement
+   BEAM, SEQUENCE="A", ENERGY=2;     ! now the beam of a sequence named A, not a
 
-   ! a mass that is not below the energy, also the 1 GeV default: now an error
-   BEAM, MASS=2, CHARGE=1;
-   BEAM, MASS=2, CHARGE=1, ENERGY=3;  ! state the energy
+   ! now errors
+   BEAM, MASS=2, CHARGE=1;           ! the 1 GeV default is below the mass: add ENERGY
+   BEAM, PARTICLE=PROTN, PC=2;       ! an unknown particle needs a MASS
+   BEAM, PARTICLE="PROTON", PC=2;    ! a quoted name keeps its case
+   BEAM, ENERGIE=3;                  ! an unknown parameter
+   BEAM, ENERGY=2 PC=3;              ! a number without a comma
 
-   ! an ion: MASS and CHARGE are now used
-   BEAM, PARTICLE=ION, MASS=193.7, CHARGE=82, ENERGY=574;
+``RefPart.load_file`` also raises a ``MADXInputError`` for a file without ``BEAM``, and for values that give no reference particle, e.g., a negative ``MASS`` or ``PC=SQRT(-1)``.
+``KnownElementsList.load_file`` warns about these, unless the file has ``USE`` but no ``BEAM`` or an element depends on them: it raises for an ``RFCAVITY`` with ``VOLT`` but no valid mass, and for a NaN or infinite attribute of an element in use.
 
-   ! a new sequence beam: now starts from the defaults, not from the default beam
-   BEAM, PARTICLE=PROTON, ENERGY=7000;
-   BEAM, SEQUENCE=B2, BV=-1;                                  ! a positron at 1 GeV
-   BEAM, SEQUENCE=B2, BV=-1, PARTICLE=PROTON, ENERGY=7000;    ! state both
-
-   ! an unknown particle needs a MASS, and a quoted name now keeps its case
-   BEAM, PARTICLE=PROTN, PC=2;        ! an error
-   BEAM, PARTICLE="PROTON", PC=2;     ! an error
-   BEAM, PARTICLE=PROTON, PC=2;
-   BEAM, SEQUENCE="A", ENERGY=2;      ! the beam of a sequence named A, not a
-
-   ! an unknown parameter, and a number without a comma: previously ignored, now an error
-   BEAM, ENERGIE=3;
-   BEAM, ENERGY=3;
-   BEAM, ENERGY=2 PC=3;
-   BEAM, ENERGY=2;
-
-   ! a parameter without a value: previously ignored, now its MAD-X default
-   BEAM, BETA;                        ! at rest: BETA is zero
-   BEAM, ENERGY;                      ! an error: ENERGY is zero
-
-   ! CIRC: previously ignored, now sets FREQ0 and takes precedence over it
-   BEAM, PARTICLE=PROTON, ENERGY=2, CIRC=100;
-
-   ! a label: previously ignored the command, now applied
-   B1: BEAM, PARTICLE=PROTON, PC=2;
-   R1: RESBEAM;
-
-   ! the labels BEAM and RESBEAM: now skip the statement with a warning
-   BEAM: BEAM, PARTICLE=PROTON, PC=2;
-
-A ``BEAM`` command that gives no valid reference particle, e.g., with a negative ``MASS``, ``BETA`` of -1 or below, or ``PC=sqrt(-1)``, now raises a ``MADXInputError`` in ``RefPart.load_file``, and a warning in ``KnownElementsList.load_file``.
-A file without a ``BEAM`` command raises this error in ``RefPart.load_file``, and in ``KnownElementsList.load_file`` if it has a ``USE`` command, and otherwise a warning.
-``RESBEAM`` now resets the beam, and ``beam->energy``, ``beam%sequence->energy`` and the other ``BEAM`` parameters now give their value instead of 0.
-Math outside of its domain, e.g., ``X = SQRT(-1);`` or ``X = (-2)^0.5;``, now gives NaN or infinity with a warning for functions, as in MAD-X, instead of a Python exception or a complex number.
-
-The reference particle takes its mass from the MAD-X constants, e.g., ``PMASS``, which differ from the previous values by less than 1 part in :math:`10^9`.
-The ``MUMASS`` constant in MAD-X files changed by 4 parts in :math:`10^8`, to the MAD-X value.
+Also as in MAD-X: ``RESBEAM`` resets a beam, ``beam->energy`` and ``beam%sequence->energy`` read and set the ``BEAM`` parameters, ``USE`` skips an unknown sequence, redefining a constant is ignored with a warning, math outside of its domain gives NaN or infinity, e.g., ``X = (-2)^0.5;``, and ``FRAC(-2.5)`` is -0.5 instead of 0.5.
+The reference particle uses the MAD-X masses, which differ from the previous values by less than 1 part in :math:`10^9`, and ``MUMASS`` changes by 4 parts in :math:`10^8`.
 
 ``Thermal``: invalid parameters raise an error
 """"""""""""""""""""""""""""""""""""""""""""""

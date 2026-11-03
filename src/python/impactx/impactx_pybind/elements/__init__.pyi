@@ -4416,6 +4416,10 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         z=None,
         field_on_axis=None,
         ncoef=None,
+        z_data=None,
+        wake_x_data=None,
+        wake_y_data=None,
+        wake_z_data=None,
         dx=0,
         dy=0,
         rotation=0,
@@ -4426,7 +4430,7 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], z_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_x_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_y_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_z_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         An RF cavity.
         """

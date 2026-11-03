@@ -765,7 +765,7 @@ class ImpactX:
     @property
     def csr_bins(self) -> int:
         """
-        Number of longitudinal bins used for CSR calculations (default: 150).
+        Number of longitudinal bins used for CSR calculations, at least 2 (default: 150).
         """
     @csr_bins.setter
     def csr_bins(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
@@ -1020,6 +1020,13 @@ class ImpactX:
         arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
     ) -> None: ...
     @property
+    def short_range_wakefields(self) -> bool:
+        """
+        Enable or disable short range structure wakefield calculations (default: disabled).
+        """
+    @short_range_wakefields.setter
+    def short_range_wakefields(self, arg1: bool) -> None: ...
+    @property
     def slice_step_diagnostics(self) -> bool:
         """
         Enable or disable diagnostics every slice step in elements (default: disabled).
@@ -1184,6 +1191,13 @@ class ImpactX:
         """
     @verbose.setter
     def verbose(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def wake_bins(self) -> int:
+        """
+        Number of longitudinal bins used for short range wakefield calculations, at least 2 (default: 150).
+        """
+    @wake_bins.setter
+    def wake_bins(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class UnorderedMap:
     def __bool__(self) -> bool:

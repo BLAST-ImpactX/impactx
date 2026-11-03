@@ -15,7 +15,6 @@
 
 #include <ablastr/constant.H>
 
-#include <AMReX_Algorithm.H>
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
@@ -70,9 +69,9 @@ namespace impactx::distribution
                       meanx, meany, meant, meanpx, meanpy, meanpt, dispx, disppx, dispy, disppy),
           m_cutX(cutx), m_cutY(cuty), m_cutT(cutt)
         {
-            truncation_constants(m_cutX, m_inside_cutX, m_r2scaleX);
-            truncation_constants(m_cutY, m_inside_cutY, m_r2scaleY);
-            truncation_constants(m_cutT, m_inside_cutT, m_r2scaleT);
+            truncation_constants(m_cutX, m_outside_cutX, m_r2scaleX);
+            truncation_constants(m_cutY, m_outside_cutY, m_r2scaleY);
+            truncation_constants(m_cutT, m_outside_cutT, m_r2scaleT);
         }
 
         /** Initialize the distribution.
@@ -98,12 +97,13 @@ namespace impactx::distribution
         /** Constants of the radius in a phase plane, for a Gaussian truncated at a cut
          *
          * @param[in] cut dimensionless cut parameter (number of sigma); 0 means no truncation
-         * @param[out] inside_cut fraction of the untruncated distribution inside the cut
+         * @param[out] outside_cut fraction of the untruncated distribution outside the cut;
+         *                         0 means no truncation
          * @param[out] r2scale variance of the truncated distribution, relative to the untruncated one
          */
         static void truncation_constants (
             amrex::ParticleReal cut,
-            amrex::ParticleReal & inside_cut,
+            amrex::ParticleReal & outside_cut,
             amrex::ParticleReal & r2scale
         )
         {
@@ -112,12 +112,10 @@ namespace impactx::distribution
             if (cut > 0.0_prt) {
                 amrex::ParticleReal f = cut*cut/2.0_prt;
                 amrex::ParticleReal ef = std::exp(-f);
-                // < 1 also if 1 - ef rounds to 1: log(1 - u*inside_cut) is finite for u in (0,1]
-                inside_cut = amrex::min(1_prt - ef, std::nextafter(1_prt, 0_prt));
+                outside_cut = ef;
                 r2scale = 1_prt - f*ef/(1_prt - ef);
             } else {
-                // not used
-                inside_cut = 1_prt;
+                outside_cut = 0_prt;
                 r2scale = 1_prt;
             }
         }
@@ -149,11 +147,13 @@ namespace impactx::distribution
             amrex::ParticleReal ln1,u1,u2;
 
             // Generate three pairs of (optionally truncated) normal random variables using Box-Muller:
+            // The radius of a truncated pair is r^2 = -2 ln(w), with w = u1 + (1 - u1)*outside_cut
+            // uniform in (outside_cut, 1]. w >= u1 > 0 holds also if outside_cut rounds to 0.
 
             u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
-            if (m_cutX > 0.0_prt) {
-                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutX);
+            if (m_outside_cutX > 0.0_prt) {
+                amrex::ParticleReal r2 = -2_prt * std::log(u1 + (1_prt - u1)*m_outside_cutX);
                 ln1 = std::sqrt(r2 / m_r2scaleX);
             } else {
                 ln1 = std::sqrt(-2_prt*std::log(u1));
@@ -163,8 +163,8 @@ namespace impactx::distribution
 
             u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
-            if (m_cutY > 0.0_prt) {
-                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutY);
+            if (m_outside_cutY > 0.0_prt) {
+                amrex::ParticleReal r2 = -2_prt * std::log(u1 + (1_prt - u1)*m_outside_cutY);
                 ln1 = std::sqrt(r2 / m_r2scaleY);
             } else {
                 ln1 = std::sqrt(-2_prt*std::log(u1));
@@ -174,8 +174,8 @@ namespace impactx::distribution
 
             u1 = amrex::RandomPositive(engine);
             u2 = amrex::Random(engine);
-            if (m_cutT > 0.0_prt) {
-                amrex::ParticleReal r2 = -2_prt * std::log(1_prt - u1*m_inside_cutT);
+            if (m_outside_cutT > 0.0_prt) {
+                amrex::ParticleReal r2 = -2_prt * std::log(u1 + (1_prt - u1)*m_outside_cutT);
                 ln1 = std::sqrt(r2 / m_r2scaleT);
             } else {
                 ln1 = std::sqrt(-2_prt*std::log(u1));
@@ -192,7 +192,8 @@ namespace impactx::distribution
     private:
         // constants that are independent of the individually sampled particle,
         // computed from the parameters above in the constructor
-        amrex::ParticleReal m_inside_cutX, m_inside_cutY, m_inside_cutT;  //! fraction of the untruncated distribution inside the cut
+        //! fraction of the untruncated distribution outside the cut; 0 means no truncation
+        amrex::ParticleReal m_outside_cutX, m_outside_cutY, m_outside_cutT;
         amrex::ParticleReal m_r2scaleX, m_r2scaleY, m_r2scaleT;  //! variance of the truncated distribution, relative to the untruncated one
     };
 

@@ -41,6 +41,8 @@ DISTRIBUTIONS = {
     "Gaussian_cut6": lambda: gaussian_cut(6.0),
     # ... and in double precision
     "Gaussian_cut10": lambda: gaussian_cut(10.0),
+    # ... and the fraction outside the cut underflows to 0
+    "Gaussian_cut50": lambda: gaussian_cut(50.0),
     "Kurth4D": lambda: distribution.Kurth4D(**beam_twiss),
     "Kurth6D": lambda: distribution.Kurth6D(**beam_twiss),
     "KVdist": lambda: distribution.KVdist(**beam_twiss),
@@ -81,6 +83,35 @@ def test_distribution_finite(sim, name):
     sim.add_particles(1.0e-9, DISTRIBUTIONS[name](), npart)
 
     assert_finite_moments(sim)
+
+
+@pytest.mark.parametrize("cut", [1.0, 3.0])
+def test_gaussian_cut_radius(sim, cut):
+    """The radius in a phase plane ends at the cut, in units of the untruncated sigma."""
+    sim.beam.ref.set_species("electron").set_kin_energy_MeV(1.0e3)
+    sigma = {"x": 2.0e-3, "px": 3.0e-3}
+    distr = distribution.Gaussian(
+        lambdaX=sigma["x"],
+        lambdaY=1.0e-3,
+        lambdaT=1.0e-3,
+        lambdaPx=sigma["px"],
+        lambdaPy=1.0e-3,
+        lambdaPt=1.0e-3,
+        cutX=cut,
+    )
+    sim.add_particles(1.0e-9, distr, 1_000_000)
+
+    df = sim.beam.to_df(local=True)
+    x = df["position_x"].to_numpy(dtype=np.float64) / sigma["x"]
+    px = df["momentum_x"].to_numpy(dtype=np.float64) / sigma["px"]
+
+    # the sampled plane is rescaled to unit variance, by the variance of the truncation
+    f = cut**2 / 2.0
+    r_cut = cut / np.sqrt(1.0 - f / np.expm1(f))
+
+    r_max = np.sqrt(x**2 + px**2).max()
+    assert r_max <= r_cut * (1.0 + 1.0e-5)
+    assert r_max >= r_cut * (1.0 - 1.0e-2)
 
 
 def test_thermal_finite(sim):

@@ -21,17 +21,21 @@ assert num_particles == len(initial)
 assert num_particles == len(final)
 
 # numerical parameters
-bucket_length = 0.2
-half_bucket_length = bucket_length / 2.0
+bucket_length = 0.2  # in m, along the reference trajectory
+
+# the periodic boundary acts on t = c*dt: a bucket of length L spans L/beta_ref in t
+beta_ref = series.iterations[last_step].particles["beam"].get_attribute("beta_ref")
+bucket_t = bucket_length / beta_ref
+half_bucket_t = bucket_t / 2.0
 
 # join tables on particle ID, so we can compare the same particle initial->final
 beam_joined = final.join(initial, lsuffix="_final", rsuffix="_initial")
 
 beam_joined["ttest"] = np.fmod(
-    beam_joined["position_t_initial"] + half_bucket_length, bucket_length
+    beam_joined["position_t_initial"] + half_bucket_t, bucket_t
 )
 beam_joined["t_predicted"] = (
-    np.fmod(beam_joined["ttest"] + bucket_length, bucket_length) - half_bucket_length
+    np.fmod(beam_joined["ttest"] + bucket_t, bucket_t) - half_bucket_t
 )
 beam_joined["dt"] = (beam_joined["position_t_final"] - beam_joined["t_predicted"]).abs()
 

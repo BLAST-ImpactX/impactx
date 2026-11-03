@@ -14,6 +14,7 @@
 
 #include <AMReX_Extension.H>
 #include <AMReX_GpuQualifiers.H>
+#include <AMReX_Math.H>
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
@@ -45,8 +46,9 @@ namespace impactx::distribution::box_muller
         amrex::ParticleReal const u1 = amrex::RandomPositive(engine);
         amrex::ParticleReal const u2 = amrex::Random(engine);
         amrex::ParticleReal const ln1 = std::sqrt(-2_prt*std::log(u1));
-        g1 = ln1 * std::cos(2_prt*pi*u2);
-        g2 = ln1 * std::sin(2_prt*pi*u2);
+        auto const [sin_phi, cos_phi] = amrex::Math::sincos(2_prt*pi*u2);
+        g1 = ln1 * cos_phi;
+        g2 = ln1 * sin_phi;
     }
 
     /** Sample one standard normal random variable
@@ -92,17 +94,18 @@ namespace impactx::distribution::box_muller
         using namespace amrex::literals;
         using ablastr::constant::math::pi;
 
+        if (outside_cut <= 0.0_prt) {
+            pair(g1, g2, engine);
+            return;
+        }
+
         amrex::ParticleReal const u1 = amrex::RandomPositive(engine);
         amrex::ParticleReal const u2 = amrex::Random(engine);
-        amrex::ParticleReal ln1;
-        if (outside_cut > 0.0_prt) {
-            amrex::ParticleReal const r2 = -2_prt * std::log(u1 + (1_prt - u1)*outside_cut);
-            ln1 = std::sqrt(r2 / r2scale);
-        } else {
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-        }
-        g1 = ln1 * std::cos(2_prt*pi*u2);
-        g2 = ln1 * std::sin(2_prt*pi*u2);
+        amrex::ParticleReal const r2 = -2_prt * std::log(u1 + (1_prt - u1)*outside_cut);
+        amrex::ParticleReal const ln1 = std::sqrt(r2 / r2scale);
+        auto const [sin_phi, cos_phi] = amrex::Math::sincos(2_prt*pi*u2);
+        g1 = ln1 * cos_phi;
+        g2 = ln1 * sin_phi;
     }
 
 } // namespace impactx::distribution::box_muller

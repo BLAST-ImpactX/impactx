@@ -12,10 +12,15 @@ import pytest
 
 from impactx import Config, ImpactX, distribution, twiss
 
-# One draw at the end of its range, or one rounding error in a radicand, is
-# enough for a non-finite particle. These are rare per particle, in single
-# precision on the order of 1e-7.
-npart = 20_000_000 if Config.precision == "SINGLE" else 1_000_000
+single_precision = Config.precision_particles == "SINGLE"
+
+# One rounding error in a radicand, or one draw at the end of its range, is
+# enough for a non-finite particle. Rounding errors in a radicand are on the
+# order of 1e-7 per particle in single precision.
+npart_rounding = 20_000_000 if single_precision else 1_000_000
+# A draw at the end of its range has P = 2.8e-8 in single precision on GPU. On
+# CPU, it has P = 2^-32, which is out of reach of this test.
+npart_draw = 20_000_000 if single_precision and Config.have_gpu else 1_000_000
 
 beam_twiss = twiss(
     beta_x=2.0,
@@ -77,9 +82,17 @@ def assert_finite_moments(sim):
         assert np.isfinite(moments[moment]), f"{moment} = {moments[moment]}"
 
 
+def radius(df, plane, sigma, sigma_p):
+    """Radius of each particle in a phase plane, in units of the sampled sigma."""
+    position = df[f"position_{plane}"].to_numpy(dtype=np.float64) / sigma
+    momentum = df[f"momentum_{plane}"].to_numpy(dtype=np.float64) / sigma_p
+    return np.sqrt(position**2 + momentum**2)
+
+
 @pytest.mark.parametrize("name", DISTRIBUTIONS)
 def test_distribution_finite(sim, name):
     sim.beam.ref.set_species("electron").set_kin_energy_MeV(1.0e3)
+    npart = npart_rounding if name in ("Kurth4D", "Kurth6D") else npart_draw
     sim.add_particles(1.0e-9, DISTRIBUTIONS[name](), npart)
 
     assert_finite_moments(sim)
@@ -102,16 +115,51 @@ def test_gaussian_cut_radius(sim, cut):
     sim.add_particles(1.0e-9, distr, 1_000_000)
 
     df = sim.beam.to_df(local=True)
-    x = df["position_x"].to_numpy(dtype=np.float64) / sigma["x"]
-    px = df["momentum_x"].to_numpy(dtype=np.float64) / sigma["px"]
 
     # the sampled plane is rescaled to unit variance, by the variance of the truncation
     f = cut**2 / 2.0
     r_cut = cut / np.sqrt(1.0 - f / np.expm1(f))
 
-    r_max = np.sqrt(x**2 + px**2).max()
+    r_max = radius(df, "x", sigma["x"], sigma["px"]).max()
     assert r_max <= r_cut * (1.0 + 1.0e-5)
     assert r_max >= r_cut * (1.0 - 1.0e-2)
+
+
+@pytest.mark.skipif(
+    not single_precision, reason="the rounding is out of reach in double precision"
+)
+def test_gaussian_cut_tail(sim):
+    """The tail of a large cut is resolved below the rounding of 1.
+
+    The radius is r^2 = -2 ln(w). A w computed as 1 - u*x is a multiple of 2^-24
+    in the tail, in single precision, which gives discrete radii that end at
+    5.77 sigma.
+    """
+    sim.beam.ref.set_species("electron").set_kin_energy_MeV(1.0e3)
+    sigma = 1.0e-3
+    distr = distribution.Gaussian(
+        lambdaX=sigma,
+        lambdaY=sigma,
+        lambdaT=sigma,
+        lambdaPx=sigma,
+        lambdaPy=sigma,
+        lambdaPt=sigma,
+        cutX=7.0,
+        cutY=7.0,
+        cutT=7.0,
+    )
+    sim.add_particles(1.0e-9, distr, 4_000_000)
+
+    df = sim.beam.to_df(local=True)
+    r = np.concatenate([radius(df, plane, sigma, sigma) for plane in "xyt"])
+
+    # w in units of 2^-24; this cut does not rescale the variance in single precision
+    k = np.exp(-(r**2) / 2.0) / np.finfo(np.float32).epsneg
+    # on average 46 particles
+    tail = k[k < 64.0]
+    assert tail.size > 10
+    # about 2% of a continuous w are this close to a multiple of 2^-24
+    assert np.mean(np.abs(tail - np.rint(tail)) < 0.01) < 0.5
 
 
 def test_thermal_finite(sim):
@@ -124,6 +172,6 @@ def test_thermal_finite(sim):
         normalize_halo=0.0,
         halo=0.0,
     )
-    sim.add_particles(1.4285714285714285714e-10, thermal, npart)
+    sim.add_particles(1.4285714285714285714e-10, thermal, npart_draw)
 
     assert_finite_moments(sim)

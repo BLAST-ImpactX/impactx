@@ -65,12 +65,11 @@ namespace impactx::distribution
             amrex::ParticleReal cutt=0.0
         )
         : BeamEllipse(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx, muypy, mutpt,
-                      meanx, meany, meant, meanpx, meanpy, meanpt, dispx, disppx, dispy, disppy),
-          m_cutX(cutx), m_cutY(cuty), m_cutT(cutt)
+                      meanx, meany, meant, meanpx, meanpy, meanpt, dispx, disppx, dispy, disppy)
         {
-            truncation_constants(m_cutX, m_outside_cutX, m_r2scaleX);
-            truncation_constants(m_cutY, m_outside_cutY, m_r2scaleY);
-            truncation_constants(m_cutT, m_outside_cutT, m_r2scaleT);
+            truncation_constants(cutx, m_outside_cutX, m_r2scaleX);
+            truncation_constants(cuty, m_outside_cutY, m_r2scaleY);
+            truncation_constants(cutt, m_outside_cutT, m_r2scaleT);
         }
 
         /** Initialize the distribution.
@@ -149,11 +148,9 @@ namespace impactx::distribution
             to_beam_ellipse(x, y, t, px, py, pt);
         }
 
-        amrex::ParticleReal m_cutX, m_cutY, m_cutT;  //! dimensionless cutoff for each phase plane; 0 means no cut
-
     private:
         // constants that are independent of the individually sampled particle,
-        // computed from the parameters above in the constructor
+        // computed from the cut parameters in the constructor
         //! fraction of the untruncated distribution outside the cut; 0 means no truncation
         amrex::ParticleReal m_outside_cutX, m_outside_cutY, m_outside_cutT;
         amrex::ParticleReal m_r2scaleX, m_r2scaleY, m_r2scaleT;  //! variance of the truncated distribution, relative to the untruncated one

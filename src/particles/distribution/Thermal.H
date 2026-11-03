@@ -590,9 +590,6 @@ namespace distribution
             amrex::RandomEngine const & engine
         ) const
         {
-
-            using namespace amrex::literals;  // for _rt and _prt
-
             amrex::ParticleReal norm,uhalo;
             amrex::ParticleReal g1,g2,g3,g4,g5,g6;
             amrex::ParticleReal z,pz;

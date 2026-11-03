@@ -12,7 +12,9 @@ We use a 230 MeV electron beam with initial normalized rms emittance of 1 um.
 The lattice and beam parameters are based on Example 2 of the IMPACT-Z examples folder:
 
 https://github.com/impact-lbl/IMPACT-Z/tree/master/examples/Example2
+The analytical functional form of the user-defined short-range wakefield is fitted to the tabulated single-particle wake for a TESLA, 9-cell 1.3 GHz cavity as it appears in:
 
+https://github.com/impact-lbl/IMPACT-Z/tree/master/examples/Example3.
 The final target beam energy and beam moments are based on simulation in
 IMPACT-Z, with space charge and short-range wakefields.
 

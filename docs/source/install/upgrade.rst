@@ -133,8 +133,9 @@ MAD-X ``BEAM``: reference particle and energy as in MAD-X
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 :py:meth:`RefPart.load_file <impactx.RefPart.load_file>` and
-:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` now resolve each ``BEAM`` command of a
-MAD-X file as MAD-X does. Previously, only ``ENERGY`` was read, so ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` left 1 GeV.
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` now resolve the particle and the
+energy of each ``BEAM`` command of a MAD-X file following MAD-X. Previously, only ``ENERGY`` was read, so ``PC``, ``GAMMA``,
+``BETA`` and ``BRHO`` left 1 GeV.
 
 **What to check in your scripts:** remove workarounds that set the energy after loading a file whose ``BEAM`` command gives the energy:
 
@@ -163,12 +164,36 @@ MAD-X file as MAD-X does. Previously, only ``ENERGY`` was read, so ``PC``, ``GAM
    BEAM, SEQUENCE=B2, BV=-1;                                  ! a positron at 1 GeV
    BEAM, SEQUENCE=B2, BV=-1, PARTICLE=PROTON, ENERGY=7000;    ! state both
 
-   ! a quoted particle name now keeps its case
+   ! a quoted name now keeps its case
    BEAM, PARTICLE="PROTON", PC=2;     ! an unknown particle with a warning
    BEAM, PARTICLE=PROTON, PC=2;
+   BEAM, SEQUENCE="A", ENERGY=2;      ! the beam of a sequence named A, not a
 
-A file without a ``BEAM`` command raises a ``MADXInputError``, invalid values in a ``BEAM`` command do too, and ``RESBEAM`` now resets the beam.
-The reference particle takes its mass from the MAD-X constants, e.g., ``PMASS`` and ``MUMASS``, which differ from the previous CODATA values at about 1 part in :math:`10^9`.
+   ! an unknown parameter, and a number without a comma: previously ignored, now an error
+   BEAM, ENERGIE=3;
+   BEAM, ENERGY=3;
+   BEAM, ENERGY=2 PC=3;
+   BEAM, ENERGY=2;
+
+   ! a parameter without a value: previously ignored, now its MAD-X default
+   BEAM, BETA;                        ! at rest: BETA is zero
+   BEAM, ENERGY;                      ! an error: ENERGY is zero
+
+   ! CIRC: previously ignored, now sets FREQ0 and takes precedence over it
+   BEAM, PARTICLE=PROTON, ENERGY=2, CIRC=100;
+
+   ! a label: previously ignored the command, now applied
+   B1: BEAM, PARTICLE=PROTON, PC=2;
+   R1: RESBEAM;
+
+   ! the labels BEAM and RESBEAM: now skip the statement with a warning
+   BEAM: BEAM, PARTICLE=PROTON, PC=2;
+
+These now also raise a ``MADXInputError``: a file without a ``BEAM`` command, a negative ``MASS``, ``BETA`` of -1 or below, an expression without a value such as ``PC=sqrt(-1)``, and ``EXN``, ``EYN`` or ``BCURRENT`` with ``FREQ0`` for a particle at rest.
+``RESBEAM`` now resets the beam, and ``beam->energy``, ``beam%sequence->energy`` and the other ``BEAM`` parameters now give their value instead of 0.
+
+The reference particle takes its mass from the MAD-X constants, e.g., ``PMASS``, which differ from the previous values by less than 1 part in :math:`10^9`.
+The ``MUMASS`` constant in MAD-X files changed by 4 parts in :math:`10^8`, to the MAD-X value.
 
 ``Thermal``: invalid parameters raise an error
 """"""""""""""""""""""""""""""""""""""""""""""

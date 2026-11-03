@@ -762,13 +762,285 @@ TOTAL_NONE = BEAM%NOSUCH->ENERGY;
     assert get("total_none") == pytest.approx(2.2091524418699868, rel=1e-14)
 
 
-def test_default_beam_values():
-    """Derived values of the default beam as printed by MAD-X 5.09.03."""
-    beam = MADXParser().context.beam
-    assert beam.pc == pytest.approx(0.99999986944002806, rel=1e-14)
-    assert beam.gamma == pytest.approx(1956.9511835591834, rel=1e-14)
-    assert beam.beta == pytest.approx(0.99999986944002806, rel=1e-14)
-    assert beam.brho == pytest.approx(3.3356405164803311, rel=1e-14)
+@pytest.mark.parametrize(
+    "script, sequence, values",
+    [
+        # all defaults: no command, and an empty one
+        (
+            "",
+            None,
+            {
+                "pc": 0.999999869440028,
+                "gamma": 1956.9511835591834,
+                "beta": 0.999999869440028,
+                "brho": 3.335640516480331,
+                "ex": 1.0,
+                "exn": 1956.9509280596917,
+                "ey": 1.0,
+                "eyn": 1956.9509280596917,
+                "et": 0.001,
+                "sigt": 1.0,
+                "sige": 0.001,
+                "kbunch": 1.0,
+                "npart": 1.0,
+                "bcurrent": 0.0,
+                "freq0": 0.0,
+                "circ": 0.0,
+                "dtbyds": 0.0,
+                "deltap": 0.0,
+                "alfa": 2.611199269011025e-07,
+                "u0": 0.0,
+                "qs": 0.0,
+                "arad": 2.8179403246496351e-15,
+                "bv": 1.0,
+                "bunched": 1.0,
+                "radiate": 0.0,
+                "n1min": -1.0,
+                "pdamp": 0.0,
+            },
+        ),
+        # stated values, of which a BEAM command ignores DELTAP to ARAD
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, EX=2e-6, EY=3e-6, ET=4e-3, SIGT=0.5, "
+            "SIGE=2e-4, KBUNCH=7, NPART=1e10, DELTAP=2, U0=3, QS=4, N1MIN=5, ALFA=6, "
+            "ARAD=7;",
+            None,
+            {
+                "ex": 2e-06,
+                "exn": 3.764903254435854e-06,
+                "ey": 3e-06,
+                "eyn": 5.647354881653782e-06,
+                "et": 0.004,
+                "sigt": 0.5,
+                "sige": 0.0002,
+                "kbunch": 7.0,
+                "npart": 1e10,
+                "bcurrent": 0.0,
+                "deltap": 0.0,
+                "u0": 0.0,
+                "qs": 0.0,
+                "n1min": -1.0,
+                "alfa": 0.22008862785503169,
+                "arad": 1.5346982663445394e-18,
+            },
+        ),
+        # normalized emittances, of which a later command keeps the unnormalized
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, EXN=1e-6, EYN=2e-6;",
+            None,
+            {
+                "ex": 5.312221496378628e-07,
+                "exn": 1e-06,
+                "ey": 1.0624442992757256e-06,
+                "eyn": 2e-06,
+            },
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, EXN=1e-6; BEAM, ENERGY=3;",
+            None,
+            {"ex": 5.312221496378628e-07, "exn": 1.6133028901394618e-06},
+        ),
+        # CIRC sets FREQ0 and takes precedence over it; a later energy keeps both
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, CIRC=100;",
+            None,
+            {"freq0": 2.647544871519702, "circ": 100.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, CIRC=100, FREQ0=5;",
+            None,
+            {"freq0": 2.647544871519702, "circ": 100.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, FREQ0=5;",
+            None,
+            {"freq0": 5.0, "circ": 52.95089743039404},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, CIRC=100; BEAM, ENERGY=3;",
+            None,
+            {"freq0": 2.647544871519702, "circ": 100.0},
+        ),
+        # BCURRENT and NPART follow from each other; each command clears BCURRENT
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, BCURRENT=1e-3, FREQ0=1;",
+            None,
+            {"npart": 7067518919.850619, "bcurrent": 0.001, "circ": 264.7544871519702},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, BCURRENT=1e-3, FREQ0=1; BEAM, ENERGY=3;",
+            None,
+            {"npart": 7067518919.850619, "bcurrent": 0.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, NPART=5, FREQ0=2;",
+            None,
+            {
+                "npart": 5.0,
+                "bcurrent": 1.4149236971850033e-12,
+                "circ": 132.3772435759851,
+            },
+        ),
+        # a stated energy parameter is kept as stated
+        (
+            "BEAM, PARTICLE=PROTON, PC=1e-9;",
+            None,
+            {"pc": 1e-09, "beta": 1.0657889247894517e-09, "gamma": 1.0},
+        ),
+        ("BEAM, PARTICLE=PROTON, PC=1e-6;", None, {"pc": 1e-06}),
+        (
+            "BEAM, PARTICLE=PROTON, BETA=-0.5;",
+            None,
+            {
+                "beta": -0.5,
+                "pc": 0.5417116426722884,
+                "energy": 1.0834232853445767,
+            },
+        ),
+        ("BEAM, PARTICLE=PROTON, BETA=1e-9;", None, {"beta": 1e-09}),
+        (
+            "BEAM, PARTICLE=PROTON, BRHO=2;",
+            None,
+            {"brho": 2.0, "pc": 0.5995849160000001, "energy": 1.1134884745316647},
+        ),
+        # a parameter without a value takes its default
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, BETA;",
+            None,
+            {"energy": 0.93827208816, "beta": 0.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, -BRHO;",
+            None,
+            {"energy": 0.93827208816, "brho": 0.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, PARTICLE;",
+            None,
+            {"mass": 0.00051099895, "charge": 1.0, "energy": 5.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, MASS;",
+            None,
+            {"mass": 0.93827208816, "charge": 1.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5, EX=2; BEAM, EX;",
+            None,
+            {"ex": 0.0, "exn": 0.0},
+        ),
+        (
+            "BEAM, SEQUENCE, PARTICLE=PROTON, ENERGY=3;",
+            None,
+            {"energy": 3.0, "mass": 0.93827208816},
+        ),
+        ("BEAM, RADIATE;", None, {"radiate": 1.0, "bunched": 1.0}),
+        ("BEAM, -RADIATE, -BUNCHED;", None, {"radiate": 0.0, "bunched": 0.0}),
+        ("BEAM, RADIATE=TRUE, BUNCHED=FALSE;", None, {"radiate": 1.0, "bunched": 0.0}),
+        # a quoted sequence name keeps its case, so `a` keeps the default beam
+        (
+            'BEAM, PARTICLE=ELECTRON, ENERGY=2; BEAM, SEQUENCE="A", PARTICLE=PROTON, ENERGY=5;',
+            "a",
+            {"energy": 2.0, "mass": 0.00051099895},
+        ),
+        (
+            'BEAM, SEQUENCE=X, PARTICLE=ELECTRON, ENERGY=3; RESBEAM, SEQUENCE="X";',
+            "x",
+            {"energy": 3.0, "mass": 0.00051099895},
+        ),
+        # a label does not change a command, but BEAM and RESBEAM are protected
+        (
+            "BEAM, PARTICLE=PROTON, PC=2; r: resbeam;",
+            None,
+            {"energy": 1.0, "mass": 0.00051099895},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, PC=2; beam: resbeam;",
+            None,
+            {"energy": 2.209152441869987, "mass": 0.93827208816},
+        ),
+        (
+            "beam: beam, particle=proton, pc=2;",
+            None,
+            {"energy": 1.0, "mass": 0.00051099895},
+        ),
+        (
+            "resbeam: beam, particle=proton, pc=2;",
+            None,
+            {"energy": 1.0, "mass": 0.00051099895},
+        ),
+    ],
+)
+def test_beam_references_match_madx(script, sequence, values):
+    """`beam->name` gives what MAD-X 5.09.03 prints with `value` for this input."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"{script}\n")
+    prefix = f"beam%{sequence}" if sequence else "beam"
+    for name, value in values.items():
+        got = parser.context.get_beam_attribute(prefix, name)
+        assert got == pytest.approx(value, rel=1e-13, abs=0.0), name
+
+
+@pytest.mark.parametrize(
+    "script, match",
+    [
+        ("BEAM, ENERGIE=3;", "Illegal keyword: energie"),
+        ("BEAM, E=2;", "Illegal keyword: e"),
+        ("BEAM, PART=PROTON, ENERGY=2;", "Illegal keyword: part"),
+        ("BEAM, PARTICLE=PROTON, ENERGY=2, FOO=3;", "Illegal keyword: foo"),
+        ("RESBEAM, ENERGY=3;", "Illegal keyword: energy"),
+    ],
+)
+def test_beam_illegal_keyword_raises(script, match):
+    """MAD-X stops on an unknown parameter, which must not fall back to 1 GeV."""
+    with pytest.raises(MADXInputError, match=match):
+        MADXParser().parse_string(f"{script}\n")
+
+
+def test_beam_illegal_keyword_after_a_string_raises():
+    """MAD-X reads this as the odd particle `proton,energie=3`, here it is a typo."""
+    with pytest.raises(MADXInputError, match="Illegal keyword: energie"):
+        MADXParser().parse_string("BEAM, PARTICLE=PROTON, ENERGIE=3;\n")
+
+
+@pytest.mark.parametrize(
+    "param, match",
+    [
+        ("ENERGY", "must exceed the mass"),
+        ("-ENERGY", "must exceed the mass"),
+        ("PC", "PC must be > 0"),
+        ("-PC", "PC must be > 0"),
+        ("GAMMA", "GAMMA must be > 1"),
+    ],
+)
+def test_beam_parameter_without_a_value_stops(param, match):
+    """MAD-X reads these as zero, and stops as for a stated zero."""
+    with pytest.raises(MADXInputError, match=match):
+        MADXParser().parse_string(f"BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, {param};\n")
+
+
+@pytest.mark.parametrize(
+    "script",
+    [
+        "BEAM, MASS=-1, CHARGE=1;",
+        "BEAM, MASS=-1, CHARGE=1, ENERGY=0.5;",
+        "BEAM, PARTICLE=FOO, MASS=-1, CHARGE=1, ENERGY=2;",
+        "BEAM, PARTICLE=ION, MASS=-1, CHARGE=1, ENERGY=2;",
+    ],
+)
+def test_beam_negative_mass_raises(script):
+    """Stricter than MAD-X, whose negative mass gives a non-finite reference."""
+    with pytest.raises(MADXInputError, match="MASS must be > 0"):
+        MADXParser().parse_string(f"{script}\n")
+
+
+@pytest.mark.parametrize("params", ["EXN=1e-6", "EYN=1e-6", "BCURRENT=1e-3, FREQ0=1"])
+def test_beam_at_rest_with_moving_parameters_raises(params):
+    """Stricter than MAD-X, whose values for this input are infinite."""
+    with pytest.raises(MADXInputError, match="not at rest"):
+        MADXParser().parse_string(f"BEAM, PARTICLE=PROTON, BETA=0, {params};\n")
 
 
 def test_predefined_constants_match_madx():

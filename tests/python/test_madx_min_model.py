@@ -440,6 +440,8 @@ def test_solenoid_promotion_end_to_end_from_madx_file(tmp_path, beam_energy):
             "beam, mass=2, charge=1, pc=3;\nbeam, particle=proton, pc=2;",
             2.0 / 0.93827208816,
         ),
+        # a stated momentum is kept, also below the resolution of the total energy
+        ("beam, particle=proton, pc=1e-9;", 1.0e-9 / 0.93827208816),
     ],
 )
 def test_solenoid_promotion_uses_the_particle_of_the_beam(
@@ -457,7 +459,8 @@ def test_solenoid_promotion_uses_the_particle_of_the_beam(
         warnings.simplefilter("ignore")
         paraxial = read_lattice(str(madx_file), min_model="paraxial")
 
-    assert _only(paraxial, elements.ChrAcc).bz == pytest.approx(beta_gamma, rel=1e-14)
+    rel = 1.0e-14 if Config.precision != "SINGLE" else 1.0e-6
+    assert _only(paraxial, elements.ChrAcc).bz == pytest.approx(beta_gamma, rel=rel)
 
 
 @pytest.mark.parametrize(
@@ -474,12 +477,6 @@ def test_solenoid_promotion_uses_the_particle_of_the_beam(
         ("beam, particle=proton, pc=2;", 1.0, 938.27208816, 2.0 / 0.93827208816),
         ("beam, particle=proton, beta=0;", 1.0, 938.27208816, 0.0),
         ("beam, particle=proton, brho=0;", 1.0, 938.27208816, 0.0),
-        (
-            "beam, particle=proton, beta=1e-3;",
-            1.0,
-            938.27208816,
-            1.0e-3 / math.sqrt(1.0 - 1.0e-6),
-        ),
         ("beam, particle=posmuon, gamma=5;", 1.0, 105.6583755, math.sqrt(24.0)),
         ("beam, particle=antiproton, gamma=5;", -1.0, 938.27208816, math.sqrt(24.0)),
     ],
@@ -493,9 +490,26 @@ def test_read_beam(tmp_path, beam_command, charge_qe, mass_MeV, beta_gamma):
         warnings.simplefilter("ignore")
         read_beam(ref, str(madx_file))
 
-    assert ref.charge_qe == pytest.approx(charge_qe, rel=1e-14)
-    assert ref.mass_MeV == pytest.approx(mass_MeV, rel=1e-14)
-    assert ref.beta_gamma == pytest.approx(beta_gamma, rel=1e-9, abs=1e-12)
+    is_double = Config.precision != "SINGLE"
+    assert ref.charge_qe == pytest.approx(charge_qe, rel=1e-14 if is_double else 1e-6)
+    assert ref.mass_MeV == pytest.approx(mass_MeV, rel=1e-14 if is_double else 1e-6)
+    assert ref.beta_gamma == pytest.approx(
+        beta_gamma, rel=1e-9 if is_double else 1e-6, abs=1e-12
+    )
+
+
+def test_read_beam_low_energy(tmp_path):
+    """RefPart.load_file keeps a low kinetic energy."""
+    madx_file = tmp_path / "beam.madx"
+    madx_file.write_text("beam, particle=proton, beta=1e-3;\n")
+    ref = RefPart()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        read_beam(ref, str(madx_file))
+
+    # single precision: the reference `pt` near -1 cannot resolve a beta*gamma of 1e-3
+    rel = 1e-9 if Config.precision != "SINGLE" else 3e-2
+    assert ref.beta_gamma == pytest.approx(1.0e-3 / math.sqrt(1.0 - 1.0e-6), rel=rel)
 
 
 def test_readers_need_a_beam_command(tmp_path):

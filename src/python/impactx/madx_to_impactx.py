@@ -1612,7 +1612,7 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
     # 1 GeV, and translating a rigidity against an assumed energy would bake a
     # wrong field strength into the lattice instead of merely approximating one.
     ref_beta_gamma = None
-    if madx_beam.energy_is_explicit and madx_beam.gamma > 1.0:
+    if madx_beam.energy_is_explicit and madx_beam.pc > 0.0:
         ref_beta_gamma = madx_beam.pc / madx_beam.mass
 
     return lattice(

@@ -18,7 +18,7 @@ from .element_models import (
     tier_rank,
     validate_model,
 )
-from .MADXParser import MADXParser
+from .MADXParser import MADXInputError, MADXParser
 
 # Single-shape mapping from MAD-X APERTYPE to ImpactX Aperture.shape.
 # Edit this table first when adding support for new MAD-X aperture types.
@@ -42,6 +42,14 @@ class MADXImpactXTranslatorWarning(UserWarning):
 def _warn(message: str):
     """Emit a translation warning without mutating process-wide warning formatting."""
     warnings.warn(message, MADXImpactXTranslatorWarning, stacklevel=2)
+
+
+def _selected_beam(madx: MADXParser, madx_file):
+    """The beam of the selected sequence; MAD-X stops on a sequence without one."""
+    madx_beam = madx.context.beam
+    if not madx_beam.defined:
+        raise MADXInputError("The sequence has no BEAM command", file=str(madx_file))
+    return madx_beam
 
 
 class sc:
@@ -1580,15 +1588,8 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
     madx.parse(madx_file)
     beamline = madx.getBeamline(line_name=line, sequence_name=sequence)
     freq0 = madx.getFreq0()
-    if getattr(madx.context.beam, "mass", 0.0) > 0.0:
-        ref_mass_MeV = madx.context.beam.mass * 1.0e3
-    else:
-        ref_mass_MeV = beam(
-            madx.getParticle(),
-            charge=getattr(madx.context.beam, "charge", None),
-            mass=None,
-            energy=float(madx.getEtot()),
-        )["mass"]
+    madx_beam = _selected_beam(madx, madx_file)
+    ref_mass_MeV = madx_beam.mass * 1.0e3
     all_options = madx.getOptions()
     options = {
         # MAD-X options are numeric in parser context; bool() captures 0/1 and expressions.
@@ -1601,7 +1602,7 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
                 f"OPTION '{opt_name}' was parsed but is not consumed by MAD-X->ImpactX translation."
             )
 
-    bv = float(getattr(madx.context.beam, "bv", 1.0))
+    bv = madx_beam.bv
 
     # beta*gamma of the reference particle, from the MAD-X BEAM total energy.
     # Elements whose strength is expressed per unit rigidity rather than in the
@@ -1611,15 +1612,8 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
     # 1 GeV, and translating a rigidity against an assumed energy would bake a
     # wrong field strength into the lattice instead of merely approximating one.
     ref_beta_gamma = None
-    if (
-        getattr(madx.context.beam, "energy_is_explicit", False)
-        and ref_mass_MeV is not None
-        and ref_mass_MeV > 0.0
-    ):
-        # MAD-X ENERGY is the total energy in GeV
-        gamma = float(madx.getEtot()) * 1.0e3 / ref_mass_MeV
-        if gamma > 1.0:
-            ref_beta_gamma = math.sqrt(gamma**2 - 1.0)
+    if madx_beam.energy_is_explicit and madx_beam.gamma > 1.0:
+        ref_beta_gamma = madx_beam.pc / madx_beam.mass
 
     return lattice(
         beamline,
@@ -1731,24 +1725,11 @@ def read_beam(ref: RefPart, madx_file):
 
     madx = MADXParser()
     madx.parse(madx_file)
+    madx_beam = _selected_beam(madx, madx_file)
 
-    ref_particle_dict = beam(
-        madx.getParticle(),  # if particle species is known, mass, charge, and potentially energy are set to default
-        charge=(
-            None
-            if getattr(madx.context.beam, "charge", 0.0) == 0.0
-            else float(madx.context.beam.charge)
-        ),
-        mass=(
-            None
-            if getattr(madx.context.beam, "mass", 0.0) == 0.0
-            else float(madx.context.beam.mass)
-        ),
-        energy=float(madx.getEtot()),  # MADX default energy is in GeV
-    )
-
-    ref.set_charge_qe(ref_particle_dict["charge"])
-    ref.set_mass_MeV(ref_particle_dict["mass"])
-    ref.set_kin_energy_MeV(ref_particle_dict["energy"] - ref_particle_dict["mass"])
+    GeV2MeV = 1.0e3
+    ref.set_charge_qe(madx_beam.charge)
+    ref.set_mass_MeV(madx_beam.mass * GeV2MeV)
+    ref.set_kin_energy_MeV((madx_beam.energy - madx_beam.mass) * GeV2MeV)
 
     return ref

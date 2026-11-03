@@ -129,14 +129,46 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
-MAD-X ``BEAM``: ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` set the reference energy
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+MAD-X ``BEAM``: reference particle and energy as in MAD-X
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-MAD-X files take the reference energy from the first of ``ENERGY``, ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` in a ``BEAM`` command, as MAD-X does; previously only ``ENERGY`` was read and the others left 1 GeV.
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` and
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` now resolve each ``BEAM`` command of a
+MAD-X file as MAD-X does. Previously, only ``ENERGY`` was read, so ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` left 1 GeV.
 
-**What to check in your scripts:** remove workarounds that set the energy after loading.
-A ``BEAM`` command without a MAD-X ``PARTICLE`` needs ``MASS`` and ``CHARGE``.
-Invalid values, and a later ``BEAM`` command whose particle mass is not below the energy, raise a ``MADXInputError``.
+**What to check in your scripts:** remove workarounds that set the energy after loading a file whose ``BEAM`` command gives the energy:
+
+.. code-block:: python
+
+   ref.load_file("lattice.madx")
+   ref.set_kin_energy_MeV(1.0e3)  # remove: BEAM, PARTICLE=PROTON, PC=1.696;
+
+**What to check in your MAD-X files:** the following commands now behave differently.
+
+.. code-block:: text
+
+   ! no PARTICLE or MASS: previously an error, now a positron
+   BEAM, ENERGY=2;
+   BEAM, PARTICLE=PROTON, ENERGY=2;   ! state the particle
+
+   ! a mass that is not below the energy, also the 1 GeV default: now an error
+   BEAM, MASS=2, CHARGE=1;
+   BEAM, MASS=2, CHARGE=1, ENERGY=3;  ! state the energy
+
+   ! an ion: MASS and CHARGE are now used
+   BEAM, PARTICLE=ION, MASS=193.7, CHARGE=82, ENERGY=574;
+
+   ! a new sequence beam: now starts from the defaults, not from the default beam
+   BEAM, PARTICLE=PROTON, ENERGY=7000;
+   BEAM, SEQUENCE=B2, BV=-1;                                  ! a positron at 1 GeV
+   BEAM, SEQUENCE=B2, BV=-1, PARTICLE=PROTON, ENERGY=7000;    ! state both
+
+   ! a quoted particle name now keeps its case
+   BEAM, PARTICLE="PROTON", PC=2;     ! an unknown particle with a warning
+   BEAM, PARTICLE=PROTON, PC=2;
+
+A file without a ``BEAM`` command raises a ``MADXInputError``, invalid values in a ``BEAM`` command do too, and ``RESBEAM`` now resets the beam.
+The reference particle takes its mass from the MAD-X constants, e.g., ``PMASS`` and ``MUMASS``, which differ from the previous CODATA values at about 1 part in :math:`10^9`.
 
 ``Thermal``: invalid parameters raise an error
 """"""""""""""""""""""""""""""""""""""""""""""

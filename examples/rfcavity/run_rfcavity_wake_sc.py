@@ -85,8 +85,8 @@ nz = 5000  # number of longitudinal separation sampling points to be used
 K0 = 4.30355e13  # first fitted parameter
 s0 = 0.00175  # second fitted parameter (in meters)
 z_wake = np.linspace(zmin, zmax, nz)
-wake_z_data = K0 * np.exp(
-    -np.sqrt(z_wake / s0)
+wake_z_data = (
+    K0 * np.exp(-np.sqrt(z_wake / s0))
 )  # This analytical functional form is fitted to the tabulated single-particle wake for a TESLA, 9-cell 1.3 GHz cavity as it appears in (https://github.com/impact-lbl/IMPACT-Z/tree/master/examples/Example3).
 
 #   Drift elements

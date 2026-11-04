@@ -9,6 +9,9 @@
 
 import math
 
+import numpy as np
+import pytest
+
 from impactx import ImpactX, create_envelope, distribution
 
 # beam moments that stay defined without a beam: the reference path length and
@@ -163,6 +166,37 @@ def test_beam_moments_without_energy_spread():
     assert moments["emittance_x"] > 0.0
     assert math.isfinite(moments["beta_x"])
     assert math.isfinite(moments["alpha_x"])
+
+    sim.finalize()
+
+
+def test_beam_moments_nan_particle():
+    """
+    One NaN particle stays visible in the moments of its plane, it does not report an
+    emittance of 0. With fast-math, comparisons with a NaN are arbitrary and this
+    cannot hold, which shows in the variance.
+    """
+    sim = ImpactX()
+    sim.particle_shape = 2
+    sim.space_charge = False
+    sim.slice_step_diagnostics = False
+    sim.init_grids()
+
+    sim.beam.ref.set_species("electron").set_kin_energy_MeV(2.0e3)
+
+    rng = np.random.default_rng(1)
+    x, y, t, px, py, pt = 1.0e-3 * rng.normal(size=(6, 1000))
+    px[17] = np.nan
+    sim.beam.add_n_particles(x, y, t, px, py, pt, 1.0, 1.0e-9)
+
+    moments = sim.beam.beam_moments()
+    assert math.isnan(moments["mean_px"])
+    if not math.isnan(moments["sigma_px"]):
+        sim.finalize()
+        pytest.skip("this build compares with a NaN under fast-math")
+
+    assert math.isnan(moments["emittance_x"])
+    assert moments["emittance_y"] > 0.0
 
     sim.finalize()
 

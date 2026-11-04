@@ -18,9 +18,8 @@ def get_moments(beam):
     -------
     sigx, sigy, sigt, emittance_x, emittance_y, emittance_t
     """
-    # double precision also for single-precision data: the t-pt correlation of
-    # this beam is too close to unity to compute the emittance in float32
-    beam = beam.astype(np.float64)
+    # float64 arithmetic, also for single-precision data
+    beam = beam.select_dtypes(np.floating).astype(np.float64)
 
     sigx = moment(beam["position_x"], moment=2) ** 0.5  # variance -> std dev.
     sigpx = moment(beam["momentum_x"], moment=2) ** 0.5

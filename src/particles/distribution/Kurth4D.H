@@ -11,6 +11,7 @@
 #define IMPACTX_DISTRIBUTION_KURTH4D
 
 #include "particles/ReferenceParticle.H"
+#include "particles/distribution/BoxMuller.H"
 #include "particles/distribution/mixin/beamellipse.H"
 
 #include <ablastr/constant.H>
@@ -111,8 +112,8 @@ namespace impactx::distribution
             using amrex::Math::powi;
             using ablastr::constant::math::pi;
 
-            amrex::ParticleReal v,phi,r,u1,u2,ln1;
-            amrex::ParticleReal alpha,u,Lz,pmax,pr,pphi;
+            amrex::ParticleReal v,phi,r;
+            amrex::ParticleReal alpha,u,pmax,pr,pphi;
 
             // Sample and transform to define (x,y):
             v = amrex::Random(engine);
@@ -122,17 +123,16 @@ namespace impactx::distribution
             x = r * std::cos(phi);
             y = r * std::sin(phi);
 
-            // Random samples used to define Lz:
+            // Random samples used to define Lz = r*pphi:
             u = amrex::Random(engine);
-            Lz = r*(2.0_prt*u-1.0_prt);
+            pphi = 2.0_prt*u-1.0_prt;
 
             // Random samples used to define pr:
             alpha = amrex::Random(engine);
             alpha = pi*alpha;
-            pmax = 1.0_prt - powi<2>((Lz/r)) - powi<2>(r) + powi<2>(Lz);
-            pmax = std::sqrt(pmax);
+            // pmax^2 = 1 - pphi^2 - r^2 + Lz^2 with r^2 = v, factored: this sum can round below 0
+            pmax = std::sqrt((1.0_prt - powi<2>(pphi)) * (1.0_prt - v));
             pr = pmax * std::cos(alpha);
-            pphi = Lz/r;
 
             // Transformations used to obtain (px,py):
             px = pr * std::cos(phi)-pphi * std::sin(phi);
@@ -141,10 +141,7 @@ namespace impactx::distribution
             // Sample and transform to define (t,pt):
             t = amrex::Random(engine);
             t = 2.0_prt*(t-0.5_prt);
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            pt = ln1 * std::cos(2_prt*pi*u2);
+            pt = box_muller::single(engine);
 
             // Scale to produce the identity covariance matrix:
             amrex::ParticleReal const c = std::sqrt(3.0_prt);

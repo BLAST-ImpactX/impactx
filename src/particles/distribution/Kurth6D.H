@@ -15,6 +15,7 @@
 
 #include <ablastr/constant.H>
 
+#include <AMReX_Algorithm.H>
 #include <AMReX_Math.H>
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
@@ -114,7 +115,7 @@ namespace impactx::distribution
             using ablastr::constant::math::pi;
 
             amrex::ParticleReal v,costheta,sintheta,phi,r;
-            amrex::ParticleReal L,alpha,pmax,pr,beta,p1,p2;
+            amrex::ParticleReal u,L_over_r,alpha,pmax,pr,beta,p1,p2;
 
             // Random samples used to define (x,y,z):
             v = amrex::Random(engine);
@@ -130,22 +131,23 @@ namespace impactx::distribution
             y = r*sintheta * std::sin(phi);
             t = r*costheta;
 
-            // Random samples used to define L:
-            L = amrex::Random(engine);
-            L = r*std::sqrt(L);
+            // Random samples used to define L = r*sqrt(u):
+            u = amrex::Random(engine);
+            L_over_r = std::sqrt(u);
 
             // Random samples used to define pr:
             alpha = amrex::Random(engine);
             alpha = pi*alpha;
-            pmax = 1_prt - powi<2>(L/r) - powi<2>(r) + powi<2>(L);
-            pmax = std::sqrt(pmax);
+            // pmax^2 = 1 - (L/r)^2 - r^2 + L^2, factored since this sum can round below 0.
+            // The bound is for std::pow, which is not correctly rounded and can yield r > 1.
+            pmax = std::sqrt(amrex::max(0_prt, (1_prt - u) * (1_prt - powi<2>(r))));
             pr = pmax * std::cos(alpha);
 
             // Random samples used to define ptangent:
             beta = amrex::Random(engine);
             beta = 2_prt*pi*beta;
-            p1 = L/r * std::cos(beta);  // This is phi component
-            p2 = L/r * std::sin(beta);  // This is theta component
+            p1 = L_over_r * std::cos(beta);  // This is phi component
+            p2 = L_over_r * std::sin(beta);  // This is theta component
 
             // Transformation from spherical to Cartesian coord.:
             px = pr*sintheta * std::cos(phi) + p2*costheta * std::cos(phi) - p1 * std::sin(phi);

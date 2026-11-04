@@ -11,6 +11,7 @@
 #define IMPACTX_DISTRIBUTION_SEMIGAUSSIAN
 
 #include "particles/ReferenceParticle.H"
+#include "particles/distribution/BoxMuller.H"
 #include "particles/distribution/mixin/beamellipse.H"
 
 #include <ablastr/constant.H>
@@ -109,7 +110,6 @@ namespace impactx::distribution
             using namespace amrex::literals;
             using ablastr::constant::math::pi;
 
-            amrex::ParticleReal ln1,u1,u2;
             amrex::ParticleReal phi,v,r;
 
             // Generate a 3D uniform distribution (x,y,t) within a cylinder:
@@ -130,17 +130,8 @@ namespace impactx::distribution
             t = c*t;
 
             // Generate three normal random variables (px,py,pt) using Box-Muller:
-
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            px = ln1 * std::cos(2_prt*pi*u2);
-            py = ln1 * std::sin(2_prt*pi*u2);
-
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            pt = ln1 * std::cos(2_prt*pi*u2);
+            box_muller::pair(px, py, engine);
+            pt = box_muller::single(engine);
 
             // Transform to the beam ellipse:
             to_beam_ellipse(x, y, t, px, py, pt);

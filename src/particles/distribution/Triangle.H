@@ -11,9 +11,8 @@
 #define IMPACTX_DISTRIBUTION_TRIANGLE
 
 #include "particles/ReferenceParticle.H"
+#include "particles/distribution/BoxMuller.H"
 #include "particles/distribution/mixin/beamellipse.H"
-
-#include <ablastr/constant.H>
 
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
@@ -100,9 +99,8 @@ namespace impactx::distribution
         {
 
             using namespace amrex::literals;
-            using ablastr::constant::math::pi;
 
-            amrex::ParticleReal ln1, norm, u0, u1, u2;
+            amrex::ParticleReal norm, u0, u1, u2;
             amrex::ParticleReal g1, g2, g3, g4, g5;
             amrex::ParticleReal d;
 
@@ -112,20 +110,9 @@ namespace impactx::distribution
             t = std::sqrt(2_prt)*(2_prt-3_prt*std::sqrt(u0));
 
             // Generate five standard normal random variables using Box-Muller:
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g1 = ln1 * std::cos(2_prt*pi*u2);
-            g2 = ln1 * std::sin(2_prt*pi*u2);
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g3 = ln1 * std::cos(2_prt*pi*u2);
-            g4 = ln1 * std::sin(2_prt*pi*u2);
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g5 = ln1 * std::cos(2_prt*pi*u2);
+            box_muller::pair(g1, g2, engine);
+            box_muller::pair(g3, g4, engine);
+            g5 = box_muller::single(engine);
 
             // Use one of these normal random variables for pt:
             pt = g5;

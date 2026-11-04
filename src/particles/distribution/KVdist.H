@@ -11,11 +11,11 @@
 #define IMPACTX_DISTRIBUTION_KVDIST
 
 #include "particles/ReferenceParticle.H"
+#include "particles/distribution/BoxMuller.H"
 #include "particles/distribution/mixin/beamellipse.H"
 
 #include <ablastr/constant.H>
 
-#include <AMReX_Math.H>
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
@@ -108,10 +108,9 @@ namespace impactx::distribution
         ) const
         {
             using namespace amrex::literals;
-            using amrex::Math::powi;
             using ablastr::constant::math::pi;
 
-            amrex::ParticleReal v,phi,r,beta,p,u1,u2,ln1;
+            amrex::ParticleReal v,phi,r,beta,p;
 
             // Sample and transform to define (x,y):
             v = amrex::Random(engine);
@@ -124,17 +123,15 @@ namespace impactx::distribution
             // Sample and transform to define (px,py):
             beta = amrex::Random(engine);
             beta = 2_prt*pi*beta;
-            p = std::sqrt(1_prt-powi<2>(r));
+            // p^2 = 1 - r^2 with r^2 = v
+            p = std::sqrt(1_prt-v);
             px = p * std::cos(beta);
             py = p * std::sin(beta);
 
             // Sample and transform to define (t,pt):
             t = amrex::Random(engine);
             t = 2.0_prt*(t-0.5_prt);
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            pt = ln1 * std::cos(2_prt*pi*u2);
+            pt = box_muller::single(engine);
 
             // Scale to produce the identity covariance matrix:
             amrex::ParticleReal const c = std::sqrt(3.0_prt);

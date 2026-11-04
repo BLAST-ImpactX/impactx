@@ -10,6 +10,7 @@ References:
 from __future__ import annotations
 
 import builtins
+import copy as copy
 import dataclasses
 import enum
 import math as math
@@ -24,8 +25,12 @@ from typing import Any
 __all__: list[str] = [
     "Any",
     "AttributeExpr",
+    "BEAM_PARAMETERS",
+    "BEAM_VALUES",
     "Beam",
     "BinaryExpr",
+    "CLIGHT",
+    "EMASS",
     "Element",
     "Enum",
     "EvaluationContext",
@@ -40,6 +45,7 @@ __all__: list[str] = [
     "MADXParser",
     "MADXParserError",
     "NumberExpr",
+    "QELECT",
     "StringExpr",
     "Token",
     "TokenType",
@@ -47,6 +53,7 @@ __all__: list[str] = [
     "Variable",
     "VariableExpr",
     "auto",
+    "copy",
     "dataclass",
     "field",
     "math",
@@ -504,44 +511,129 @@ class Line:
 
 class Beam:
     """
-    MAD-X BEAM command parameters.
+    A MAD-X beam: the result of its BEAM commands.
+
+    The defaults are those of the MAD-X `beam` command in `src/mad_dict.c`.
     """
 
     __dataclass_fields__: typing.ClassVar[dict]
     __dataclass_params__: typing.ClassVar[dataclasses._DataclassParams]
     __hash__: typing.ClassVar[None] = None
     __match_args__: typing.ClassVar[tuple] = (
+        "defined",
         "particle",
-        "energy",
-        "energy_is_explicit",
-        "pc",
         "mass",
         "charge",
+        "energy",
+        "energy_is_explicit",
         "freq0",
+        "circ",
         "bv",
+        "ex",
+        "ey",
+        "et",
+        "sigt",
+        "sige",
+        "kbunch",
+        "npart",
+        "bcurrent",
+        "bunched",
+        "radiate",
+        "dtbyds",
+        "deltap",
+        "u0",
+        "qs",
+        "n1min",
+        "pc",
+        "gamma",
+        "beta",
+        "brho",
+        "exn",
+        "eyn",
+        "alfa",
+        "arad",
     )
+    alfa: typing.ClassVar[float] = 0.0
+    arad: typing.ClassVar[float] = 0.0
+    bcurrent: typing.ClassVar[float] = 0.0
+    beta: typing.ClassVar[float] = 0.0
+    brho: typing.ClassVar[float] = 0.0
+    bunched: typing.ClassVar[float] = 1.0
     bv: typing.ClassVar[float] = 1.0
-    charge: typing.ClassVar[float] = 0.0
+    charge: typing.ClassVar[float] = 1.0
+    circ: typing.ClassVar[float] = 0.0
+    defined: typing.ClassVar[bool] = False
+    deltap: typing.ClassVar[float] = 0.0
+    dtbyds: typing.ClassVar[float] = 0.0
     energy: typing.ClassVar[float] = 1.0
     energy_is_explicit: typing.ClassVar[bool] = False
+    et: typing.ClassVar[float] = 0.001
+    ex: typing.ClassVar[float] = 1.0
+    exn: typing.ClassVar[float] = 0.0
+    ey: typing.ClassVar[float] = 1.0
+    eyn: typing.ClassVar[float] = 0.0
     freq0: typing.ClassVar[float] = 0.0
-    mass: typing.ClassVar[float] = 0.0
-    particle: typing.ClassVar[str] = ""
+    gamma: typing.ClassVar[float] = 0.0
+    kbunch: typing.ClassVar[float] = 1.0
+    mass: typing.ClassVar[float] = 0.00051099895
+    n1min: typing.ClassVar[float] = -1.0
+    npart: typing.ClassVar[float] = 1.0
+    particle: typing.ClassVar[str] = "positron"
     pc: typing.ClassVar[float] = 0.0
+    qs: typing.ClassVar[float] = 0.0
+    radiate: typing.ClassVar[float] = 0.0
+    sige: typing.ClassVar[float] = 0.001
+    sigt: typing.ClassVar[float] = 1.0
+    u0: typing.ClassVar[float] = 0.0
     def __eq__(self, other): ...
     def __init__(
         self,
-        particle: str = "",
+        defined: bool = False,
+        particle: str = "positron",
+        mass: float = 0.00051099895,
+        charge: float = 1.0,
         energy: float = 1.0,
         energy_is_explicit: bool = False,
-        pc: float = 0.0,
-        mass: float = 0.0,
-        charge: float = 0.0,
         freq0: float = 0.0,
+        circ: float = 0.0,
         bv: float = 1.0,
+        ex: float = 1.0,
+        ey: float = 1.0,
+        et: float = 0.001,
+        sigt: float = 1.0,
+        sige: float = 0.001,
+        kbunch: float = 1.0,
+        npart: float = 1.0,
+        bcurrent: float = 0.0,
+        bunched: float = 1.0,
+        radiate: float = 0.0,
+        dtbyds: float = 0.0,
+        deltap: float = 0.0,
+        u0: float = 0.0,
+        qs: float = 0.0,
+        n1min: float = -1.0,
+        pc: float = 0.0,
+        gamma: float = 0.0,
+        beta: float = 0.0,
+        brho: float = 0.0,
+        exn: float = 0.0,
+        eyn: float = 0.0,
+        alfa: float = 0.0,
+        arad: float = 0.0,
     ) -> None: ...
+    def __post_init__(self): ...
     def __replace__(self, **changes): ...
     def __repr__(self): ...
+    def set_energy(self, attr: str, value: float):
+        """
+        Set the quantities that follow from the mass, the charge and one energy
+        parameter (`energy`, `pc`, `gamma`, `beta` or `brho`), which is kept as stated.
+        """
+    @property
+    def is_physical(self) -> bool:
+        """
+        Whether this can be a reference particle, unlike all that MAD-X accepts.
+        """
 
 class EvaluationContext:
     """
@@ -550,17 +642,27 @@ class EvaluationContext:
     Holds variables, elements, lines, and provides expression evaluation.
     """
 
+    PARTICLES: typing.ClassVar[dict] = {
+        "positron": (0.00051099895, 1.0),
+        "electron": (0.00051099895, -1.0),
+        "proton": (0.93827208816, 1.0),
+        "antiproton": (0.93827208816, -1.0),
+        "posmuon": (0.1056583755, 1.0),
+        "negmuon": (0.1056583755, -1.0),
+        "ion": (0.93956542052, 1.0),
+    }
     PREDEFINED_CONSTANTS: typing.ClassVar[dict] = {
         "pi": 3.141592653589793,
         "twopi": 6.283185307179586,
         "degrad": 57.29577951308232,
         "raddeg": 0.017453292519943295,
         "e": 2.718281828459045,
+        "amu0": 1.2566370614359173e-06,
         "emass": 0.00051099895,
         "pmass": 0.93827208816,
         "nmass": 0.93956542052,
         "umass": 0.93149410242,
-        "mumass": 0.1056583715,
+        "mumass": 0.1056583755,
         "clight": 299792458.0,
         "qelect": 1.602176634e-19,
         "hbar": 6.582119569e-25,
@@ -574,6 +676,12 @@ class EvaluationContext:
         """
         Create a MADXInputError with current file and line context.
         """
+    def _referenced_beam(self, name: str) -> Beam:
+        """
+        The beam of `beam` or `beam%sequence`.
+
+        `beam` is the default beam, as is the beam of a sequence that has none.
+        """
     def _warn(self, message: str):
         """
         Emit a warning with current file and line context.
@@ -582,9 +690,9 @@ class EvaluationContext:
         """
         Evaluate an expression.
         """
-    def get_beam_for_sequence(self, sequence_name: str | None = None) -> Beam:
+    def get_beam_attribute(self, name: str, attr_name: str) -> float:
         """
-        Get or create a beam for a specific sequence.
+        Value of `beam->attr` or `beam%sequence->attr`.
         """
     def get_element_attribute(self, element_name: str, attr_name: str) -> typing.Any:
         """
@@ -597,6 +705,13 @@ class EvaluationContext:
     def get_variable(self, name: str) -> typing.Any:
         """
         Get a variable value, evaluating deferred expressions.
+        """
+    def set_beam_attribute(self, name: str, attr_name: str, value: float):
+        """
+        Set `beam->attr` or `beam%sequence->attr`, as in MAD-X.
+
+        Only this value changes. What follows from it, such as `pc` from `energy`, keeps
+        its value until the next BEAM command, so that consumers cannot rely on them.
         """
     def set_option(self, name: str, value: typing.Any):
         """
@@ -633,6 +748,14 @@ class MADXParser:
     def _advance(self) -> Token:
         """
         Advance and return current token.
+        """
+    def _apply_beam_parameters(self, beam: Beam, exprs: dict):
+        """
+        Apply the parameters of a BEAM command that follow from its energy.
+        """
+    def _check_beam_energy(self, attr: str, value: float, mass: float):
+        """
+        Stop on an energy parameter where MAD-X stops.
         """
     def _current(self) -> Token:
         """
@@ -671,13 +794,85 @@ class MADXParser:
 
         Appends an expression term to an existing deferred expression.
         """
+    def _parse_beam_assignment(self):
+        """
+        Parse `beam->name = value` or `beam%sequence->name = value`.
+
+        As in MAD-X, also `:=` evaluates the value now.
+        """
     def _parse_beam_command(self):
         """
-        Parse the BEAM command.
+        Parse a BEAM command, after its name, and apply it as MAD-X `update_beam`.
 
         MAD-X allows multiple BEAM commands for different sequences via
         BEAM, SEQUENCE=name, ...;  The beam is stored per-sequence.
         A BEAM without SEQUENCE= updates the default beam.
+        The energy comes from the first of ENERGY, PC, GAMMA, BETA, BRHO.
+
+        The values of the command are computed on a copy, which replaces the beam at the
+        end: as in MAD-X, `beam->name` in the command reads the beam before the command.
+        A new beam starts from the MAD-X defaults.
+        """
+    def _parse_beam_name(self) -> str:
+        """
+        Parse a name in a beam command, as in MAD-X.
+
+        A quoted name keeps its case. Otherwise, signs and numbers continue the name,
+        as in `H-` or `PB208+82`, except for a sign before another parameter, as in
+        `PROTON -RADIATE`.
+        """
+    def _parse_beam_parameters(
+        self,
+        allowed: tuple = (
+            "mass",
+            "charge",
+            "energy",
+            "pc",
+            "gamma",
+            "beta",
+            "brho",
+            "ex",
+            "exn",
+            "ey",
+            "eyn",
+            "et",
+            "sigt",
+            "sige",
+            "kbunch",
+            "npart",
+            "bcurrent",
+            "circ",
+            "dtbyds",
+            "deltap",
+            "alfa",
+            "u0",
+            "qs",
+            "arad",
+            "bv",
+            "bunched",
+            "radiate",
+            "n1min",
+            "freq0",
+            "pdamp",
+            "particle",
+            "sequence",
+        ),
+    ) -> tuple[str | None, dict, str | None]:
+        """
+        Parse the parameters of a beam command through its semicolon, as in MAD-X.
+
+        A comma is optional except after a numeric value. A parameter without a value
+        takes its default in `src/mad_dict.c`: a flag is set, or cleared by `-NAME`, a
+        number is zero, and PARTICLE is a positron. An unknown parameter raises, also
+        where MAD-X makes it part of a preceding string value, which turns a typo in
+        `PARTICLE=PROTON, ENERGIE=3` into an unknown particle with the electron mass.
+
+        :param allowed: the parameters of the command
+        :return: the particle name, the unevaluated values, and the sequence name
+        """
+    def _parse_beam_value(self, attr: str, expr: Expression) -> float:
+        """
+        Evaluate a value of a BEAM command, of which only the used ones are read.
         """
     def _parse_call_command(self):
         """
@@ -723,9 +918,11 @@ class MADXParser:
         Substitutes $argN with the corresponding variable value,
         then parses the expanded macro body.
         """
-    def _parse_expression(self) -> Expression:
+    def _parse_expression(self, complete: bool = False) -> Expression:
         """
         Parse an expression using the expression parser.
+
+        :param complete: raise if tokens follow the expression before the next comma
         """
     def _parse_if_condition(self) -> bool:
         """
@@ -748,7 +945,7 @@ class MADXParser:
         """
     def _parse_labeled_definition(self):
         """
-        Parse a labeled definition (element or line).
+        Parse a labeled definition (element or line) or a labeled beam command.
         """
     def _parse_line_definition(self, name: str):
         """
@@ -782,6 +979,10 @@ class MADXParser:
             OPTION, RBARC=true, THIN_FOC=false;
             OPTION, ECHO;
             OPTION, -WARN;
+        """
+    def _parse_resbeam_command(self):
+        """
+        Parse a RESBEAM command, after its name, which restores the beam defaults.
         """
     def _parse_sequence_definition(self, name: str):
         """
@@ -831,6 +1032,12 @@ class MADXParser:
     def _process_line_element(self, elem) -> list[str]:
         """
         Process a single line element specification.
+        """
+    def _resolve_beam_particle(
+        self, beam: Beam, particle: str | None, exprs: dict
+    ) -> tuple[str, float, float]:
+        """
+        Particle name, rest energy [GeV] and charge [e] after a BEAM command.
         """
     def _resolve_beamline_name(
         self, *, line_name: str | None = None, sequence_name: str | None = None
@@ -924,4 +1131,92 @@ class MADXParser:
         Get selected sequence (backward compatible).
         """
 
+def _c_divide(numerator: float, denominator: float) -> float:
+    """
+    `numerator / denominator` in C.
+    """
+
+def _c_math_result(name: str, args: list, error: Exception) -> float:
+    """
+    What the C function `name` returns for the arguments a Python one raises on.
+    """
+
+def _c_pow(base: float, exponent: float) -> float:
+    """
+    `pow(base, exponent)` in C.
+    """
+
+def _c_sqrt(value: float) -> float:
+    """
+    `sqrt(value)` in C.
+    """
+
 def _madx_formatwarning(message, category, filename, lineno, line=None): ...
+
+BEAM_PARAMETERS: tuple = (
+    "mass",
+    "charge",
+    "energy",
+    "pc",
+    "gamma",
+    "beta",
+    "brho",
+    "ex",
+    "exn",
+    "ey",
+    "eyn",
+    "et",
+    "sigt",
+    "sige",
+    "kbunch",
+    "npart",
+    "bcurrent",
+    "circ",
+    "dtbyds",
+    "deltap",
+    "alfa",
+    "u0",
+    "qs",
+    "arad",
+    "bv",
+    "bunched",
+    "radiate",
+    "n1min",
+    "freq0",
+    "pdamp",
+    "particle",
+    "sequence",
+)
+BEAM_VALUES: tuple = (
+    "mass",
+    "charge",
+    "energy",
+    "pc",
+    "gamma",
+    "beta",
+    "brho",
+    "ex",
+    "exn",
+    "ey",
+    "eyn",
+    "et",
+    "sigt",
+    "sige",
+    "kbunch",
+    "npart",
+    "bcurrent",
+    "circ",
+    "dtbyds",
+    "deltap",
+    "alfa",
+    "u0",
+    "qs",
+    "arad",
+    "bv",
+    "bunched",
+    "radiate",
+    "n1min",
+)
+CLIGHT: float = 299792458.0
+EMASS: float = 0.00051099895
+QELECT: float = 1.602176634e-19

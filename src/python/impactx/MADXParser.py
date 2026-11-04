@@ -14,6 +14,7 @@ References:
     - https://github.com/MethodicalAcceleratorDesign/MAD-X/blob/master/src/mad_parse.c (and related files)
 """
 
+import copy
 import math
 import os
 import random
@@ -276,9 +277,10 @@ class MADXLexer:
         ):
             chars.append(self._advance())
 
-        # Subsequent characters: letters, digits, underscore, period
+        # Subsequent characters: letters, digits, underscore, period,
+        # and % as in beam%sequence->energy
         while self._peek() is not None and (
-            self._peek().isalnum() or self._peek() in "_."
+            self._peek().isalnum() or self._peek() in "_.%"
         ):
             chars.append(self._advance())
 
@@ -541,7 +543,7 @@ class MADXExpressionParser:
         "sinc": (1, lambda x: 1.0 if x == 0 else math.sin(x) / x),
         "erf": (1, math.erf),
         "erfc": (1, math.erfc),
-        "frac": (1, lambda x: x - math.floor(x)),
+        "frac": (1, lambda x: math.modf(x)[0]),
         "atan2": (2, math.atan2),
         "max": (2, max),
         "min": (2, min),
@@ -550,8 +552,11 @@ class MADXExpressionParser:
         "gauss": (0, lambda: random.gauss(0, 1)),
         "tgauss": (
             1,
-            lambda cut: next(
-                s for s in iter(lambda: random.gauss(0, 1), None) if abs(s) < cut
+            # zero for a cut that is not positive, also NaN, as in MAD-X
+            lambda cut: (
+                next(s for s in iter(lambda: random.gauss(0, 1), None) if abs(s) < cut)
+                if cut > 0.0
+                else 0.0
             ),
         ),
     }
@@ -756,24 +761,178 @@ class Line:
     elements: list  # List of element names or (multiplier, name) tuples
 
 
+# MAD-X constants, from `src/mad_dict.c`, that the beam defaults depend on
+EMASS = 0.51099895000e-3  # GeV
+CLIGHT = 299792458.0  # m/s
+QELECT = 1.602176634e-19  # A.s
+
+# Numeric parameters of the MAD-X `beam` command, from `src/mad_dict.c`, that
+# `beam->name` reads directly
+BEAM_VALUES = (
+    "mass",
+    "charge",
+    "energy",
+    "pc",
+    "gamma",
+    "beta",
+    "brho",
+    "ex",
+    "exn",
+    "ey",
+    "eyn",
+    "et",
+    "sigt",
+    "sige",
+    "kbunch",
+    "npart",
+    "bcurrent",
+    "circ",
+    "dtbyds",
+    "deltap",
+    "alfa",
+    "u0",
+    "qs",
+    "arad",
+    "bv",
+    "bunched",
+    "radiate",
+    "n1min",
+)
+# All parameters of the MAD-X `beam` command
+BEAM_PARAMETERS = (*BEAM_VALUES, "freq0", "pdamp", "particle", "sequence")
+
+
+# MAD-X computes with C doubles and continues with infinities and NaN, where the
+# Python operations and math functions raise or return a complex number.
+def _c_divide(numerator: float, denominator: float) -> float:
+    """`numerator / denominator` in C."""
+    if denominator != 0.0:
+        return numerator / denominator
+    if numerator == 0.0 or math.isnan(numerator):
+        return math.nan
+    return math.copysign(math.inf, numerator) * math.copysign(1.0, denominator)
+
+
+def _c_sqrt(value: float) -> float:
+    """`sqrt(value)` in C."""
+    return math.sqrt(value) if value >= 0.0 else math.nan
+
+
+def _c_pow(base: float, exponent: float) -> float:
+    """`pow(base, exponent)` in C."""
+    try:
+        result = base**exponent
+    except ZeroDivisionError:
+        return math.inf
+    except OverflowError:
+        return -math.inf if base < 0.0 and exponent % 2.0 == 1.0 else math.inf
+    return math.nan if isinstance(result, complex) else result
+
+
+def _c_math_result(name: str, args: list, error: Exception) -> float:
+    """What the C function `name` returns for the arguments a Python one raises on."""
+    if isinstance(error, OverflowError):
+        return math.inf if name == "cosh" else math.copysign(math.inf, args[0])
+    if name in ("log", "log10") and args[0] == 0.0:
+        return -math.inf
+    return math.nan
+
+
 @dataclass
 class Beam:
-    """MAD-X BEAM command parameters."""
+    """A MAD-X beam: the result of its BEAM commands.
 
-    particle: str = ""
-    energy: float = 1.0  # GeV, MAD-X default
+    The defaults are those of the MAD-X `beam` command in `src/mad_dict.c`.
+    """
+
+    # Whether a BEAM or RESBEAM command named this beam (MAD-X `beam_def`).
+    # MAD-X stops on a sequence whose beam was never named.
+    defined: bool = False
+    particle: str = "positron"
+    mass: float = EMASS  # rest energy [GeV]
+    charge: float = 1.0  # [e]
+    energy: float = 1.0  # total energy [GeV]
     # Whether `energy` came from a BEAM command or is the MAD-X default above.
     # Consumers that would silently produce wrong physics from an assumed
     # energy, rather than a merely imprecise one, check this first.
     energy_is_explicit: bool = False
-    pc: float = 0.0  # momentum
-    mass: float = 0.0
-    charge: float = 0.0
     freq0: float = 0.0  # revolution frequency [Hz]
+    circ: float = 0.0  # circumference [m]
     # BV flag: +1 for forward sequence direction (default), -1 for reversed.
     # MAD-X stores this on each element node as `other_bv` and multiplies it
     # into bend angles, solenoid strengths, kicker kicks, and RF voltages.
     bv: float = 1.0
+    # Read only through `beam->name`
+    ex: float = 1.0
+    ey: float = 1.0
+    et: float = 1.0e-3
+    sigt: float = 1.0
+    sige: float = 1.0e-3
+    kbunch: float = 1.0
+    npart: float = 1.0
+    bcurrent: float = 0.0
+    bunched: float = 1.0
+    radiate: float = 0.0
+    # A BEAM command does not change these
+    dtbyds: float = 0.0
+    deltap: float = 0.0
+    u0: float = 0.0
+    qs: float = 0.0
+    n1min: float = -1.0
+    # Set by `set_energy`
+    pc: float = 0.0  # momentum [GeV/c]
+    gamma: float = 0.0
+    beta: float = 0.0
+    brho: float = 0.0  # magnetic rigidity [T m]
+    exn: float = 0.0
+    eyn: float = 0.0
+    alfa: float = 0.0
+    arad: float = 0.0
+
+    def __post_init__(self):
+        self.set_energy("energy", self.energy)
+
+    def set_energy(self, attr: str, value: float):
+        """Set the quantities that follow from the mass, the charge and one energy
+        parameter (`energy`, `pc`, `gamma`, `beta` or `brho`), which is kept as stated.
+        """
+        mass = self.mass
+        pc_per_brho = abs(self.charge) * CLIGHT * 1.0e-9
+
+        if attr == "pc":
+            pc = value
+            energy = math.hypot(pc, mass)
+        elif attr == "brho":
+            pc = value * pc_per_brho
+            energy = math.hypot(pc, mass)
+        else:
+            if attr == "energy":
+                energy = value
+            elif attr == "gamma":
+                energy = value * mass
+            else:  # beta
+                energy = mass * _c_divide(1.0, _c_sqrt(1.0 - value * value))
+            pc = _c_sqrt((energy - mass) * (energy + mass))
+
+        self.energy = energy
+        self.pc = pc
+        self.gamma = value if attr == "gamma" else energy / mass
+        self.beta = value if attr == "beta" else _c_divide(pc, energy)
+        self.brho = value if attr == "brho" else pc / pc_per_brho
+        self.exn = self.ex * self.beta * self.gamma
+        self.eyn = self.ey * self.beta * self.gamma
+        self.alfa = _c_divide(1.0, self.gamma * self.gamma)
+        self.arad = 1.0e-16 * self.charge**2 * QELECT * CLIGHT**2 / mass
+
+    @property
+    def is_physical(self) -> bool:
+        """Whether this can be a reference particle, unlike all that MAD-X accepts."""
+        return (
+            self.mass > 0.0
+            and math.isfinite(self.charge)
+            and math.isfinite(self.energy)
+            and self.energy >= self.mass
+        )
 
 
 class EvaluationContext:
@@ -783,26 +942,38 @@ class EvaluationContext:
     Holds variables, elements, lines, and provides expression evaluation.
     """
 
-    # MAD-X predefined constants (from PDG)
+    # MAD-X predefined constants, from `src/mad_dict.c`
     PREDEFINED_CONSTANTS = {
         "pi": math.pi,
         "twopi": 2 * math.pi,
         "degrad": 180.0 / math.pi,
         "raddeg": math.pi / 180.0,
         "e": math.e,
-        "emass": 0.51099895000e-3,  # GeV
+        "amu0": 4.0e-7 * math.pi,
+        "emass": EMASS,  # GeV
         "pmass": 0.93827208816,  # GeV
         "nmass": 0.93956542052,  # GeV
         "umass": 0.93149410242,  # GeV
-        "mumass": 0.1056583715,  # GeV
-        "clight": 2.99792458e8,  # m/s
-        "qelect": 1.602176634e-19,  # A.s
-        "hbar": 6.582119569e-25,  # MeV.s
+        "mumass": 0.1056583755,  # GeV
+        "clight": CLIGHT,  # m/s
+        "qelect": QELECT,  # A.s
+        "hbar": 6.582119569e-25,  # GeV.s
         "erad": 2.8179403262e-15,  # m
         "prad": 2.8179403262e-15 * 0.51099895000e-3 / 0.93827208816,  # m
         # Compatibility aliases
         "true": 1.0,
         "false": 0.0,
+    }
+
+    # MAD-X particles, from `src/mad_dict.c`: rest energy [GeV] and charge [e]
+    PARTICLES = {
+        "positron": (PREDEFINED_CONSTANTS["emass"], 1.0),
+        "electron": (PREDEFINED_CONSTANTS["emass"], -1.0),
+        "proton": (PREDEFINED_CONSTANTS["pmass"], 1.0),
+        "antiproton": (PREDEFINED_CONSTANTS["pmass"], -1.0),
+        "posmuon": (PREDEFINED_CONSTANTS["mumass"], 1.0),
+        "negmuon": (PREDEFINED_CONSTANTS["mumass"], -1.0),
+        "ion": (PREDEFINED_CONSTANTS["nmass"], 1.0),
     }
 
     def __init__(self):
@@ -820,6 +991,8 @@ class EvaluationContext:
         ] = {}  # name -> (params, body_text)
         self.beams: dict[Optional[str], Beam] = {None: Beam()}  # key=sequence name
         self.selected_sequence: Optional[str] = None
+        # The error for the last USE, if it named an unknown sequence
+        self.unknown_use_error: Optional[MADXInputError] = None
 
         # Tracking for warning messages (updated by the parser)
         self.current_file: Optional[str] = None
@@ -835,22 +1008,6 @@ class EvaluationContext:
         if self.selected_sequence and self.selected_sequence in self.beams:
             return self.beams[self.selected_sequence]
         return self.beams[None]
-
-    def get_beam_for_sequence(self, sequence_name: Optional[str] = None) -> Beam:
-        """Get or create a beam for a specific sequence."""
-        if sequence_name not in self.beams:
-            # New sequence beam inherits from the default beam
-            default = self.beams[None]
-            self.beams[sequence_name] = Beam(
-                particle=default.particle,
-                energy=default.energy,
-                energy_is_explicit=default.energy_is_explicit,
-                pc=default.pc,
-                mass=default.mass,
-                charge=default.charge,
-                freq0=default.freq0,
-            )
-        return self.beams[sequence_name]
 
     def _warn(self, message: str):
         """Emit a warning with current file and line context."""
@@ -879,13 +1036,10 @@ class EvaluationContext:
         """Set a variable value."""
         name = name.lower()
 
-        # Check if trying to modify a constant
+        # A constant keeps its value, and MAD-X continues
         if name in self.variables and self.variables[name].constant:
-            if constant:
-                # Allow redefining constants
-                pass
-            else:
-                raise self._error(f"Cannot modify constant: {name}")
+            self._warn(f"ignored: attempt to redefine constant: {name}")
+            return
 
         if deferred and expression is not None:
             self.variables[name] = Variable(
@@ -911,10 +1065,47 @@ class EvaluationContext:
             return self.evaluate(var.expression)
         return var.value
 
+    def _referenced_beam(self, name: str) -> Beam:
+        """The beam of `beam` or `beam%sequence`.
+
+        `beam` is the default beam, as is the beam of a sequence that has none.
+        """
+        _, _, sequence_name = name.partition("%")
+        return self.beams.get(sequence_name or None, self.beams[None])
+
+    def get_beam_attribute(self, name: str, attr_name: str) -> float:
+        """Value of `beam->attr` or `beam%sequence->attr`."""
+        beam = self._referenced_beam(name)
+
+        if attr_name == "freq0":  # MHz in MAD-X
+            return beam.freq0 * 1.0e-6
+        if attr_name in BEAM_VALUES:
+            return getattr(beam, attr_name)
+
+        return 0.0
+
+    def set_beam_attribute(self, name: str, attr_name: str, value: float):
+        """Set `beam->attr` or `beam%sequence->attr`, as in MAD-X.
+
+        Only this value changes. What follows from it, such as `pc` from `energy`, keeps
+        its value until the next BEAM command, so that consumers cannot rely on them.
+        """
+        beam = self._referenced_beam(name)
+
+        if attr_name == "freq0":  # MHz in MAD-X
+            beam.freq0 = value * 1.0e6
+        elif attr_name in BEAM_VALUES:
+            setattr(beam, attr_name, value)
+            if attr_name in ("mass", "energy", "pc", "gamma", "beta", "brho"):
+                beam.energy_is_explicit = False
+
     def get_element_attribute(self, element_name: str, attr_name: str) -> Any:
         """Get an element's attribute value."""
         element_name = element_name.lower()
         attr_name = attr_name.lower()
+
+        if element_name == "beam" or element_name.startswith("beam%"):
+            return self.get_beam_attribute(element_name, attr_name)
 
         if element_name not in self.elements:
             self._warn(
@@ -981,7 +1172,7 @@ class EvaluationContext:
                     return 0.0
                 return left / right
             if expr.operator == "^":
-                return left**right
+                return _c_pow(left, right)
 
             raise self._error(f"Unknown operator: {expr.operator}")
 
@@ -1016,7 +1207,12 @@ class EvaluationContext:
                 )
 
             args = [self.evaluate(arg) for arg in expr.arguments]
-            return func(*args)
+            try:
+                return func(*args)
+            except (ValueError, OverflowError) as error:
+                result = _c_math_result(name, args, error)
+                self._warn(f"{name}: {error}, using {result}")
+                return result
 
         if isinstance(expr, ListExpr):
             return [self.evaluate(e) for e in expr.elements]
@@ -1187,8 +1383,20 @@ class MADXParser:
             return
 
         # Check for commands
+        if self._peek(1).type == TokenType.ARROW and (
+            name == "beam" or name.startswith("beam%")
+        ):
+            self._parse_beam_assignment()
+            return
+
         if name == "beam":
+            self._advance()  # skip 'beam'
             self._parse_beam_command()
+            return
+
+        if name == "resbeam":
+            self._advance()  # skip 'resbeam'
+            self._parse_resbeam_command()
             return
 
         if name == "use":
@@ -1727,9 +1935,14 @@ class MADXParser:
         self.pos = saved_pos
 
     def _parse_labeled_definition(self):
-        """Parse a labeled definition (element or line)."""
+        """Parse a labeled definition (element or line) or a labeled beam command."""
         name = self._advance().value  # identifier
         self._expect(TokenType.COLON)  # :
+
+        if name.lower() in ("beam", "resbeam"):
+            self.context._warn("statement label is protected keyword, skipped")
+            self._skip_until_semicolon()
+            return
 
         # Get the type/keyword
         keyword = self._expect(TokenType.IDENTIFIER).value.lower()
@@ -1738,6 +1951,10 @@ class MADXParser:
             self._parse_line_definition(name)
         elif keyword == "sequence":
             self._parse_sequence_definition(name)
+        elif keyword == "beam":
+            self._parse_beam_command()
+        elif keyword == "resbeam":
+            self._parse_resbeam_command()
         else:
             self._parse_element_definition(name, keyword)
 
@@ -2117,8 +2334,11 @@ class MADXParser:
 
         return None
 
-    def _parse_expression(self) -> Expression:
-        """Parse an expression using the expression parser."""
+    def _parse_expression(self, complete: bool = False) -> Expression:
+        """Parse an expression using the expression parser.
+
+        :param complete: raise if tokens follow the expression before the next comma
+        """
         # Find the extent of the expression (until comma, semicolon, or rparen at depth 0)
         start = self.pos
         paren_depth = 0
@@ -2150,6 +2370,9 @@ class MADXParser:
         expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
         expr_parser = MADXExpressionParser(expr_tokens)
         expr = expr_parser.parse_expression()
+
+        if complete and expr_parser._current().type != TokenType.EOF:
+            raise self._error("Expected a comma after the value")
 
         # Advance past the expression tokens
         self.pos = end
@@ -2215,69 +2438,267 @@ class MADXParser:
                 name, value=value, expression=expr, deferred=False, constant=True
             )
 
+    def _parse_beam_parameters(
+        self, allowed: tuple = BEAM_PARAMETERS
+    ) -> tuple[Optional[str], dict, Optional[str]]:
+        """Parse the parameters of a beam command through its semicolon, as in MAD-X.
+
+        A comma is optional except after a numeric value. A parameter without a value
+        takes its default in `src/mad_dict.c`: a flag is set, or cleared by `-NAME`, a
+        number is zero, and PARTICLE is a positron. An unknown parameter raises, also
+        where MAD-X makes it part of a preceding string value, which turns a typo in
+        `PARTICLE=PROTON, ENERGIE=3` into an unknown particle with the electron mass.
+
+        :param allowed: the parameters of the command
+        :return: the particle name, the unevaluated values, and the sequence name
+        """
+        particle = None
+        exprs = {}
+        sequence_name = None
+
+        while self._current().type not in (TokenType.SEMICOLON, TokenType.EOF):
+            if self._current().type == TokenType.COMMA:
+                self._advance()
+                continue
+            negated = self._current().type == TokenType.MINUS
+            if negated:
+                self._advance()
+
+            attr_name = self._expect(TokenType.IDENTIFIER).value.lower()
+            if attr_name not in allowed:
+                raise self.context._error(f"Illegal keyword: {attr_name}")
+
+            if self._current().type not in (TokenType.EQUALS, TokenType.COLON_EQUALS):
+                if attr_name == "particle":
+                    particle = "positron"
+                elif attr_name in ("bunched", "radiate"):
+                    exprs[attr_name] = NumberExpr(0.0 if negated else 1.0)
+                elif attr_name not in ("sequence", "pdamp"):
+                    exprs[attr_name] = NumberExpr(0.0)
+                continue
+            self._advance()
+
+            if attr_name == "particle":
+                particle = self._parse_beam_name()
+            elif attr_name == "sequence":
+                sequence_name = self._parse_beam_name()
+            else:
+                exprs[attr_name] = self._parse_expression(complete=True)
+
+        self._expect(TokenType.SEMICOLON)
+
+        return particle, exprs, sequence_name
+
+    def _parse_beam_name(self) -> str:
+        """Parse a name in a beam command, as in MAD-X.
+
+        A quoted name keeps its case. Otherwise, signs and numbers continue the name,
+        as in `H-` or `PB208+82`, except for a sign before another parameter, as in
+        `PROTON -RADIATE`.
+        """
+        token = self._expect(TokenType.STRING, TokenType.IDENTIFIER)
+        name = token.value
+        if token.type == TokenType.STRING:
+            return name
+
+        while self._current().type in (
+            TokenType.MINUS,
+            TokenType.PLUS,
+            TokenType.NUMBER,
+        ):
+            token = self._current()
+            if (
+                token.type != TokenType.NUMBER
+                and self._peek(1).type == TokenType.IDENTIFIER
+            ):
+                break
+            self._advance()
+            name += (
+                f"{token.value:g}" if token.type == TokenType.NUMBER else token.value
+            )
+
+        return name
+
+    def _parse_beam_value(self, attr: str, expr: Expression) -> float:
+        """Evaluate a value of a BEAM command, of which only the used ones are read."""
+        try:
+            return float(self.context.evaluate(expr))
+        except (TypeError, ValueError) as error:
+            raise self.context._error(f"BEAM {attr.upper()}: {error}") from error
+
+    def _parse_resbeam_command(self):
+        """Parse a RESBEAM command, after its name, which restores the beam defaults."""
+        _, _, sequence_name = self._parse_beam_parameters(allowed=("sequence",))
+        self.context.beams[sequence_name] = Beam(defined=True)
+
+    def _parse_beam_assignment(self):
+        """Parse `beam->name = value` or `beam%sequence->name = value`.
+
+        As in MAD-X, also `:=` evaluates the value now.
+        """
+        beam_name = self._advance().value
+        self._expect(TokenType.ARROW)
+        attr_name = self._expect(TokenType.IDENTIFIER).value.lower()
+        self._expect(TokenType.EQUALS, TokenType.COLON_EQUALS)
+        expr = self._parse_expression()
+        self._expect(TokenType.SEMICOLON)
+
+        value = self._parse_beam_value(attr_name, expr)
+        self.context.set_beam_attribute(beam_name, attr_name, value)
+
     def _parse_beam_command(self):
-        """Parse the BEAM command.
+        """Parse a BEAM command, after its name, and apply it as MAD-X `update_beam`.
 
         MAD-X allows multiple BEAM commands for different sequences via
         BEAM, SEQUENCE=name, ...;  The beam is stored per-sequence.
         A BEAM without SEQUENCE= updates the default beam.
+        The energy comes from the first of ENERGY, PC, GAMMA, BETA, BRHO.
+
+        The values of the command are computed on a copy, which replaces the beam at the
+        end: as in MAD-X, `beam->name` in the command reads the beam before the command.
+        A new beam starts from the MAD-X defaults.
         """
-        self._advance()  # skip 'beam'
+        particle, exprs, sequence_name = self._parse_beam_parameters()
 
-        # Collect all attributes first, then apply to the right beam
-        beam_attrs = {}
-        sequence_name = None
+        previous = self.context.beams.get(sequence_name)
+        beam = copy.copy(previous) if previous is not None else Beam()
+        beam.defined = True
 
-        while self._current().type == TokenType.COMMA:
-            self._advance()
+        beam.particle, beam.mass, beam.charge = self._resolve_beam_particle(
+            beam, particle, exprs
+        )
 
-            if self._current().type != TokenType.IDENTIFIER:
-                break
-
-            attr_name = self._advance().value.lower()
-
-            if self._current().type in (TokenType.EQUALS, TokenType.COLON_EQUALS):
-                self._advance()
-
-                if attr_name == "particle":
-                    if self._current().type == TokenType.STRING:
-                        beam_attrs["particle"] = self._advance().value.lower()
-                    elif self._current().type == TokenType.IDENTIFIER:
-                        beam_attrs["particle"] = self._advance().value.lower()
-                    else:
-                        raise self._error("Expected particle name")
-                elif attr_name == "sequence":
-                    if self._current().type in (
-                        TokenType.STRING,
-                        TokenType.IDENTIFIER,
-                    ):
-                        sequence_name = self._advance().value.lower()
-                    else:
-                        self._parse_expression()  # consume
-                elif attr_name in ("energy", "pc", "mass", "charge", "bv"):
-                    expr = self._parse_expression()
-                    beam_attrs[attr_name] = self.context.evaluate(expr)
-                elif attr_name == "freq0":
-                    expr = self._parse_expression()
-                    # MAD-X BEAM/FREQ0 is stored internally in MHz, not Hz --
-                    # the upstream user guide (Introduction/beam.html) is stale
-                    # on this point. Source-code evidence: mad_beam.c:278 uses
-                    # freq0 = beta*c/(1e6*circ), and mad_beam.c:366 uses
-                    # freq0 = (beta*c*1e-6)/circ. We normalize to Hz here so
-                    # downstream ImpactX consumers work in SI units.
-                    beam_attrs["freq0"] = self.context.evaluate(expr) * 1.0e6
-                else:
-                    # Unknown attribute, skip the value
-                    self._parse_expression()
-
-        self._expect(TokenType.SEMICOLON)
-
-        # Apply to the appropriate beam
-        beam = self.context.get_beam_for_sequence(sequence_name)
-        for attr, value in beam_attrs.items():
-            setattr(beam, attr, value)
-        if "energy" in beam_attrs:
+        energy_params = [
+            attr for attr in ("energy", "pc", "gamma", "beta", "brho") if attr in exprs
+        ]
+        if energy_params:
+            attr, *ignored = energy_params
+            if ignored:
+                self.context._warn(
+                    f"BEAM sets the energy from {attr.upper()}; "
+                    f"ignoring {', '.join(a.upper() for a in ignored)}"
+                )
+            value = self._parse_beam_value(attr, exprs[attr])
+            self._check_beam_energy(attr, value, beam.mass)
+            beam.set_energy(attr, value)
             beam.energy_is_explicit = True
+        else:
+            self._check_beam_energy("energy", beam.energy, beam.mass)
+            beam.set_energy("energy", beam.energy)
+
+        self._apply_beam_parameters(beam, exprs)
+
+        self.context.beams[sequence_name] = beam
+
+    def _apply_beam_parameters(self, beam: Beam, exprs: dict):
+        """Apply the parameters of a BEAM command that follow from its energy."""
+
+        def value(attr: str) -> float:
+            return self._parse_beam_value(attr, exprs[attr])
+
+        beta_gamma = beam.beta * beam.gamma
+        for emittance, normalized in (("ex", "exn"), ("ey", "eyn")):
+            if emittance in exprs:
+                setattr(beam, emittance, value(emittance))
+                setattr(beam, normalized, getattr(beam, emittance) * beta_gamma)
+            elif normalized in exprs:
+                setattr(beam, normalized, value(normalized))
+                setattr(
+                    beam, emittance, _c_divide(getattr(beam, normalized), beta_gamma)
+                )
+
+        # MAD-X BEAM/FREQ0 is stored internally in MHz, not Hz --
+        # the upstream user guide (Introduction/beam.html) is stale
+        # on this point. Source-code evidence: mad_beam.c:278 uses
+        # freq0 = beta*c/(1e6*circ), and mad_beam.c:366 uses
+        # freq0 = (beta*c*1e-6)/circ. We normalize to Hz here so
+        # downstream ImpactX consumers work in SI units.
+        freq0_MHz = 0.0
+        if "circ" in exprs:
+            beam.circ = value("circ")
+            if beam.circ > 0.0:
+                freq0_MHz = beam.beta * CLIGHT * 1.0e-6 / beam.circ
+            beam.freq0 = freq0_MHz * 1.0e6
+        elif "freq0" in exprs:
+            freq0_MHz = value("freq0")
+            beam.circ = 0.0
+            if freq0_MHz > 0.0:
+                beam.circ = beam.beta * CLIGHT * 1.0e-6 / freq0_MHz
+            beam.freq0 = freq0_MHz * 1.0e6
+
+        amperes_per_particle = beam.beta * freq0_MHz * 1.0e6 * QELECT
+        beam.bcurrent = value("bcurrent") if "bcurrent" in exprs else 0.0
+        if beam.bcurrent > 0.0 and freq0_MHz > 0.0:
+            beam.npart = _c_divide(beam.bcurrent, amperes_per_particle)
+        elif "npart" in exprs:
+            beam.npart = value("npart")
+            beam.bcurrent = beam.npart * amperes_per_particle
+
+        for attr in ("et", "sigt", "sige", "kbunch", "bv", "bunched", "radiate"):
+            if attr in exprs:
+                setattr(beam, attr, value(attr))
+
+    def _resolve_beam_particle(
+        self, beam: Beam, particle: Optional[str], exprs: dict
+    ) -> tuple[str, float, float]:
+        """Particle name, rest energy [GeV] and charge [e] after a BEAM command."""
+        mass = charge = 0.0
+
+        if particle is not None:
+            name = particle
+            if name in self.context.PARTICLES:
+                mass, charge = self.context.PARTICLES[name]
+            else:
+                # Stricter than MAD-X, which gives any unknown name the electron mass
+                # with a warning, so that a typo would turn into an electron.
+                if "mass" not in exprs:
+                    known = ", ".join(self.context.PARTICLES)
+                    raise self.context._error(
+                        f"BEAM particle '{name}' is unknown and has no MASS. Known "
+                        f"particles are {known}, and a quoted name is case-sensitive."
+                    )
+                mass = self._parse_beam_value("mass", exprs["mass"])
+                if "charge" in exprs:
+                    charge = self._parse_beam_value("charge", exprs["charge"])
+                else:
+                    self.context._warn(f"charge +1 given to unknown particle: {name}")
+                    charge = 1.0
+        elif "mass" in exprs:
+            name = "default"
+            mass = self._parse_beam_value("mass", exprs["mass"])
+            if "charge" in exprs:
+                charge = self._parse_beam_value("charge", exprs["charge"])
+            else:
+                self.context._warn(f"charge +1 given to user particle: {name}")
+                charge = 1.0
+        else:
+            name = beam.particle
+
+        if name == "ion":
+            if "mass" in exprs:
+                mass = self._parse_beam_value("mass", exprs["mass"])
+            if "charge" in exprs:
+                charge = self._parse_beam_value("charge", exprs["charge"])
+            else:
+                charge = beam.charge
+
+        # a value of zero keeps the one of the beam
+        return name, mass or beam.mass, charge or beam.charge
+
+    def _check_beam_energy(self, attr: str, value: float, mass: float):
+        """Stop on an energy parameter where MAD-X stops."""
+        if attr == "energy" and value <= mass:
+            raise self.context._error(
+                f"BEAM energy {value} GeV must exceed the mass {mass} GeV"
+            )
+        if attr == "pc" and value <= 0.0:
+            raise self.context._error("BEAM PC must be > 0")
+        if attr == "gamma" and value <= 1.0:
+            raise self.context._error("BEAM GAMMA must be > 1")
+        if attr == "beta" and value >= 1.0:
+            raise self.context._error("BEAM BETA must be < 1")
+        if attr == "brho" and value < 0.0:
+            raise self.context._error("BEAM BRHO must be >= 0")
 
     def _parse_use_command(self):
         """Parse the USE command."""
@@ -2293,10 +2714,17 @@ class MADXParser:
 
             if attr_name in ("sequence", "period"):
                 self._expect(TokenType.EQUALS)
-                if self._current().type == TokenType.IDENTIFIER:
-                    self.context.selected_sequence = self._advance().value
-                elif self._current().type == TokenType.STRING:
-                    self.context.selected_sequence = self._advance().value.lower()
+                if self._current().type in (TokenType.IDENTIFIER, TokenType.STRING):
+                    # a quoted name keeps its case, and MAD-X skips an unknown one
+                    name = self._advance().value
+                    if name in self.context.lines:
+                        self.context.selected_sequence = name
+                        self.context.unknown_use_error = None
+                    else:
+                        self.context._warn(f"unknown sequence skipped: {name}")
+                        self.context.unknown_use_error = self.context._error(
+                            f"USE: sequence '{name}' is not defined"
+                        )
             else:
                 if self._current().type == TokenType.EQUALS:
                     self._advance()
@@ -2570,6 +2998,12 @@ class MADXParser:
                 "Specify at most one of 'line_name' or 'sequence_name'."
             )
 
+        # Stricter than MAD-X, which warns and continues without this sequence: a typo
+        # in USE must not expand another line.
+        if line_name is None and sequence_name is None:
+            if self.context.unknown_use_error is not None:
+                raise self.context.unknown_use_error
+
         selected = sequence_name or line_name or self.context.selected_sequence
         if selected is not None:
             selected = selected.lower()
@@ -2659,21 +3093,7 @@ class MADXParser:
 
     def getParticle(self) -> str:
         """Get the particle type."""
-        particle = self.context.beam.particle
-        known_particles = [
-            "positron",
-            "electron",
-            "proton",
-            "antiproton",
-            "posmuon",
-            "negmuon",
-            "ion",
-        ]
-
-        if particle and particle not in known_particles:
-            self._warn(f"Unknown particle type '{particle}'")
-
-        return particle
+        return self.context.beam.particle
 
     def getEtot(self) -> float:
         """Get total energy in GeV."""

@@ -129,6 +129,35 @@ of the reference particle: the charge density is negative for electrons.
    wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
    slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
 
+MAD-X ``BEAM``: reference particle and energy as in MAD-X
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` and
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` now resolve each ``BEAM`` command of a
+MAD-X file following MAD-X. Previously, only ``ENERGY`` was read, so ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` left 1 GeV:
+remove workarounds that set the energy after loading.
+
+**What to check in your MAD-X files:**
+
+.. code-block:: text
+
+   BEAM, ENERGY=2;                 ! now a positron: add PARTICLE
+   BEAM, SEQUENCE=B2, BV=-1;       ! now a positron at 1 GeV: add PARTICLE and ENERGY
+   BEAM, PARTICLE=ION, MASS=193.7, CHARGE=82, ENERGY=574;  ! now uses MASS and CHARGE
+
+   ! now errors
+   BEAM, MASS=2, CHARGE=1;         ! the 1 GeV default is below the mass: add ENERGY
+   BEAM, PARTICLE=PROTN, PC=2;     ! an unknown particle needs a MASS
+   BEAM, PARTICLE="PROTON", PC=2;  ! a quoted name keeps its case, also in SEQUENCE and USE
+   BEAM, ENERGIE=3;                ! an unknown parameter
+   BEAM, ENERGY=2 PC=3;            ! a number without a comma
+   USE, SEQUENCE=FOOD;             ! an unknown sequence, in KnownElementsList.load_file
+
+``RefPart.load_file`` also raises without ``BEAM`` or a valid reference particle. ``KnownElementsList.load_file`` raises for ``USE`` without ``BEAM``, an ``RFCAVITY`` with ``VOLT`` but no valid mass, and a NaN or infinite attribute of an element in use, and warns otherwise.
+
+Also as in MAD-X: ``CIRC`` sets ``FREQ0``, a parameter without a value is zero, a label does not change a command, ``beam->energy`` reads and sets ``BEAM`` parameters, ``RESBEAM`` resets a beam, redefining a constant warns, math outside of its domain gives NaN or infinity, and ``FRAC(-2.5)`` is -0.5.
+Masses now use the MAD-X constants, a change of at most 4 parts in :math:`10^8`.
+
 ``Thermal``: invalid parameters raise an error
 """"""""""""""""""""""""""""""""""""""""""""""
 
@@ -142,38 +171,23 @@ coordinates, now raise an error, e.g., a ``RuntimeError`` in ``sim.add_particles
 - ``halo > 0`` with ``normalize_halo = 0``: for a beam without a halo, set ``halo = 0``.
 - ``halo < 1`` with ``normalize = 0``: for a beam without a core, set ``halo = 1``.
 
-MAD-X files: ``^`` is left associative
-""""""""""""""""""""""""""""""""""""""
+MAD-X files: evaluation of ``^``
+""""""""""""""""""""""""""""""""
 
 :py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
-:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate chained powers in MAD-X files from the left, as
-MAD-X does: ``a^b^c`` is ``(a^b)^c``, e.g., ``2^3^2`` is 64.
-Previously, it was ``a^(b^c)``, which gave 512.
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate powers in MAD-X files as MAD-X does: ``a^b^c`` is
+``(a^b)^c``, and ``-a^b`` is ``-(a^b)``.
 
-**What to check in your MAD-X files:** expressions with more than one ``^`` and no parentheses around the exponent.
-Their values change. To keep the previous meaning, add the parentheses:
+**What to check in your MAD-X files:** more than one ``^`` in an expression, and a sign directly before a power. A
+subtraction, ``a-b^2``, is not affected. To keep the previous meaning, add parentheses:
 
 .. code-block:: text
 
-   k = a^b^c;    ! now (a^b)^c
-   k = a^(b^c);  ! previous meaning of a^b^c
+   k = a^(b^c);  ! previously a^b^c:  2^3^2 was 512, now 64
+   k = (-a)^b;   ! previously -a^b:   -2^2 was 4, now -4
 
-MAD-X files: a sign applies to the whole power
-""""""""""""""""""""""""""""""""""""""""""""""
-
-:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
-:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate ``^`` before a sign in MAD-X files, as MAD-X does:
-``-a^b`` is ``-(a^b)`` and ``-a^b^c`` is ``-((a^b)^c)``, e.g., ``-2^2`` is -4.
-Previously, the sign belonged to the first operand, ``(-a)^b``, which gave 4.
-
-**What to check in your MAD-X files:** a sign directly before an operand that is raised to a power, e.g., after ``=``,
-``(``, ``,``, ``*`` or ``/``. Their values change, e.g., an even power flips its sign. A subtraction, ``a-b^2``, is not
-affected. To keep the previous meaning, add the parentheses:
-
-.. code-block:: text
-
-   k = -a^2;    ! now -(a^2)
-   k = (-a)^2;  ! previous meaning of -a^2
+ImpactX also accepts a sign directly after an operator, as in ``a*-b^2`` or ``a^-b^c``, which MAD-X does not support: write
+these with parentheses. Their values change as well, e.g., ``2^-3^2`` was 512 and is now 0.015625, and ``2^((-3)^2)`` is 512.
 
 New in this release
 """""""""""""""""""

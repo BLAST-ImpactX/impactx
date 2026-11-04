@@ -16,6 +16,7 @@ References:
 """
 
 import math
+import warnings
 
 import pytest
 
@@ -417,6 +418,868 @@ USE, SEQUENCE=ERING;
     # After USE ERING, the beam for ERING should be selected
     assert parser.getParticle() == "electron"
     assert parser.getEtot() == 5.0
+
+
+@pytest.mark.parametrize(
+    "particle, mass_name, pc", [("proton", "pmass", 2.0), ("electron", "emass", 1e-3)]
+)
+def test_beam_energy_parameters(particle, mass_name, pc):
+    """PC, GAMMA, BETA and BRHO of the same beam give its total energy."""
+    mass = MADXParser().getVariable(mass_name)
+    energy = math.hypot(pc, mass)
+    for param in (
+        f"PC={pc!r}",
+        f"GAMMA={energy / mass!r}",
+        f"BETA={pc / energy!r}",
+        f"BRHO={pc / 0.299792458!r}",
+    ):
+        parser = MADXParser()
+        parser.parse_string(f"BEAM, PARTICLE={particle}, {param};\n")
+        assert parser.getEtot() == pytest.approx(energy, rel=1e-14), param
+
+
+def test_beam_energy_precedence():
+    """Within one BEAM command, ENERGY > PC > GAMMA > BETA > BRHO."""
+    pmass = 0.93827208816
+    for params, energy in (
+        ("ENERGY=3, PC=2", 3.0),
+        ("BRHO=3, GAMMA=5, PC=2", math.hypot(2.0, pmass)),
+        ("BRHO=3, BETA=0.6", 1.25 * pmass),
+        ("ENERGY=3, GAMMA=sqrt(-1)", 3.0),  # an ignored value is not evaluated
+        ("ENERGY=3, PC=sqrt(-1)", 3.0),
+    ):
+        parser = MADXParser()
+        with pytest.warns(MADXInputWarning, match="ignoring"):
+            parser.parse_string(f"BEAM, PARTICLE=PROTON, {params};\n")
+        assert parser.getEtot() == pytest.approx(energy, rel=1e-14), params
+
+
+def test_beam_energy_per_command():
+    """Each BEAM command fixes the energy with the current particle mass."""
+    proton_pc2 = math.hypot(2.0, 0.93827208816)
+
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, ENERGY=3;\nBEAM, PC=2;\n")
+    assert parser.getEtot() == pytest.approx(proton_pc2, rel=1e-14)
+
+    # a new particle keeps the energy
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, PC=2;\nBEAM, PARTICLE=ELECTRON;\n")
+    assert parser.getParticle() == "electron"
+    assert parser.getEtot() == pytest.approx(proton_pc2, rel=1e-14)
+
+    # ... which must exceed its mass
+    with pytest.raises(MADXInputError, match="mass"):
+        MADXParser().parse_string(
+            "BEAM, PARTICLE=ELECTRON, PC=0.01;\nBEAM, PARTICLE=PROTON;\n"
+        )
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, BETA=0;\n")  # at rest: E = m
+    assert parser.getEtot() == 0.93827208816
+    with pytest.raises(MADXInputError, match="mass"):
+        MADXParser().parse_string("BEAM, PARTICLE=PROTON, BETA=0;\nBEAM, BV=-1;\n")
+
+
+@pytest.mark.parametrize("param", ["PC=0", "GAMMA=1", "BETA=1", "BRHO=-1"])
+def test_beam_energy_invalid_raises(param):
+    """Invalid energy parameters raise."""
+    with pytest.raises(MADXInputError, match="BEAM"):
+        MADXParser().parse_string(f"BEAM, PARTICLE=PROTON, {param};\n")
+
+
+@pytest.mark.parametrize(
+    "script, sequence, energy, mass, charge",
+    [
+        # ions take MASS and CHARGE, and otherwise keep the charge of the beam
+        (
+            "BEAM, PARTICLE=ION, MASS=200, CHARGE=82, GAMMA=5;",
+            None,
+            1000.0,
+            200.0,
+            82.0,
+        ),
+        (
+            "BEAM, PARTICLE=ION, MASS=200, CHARGE=82, BETA=0.5;",
+            None,
+            230.94010767585033,
+            200.0,
+            82.0,
+        ),
+        (
+            "BEAM, PARTICLE=ION, MASS=200, CHARGE=82, BRHO=10;",
+            None,
+            316.9105523933585,
+            200.0,
+            82.0,
+        ),
+        (
+            "BEAM, PARTICLE=ION, MASS=200, CHARGE=82, PC=300;",
+            None,
+            360.5551275463989,
+            200.0,
+            82.0,
+        ),
+        ("BEAM, PARTICLE=ION, ENERGY=3;", None, 3.0, 0.93956542052, 1.0),
+        (
+            "BEAM, PARTICLE=ELECTRON, ENERGY=2; BEAM, PARTICLE=ION, ENERGY=3;",
+            None,
+            3.0,
+            0.93956542052,
+            -1.0,
+        ),
+        (
+            "BEAM, PARTICLE=ION, MASS=200, CHARGE=82, ENERGY=300; BEAM, CHARGE=5, BRHO=10;",
+            None,
+            200.56093536549983,
+            200.0,
+            5.0,
+        ),
+        # a known particle replaces any MASS and CHARGE
+        (
+            "BEAM, MASS=2, CHARGE=1, PC=3; BEAM, PARTICLE=PROTON, PC=2;",
+            None,
+            2.209152441869987,
+            0.93827208816,
+            1.0,
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, MASS=2, CHARGE=3, PC=3;",
+            None,
+            3.1433031211482176,
+            0.93827208816,
+            1.0,
+        ),
+        # MASS without PARTICLE replaces the particle; CHARGE alone is not read
+        (
+            "BEAM, PARTICLE=PROTON, PC=2; BEAM, MASS=2, CHARGE=1, PC=3;",
+            None,
+            3.605551275463989,
+            2.0,
+            1.0,
+        ),
+        (
+            "BEAM, MASS=2, CHARGE=1, ENERGY=3; BEAM, CHARGE=5, BRHO=1;",
+            None,
+            2.0223440651564912,
+            2.0,
+            1.0,
+        ),
+        # a name can continue with signs and numbers, and the charge defaults to +1
+        (
+            "BEAM, PARTICLE=H-, MASS=0.9, CHARGE=-1, PC=2;",
+            None,
+            2.1931712199461311,
+            0.9,
+            -1.0,
+        ),
+        (
+            "BEAM, PARTICLE=PB208+82, MASS=193, CHARGE=82, GAMMA=3;",
+            None,
+            579.0,
+            193.0,
+            82.0,
+        ),
+        ("BEAM, PARTICLE=H- ENERGY=2, MASS=0.9, CHARGE=-1;", None, 2.0, 0.9, -1.0),
+        ("BEAM, MASS=2, BRHO=10;", None, 3.60382460552233, 2.0, 1.0),
+        # the default particle is a positron at 1 GeV
+        ("BEAM;", None, 1.0, 0.00051099895, 1.0),
+        ("BEAM, PC=300;", None, 300.0000000004352, 0.00051099895, 1.0),
+        ("BEAM, GAMMA=5;", None, 0.00255499475, 0.00051099895, 1.0),
+        # a new sequence beam starts from the defaults
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM, SEQUENCE=S, PC=1;",
+            "s",
+            1.0000001305599548,
+            0.00051099895,
+            1.0,
+        ),
+        (
+            "BEAM, PARTICLE=ELECTRON, ENERGY=0.1; BEAM, SEQUENCE=S, PARTICLE=PROTON;",
+            "s",
+            1.0,
+            0.93827208816,
+            1.0,
+        ),
+        # RESBEAM restores the defaults
+        (
+            "BEAM, PARTICLE=PROTON, PC=2; RESBEAM; BEAM, PC=1;",
+            None,
+            1.0000001305599548,
+            0.00051099895,
+            1.0,
+        ),
+        (
+            "BEAM, PARTICLE=ELECTRON, PC=0.01; RESBEAM; BEAM, PARTICLE=PROTON;",
+            None,
+            1.0,
+            0.93827208816,
+            1.0,
+        ),
+        # a label, commas and flags do not change the beam
+        (
+            "b1: beam, particle=proton, pc=2;",
+            None,
+            2.209152441869987,
+            0.93827208816,
+            1.0,
+        ),
+        ("beam particle=proton, pc=2;", None, 2.209152441869987, 0.93827208816, 1.0),
+        ("BEAM, PARTICLE=PROTON PC=2;", None, 2.209152441869987, 0.93827208816, 1.0),
+        (
+            "BEAM, PARTICLE=PROTON, -RADIATE, PC=2;",
+            None,
+            2.209152441869987,
+            0.93827208816,
+            1.0,
+        ),
+        # a quoted name is case-sensitive
+        (
+            "BEAM, PARTICLE='proton', PC=2;",
+            None,
+            2.209152441869987,
+            0.93827208816,
+            1.0,
+        ),
+        ("BEAM, PARTICLE=POSMUON, GAMMA=5;", None, 0.5282918775, 0.1056583755, 1.0),
+        ("BEAM, PARTICLE=NEGMUON, GAMMA=5;", None, 0.5282918775, 0.1056583755, -1.0),
+    ],
+)
+def test_beam_matches_madx(script, sequence, energy, mass, charge):
+    """Total energy, mass and charge as printed by MAD-X 5.09.03 for this input."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"{script}\n")
+    beam = parser.context.beams[sequence]
+    assert beam.energy == pytest.approx(energy, rel=1e-14)
+    assert beam.mass == mass
+    assert beam.charge == charge
+
+
+@pytest.mark.parametrize(
+    "script",
+    [
+        "BEAM, PARTICLE=PROTON, ENERGY=0.5;",
+        "BEAM, MASS=2, CHARGE=1;",
+        "BEAM, PARTICLE=ION, MASS=200, CHARGE=82;",
+        "BEAM, PARTICLE=ELECTRON, ENERGY=1; BEAM, MASS=2;",
+        # a reference in the command reads the previous mass, of the electron
+        "BEAM, PARTICLE=ELECTRON, ENERGY=2; BEAM, PARTICLE=PROTON, ENERGY=4*BEAM->MASS;",
+        "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->MASS=2; BEAM, EX=1;",
+    ],
+)
+def test_beam_energy_must_exceed_mass(script):
+    """MAD-X stops on a stated, kept or default energy not above the mass."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        with pytest.raises(MADXInputError, match="must exceed the mass"):
+            MADXParser().parse_string(f"{script}\n")
+
+
+def test_beam_number_without_a_comma_raises():
+    """MAD-X stops on this, which would otherwise drop what follows the number."""
+    with pytest.raises(MADXInputError, match="comma"):
+        MADXParser().parse_string("BEAM, PARTICLE=PROTON, ENERGY=2 PC=3;\n")
+
+
+@pytest.mark.parametrize(
+    "script",
+    [
+        "BEAM, PARTICLE=PROTN, PC=2;",
+        "BEAM, PARTICLE=FOO, GAMMA=5;",
+        "BEAM, PARTICLE=FOO, CHARGE=1, ENERGY=2;",
+        'BEAM, PARTICLE="PROTON", PC=2;',
+        "BEAM, PARTICLE=FOO, MASS=2, CHARGE=3, PC=1; BEAM, PARTICLE=FOO, PC=1;",
+    ],
+)
+def test_beam_unknown_particle_without_a_mass_raises(script):
+    """Stricter than MAD-X, where a typo would turn into a particle of electron mass."""
+    with pytest.raises(MADXInputError, match="unknown and has no MASS"):
+        MADXParser().parse_string(f"{script}\n")
+
+
+@pytest.mark.parametrize(
+    "script, name, is_nan",
+    [
+        ("BEAM, PARTICLE=PROTON, PC=sqrt(-1);", "energy", True),
+        ("BEAM, PARTICLE=PROTON, GAMMA=asin(2);", "energy", True),
+        ("BEAM, PARTICLE=PROTON, BETA=-2;", "energy", True),
+        ("BEAM, MASS=sqrt(-1), CHARGE=1, ENERGY=3;", "gamma", True),
+        ("BEAM, MASS=2, CHARGE=sqrt(-1), ENERGY=3;", "brho", True),
+        ("BEAM, PARTICLE=PROTON, BETA=-1;", "energy", False),
+        ("BEAM, PARTICLE=PROTON, BETA=0, EXN=1e-6;", "ex", False),
+        ("BEAM, PARTICLE=PROTON, BETA=0, BCURRENT=1e-3, FREQ0=1;", "npart", False),
+    ],
+)
+def test_beam_non_finite_values_match_madx(script, name, is_nan):
+    """MAD-X 5.09.03 continues with NaN or infinity, which the parser also keeps."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"{script}\n")
+    value = parser.context.get_beam_attribute("beam", name)
+    assert math.isnan(value) if is_nan else value == math.inf
+
+
+@pytest.mark.parametrize(
+    "script, values",
+    [
+        (
+            "BEAM, MASS=-1, CHARGE=1;",
+            {"energy": 1.0, "mass": -1.0, "gamma": -1.0, "pc": 0.0},
+        ),
+        (
+            "BEAM, MASS=-1, CHARGE=1, ENERGY=0.5;",
+            {"energy": 0.5, "mass": -1.0, "gamma": -0.5},
+        ),
+        (
+            "BEAM, PARTICLE=ION, MASS=-1, CHARGE=1, ENERGY=2;",
+            {"energy": 2.0, "mass": -1.0, "gamma": -2.0},
+        ),
+    ],
+)
+def test_beam_negative_mass_matches_madx(script, values):
+    """MAD-X 5.09.03 reads a negative mass."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"{script}\n")
+    assert not parser.context.beam.is_physical
+    for name, value in values.items():
+        assert parser.context.get_beam_attribute("beam", name) == value, name
+
+
+@pytest.mark.parametrize(
+    "expression, expected",
+    [
+        ("sqrt(-1)", math.nan),
+        ("log(-1)", math.nan),
+        ("log10(-1)", math.nan),
+        ("log(0)", -math.inf),
+        ("log10(0)", -math.inf),
+        ("asin(2)", math.nan),
+        ("acos(2)", math.nan),
+        ("exp(1000)", math.inf),
+        ("sinh(1000)", math.inf),
+        ("sinh(-1000)", -math.inf),
+        ("cosh(1000)", math.inf),
+        ("cosh(-1000)", math.inf),
+        ("floor(1e400)", math.inf),
+        ("round(1e400)", math.inf),
+        ("0^(-1)", math.inf),
+        ("(-2)^0.5", math.nan),
+        ("(-8)^(1/3)", math.nan),
+        ("10^400", math.inf),
+        ("(-10)^401", -math.inf),
+        ("(-10)^400", math.inf),
+        ("0^0", 1.0),
+        ("frac(2.5)", 0.5),
+        ("frac(-2.5)", -0.5),
+        ("frac(1e400)", 0.0),
+        ("tgauss(sqrt(-1))", 0.0),
+        ("tgauss(0)", 0.0),
+        ("tgauss(-1)", 0.0),
+    ],
+)
+def test_math_edges_match_madx(expression, expected):
+    """MAD-X 5.09.03 continues with what its C math functions return."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"X = {expression};\n")
+    assert parser.getVariable("x") == pytest.approx(expected, nan_ok=True)
+
+
+def test_beam_known_particle_ignores_invalid_mass():
+    """MAD-X does not read the MASS and CHARGE of a known particle."""
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, MASS=sqrt(-1), PC=2;\n")
+    assert parser.context.beam.mass == 0.93827208816
+
+
+def test_beam_messages_name_the_line_of_the_command():
+    """Errors and warnings point at the BEAM command, not the next statement."""
+    with pytest.raises(MADXInputError) as error:
+        MADXParser().parse_string(
+            "A = 1;\n\nBEAM, PARTICLE=PROTON, PC=0;\n\n\nQ: QUADRUPOLE, L=1;\n"
+        )
+    assert error.value.line_number == 3
+
+    with pytest.warns(MADXInputWarning, match=r":2: BEAM sets the energy"):
+        MADXParser().parse_string(
+            "\nBEAM, PARTICLE=PROTON, ENERGY=3, PC=2;\n\n\nQ: QUADRUPOLE, L=1;\n"
+        )
+
+
+def test_beam_defined():
+    """MAD-X stops on a sequence without BEAM, so the parser tracks if there was one."""
+    parser = MADXParser()
+    assert not parser.context.beam.defined
+    parser.parse_string("BEAM;\n")
+    assert parser.context.beam.defined
+
+
+def test_resbeam():
+    """RESBEAM restores all parameters of the beam it names, and only those."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+BEAM, PARTICLE=PROTON, ENERGY=2, BV=-1, FREQ0=5;
+BEAM, SEQUENCE=Z, PARTICLE=PROTON, ENERGY=3;
+RESBEAM, SEQUENCE=Z;
+"""
+    )
+    z = parser.context.beams["z"]
+    assert (z.particle, z.mass, z.energy) == ("positron", 0.51099895000e-3, 1.0)
+    assert not z.energy_is_explicit
+    default = parser.context.beams[None]
+    assert (default.energy, default.bv, default.freq0) == (2.0, -1.0, 5.0e6)
+
+    parser.parse_string("RESBEAM;\n")
+    default = parser.context.beams[None]
+    assert (default.energy, default.bv, default.freq0) == (1.0, 1.0, 0.0)
+
+
+def test_beam_attribute_references():
+    """`beam->attr` and `beam%sequence->attr` give the values MAD-X 5.09.03 prints."""
+    parser = MADXParser()
+    parser.parse_string(
+        """\
+BEAM, PARTICLE=PROTON, PC=2, FREQ0=5;
+BEAM, SEQUENCE=Z, PARTICLE=ELECTRON, ENERGY=3;
+MOMENTUM = BEAM->PC;
+TOTAL = BEAM->ENERGY;
+RIGIDITY = BEAM->BRHO;
+FREQUENCY = BEAM->FREQ0;
+TOTAL_Z = BEAM%Z->ENERGY;
+TOTAL_NONE = BEAM%NOSUCH->ENERGY;
+"""
+    )
+    get = parser.getVariable
+    assert get("momentum") == pytest.approx(2.0, rel=1e-14)
+    assert get("total") == pytest.approx(2.2091524418699868, rel=1e-14)
+    assert get("rigidity") == pytest.approx(6.67128190396304, rel=1e-14)
+    assert get("frequency") == pytest.approx(5.0, rel=1e-14)
+    assert get("total_z") == 3.0
+    assert get("total_none") == pytest.approx(2.2091524418699868, rel=1e-14)
+
+
+@pytest.mark.parametrize(
+    "script, sequence, values",
+    [
+        # all defaults: no command, and an empty one
+        (
+            "",
+            None,
+            {
+                "pc": 0.999999869440028,
+                "gamma": 1956.9511835591834,
+                "beta": 0.999999869440028,
+                "brho": 3.335640516480331,
+                "ex": 1.0,
+                "exn": 1956.9509280596917,
+                "ey": 1.0,
+                "eyn": 1956.9509280596917,
+                "et": 0.001,
+                "sigt": 1.0,
+                "sige": 0.001,
+                "kbunch": 1.0,
+                "npart": 1.0,
+                "bcurrent": 0.0,
+                "freq0": 0.0,
+                "circ": 0.0,
+                "dtbyds": 0.0,
+                "deltap": 0.0,
+                "alfa": 2.611199269011025e-07,
+                "u0": 0.0,
+                "qs": 0.0,
+                "arad": 2.8179403246496351e-15,
+                "bv": 1.0,
+                "bunched": 1.0,
+                "radiate": 0.0,
+                "n1min": -1.0,
+                "pdamp": 0.0,
+            },
+        ),
+        # stated values, of which a BEAM command ignores DELTAP to ARAD
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, EX=2e-6, EY=3e-6, ET=4e-3, SIGT=0.5, "
+            "SIGE=2e-4, KBUNCH=7, NPART=1e10, DELTAP=2, U0=3, QS=4, N1MIN=5, ALFA=6, "
+            "ARAD=7;",
+            None,
+            {
+                "ex": 2e-06,
+                "exn": 3.764903254435854e-06,
+                "ey": 3e-06,
+                "eyn": 5.647354881653782e-06,
+                "et": 0.004,
+                "sigt": 0.5,
+                "sige": 0.0002,
+                "kbunch": 7.0,
+                "npart": 1e10,
+                "bcurrent": 0.0,
+                "deltap": 0.0,
+                "u0": 0.0,
+                "qs": 0.0,
+                "n1min": -1.0,
+                "alfa": 0.22008862785503169,
+                "arad": 1.5346982663445394e-18,
+            },
+        ),
+        # normalized emittances, of which a later command keeps the unnormalized
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, EXN=1e-6, EYN=2e-6;",
+            None,
+            {
+                "ex": 5.312221496378628e-07,
+                "exn": 1e-06,
+                "ey": 1.0624442992757256e-06,
+                "eyn": 2e-06,
+            },
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, EXN=1e-6; BEAM, ENERGY=3;",
+            None,
+            {"ex": 5.312221496378628e-07, "exn": 1.6133028901394618e-06},
+        ),
+        # CIRC sets FREQ0 and takes precedence over it; a later energy keeps both
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, CIRC=100;",
+            None,
+            {"freq0": 2.647544871519702, "circ": 100.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, CIRC=100, FREQ0=5;",
+            None,
+            {"freq0": 2.647544871519702, "circ": 100.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, FREQ0=5;",
+            None,
+            {"freq0": 5.0, "circ": 52.95089743039404},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, CIRC=100; BEAM, ENERGY=3;",
+            None,
+            {"freq0": 2.647544871519702, "circ": 100.0},
+        ),
+        # BCURRENT and NPART follow from each other; each command clears BCURRENT
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, BCURRENT=1e-3, FREQ0=1;",
+            None,
+            {"npart": 7067518919.850619, "bcurrent": 0.001, "circ": 264.7544871519702},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, BCURRENT=1e-3, FREQ0=1; BEAM, ENERGY=3;",
+            None,
+            {"npart": 7067518919.850619, "bcurrent": 0.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2, NPART=5, FREQ0=2;",
+            None,
+            {
+                "npart": 5.0,
+                "bcurrent": 1.4149236971850033e-12,
+                "circ": 132.3772435759851,
+            },
+        ),
+        # a stated energy parameter is kept as stated
+        (
+            "BEAM, PARTICLE=PROTON, PC=1e-9;",
+            None,
+            {"pc": 1e-09, "beta": 1.0657889247894517e-09, "gamma": 1.0},
+        ),
+        ("BEAM, PARTICLE=PROTON, PC=1e-6;", None, {"pc": 1e-06}),
+        (
+            "BEAM, PARTICLE=PROTON, BETA=-0.5;",
+            None,
+            {
+                "beta": -0.5,
+                "pc": 0.5417116426722884,
+                "energy": 1.0834232853445767,
+            },
+        ),
+        ("BEAM, PARTICLE=PROTON, BETA=1e-9;", None, {"beta": 1e-09}),
+        (
+            "BEAM, PARTICLE=PROTON, BRHO=2;",
+            None,
+            {"brho": 2.0, "pc": 0.5995849160000001, "energy": 1.1134884745316647},
+        ),
+        # a parameter without a value takes its default
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, BETA;",
+            None,
+            {"energy": 0.93827208816, "beta": 0.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, -BRHO;",
+            None,
+            {"energy": 0.93827208816, "brho": 0.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, PARTICLE;",
+            None,
+            {"mass": 0.00051099895, "charge": 1.0, "energy": 5.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, MASS;",
+            None,
+            {"mass": 0.93827208816, "charge": 1.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=5, EX=2; BEAM, EX;",
+            None,
+            {"ex": 0.0, "exn": 0.0},
+        ),
+        (
+            "BEAM, SEQUENCE, PARTICLE=PROTON, ENERGY=3;",
+            None,
+            {"energy": 3.0, "mass": 0.93827208816},
+        ),
+        ("BEAM, RADIATE;", None, {"radiate": 1.0, "bunched": 1.0}),
+        ("BEAM, -RADIATE, -BUNCHED;", None, {"radiate": 0.0, "bunched": 0.0}),
+        ("BEAM, RADIATE=TRUE, BUNCHED=FALSE;", None, {"radiate": 1.0, "bunched": 0.0}),
+        # a quoted sequence name keeps its case, so `a` keeps the default beam
+        (
+            'BEAM, PARTICLE=ELECTRON, ENERGY=2; BEAM, SEQUENCE="A", PARTICLE=PROTON, ENERGY=5;',
+            "a",
+            {"energy": 2.0, "mass": 0.00051099895},
+        ),
+        (
+            'BEAM, SEQUENCE=X, PARTICLE=ELECTRON, ENERGY=3; RESBEAM, SEQUENCE="X";',
+            "x",
+            {"energy": 3.0, "mass": 0.00051099895},
+        ),
+        # a reference in a BEAM command reads the beam before this command
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; BEAM, MASS=2, CHARGE=1, ENERGY=4*BEAM->MASS;",
+            None,
+            {"energy": 3.7530883526399998, "mass": 2.0, "charge": 1.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; BEAM, MASS=2, CHARGE=1, ENERGY:=4*BEAM->MASS;",
+            None,
+            {"energy": 3.7530883526399998, "mass": 2.0, "charge": 1.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; BEAM, PC=BEAM->ENERGY;",
+            None,
+            {"energy": 3.1433031211482176, "pc": 3.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3, EX=2; "
+            "BEAM, ENERGY=5, EY=BEAM->ENERGY, ET=BEAM->EXN;",
+            None,
+            {
+                "energy": 5.0,
+                "ey": 3.0,
+                "et": 6.073929301476829,
+                "exn": 10.46855306240483,
+            },
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; "
+            "BEAM, ENERGY=5, CIRC=BEAM->ENERGY, NPART=BEAM->GAMMA;",
+            None,
+            {"energy": 5.0, "circ": 3.0, "npart": 3.1973667743683549},
+        ),
+        (
+            "BEAM, PARTICLE=ION, MASS=2*BEAM->MASS, CHARGE=3, ENERGY=9;",
+            None,
+            {"mass": 0.0010219979, "charge": 3.0, "energy": 9.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; "
+            "BEAM, MASS=BEAM->ENERGY, CHARGE=BEAM->MASS, ENERGY=9;",
+            None,
+            {"mass": 3.0, "charge": 0.93827208816, "energy": 9.0},
+        ),
+        (
+            "BEAM, SEQUENCE=S, PARTICLE=PROTON, ENERGY=3; "
+            "BEAM, SEQUENCE=S, PC=BEAM%S->ENERGY;",
+            "s",
+            {"energy": 3.1433031211482176, "pc": 3.0},
+        ),
+        # ... which falls back to the default beam for a new sequence
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=3; "
+            "BEAM, SEQUENCE=S, PARTICLE=PROTON, ENERGY=2*BEAM%S->ENERGY;",
+            "s",
+            {"energy": 6.0},
+        ),
+        # an assignment stores only this value, until the next BEAM command
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->ENERGY=7;",
+            None,
+            {
+                "energy": 7.0,
+                "pc": 1.7662518191299543,
+                "gamma": 2.1315778495789033,
+            },
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->ENERGY=7; BEAM, EX=1;",
+            None,
+            {"energy": 7.0, "pc": 6.9368325256257899},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; X=3; BEAM->EX:=X; X=5;",
+            None,
+            {"ex": 3.0},
+        ),
+        (
+            "BEAM, SEQUENCE=S, PARTICLE=PROTON, ENERGY=2; BEAM%S->ENERGY=7;",
+            "s",
+            {"energy": 7.0},
+        ),
+        (
+            "BEAM, SEQUENCE=S, PARTICLE=PROTON, ENERGY=2; BEAM%S->ENERGY=7;",
+            None,
+            {"energy": 1.0},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM%NOSUCH->ENERGY=7;",
+            None,
+            {"energy": 7.0},
+        ),
+        ("BEAM->ENERGY=7;", None, {"energy": 7.0}),
+        ("BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->FREQ0=7;", None, {"freq0": 7.0}),
+        ("BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->FOO=7;", None, {"foo": 0.0}),
+        # a label does not change a command, but BEAM and RESBEAM are protected
+        (
+            "BEAM, PARTICLE=PROTON, PC=2; r: resbeam;",
+            None,
+            {"energy": 1.0, "mass": 0.00051099895},
+        ),
+        (
+            "BEAM, PARTICLE=PROTON, PC=2; beam: resbeam;",
+            None,
+            {"energy": 2.209152441869987, "mass": 0.93827208816},
+        ),
+        (
+            "beam: beam, particle=proton, pc=2;",
+            None,
+            {"energy": 1.0, "mass": 0.00051099895},
+        ),
+        (
+            "resbeam: beam, particle=proton, pc=2;",
+            None,
+            {"energy": 1.0, "mass": 0.00051099895},
+        ),
+    ],
+)
+def test_beam_references_match_madx(script, sequence, values):
+    """`beam->name` gives what MAD-X 5.09.03 prints with `value` for this input."""
+    parser = MADXParser()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", MADXInputWarning)
+        parser.parse_string(f"{script}\n")
+    prefix = f"beam%{sequence}" if sequence else "beam"
+    for name, value in values.items():
+        got = parser.context.get_beam_attribute(prefix, name)
+        assert got == pytest.approx(value, rel=1e-13, abs=0.0), name
+
+
+@pytest.mark.parametrize(
+    "script, match",
+    [
+        ("BEAM, ENERGIE=3;", "Illegal keyword: energie"),
+        ("BEAM, E=2;", "Illegal keyword: e"),
+        ("BEAM, PART=PROTON, ENERGY=2;", "Illegal keyword: part"),
+        ("BEAM, PARTICLE=PROTON, ENERGY=2, FOO=3;", "Illegal keyword: foo"),
+        ("RESBEAM, ENERGY=3;", "Illegal keyword: energy"),
+    ],
+)
+def test_beam_illegal_keyword_raises(script, match):
+    """MAD-X stops on an unknown parameter, which must not fall back to 1 GeV."""
+    with pytest.raises(MADXInputError, match=match):
+        MADXParser().parse_string(f"{script}\n")
+
+
+def test_beam_illegal_keyword_after_a_string_raises():
+    """Stricter than MAD-X, which reads the unknown particle `proton,energie=3`."""
+    with pytest.raises(MADXInputError, match="Illegal keyword: energie"):
+        MADXParser().parse_string("BEAM, PARTICLE=PROTON, ENERGIE=3;\n")
+
+
+@pytest.mark.parametrize(
+    "param, match",
+    [
+        ("ENERGY", "must exceed the mass"),
+        ("-ENERGY", "must exceed the mass"),
+        ("PC", "PC must be > 0"),
+        ("-PC", "PC must be > 0"),
+        ("GAMMA", "GAMMA must be > 1"),
+    ],
+)
+def test_beam_parameter_without_a_value_stops(param, match):
+    """MAD-X reads these as zero, and stops as for a stated zero."""
+    with pytest.raises(MADXInputError, match=match):
+        MADXParser().parse_string(f"BEAM, PARTICLE=PROTON, ENERGY=5; BEAM, {param};\n")
+
+
+def test_predefined_constants_match_madx():
+    """Predefined constants as printed by MAD-X 5.09.03."""
+    parser = MADXParser()
+    for name, value in {
+        "pi": 3.1415926535897931,
+        "twopi": 6.2831853071795862,
+        "degrad": 57.295779513082323,
+        "raddeg": 0.017453292519943295,
+        "e": 2.7182818284590451,
+        "amu0": 1.2566370614359173e-06,
+        "emass": 0.00051099895000000003,
+        "mumass": 0.1056583755,
+        "nmass": 0.93956542052000003,
+        "umass": 0.93149410241999997,
+        "pmass": 0.93827208815999996,
+        "clight": 299792458,
+        "qelect": 1.6021766339999999e-19,
+        "hbar": 6.5821195689999996e-25,
+        "erad": 2.8179403262e-15,
+        "prad": 1.5346982671888944e-18,
+    }.items():
+        assert parser.getVariable(name) == pytest.approx(value, rel=1e-15), name
+
+
+@pytest.mark.parametrize(
+    "script, name, value",
+    [
+        ("PI=3;", "pi", math.pi),
+        ("PI:=3;", "pi", math.pi),
+        ("AMU0=1;", "amu0", 4.0e-7 * math.pi),
+        ("CONST EMASS=3;", "emass", 0.51099895000e-3),
+        ("CONST C1=2; C1=3;", "c1", 2.0),
+    ],
+)
+def test_redefining_a_constant_is_ignored(script, name, value):
+    """MAD-X warns and continues with the constant."""
+    parser = MADXParser()
+    with pytest.warns(MADXInputWarning, match="redefine constant"):
+        parser.parse_string(f"{script}\n")
+    assert parser.getVariable(name) == value
+
+
+def test_beam_assignment_does_not_state_the_energy():
+    """What follows from an assigned value is out of date, as in MAD-X."""
+    parser = MADXParser()
+    parser.parse_string("BEAM, PARTICLE=PROTON, PC=2;\n")
+    assert parser.context.beam.energy_is_explicit
+    parser.parse_string("BEAM->ENERGY=7;\n")
+    assert not parser.context.beam.energy_is_explicit
+
+
+@pytest.mark.parametrize(
+    "statement, skipped",
+    [("USE, SEQUENCE=NOPE;", "nope"), ('USE, SEQUENCE="A";', "A")],
+)
+def test_use_skips_an_unknown_sequence(statement, skipped):
+    """MAD-X warns and keeps the current sequence, and a quoted name keeps its case."""
+    parser = MADXParser()
+    parser.parse_string("D1: DRIFT, L=1;\nA: LINE=(D1);\nBEAM;\nUSE, SEQUENCE=A;\n")
+    with pytest.warns(MADXInputWarning, match=f"unknown sequence skipped: {skipped}"):
+        parser.parse_string(f"{statement}\n")
+    assert parser.sequence["name"] == "a"
 
 
 def test_lenient_commas():

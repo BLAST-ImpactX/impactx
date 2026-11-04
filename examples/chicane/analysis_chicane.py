@@ -41,7 +41,6 @@ def get_moments(beam):
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
-is_double = initial["position_x"].dtype == np.float64
 final = series.iterations[last_step].particles["beam"].to_df()
 
 # compare number of particles
@@ -58,11 +57,6 @@ print(
 
 atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
-if not is_double:
-    # FIXME: single precision does not resolve the near-unity t-pt correlation
-    # of this beam: sigt and emittance_t are off by 19% and 20% in the initial beam
-    # https://github.com/BLAST-ImpactX/impactx/issues/1485
-    rtol = 0.7
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
@@ -90,10 +84,6 @@ print(
 
 atol = 0.0  # ignored
 rtol = 2.2 * num_particles**-0.5  # from random sampling of a smooth distribution
-if not is_double:
-    # FIXME: sigt and emittance_t are off by 20% in single precision, see initial beam
-    # https://github.com/BLAST-ImpactX/impactx/issues/1485
-    rtol = 0.5
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

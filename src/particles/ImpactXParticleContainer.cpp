@@ -72,6 +72,36 @@ namespace impactx
     }
 
     void
+    ImpactXParticleContainer::SortForSpaceCharge ()
+    {
+        // Sorting costs more than it saves on CPU, see the documentation of this option
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
+        int sort_interval = 10;
+#else
+        int sort_interval = 0;
+#endif
+        amrex::ParmParse pp_algo("algo.space_charge");
+        pp_algo.queryAddWithParser("sort_interval", sort_interval);
+        if (sort_interval < 0) {
+            throw std::runtime_error("algo.space_charge.sort_interval must not be negative");
+        }
+
+        int const call = m_num_sort_for_space_charge_calls++;
+        if (sort_interval == 0 || call % sort_interval != 0) { return; }
+
+        BL_PROFILE("ImpactXParticleContainer::SortForSpaceCharge");
+
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
+        // 2: compromise between a cell- and a node-centered sort. It uses more bins than these,
+        //    which is what keeps the sort fast on meshes with a single longitudinal cell.
+        SortParticlesForDeposition(amrex::IntVect(2));
+#else
+        // SortParticlesForDeposition is only available with CUDA and HIP
+        SortParticlesByCell();
+#endif
+    }
+
+    void
     ImpactXParticleContainer::SetLostParticleContainer (ImpactXParticleContainer * lost_pc)
     {
         m_particles_lost = lost_pc;

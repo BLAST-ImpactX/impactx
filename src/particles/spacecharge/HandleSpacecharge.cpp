@@ -75,6 +75,9 @@ namespace impactx::particles::spacecharge
             // 2D: x, y, t
             amr_data->track_particles.m_particle_container->Redistribute();
 
+            // keep particles that are close on the grid also close in memory
+            amr_data->track_particles.m_particle_container->SortForSpaceCharge();
+
             // charge deposition
             amr_data->track_particles.m_particle_container->DepositCharge(
                 amr_data->track_particles.m_rho,

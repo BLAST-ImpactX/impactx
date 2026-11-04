@@ -29,7 +29,7 @@ void init_distribution(py::module& m)
         .def(py::init<
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                double, double, double,
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal,
@@ -51,7 +51,7 @@ void init_distribution(py::module& m)
         .def(py::init<
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 double, double, double,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal,
@@ -72,7 +72,7 @@ void init_distribution(py::module& m)
         .def(py::init<
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 double, double, double,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal,
@@ -94,7 +94,7 @@ void init_distribution(py::module& m)
         .def(py::init<
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 double, double, double,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal,
@@ -120,7 +120,7 @@ void init_distribution(py::module& m)
         .def(py::init<
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 double, double, double,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal,
@@ -159,7 +159,7 @@ void init_distribution(py::module& m)
         .def(py::init<
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 double, double, double,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal,
@@ -181,7 +181,7 @@ void init_distribution(py::module& m)
         .def(py::init<
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
-                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
+                 double, double, double,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal,

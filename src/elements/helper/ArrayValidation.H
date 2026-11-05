@@ -13,6 +13,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_TrackedVector.H>
 
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -30,13 +31,15 @@ namespace impactx::elements
      * @param second the second array, which must have the same length
      * @param what element and array names, used in the error message
      * @param min_size the fewest entries this element can be evaluated with
+     * @param max_size the most entries this element can be evaluated with
      */
     inline void
     require_array_pair (
         std::vector<amrex::ParticleReal> const & first,
         std::vector<amrex::ParticleReal> const & second,
         std::string const & what,
-        int min_size
+        int min_size,
+        int max_size = std::numeric_limits<int>::max()
     )
     {
         if (first.size() != second.size())
@@ -50,6 +53,12 @@ namespace impactx::elements
                 (min_size == 1 ? " entry, got " : " entries, got ") +
                 std::to_string(first.size()) + "!");
         }
+        if (first.size() > static_cast<std::size_t>(max_size))
+        {
+            throw std::invalid_argument(
+                what + " arrays hold at most " + std::to_string(max_size) +
+                " entries, got " + std::to_string(first.size()) + "!");
+        }
     }
 
     /** @see require_array_pair, for arrays the element already owns */
@@ -58,10 +67,11 @@ namespace impactx::elements
         amrex::Gpu::TrackedVector<amrex::ParticleReal> const & first,
         amrex::Gpu::TrackedVector<amrex::ParticleReal> const & second,
         std::string const & what,
-        int min_size
+        int min_size,
+        int max_size = std::numeric_limits<int>::max()
     )
     {
-        require_array_pair(first.host_const(), second.host_const(), what, min_size);
+        require_array_pair(first.host_const(), second.host_const(), what, min_size, max_size);
     }
 
 } // namespace impactx::elements

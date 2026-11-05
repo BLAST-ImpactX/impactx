@@ -585,7 +585,7 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^
 
 A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (:math:`m = 5`).
 The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
 For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
@@ -1130,7 +1130,7 @@ This requires these additional parameters:
     :type: ``integer``
     :unit: dimensionless
 
-    Order of multipole: (m = 1) dipole, (m = 2) quadrupole, (m = 3) sextupole, etc.
+    Order of multipole: (m = 1) dipole, (m = 2) quadrupole, (m = 3) sextupole, etc., up to (m = 13).
 
 .. pp:param:: <multipole_name>.k_normal
     :type: ``float``
@@ -1168,7 +1168,7 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^^^^
 
 ``multipole_exact`` for a thick multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order :math:`m = 12`.
 The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
 The coefficients must appear in the following sequence:
 

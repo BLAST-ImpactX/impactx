@@ -177,3 +177,11 @@ def test_legends_show_normalized_emittance(sim):
         assert f"$\\epsilon_{{n,{plane}}}=${normalized}\n" in title
 
     plt.close(fig)
+
+
+def test_empty_beam_raises(sim):
+    """A beam without particles has nothing to plot, which all MPI ranks report."""
+    sim.beam.ref.set_species("electron").set_kin_energy_MeV(100.0)
+
+    with pytest.raises(RuntimeError, match="the beam has no particles"):
+        sim.beam.plot_phasespace()

@@ -31,11 +31,23 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     -------
     A matplotlib figure with containing the plot.
     For MPI-parallel ranks, the figure is only created on the root_rank.
+
+    Raises
+    ------
+    RuntimeError
+        If the particles are not at fixed s, or the beam has no particles.
     """
     if self.coord_system != CoordSystem.s:
         raise RuntimeError(
             "plot_phasespace: the particles must be at fixed s, "
             f"but are at {self.coord_system}."
+        )
+
+    # on all MPI ranks: a rank without particles still plots the others
+    if self.total_number_of_particles() == 0:
+        raise RuntimeError(
+            "plot_phasespace: the beam has no particles: "
+            "none were added yet, or all of them are lost."
         )
 
     import matplotlib.pyplot as plt

@@ -521,6 +521,9 @@ class ImpactXParticleContainer(
         """
         Plot the longitudinal and transverse phase space projections with matplotlib.
 
+        The histograms show the magnitude of the charge per bin. A beam without charge,
+        e.g., of zero-weight test particles, shows its number of macroparticles per bin.
+
         Parameters
         ----------
         self : ImpactXParticleContainer_*
@@ -534,6 +537,11 @@ class ImpactXParticleContainer(
         -------
         A matplotlib figure with containing the plot.
         For MPI-parallel ranks, the figure is only created on the root_rank.
+
+        Raises
+        ------
+        RuntimeError
+            If the particles are not at fixed s, or the beam has no particles.
         """
     def record_beam_moments(self) -> None:
         """

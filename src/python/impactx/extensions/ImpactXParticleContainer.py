@@ -266,7 +266,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
 
     leg = ax_xpx.legend(
         title=r"$\epsilon_{n,x}=$"
-        f"{Quantity(rbc['emittance_x'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_xn'], 'm'):.3}\n"
         rf"$\sigma_x=${Quantity(rbc['sig_x'], 'm'):.3}"
         "\n"
         rf"$\beta_x=${Quantity(rbc['beta_x'], 'm'):.3}"
@@ -279,7 +279,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     leg._legend_box.sep = 0
     leg = ax_ypy.legend(
         title=r"$\epsilon_{n,y}=$"
-        f"{Quantity(rbc['emittance_y'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_yn'], 'm'):.3}\n"
         rf"$\sigma_y=${Quantity(rbc['sig_y'], 'm'):.3}"
         "\n"
         rf"$\beta_y=${Quantity(rbc['beta_y'], 'm'):.3}"
@@ -292,7 +292,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     leg._legend_box.sep = 0
     leg = ax_tpt.legend(
         title=r"$\epsilon_{n,t}=$"
-        f"{Quantity(rbc['emittance_t'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_tn'], 'm'):.3}\n"
         r"$\sigma_{ct}=$"
         f"{Quantity(rbc['sig_t'], 'm'):.3}\n"
         r"$\sigma_{pt}=$"

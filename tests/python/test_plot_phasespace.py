@@ -15,6 +15,7 @@ import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+from quantiphy import Quantity
 
 from impactx import ImpactX, amr
 
@@ -155,5 +156,24 @@ def test_axes_match_their_units(sim):
         panels(fig), (x * 1e3, y * 1e3, t * 1e3), (px * 1e3, py * 1e3, pt)
     ):
         np.testing.assert_allclose(panel.images[0].get_extent(), [-r, r, -p, p])
+
+    plt.close(fig)
+
+
+def test_legends_show_normalized_emittance(sim):
+    """The legends show what their symbol says: beta_0 gamma_0 times the geometric value."""
+    add_beam(sim)
+
+    moments = sim.beam.beam_moments()
+    fig = sim.beam.plot_phasespace(num_bins=2)
+    if fig is None:  # the figure is on the MPI root rank
+        return
+
+    for panel, plane in zip(panels(fig), "xyt"):
+        normalized = f"{Quantity(moments[f'emittance_{plane}n'], 'm'):.3}"
+        geometric = f"{Quantity(moments[f'emittance_{plane}'], 'm'):.3}"
+        assert normalized != geometric
+        title = panel.get_legend().get_title().get_text()
+        assert f"$\\epsilon_{{n,{plane}}}=${normalized}\n" in title
 
     plt.close(fig)

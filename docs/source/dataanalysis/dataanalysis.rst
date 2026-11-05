@@ -168,7 +168,7 @@ When steering ImpactX from Python, one can at any point visualize the beam phase
        fig.savefig("phase_space.png")
        plt.show()
 
-.. figure:: https://user-images.githubusercontent.com/1353258/295041638-8410ba76-9bd2-4dae-9810-5ec9f33dd372.png
+.. figure:: phase_space.png
    :alt: In situ visualization of the beam phase space projections.
 
    In situ visualization of the beam phase space projections.

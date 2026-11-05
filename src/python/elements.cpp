@@ -1398,7 +1398,7 @@ void init_elements(py::module& m)
             [](elements::ExactMultipole & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(std::move(v), el.k_skew_coefficients());
             },
-            "normal multipole coefficients\n\n"
+            "normal multipole coefficients, up to order m=12\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1407,7 +1407,7 @@ void init_elements(py::module& m)
             [](elements::ExactMultipole & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(el.k_normal_coefficients(), std::move(v));
             },
-            "skew multipole coefficients\n\n"
+            "skew multipole coefficients, up to order m=12\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1505,7 +1505,7 @@ void init_elements(py::module& m)
             [](elements::ExactCFbend & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(std::move(v), el.k_skew_coefficients());
             },
-            "normal multipole coefficients\n\n"
+            "normal multipole coefficients, up to decapole order (m=5)\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1514,7 +1514,7 @@ void init_elements(py::module& m)
             [](elements::ExactCFbend & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(el.k_normal_coefficients(), std::move(v));
             },
-            "skew multipole coefficients\n\n"
+            "skew multipole coefficients, up to decapole order (m=5)\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1880,10 +1880,9 @@ void init_elements(py::module& m)
         .def_property("multipole",
             [](Multipole & multipole) { return multipole.m_multipole; },
             [](Multipole & multipole, int multipole_index) {
-                multipole.m_multipole = multipole_index;
-                multipole.compute_factorial();
+                multipole.set_multipole(multipole_index);
             },
-            "index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)"
+            "index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc., up to m=13)"
         )
         .def_property("K_normal",
             [](Multipole & multipole) { return multipole.m_Kn; },

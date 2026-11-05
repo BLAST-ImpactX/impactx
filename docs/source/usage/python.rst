@@ -2128,7 +2128,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    A general thin multipole element.
 
-   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
+   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc., up to m=13)
    :param K_normal: Integrated normal multipole coefficient (meter^(-m+1))
                     = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
    :param K_skew: Integrated skew multipole coefficient (meter^(-m+1))
@@ -2142,7 +2142,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 .. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (m=5).
    The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
    For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
@@ -2190,7 +2190,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 .. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order m=12.
    The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
    The coefficients must appear in the following sequence:
 

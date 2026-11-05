@@ -10,6 +10,20 @@ requirements. Newest release first.
 26.11
 -----
 
+Maximum multipole order
+"""""""""""""""""""""""
+
+:py:class:`~impactx.elements.Multipole` raises a ``ValueError`` for ``multipole > 13``, and :py:class:`~impactx.elements.ExactMultipole` and :py:class:`~impactx.elements.ExactCFbend` for ``k_normal`` and ``k_skew`` arrays longer than 12 and 5 entries, respectively.
+Importing a MAD-X ``MULTIPOLE`` with a nonzero ``KNL`` or ``KSL`` entry above index 12 raises the same error.
+
+Look for high-order terms in your lattices and for arrays padded with zeros, and remove the zero entries:
+
+.. code-block:: python
+
+   elements.ExactMultipole(ds=0.2, k_normal=[0.0, k1, 0.0, 0.0], k_skew=[0.0, 0.0, 0.0, 0.0])
+   # same field
+   elements.ExactMultipole(ds=0.2, k_normal=[0.0, k1], k_skew=[0.0, 0.0])
+
 ``DipEdge``: default linear model changed to ``linear_slac75``
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 

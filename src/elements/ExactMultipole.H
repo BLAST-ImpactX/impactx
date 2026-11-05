@@ -70,6 +70,9 @@ namespace impactx::elements
         static constexpr int DEFAULT_int_order = 2;
         static constexpr int DEFAULT_mapsteps = 10;
 
+        //! most coefficients per array: map2 and map3 advance an int factorial past the last one
+        static constexpr int MAX_order = 12;
+
         /** The particle-facing configuration of an exact multipole
          *
          * @param ds Segment length in m.
@@ -584,7 +587,7 @@ namespace impactx::elements
             m_coefficients{std::move(k_normal), std::move(k_skew)}
         {
             require_array_pair(m_coefficients.k_normal, m_coefficients.k_skew,
-                               "ExactMultipole: normal and skew coefficient", 0);
+                               "ExactMultipole: normal and skew coefficient", 0, MAX_order);
             if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
                 throw std::invalid_argument("ExactMultipole: The order used for symplectic integration must be 2, 4 or 6.");
 
@@ -765,7 +768,8 @@ namespace impactx::elements
             std::vector<amrex::ParticleReal> second
         )
         {
-            require_array_pair(first, second, "ExactMultipole: normal and skew coefficient", 0);
+            require_array_pair(first, second,
+                               "ExactMultipole: normal and skew coefficient", 0, MAX_order);
             m_coefficients.k_normal.host() = std::move(first);
             m_coefficients.k_skew.host() = std::move(second);
         }

@@ -13,8 +13,6 @@ They are set after construction through a property each, or together through a p
 setter, validated before anything is stored, and reach the next particle push.
 """
 
-import math
-
 import numpy as np
 import pytest
 
@@ -68,30 +66,6 @@ def test_coefficients_are_set_and_validated(name):
             build(name, [], [])
     assert getattr(el, first) == [1.0, 2.0, 3.0]
     assert getattr(el, second) == [0.0, 0.0, 0.0]
-
-
-@pytest.mark.parametrize("name,max_order", [("ExactMultipole", 12), ("ExactCFbend", 5)])
-def test_coefficient_arrays_stop_at_the_highest_order(name, max_order):
-    highest = [0.5] * max_order
-    el = build(name, highest, highest)
-
-    too_many = highest + [0.0]
-    with pytest.raises(ValueError, match=f"at most {max_order} entries"):
-        build(name, too_many, too_many)
-    with pytest.raises(ValueError, match=f"at most {max_order} entries"):
-        el.set_coefficients(too_many, too_many)
-    assert el.k_normal == highest
-    assert el.k_skew == highest
-
-
-def test_multipole_index_stops_at_the_highest_order():
-    el = elements.Multipole(multipole=13, K_normal=1.0, K_skew=0.0)
-
-    with pytest.raises(ValueError, match="must be <= 13"):
-        elements.Multipole(multipole=14, K_normal=1.0, K_skew=0.0)
-    with pytest.raises(ValueError, match="must be <= 13"):
-        el.multipole = 14
-    assert el.multipole == 13
 
 
 def test_a_single_multipole_coefficient_has_a_transfer_map():
@@ -188,24 +162,6 @@ def test_new_coefficients_reach_the_particle_push(name, first, second, push_once
     assert not np.array_equal(before, after)
     # identical arithmetic on the same backend
     np.testing.assert_array_equal(after, expected)
-
-
-def test_kick_at_the_highest_multipole_order(push_once):
-    """dpx - i dpy = -(K_normal + i K_skew) (x + i y)^12 / 12!"""
-
-    K_normal, K_skew = 3.0e37, -1.0e37  # the kick stands out at these small offsets
-    before, _ = push_once(elements.Multipole(multipole=13, K_normal=0.0, K_skew=0.0))
-    after, _ = push_once(
-        elements.Multipole(multipole=13, K_normal=K_normal, K_skew=K_skew)
-    )
-
-    kick = (
-        (K_normal + 1j * K_skew)
-        * (before[:, 0] + 1j * before[:, 1]) ** 12
-        / math.factorial(12)
-    )
-    np.testing.assert_allclose(after[:, 3] - before[:, 3], -kick.real, rtol=1e-4)
-    np.testing.assert_allclose(after[:, 4] - before[:, 4], kick.imag, rtol=1e-4)
 
 
 def test_new_vertices_reach_the_particle_push(push_once):

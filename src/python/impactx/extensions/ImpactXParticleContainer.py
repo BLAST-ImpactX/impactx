@@ -87,9 +87,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             )
         )
         t_edges = np.linspace(rbc["min_t"] * m2mm, rbc["max_t"] * m2mm, num_bins + 1)
-        pt_edges = np.linspace(
-            rbc["min_pt"] * rad2mrad, rbc["max_pt"] * rad2mrad, num_bins + 1
-        )
+        pt_edges = np.linspace(rbc["min_pt"], rbc["max_pt"], num_bins + 1)
     else:
         # update for plot unit system
         # TODO: normalize to t/z to um and mc depending on s or t
@@ -99,7 +97,6 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
 
         df.momentum_x = df.momentum_x.multiply(rad2mrad)
         df.momentum_y = df.momentum_y.multiply(rad2mrad)
-        df.momentum_t = df.momentum_t.multiply(rad2mrad)
 
         # the magnitude keeps the density positive for negative charges
         weights = abs(self.ref.charge) * df["weighting"] if has_charge else None
@@ -132,7 +129,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             bins=num_bins,
             range=[
                 [rbc["min_t"] * m2mm, rbc["max_t"] * m2mm],
-                [rbc["min_pt"] * rad2mrad, rbc["max_pt"] * rad2mrad],
+                [rbc["min_pt"], rbc["max_pt"]],
             ],
             weights=weights,
         )

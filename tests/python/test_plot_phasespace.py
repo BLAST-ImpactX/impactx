@@ -140,3 +140,20 @@ def test_histograms_without_charge_show_macroparticles(sim):
         assert colorbar_label(panel) == "macroparticles/bin"
 
     plt.close(fig)
+
+
+def test_axes_match_their_units(sim):
+    """x, y, ct are in mm, px, py in mrad, and pt in units of p_0 c, without a factor."""
+    add_beam(sim)
+
+    fig = sim.beam.plot_phasespace(num_bins=2)
+    if fig is None:  # the figure is on the MPI root rank
+        return
+
+    x, px, y, py, t, pt = HALF_WIDTHS
+    for panel, r, p in zip(
+        panels(fig), (x * 1e3, y * 1e3, t * 1e3), (px * 1e3, py * 1e3, pt)
+    ):
+        np.testing.assert_allclose(panel.images[0].get_extent(), [-r, r, -p, p])
+
+    plt.close(fig)

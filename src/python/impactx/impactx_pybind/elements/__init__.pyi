@@ -2240,7 +2240,7 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     @property
     def k_normal(self) -> list[float]:
         """
-        normal multipole coefficients
+        normal multipole coefficients, up to order m=12
 
         Both arrays are always the same length. To change the length, set both at
         once with ``set_coefficients()``.
@@ -2253,7 +2253,7 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     @property
     def k_skew(self) -> list[float]:
         """
-        skew multipole coefficients
+        skew multipole coefficients, up to order m=12
 
         Both arrays are always the same length. To change the length, set both at
         once with ``set_coefficients()``.
@@ -2456,7 +2456,7 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
     @property
     def k_normal(self) -> list[float]:
         """
-        normal multipole coefficients
+        normal multipole coefficients, up to decapole order (m=5)
 
         Both arrays are always the same length. To change the length, set both at
         once with ``set_coefficients()``.
@@ -2469,7 +2469,7 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
     @property
     def k_skew(self) -> list[float]:
         """
-        skew multipole coefficients
+        skew multipole coefficients, up to decapole order (m=5)
 
         Both arrays are always the same length. To change the length, set both at
         once with ``set_coefficients()``.
@@ -3190,7 +3190,7 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     @property
     def multipole(self) -> int:
         """
-        index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
+        index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc., up to m=13)
         """
     @multipole.setter
     def multipole(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...

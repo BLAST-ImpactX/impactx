@@ -60,8 +60,9 @@ def spin_angle(species):
     sim.lattice.append(elements.ChrAcc(name="sol", ds=ds, ez=0.0, bz=bz))
     sim.track_particles()
 
-    df = sim.beam.to_df()
-    angle = float(np.arctan2(df["spin_y"].iloc[0], df["spin_x"].iloc[0]))
+    # MPI-collective: the mean spin of the beam is the spin of its one particle
+    moments = sim.beam.beam_moments()
+    angle = float(np.arctan2(moments["mean_sy"], moments["mean_sx"]))
 
     # Thomas-BMT equation in a longitudinal magnetic field
     np.testing.assert_allclose(

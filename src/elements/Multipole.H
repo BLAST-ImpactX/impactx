@@ -60,9 +60,9 @@ namespace impactx::elements
         void
         set_multipole (int multipole)
         {
-            if (multipole > MAX_order) {
+            if (multipole < 1 || multipole > MAX_order) {
                 throw std::invalid_argument(
-                    "Multipole: multipole must be <= " + std::to_string(MAX_order) +
+                    "Multipole: multipole must be between 1 and " + std::to_string(MAX_order) +
                     ", got " + std::to_string(multipole) + "!");
             }
             m_multipole = multipole;

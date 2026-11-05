@@ -123,7 +123,10 @@ namespace impactx
             } else if (species_name == "Hminus") {
                 qe = -1.0;
                 massE = (m_p + 2.0_prt * m_e) / MeV_inv_c2;  // neglect ~14 eV/c^2 binding energy
-                g_anomaly = 1.7928473446_prt;
+                // the closed-shell electrons leave the moment of the shielded proton:
+                //   (1 + a) q / m = (1 + a_p) (1 - sigma) e / m_p
+                // with sigma = 24.243189(9)e-6 from Kilich & Pachucki, PRA 112, 042813 (2025)
+                g_anomaly = -3.7958216277_prt;
             }
             // [/known_species]
             else {

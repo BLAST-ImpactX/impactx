@@ -189,6 +189,20 @@ subtraction, ``a-b^2``, is not affected. To keep the previous meaning, add paren
 ImpactX also accepts a sign directly after an operator, as in ``a*-b^2`` or ``a^-b^c``, which MAD-X does not support: write
 these with parentheses. Their values change as well, e.g., ``2^-3^2`` was 512 and is now 0.015625, and ``2^((-3)^2)`` is 512.
 
+``Hminus``: gyromagnetic anomaly follows the shielded proton moment
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+The species ``Hminus`` now sets the gyromagnetic anomaly :math:`a = -3.7958216277`, the value for the magnetic moment of the shielded proton.
+Previously, it set the proton value :math:`a = 1.7928473446`, which together with the negative charge reversed the magnetic moment and the direction of spin precession.
+
+**What to check in your scripts:** spin tracking with ``set_species("Hminus")`` or ``beam.particle = Hminus`` gives different spin results.
+Orbits are not affected, nor is an anomaly set explicitly after selecting the species.
+To compare with earlier results, set the previous value:
+
+.. code-block:: python
+
+   ref.set_species("Hminus").set_gyromagnetic_anomaly(1.7928473446)
+
 New in this release
 """""""""""""""""""
 

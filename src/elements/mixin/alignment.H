@@ -71,108 +71,94 @@ namespace impactx::elements::mixin
             m_cos_rotation = cos_rotation;
         }
 
-        /** Shift the particle into the alignment error frame
+        /** Shift the particle position into the alignment error frame
+         *
+         * The momentum and the spin are only rotated, @see rotate_in.
          *
          * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param[inout] x horizontal position relative to reference particle
          * @param[inout] y vertical position relative to reference particle
-         * @param[inout] px horizontal momentum relative to reference particle
-         * @param[inout] py vertical momentum relative to reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void shift_in (
             T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py
+            T_Real & AMREX_RESTRICT y
         ) const
         {
-            // position
             T_Real const xc = x - m_dx;
             T_Real const yc = y - m_dy;
             x =  xc * m_cos_rotation + yc * m_sin_rotation;
             y = -xc * m_sin_rotation + yc * m_cos_rotation;
+        }
 
-            // momentum
+        /** Rotate a transverse vector into the alignment error frame
+         *
+         * Used for the momentum and the spin, @see shift_in for the position.
+         *
+         * The @see compute_constants method must be called before pushing particles through this operator.
+         *
+         * @param[inout] px horizontal momentum relative to reference particle, or spin sx
+         * @param[inout] py vertical momentum relative to reference particle, or spin sy
+         */
+        template<typename T_Real>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void rotate_in (
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py
+        ) const
+        {
             T_Real const pxc = px;
             T_Real const pyc = py;
             px =  pxc * m_cos_rotation + pyc * m_sin_rotation;
             py = -pxc * m_sin_rotation + pyc * m_cos_rotation;
         }
 
-        /** Rotate a transverse vector into the alignment error frame
+        /** Shift the particle position out of the alignment error frame
          *
-         * The @see compute_constants method must be called before pushing particles through this operator.
-         *
-         * @param[inout] sx horizontal spin/vector component
-         * @param[inout] sy vertical spin/vector component
-         */
-        template<typename T_Real>
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void rotate_in (
-            T_Real & AMREX_RESTRICT sx,
-            T_Real & AMREX_RESTRICT sy
-        ) const
-        {
-            T_Real const sxc = sx;
-            T_Real const syc = sy;
-            sx =  sxc * m_cos_rotation + syc * m_sin_rotation;
-            sy = -sxc * m_sin_rotation + syc * m_cos_rotation;
-        }
-
-        /** Shift the particle out of the alignment error frame
+         * The momentum and the spin are only rotated, @see rotate_out.
          *
          * The @see compute_constants method must be called before pushing particles through this operator.
          *
          * @param[inout] x horizontal position relative to reference particle
          * @param[inout] y vertical position relative to reference particle
-         * @param[inout] px horizontal momentum relative to reference particle
-         * @param[inout] py vertical momentum relative to reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void shift_out (
             T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py
+            T_Real & AMREX_RESTRICT y
         ) const
         {
-            // position
             T_Real const xc = x;
             T_Real const yc = y;
             x = xc * m_cos_rotation - yc * m_sin_rotation;
             y = xc * m_sin_rotation + yc * m_cos_rotation;
             x += m_dx;
             y += m_dy;
-
-            // momentum
-            T_Real const pxc = px;
-            T_Real const pyc = py;
-            px = pxc * m_cos_rotation - pyc * m_sin_rotation;
-            py = pxc * m_sin_rotation + pyc * m_cos_rotation;
         }
 
         /** Rotate a transverse vector out of the alignment error frame
          *
+         * Used for the momentum and the spin, @see shift_out for the position.
+         *
          * The @see compute_constants method must be called before pushing particles through this operator.
          *
-         * @param[inout] sx horizontal spin/vector component
-         * @param[inout] sy vertical spin/vector component
+         * @param[inout] px horizontal momentum relative to reference particle, or spin sx
+         * @param[inout] py vertical momentum relative to reference particle, or spin sy
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void rotate_out (
-            T_Real & AMREX_RESTRICT sx,
-            T_Real & AMREX_RESTRICT sy
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py
         ) const
         {
-            T_Real const sxc = sx;
-            T_Real const syc = sy;
-            sx = sxc * m_cos_rotation - syc * m_sin_rotation;
-            sy = sxc * m_sin_rotation + syc * m_cos_rotation;
+            T_Real const pxc = px;
+            T_Real const pyc = py;
+            px = pxc * m_cos_rotation - pyc * m_sin_rotation;
+            py = pxc * m_sin_rotation + pyc * m_cos_rotation;
         }
 
         /** Horizontal translation error
@@ -226,7 +212,8 @@ namespace impactx::elements::mixin
          *
          * Returns the lab-from-element rotation @c A = Rot(theta) acting on
          * the (x, y) and (px, py) sub-blocks and the identity on (t, pt). It is
-         * the linear-map analogue of @see shift_in / @see shift_out: the
+         * the linear-map analogue of @see shift_in / @see shift_out and
+         * @see rotate_in / @see rotate_out: the
          * aligned (lab-frame) map of an element is @c A * R * A^T .
          *
          * sin/cos are evaluated from @c m_rotation directly rather than the
@@ -256,8 +243,8 @@ namespace impactx::elements::mixin
          * Elements call this on their own @c transport_map result just before
          * returning, so that linear-optics consumers (transfer_map, map_trace,
          * envelope tracking) see the same roll that the particle push applies
-         * via @see shift_in / @see shift_out. A perfectly roll-aligned element
-         * returns @c R unchanged.
+         * via @see shift_in / @see shift_out and @see rotate_in / @see rotate_out.
+         * A perfectly roll-aligned element returns @c R unchanged.
          *
          * @param R the element's intrinsic (zero-rotation) 6x6 transport map
          * @return the lab-frame map @c A * R * A^T (see @see rotation_map)

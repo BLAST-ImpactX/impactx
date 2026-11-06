@@ -224,9 +224,31 @@ namespace detail
         amrex::ignore_unused(val, ptr, i);
     }
 
+    /** Positions of the particle slots in the arguments of a push
+     *
+     * The phase space push (`operator()`) and the spin push (`spin_and_phasespace_push`) of an
+     * element take the real-valued slots in this order, followed by idcpu and the reference
+     * particle.
+     */
+    struct Slot
+    {
+        static constexpr int x = 0;
+        static constexpr int y = 1;
+        static constexpr int t = 2;
+        static constexpr int px = 3;
+        static constexpr int py = 4;
+        static constexpr int pt = 5;
+        static constexpr int sx = 6;  //!< spin push only
+        static constexpr int sy = 7;  //!< spin push only
+        static constexpr int sz = 8;  //!< spin push only
+    };
+
     /** Calls the phase space push of an element, @see push_only_reads */
     struct PhaseSpacePushCall
     {
+        /** number of real-valued slots, which precede idcpu */
+        static constexpr int n_real = Slot::pt + 1;
+
         template <typename T_Element, typename... Args>
         auto operator() (T_Element const & element, Args &&... args) const
             -> decltype(element(std::forward<Args>(args)...));
@@ -235,6 +257,9 @@ namespace detail
     /** Calls the spin and phase space push of an element, @see push_only_reads */
     struct SpinPushCall
     {
+        /** number of real-valued slots, which precede idcpu */
+        static constexpr int n_real = Slot::sz + 1;
+
         template <typename T_Element, typename... Args>
         auto operator() (T_Element const & element, Args &&... args) const
             -> decltype(element.spin_and_phasespace_push(std::forward<Args>(args)...));
@@ -249,7 +274,7 @@ namespace detail
         return std::is_invocable_v<
             T_PushCall,
             T_Element const &,
-            std::conditional_t<I == N0 || I == N1, T_Real const &, T_Real &>...,
+            std::conditional_t<I == N0 || I == N1, T_Real, T_Real &>...,
             T_IdCpu &,
             RefPart const &
         >;
@@ -258,50 +283,117 @@ namespace detail
     /** Whether the push of an element only reads a pair of particle slots
      *
      * A push declares the slots it changes as non-const references. This tests whether
-     * the push accepts the slots at positions N0 and N1 as const, i.e., whether it only
-     * reads both of them. Unlike the member pointer that @see store_pdata inspects, this
-     * also works for a push that is not a template.
+     * the push accepts the slots at positions N0 and N1 as rvalues: a parameter that is a
+     * non-const lvalue reference, also one deduced as `auto &`, does not bind to an rvalue,
+     * while `T_Real const &` and a by-value parameter do. Unlike the member pointer that
+     * @see store_pdata inspects, this also works for a push that is not a template.
      *
-     * A push that does not accept the slots as const counts as changing them.
+     * A push that does not accept the slots as rvalues counts as changing them. A push must
+     * not take a slot as a forwarding reference (`auto &&`): it would accept an rvalue,
+     * although it can change the slot.
      *
      * @tparam T_PushCall @see PhaseSpacePushCall or @see SpinPushCall
      * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
      * @tparam T_Real amrex::ParticleReal or a SIMD register of it
      * @tparam T_IdCpu uint64_t or a SIMD register of it
-     * @tparam NReal the number of real-valued slots of the push, which precede idcpu
-     * @tparam N0 the position of the first slot of the pair
+     * @tparam N0 the position of the first slot of the pair, @see Slot
      * @tparam N1 the position of the second slot of the pair
      * @return true if the push only reads both slots
      */
     template <typename T_PushCall, typename T_Element, typename T_Real, typename T_IdCpu,
-              int NReal, int N0, int N1>
+              int N0, int N1>
     AMREX_GPU_HOST_DEVICE
     constexpr bool push_only_reads ()
     {
+        static_assert(N0 < T_PushCall::n_real && N1 < T_PushCall::n_real,
+                      "push_only_reads: the slot pair is not an argument of this push");
         return push_only_reads_impl<T_PushCall, T_Element, T_Real, T_IdCpu, N0, N1>(
-            std::make_integer_sequence<int, NReal>{});
+            std::make_integer_sequence<int, T_PushCall::n_real>{});
     }
 
-    /** A particle slot in the element frame
+    /** The alignment-error frame of an element, for one push of one particle
      *
-     * The alignment transforms move pairs of slots, (x, y), (px, py) and (sx, sy), into the
-     * element frame before the push and back out after it. For a pair that the push only
-     * reads, moving it back out would reproduce the value in memory, up to rounding. Such a
-     * pair is moved into local copies instead, which are never written back: this skips
-     * the transform back out and the stores, and on GPU the global memory accesses in
-     * between, @see push_only_reads.
+     * The alignment transforms move pairs of slots into the element frame before the push
+     * and back out after it: (x, y) is shifted and rotated, (px, py) and (sx, sy) are
+     * rotated, @see Alignment.
      *
-     * @tparam T_Copy whether to copy the slot
-     * @tparam T amrex::ParticleReal or a SIMD register of it
-     * @param val the slot: a reference to memory (GPU, CPU w/o SIMD) or a SIMD register
-     * @return a copy of val if T_Copy, otherwise val itself
+     * @tparam T_PushCall @see PhaseSpacePushCall or @see SpinPushCall
+     * @tparam T_Element This can be a \see Drift, \see Quad, \see Sbend, etc.
+     * @tparam T_Real amrex::ParticleReal or a SIMD register of it
+     * @tparam T_IdCpu uint64_t or a SIMD register of it
+     * @tparam T_Align whether the alignment transforms run
      */
-    template <bool T_Copy, typename T>
-    AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-    std::conditional_t<T_Copy, T, T &> element_frame (T & val)
+    template <typename T_PushCall, typename T_Element, typename T_Real, typename T_IdCpu,
+              bool T_Align>
+    struct AlignmentFrame
     {
-        return val;
-    }
+        /** A pair of slots in the alignment-error frame
+         *
+         * For a pair that the push only reads, moving it back out would reproduce the value
+         * in memory, up to rounding. Such a pair is moved into local copies instead, which
+         * are never written back: this skips the transform back out and the stores, and on
+         * GPU the global memory accesses in between, @see push_only_reads.
+         *
+         * @tparam N0 the position of the first slot, @see Slot
+         * @tparam N1 the position of the second slot
+         */
+        template <int N0, int N1>
+        struct Pair
+        {
+            /** the push only reads the pair: it goes through the frame in local copies */
+            static constexpr bool copy = T_Align &&
+                push_only_reads<T_PushCall, T_Element, T_Real, T_IdCpu, N0, N1>();
+
+            /** the transform back out changes the pair: store it, even if the push
+             *  takes a slot of it as const (SIMD, @see store_pdata) */
+            static constexpr bool writeback = T_Align && !copy;
+
+            /** A slot of the pair, as the push sees it in the element frame
+             *
+             * @param val the slot: a reference to memory (GPU, CPU w/o SIMD) or a SIMD register
+             * @return a copy of val if the pair is copied, otherwise val itself
+             */
+            AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+            static std::conditional_t<copy, T_Real, T_Real &> element_frame (T_Real & val)
+            {
+                return val;
+            }
+
+            /** Move the pair into the element frame
+             *
+             * @param element the element, which holds the alignment errors
+             * @param a the first slot, as returned by element_frame
+             * @param b the second slot, as returned by element_frame
+             */
+            AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+            static void move_in (T_Element const & element, T_Real & a, T_Real & b)
+            {
+                if constexpr (T_Align) {
+                    if constexpr (N0 == Slot::x) { element.shift_in(a, b); }
+                    else { element.rotate_in(a, b); }
+                }
+            }
+
+            /** Move the pair back out of the element frame, if the push can change it
+             *
+             * @param element the element, which holds the alignment errors
+             * @param a the first slot, as returned by element_frame
+             * @param b the second slot, as returned by element_frame
+             */
+            AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+            static void move_out (T_Element const & element, T_Real & a, T_Real & b)
+            {
+                if constexpr (writeback) {
+                    if constexpr (N0 == Slot::x) { element.shift_out(a, b); }
+                    else { element.rotate_out(a, b); }
+                }
+            }
+        };
+
+        using XY = Pair<Slot::x, Slot::y>;
+        using PxPy = Pair<Slot::px, Slot::py>;
+        using SxSy = Pair<Slot::sx, Slot::sy>;  //!< spin push only
+    };
 
     /** Push a single particle through an element
      *
@@ -404,29 +496,24 @@ namespace detail
             constexpr bool has_alignment = mixin::has_alignment_v<T_Element> && T_DoAlignment;
             constexpr bool has_aperture = mixin::has_pipe_aperture_v<T_Element>;
 
-            // slot pairs that the push only reads go through the alignment-error frame
-            // in local copies, @see element_frame
+            // slot pairs in the alignment-error frame, @see AlignmentFrame
             using PushCall = SpinPushCall;
-            constexpr bool copy_xy = has_alignment &&
-                push_only_reads<PushCall, T_Element, RealType, IdCpuType, 9, 0, 1>();
-            constexpr bool copy_pxpy = has_alignment &&
-                push_only_reads<PushCall, T_Element, RealType, IdCpuType, 9, 3, 4>();
-            constexpr bool copy_sxsy = has_alignment &&
-                push_only_reads<PushCall, T_Element, RealType, IdCpuType, 9, 6, 7>();
+            using Frame = AlignmentFrame<PushCall, T_Element, RealType, IdCpuType, has_alignment>;
+            using XY = typename Frame::XY;
+            using PxPy = typename Frame::PxPy;
+            using SxSy = typename Frame::SxSy;
 
-            decltype(auto) xe = element_frame<copy_xy>(x);
-            decltype(auto) ye = element_frame<copy_xy>(y);
-            decltype(auto) pxe = element_frame<copy_pxpy>(px);
-            decltype(auto) pye = element_frame<copy_pxpy>(py);
-            decltype(auto) sxe = element_frame<copy_sxsy>(sx);
-            decltype(auto) sye = element_frame<copy_sxsy>(sy);
+            decltype(auto) xe = XY::element_frame(x);
+            decltype(auto) ye = XY::element_frame(y);
+            decltype(auto) pxe = PxPy::element_frame(px);
+            decltype(auto) pye = PxPy::element_frame(py);
+            decltype(auto) sxe = SxSy::element_frame(sx);
+            decltype(auto) sye = SxSy::element_frame(sy);
 
             // shift into the alignment-error frame (compile-time gated)
-            if constexpr (has_alignment) {
-                m_element.shift_in(xe, ye);
-                m_element.rotate_in(pxe, pye);
-                m_element.rotate_in(sxe, sye);
-            }
+            XY::move_in(m_element, xe, ye);
+            PxPy::move_in(m_element, pxe, pye);
+            SxSy::move_in(m_element, sxe, sye);
 
             // push spin & phase space through element
             m_element.spin_and_phasespace_push(
@@ -438,11 +525,9 @@ namespace detail
             }
 
             // shift back to the lab frame (compile-time gated): pairs the push can change
-            if constexpr (has_alignment) {
-                if constexpr (!copy_xy) { m_element.shift_out(xe, ye); }
-                if constexpr (!copy_pxpy) { m_element.rotate_out(pxe, pye); }
-                if constexpr (!copy_sxsy) { m_element.rotate_out(sxe, sye); }
-            }
+            XY::move_out(m_element, xe, ye);
+            PxPy::move_out(m_element, pxe, pye);
+            SxSy::move_out(m_element, sxe, sye);
 
             // SIMD: write back to memory
 #ifdef AMREX_USE_SIMD
@@ -450,24 +535,20 @@ namespace detail
             {
                 constexpr auto P_Method = &T_Element::template spin_and_phasespace_push<RealType, IdCpuType>;
 
-                // shift_out writes x, y and rotate_out writes px, py and sx, sy, for
-                // each pair that was not copied; apply_aperture writes idcpu.
+                // move_out writes the pairs that were not copied; apply_aperture writes idcpu.
                 // These wrapper-modified slots must be stored regardless of the push
                 // method's argument constness.
-                constexpr bool wb_xy = has_alignment && !copy_xy;
-                constexpr bool wb_pxpy = has_alignment && !copy_pxpy;
-                constexpr bool wb_sxsy = has_alignment && !copy_sxsy;
-
-                store_pdata<P_Method, 0, wb_xy>  (x,  m_part_x,  i);
-                store_pdata<P_Method, 1, wb_xy>  (y,  m_part_y,  i);
-                store_pdata<P_Method, 2>         (t,  m_part_t,  i);
-                store_pdata<P_Method, 3, wb_pxpy>(px, m_part_px, i);
-                store_pdata<P_Method, 4, wb_pxpy>(py, m_part_py, i);
-                store_pdata<P_Method, 5>         (pt, m_part_pt, i);
-                store_pdata<P_Method, 6, wb_sxsy>(sx, m_part_sx, i);
-                store_pdata<P_Method, 7, wb_sxsy>(sy, m_part_sy, i);
-                store_pdata<P_Method, 8>         (sz, m_part_sz, i);
-                store_idcpu<P_Method, 9, has_aperture>(idcpu, m_part_idcpu, i, m_element);
+                store_pdata<P_Method, Slot::x,  XY::writeback>  (x,  m_part_x,  i);
+                store_pdata<P_Method, Slot::y,  XY::writeback>  (y,  m_part_y,  i);
+                store_pdata<P_Method, Slot::t>                  (t,  m_part_t,  i);
+                store_pdata<P_Method, Slot::px, PxPy::writeback>(px, m_part_px, i);
+                store_pdata<P_Method, Slot::py, PxPy::writeback>(py, m_part_py, i);
+                store_pdata<P_Method, Slot::pt>                 (pt, m_part_pt, i);
+                store_pdata<P_Method, Slot::sx, SxSy::writeback>(sx, m_part_sx, i);
+                store_pdata<P_Method, Slot::sy, SxSy::writeback>(sy, m_part_sy, i);
+                store_pdata<P_Method, Slot::sz>                 (sz, m_part_sz, i);
+                store_idcpu<P_Method, PushCall::n_real, has_aperture>(
+                    idcpu, m_part_idcpu, i, m_element);
             }
 #endif
         }
@@ -575,24 +656,20 @@ namespace detail
             constexpr bool has_alignment = mixin::has_alignment_v<T_Element> && T_DoAlignment;
             constexpr bool has_aperture = mixin::has_pipe_aperture_v<T_Element>;
 
-            // slot pairs that the push only reads go through the alignment-error frame
-            // in local copies, @see element_frame
+            // slot pairs in the alignment-error frame, @see AlignmentFrame
             using PushCall = PhaseSpacePushCall;
-            constexpr bool copy_xy = has_alignment &&
-                push_only_reads<PushCall, T_Element, RealType, IdCpuType, 6, 0, 1>();
-            constexpr bool copy_pxpy = has_alignment &&
-                push_only_reads<PushCall, T_Element, RealType, IdCpuType, 6, 3, 4>();
+            using Frame = AlignmentFrame<PushCall, T_Element, RealType, IdCpuType, has_alignment>;
+            using XY = typename Frame::XY;
+            using PxPy = typename Frame::PxPy;
 
-            decltype(auto) xe = element_frame<copy_xy>(x);
-            decltype(auto) ye = element_frame<copy_xy>(y);
-            decltype(auto) pxe = element_frame<copy_pxpy>(px);
-            decltype(auto) pye = element_frame<copy_pxpy>(py);
+            decltype(auto) xe = XY::element_frame(x);
+            decltype(auto) ye = XY::element_frame(y);
+            decltype(auto) pxe = PxPy::element_frame(px);
+            decltype(auto) pye = PxPy::element_frame(py);
 
             // shift into the alignment-error frame (compile-time gated)
-            if constexpr (has_alignment) {
-                m_element.shift_in(xe, ye);
-                m_element.rotate_in(pxe, pye);
-            }
+            XY::move_in(m_element, xe, ye);
+            PxPy::move_in(m_element, pxe, pye);
 
             // push through element
             m_element(xe, ye, t, pxe, pye, pt, idcpu, m_ref_part);
@@ -603,10 +680,8 @@ namespace detail
             }
 
             // shift back to the lab frame (compile-time gated): pairs the push can change
-            if constexpr (has_alignment) {
-                if constexpr (!copy_xy) { m_element.shift_out(xe, ye); }
-                if constexpr (!copy_pxpy) { m_element.rotate_out(pxe, pye); }
-            }
+            XY::move_out(m_element, xe, ye);
+            PxPy::move_out(m_element, pxe, pye);
 
             // write back to memory
 #ifdef AMREX_USE_SIMD
@@ -614,20 +689,17 @@ namespace detail
             {
                 constexpr auto P_Method = &T_Element::template operator()<RealType, IdCpuType>;
 
-                // shift_out writes x, y and rotate_out writes px, py, for each pair that
-                // was not copied; apply_aperture writes idcpu.
+                // move_out writes the pairs that were not copied; apply_aperture writes idcpu.
                 // These wrapper-modified slots must be stored regardless of the push
                 // method's argument constness.
-                constexpr bool wb_xy = has_alignment && !copy_xy;
-                constexpr bool wb_pxpy = has_alignment && !copy_pxpy;
-
-                store_pdata<P_Method, 0, wb_xy>  (x,  m_part_x,  i);
-                store_pdata<P_Method, 1, wb_xy>  (y,  m_part_y,  i);
-                store_pdata<P_Method, 2>         (t,  m_part_t,  i);
-                store_pdata<P_Method, 3, wb_pxpy>(px, m_part_px, i);
-                store_pdata<P_Method, 4, wb_pxpy>(py, m_part_py, i);
-                store_pdata<P_Method, 5>         (pt, m_part_pt, i);
-                store_idcpu<P_Method, 6, has_aperture>(idcpu, m_part_idcpu, i, m_element);
+                store_pdata<P_Method, Slot::x,  XY::writeback>  (x,  m_part_x,  i);
+                store_pdata<P_Method, Slot::y,  XY::writeback>  (y,  m_part_y,  i);
+                store_pdata<P_Method, Slot::t>                  (t,  m_part_t,  i);
+                store_pdata<P_Method, Slot::px, PxPy::writeback>(px, m_part_px, i);
+                store_pdata<P_Method, Slot::py, PxPy::writeback>(py, m_part_py, i);
+                store_pdata<P_Method, Slot::pt>                 (pt, m_part_pt, i);
+                store_idcpu<P_Method, PushCall::n_real, has_aperture>(
+                    idcpu, m_part_idcpu, i, m_element);
             }
 #endif
         }

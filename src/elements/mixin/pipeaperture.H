@@ -59,15 +59,15 @@ namespace impactx::elements::mixin
          * scales its coordinate away, so that plane never contributes to the
          * boundary comparison and the ellipse degenerates into a slab.
          *
-         * @param[inout] x horizontal position relative to reference particle
-         * @param[inout] y vertical position relative to reference particle
-         * @param idcpu particle global index
+         * @param[in] x horizontal position relative to reference particle
+         * @param[in] y vertical position relative to reference particle
+         * @param[inout] idcpu particle global index, made invalid if the particle is lost
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void apply_aperture (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
             T_IdCpu & AMREX_RESTRICT idcpu
         ) const
         {

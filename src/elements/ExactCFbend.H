@@ -16,6 +16,7 @@
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "helper/ArrayValidation.H"
+#include "helper/ExactDriftSlopes.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/pipeaperture.H"
@@ -234,17 +235,13 @@ namespace impactx::elements
 
             // treat the special case of zero field
             if (m_rc==0_prt) {
-               // compute the radical in the denominator (= pz):
-               // (pt - 1/beta)^2 - 1/(beta*gamma)^2 - px^2 - py^2, where the large terms
-               // 1/beta^2 - 1/(beta*gamma)^2 = 1 are combined exactly
-               amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                   powi<2>(pt) - 2_prt * m_ibeta * pt - powi<2>(px) - powi<2>(py) + 1_prt
-               );
+               // slopes of the exact drift
+               auto const drift = exact_drift_slopes(px, py, pt, m_ibeta);
 
                // advance position and momentum (exact drift)
-               xout = x + tau * px * inv_pzden;
-               yout = y + tau * py * inv_pzden;
-               tout = t - tau * (m_ibeta + (pt - m_ibeta) * inv_pzden);
+               xout = x + tau * px * drift.inv_pz;
+               yout = y + tau * py * drift.inv_pz;
+               tout = t + tau * drift.dt_ds;
 
                // assign updated momenta
                pxout = px;

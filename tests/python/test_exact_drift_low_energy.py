@@ -11,7 +11,8 @@
 
 The longitudinal momentum of the exact drift is
 pz = sqrt(1 - 2 pt/beta + pt^2 - px^2 - py^2), so particles that move with the
-reference particle (px = py = pt = 0) keep their relative arrival time t.
+reference particle (px = py = pt = 0) keep their coordinates, and the arrival time t
+of other particles slips by ds * ((1/beta - pt)/pz - 1/beta).
 """
 
 from decimal import Decimal, localcontext
@@ -28,8 +29,10 @@ PARTICLES = np.array(
     [
         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # reference orbit
         [1.3e-3, -1.7e-3, 2.1e-3, 0.0, 0.0, 0.0],  # co-moving, offset
-        [1.3e-3, -1.7e-3, 2.1e-3, 1.1e-3, -0.8e-3, 1.0e-5],  # inclined, off-energy
-        [-0.9e-3, 0.6e-3, -1.2e-3, -2.0e-3, 1.5e-3, -2.0e-5],
+        # from the origin, so that x, y, t at the exit are the displacements
+        [0.0, 0.0, 0.0, 1.0e-4, 0.0, 0.0],  # slightly inclined: slippage ~ px^2
+        [0.0, 0.0, 0.0, 1.1e-3, -0.8e-3, 1.0e-5],  # inclined, off-energy
+        [0.0, 0.0, 0.0, -2.0e-3, 1.5e-3, -2.0e-5],
     ]
 )
 
@@ -123,13 +126,24 @@ def test_exact_drift_low_energy(element_name, kin_energy_MeV):
     assert final.shape == (n, 6)
     expected = np.array([exact_drift(beta, ds, p) for p in initial])
 
-    # a few rounding errors of the flight time ds/beta, ds * |p_perp|, and |p|
+    # the momenta do not change, and co-moving particles keep all coordinates
+    np.testing.assert_array_equal(final[:, 3:6], initial[:, 3:6])
+    comoving = np.all(initial[:, 3:6] == 0.0, axis=1)
+    np.testing.assert_array_equal(final[comoving], initial[comoving])
+
+    # displacements of the other particles: x and y to a few rounding errors of their
+    # size, and the small slippage of t to a few rounding errors of the terms of dt/ds,
+    # of order pt/beta^2, pt and p_perp^2/beta, which cancel at high energy
     eps = np.finfo(np.float32 if Config.precision == "SINGLE" else np.float64).eps
-    rtol = 32.0 * eps
+    moving = ~comoving
     np.testing.assert_allclose(
-        final[:, 0:2], expected[:, 0:2], rtol=rtol, atol=rtol * ds * 1.0e-3
+        final[moving, 0:2], expected[moving, 0:2], rtol=32.0 * eps, atol=0.0
     )
+    px, py, pt = initial[moving, 3], initial[moving, 4], initial[moving, 5]
+    dt_terms = ds * (np.abs(pt) * (1.0 + 1.0 / beta**2) + (px**2 + py**2) / beta)
     np.testing.assert_allclose(
-        final[:, 2], expected[:, 2], rtol=rtol, atol=rtol * ds / beta
+        (final[moving, 2] - expected[moving, 2]) / dt_terms,
+        0.0,
+        rtol=0.0,
+        atol=32.0 * eps,
     )
-    np.testing.assert_allclose(final[:, 3:6], expected[:, 3:6], rtol=rtol, atol=0.0)

@@ -121,17 +121,13 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
             // length of the current slice
             m_slice_ds = m_ds / nslice();
 
-            // find beta*gamma^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            m_betgam2 = powi<2>(pt_ref) - 1.0_prt;
-            m_ibetgam2 = 1_prt / m_betgam2;
+            // access reference particle values to find relativistic factors
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
             m_brho = refpart.rigidity_Tm();
@@ -234,11 +230,10 @@ namespace impactx::elements
             T_Real ptout = pt;
 
             // compute the radical in the denominator (= pz):
+            // (pt - 1/beta)^2 - 1/(beta*gamma)^2 - px^2 - py^2, where the large terms
+            // 1/beta^2 - 1/(beta*gamma)^2 = 1 are combined exactly
             T_Real const inv_pzden = 1_prt / sqrt(
-                powi<2>(pt - m_ibeta) -
-                m_ibetgam2 -
-                powi<2>(px) -
-                powi<2>(py)
+                powi<2>(pt) - 2_prt * m_ibeta * pt - powi<2>(px) - powi<2>(py) + 1_prt
             );
 
             // advance position and momentum (exact drift)
@@ -528,8 +523,6 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
-        amrex::ParticleReal m_betgam2;        //! beta*gamma^2
-        amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
         amrex::ParticleReal m_beta;           //! beta
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m

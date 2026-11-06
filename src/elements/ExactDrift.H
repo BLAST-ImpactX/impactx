@@ -84,16 +84,14 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
             // length of the current slice
             m_slice_ds = m_ds / nslice();
 
-            // access reference particle values to find beta, 1/(beta*gamma)**2
+            // access reference particle values to find 1/beta
             m_ibeta = 1_prt / refpart.beta();
-            m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
         }
 
         /** This is an exactdrift functor, so that a variable of this type can be used like
@@ -138,11 +136,10 @@ namespace impactx::elements
             // T_Real const ptout = pt;
 
             // compute the radical in the denominator (= pz):
+            // (pt - 1/beta)^2 - 1/(beta*gamma)^2 - px^2 - py^2, where the large terms
+            // 1/beta^2 - 1/(beta*gamma)^2 = 1 are combined exactly
             T_Real const inv_pzden = 1_prt / sqrt(
-                powi<2>(pt - m_ibeta) -
-                m_ibetagam2 -
-                powi<2>(px) -
-                powi<2>(py)
+                powi<2>(pt) - 2_prt * m_ibeta * pt - powi<2>(px) - powi<2>(py) + 1_prt
             );
 
             // advance position and momentum (exact drift)
@@ -268,7 +265,7 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;  //! m_ds / nslice();
-        amrex::ParticleReal m_ibeta, m_ibetagam2;
+        amrex::ParticleReal m_ibeta;
     };
 
     /** ExactDrift: GPU state plus common host-only metadata */

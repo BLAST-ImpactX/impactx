@@ -112,7 +112,6 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -131,7 +130,6 @@ namespace impactx::elements
 
             // access reference particle values to find relativistic factors
             m_ibeta = 1_prt / refpart.beta();
-            m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
 
             // gyromagnetic constant (used during spin push)
             m_gyro = refpart.gyromagnetic_anomaly;
@@ -182,11 +180,10 @@ namespace impactx::elements
             // treat the special case of zero field
             if (m_phi==0_prt && m_B==0_prt) {
                // compute the radical in the denominator (= pz):
+               // (pt - 1/beta)^2 - 1/(beta*gamma)^2 - px^2 - py^2, where the large terms
+               // 1/beta^2 - 1/(beta*gamma)^2 = 1 are combined exactly
                T_Real const inv_pzden = 1_prt / sqrt(
-                   powi<2>(pt - m_ibeta) -
-                   m_ibetagam2 -
-                   powi<2>(px) -
-                   powi<2>(py)
+                   powi<2>(pt) - 2_prt * m_ibeta * pt - powi<2>(px) - powi<2>(py) + 1_prt
                );
 
                // advance position and momentum (exact drift)
@@ -452,7 +449,7 @@ namespace impactx::elements
       private:
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
-        amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_ibetagam2, m_rc, m_sin_phi, m_cos_phi;
+        amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_rc, m_sin_phi, m_cos_phi;
         amrex::ParticleReal m_gyro, m_beta, m_beta_gamma;
 
     };

@@ -304,11 +304,10 @@ namespace impactx::elements
             T_Real const pt = particle(6);
 
             // compute the radical in the denominator (= pz):
+            // (pt - 1/beta)^2 - 1/(beta*gamma)^2 - px^2 - py^2, where the large terms
+            // 1/beta^2 - 1/(beta*gamma)^2 = 1 are combined exactly
             T_Real const inv_pzden = 1_prt / sqrt(
-                powi<2>(pt - m_ibeta) -
-                m_ibetgam2 -
-                powi<2>(px) -
-                powi<2>(py)
+                powi<2>(pt) - 2_prt * m_ibeta * pt - powi<2>(px) - powi<2>(py) + 1_prt
             );
 
             // The momenta are not affected.

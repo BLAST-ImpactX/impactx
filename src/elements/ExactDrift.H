@@ -19,6 +19,7 @@
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/nofinalize.H"
+#include "helper/ExactDriftSlopes.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -84,16 +85,14 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
             // length of the current slice
             m_slice_ds = m_ds / nslice();
 
-            // access reference particle values to find beta, 1/(beta*gamma)**2
+            // access reference particle values to find 1/beta
             m_ibeta = 1_prt / refpart.beta();
-            m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
         }
 
         /** This is an exactdrift functor, so that a variable of this type can be used like
@@ -125,7 +124,6 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
-            using amrex::Math::powi;
 
             // initialize output values
             T_Real const xout = x;
@@ -137,20 +135,15 @@ namespace impactx::elements
             // T_Real const pyout = py;
             // T_Real const ptout = pt;
 
-            // compute the radical in the denominator (= pz):
-            T_Real const inv_pzden = 1_prt / sqrt(
-                powi<2>(pt - m_ibeta) -
-                m_ibetagam2 -
-                powi<2>(px) -
-                powi<2>(py)
-            );
+            // slopes of the exact drift
+            auto const drift = exact_drift_slopes(px, py, pt, m_ibeta);
 
             // advance position and momentum (exact drift)
-            x = xout + m_slice_ds * px * inv_pzden;
+            x = xout + m_slice_ds * px * drift.inv_pz;
             // pxout = px;
-            y = yout + m_slice_ds * py * inv_pzden;
+            y = yout + m_slice_ds * py * drift.inv_pz;
             // pyout = py;
-            t = tout - m_slice_ds * (m_ibeta + (pt - m_ibeta) * inv_pzden);
+            t = tout + m_slice_ds * drift.dt_ds;
             // ptout = pt;
 
             // assign updated momenta
@@ -268,7 +261,7 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;  //! m_ds / nslice();
-        amrex::ParticleReal m_ibeta, m_ibetagam2;
+        amrex::ParticleReal m_ibeta;
     };
 
     /** ExactDrift: GPU state plus common host-only metadata */

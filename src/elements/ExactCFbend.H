@@ -16,6 +16,7 @@
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "helper/ArrayValidation.H"
+#include "helper/ExactDriftSlopes.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/pipeaperture.H"
@@ -123,7 +124,6 @@ namespace impactx::elements
             // access reference particle values to find relativistic factors
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
-            m_ibetgam2 = 1_prt / amrex::Math::powi<2>(refpart.beta_gamma());
             m_brho = refpart.rigidity_Tm();
 
             // The curvature comes from the first coefficient, which only a prepared pusher
@@ -235,18 +235,13 @@ namespace impactx::elements
 
             // treat the special case of zero field
             if (m_rc==0_prt) {
-               // compute the radical in the denominator (= pz):
-               amrex::ParticleReal const inv_pzden = 1_prt / std::sqrt(
-                   powi<2>(pt - m_ibeta) -
-                   m_ibetgam2 -
-                   powi<2>(px) -
-                   powi<2>(py)
-               );
+               // slopes of the exact drift
+               auto const drift = exact_drift_slopes(px, py, pt, m_ibeta);
 
                // advance position and momentum (exact drift)
-               xout = x + tau * px * inv_pzden;
-               yout = y + tau * py * inv_pzden;
-               tout = t - tau * (m_ibeta + (pt - m_ibeta) * inv_pzden);
+               xout = x + tau * px * drift.inv_pz;
+               yout = y + tau * py * drift.inv_pz;
+               tout = t + tau * drift.dt_ds;
 
                // assign updated momenta
                pxout = px;
@@ -634,7 +629,6 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
-        amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
         amrex::ParticleReal m_beta;           //! beta
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m

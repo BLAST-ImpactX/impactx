@@ -226,7 +226,7 @@ namespace impactx::initialization
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& lambdax, amrex::ParticleReal& lambday, amrex::ParticleReal& lambdat,
         amrex::ParticleReal& lambdapx,amrex::ParticleReal& lambdapy, amrex::ParticleReal& lambdapt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        double& muxpx, double& muypy, double& mutpt,
         amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
         amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
         amrex::ParticleReal& dispx, amrex::ParticleReal& disppx, amrex::ParticleReal& dispy, amrex::ParticleReal& disppy
@@ -264,7 +264,7 @@ namespace impactx::initialization
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& lambdax, amrex::ParticleReal& lambday, amrex::ParticleReal& lambdat,
         amrex::ParticleReal& lambdapx,amrex::ParticleReal& lambdapy, amrex::ParticleReal& lambdapt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        double& muxpx, double& muypy, double& mutpt,
         amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
         amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
         amrex::ParticleReal& dispx, amrex::ParticleReal& disppx, amrex::ParticleReal& dispy, amrex::ParticleReal& disppy

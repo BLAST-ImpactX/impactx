@@ -1009,7 +1009,7 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
    :param lambdaPx: phase space momentum axis intercept; for zero correlation, these are the related normalized RMS momenta (in radians)
    :param lambdaPy: see lambdaPx
    :param lambdaPt: see lambdaPx
-   :param muxpx: correlation length-momentum
+   :param muxpx: correlation length-momentum, with a magnitude below 1
    :param muypy: see muxpx
    :param mutpt: see muxpx
    :param meanX: mean value of x-coordinate

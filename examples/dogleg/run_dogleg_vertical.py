@@ -69,7 +69,7 @@ def dogleg_vertical_lattice():
     return [sbend1, dipedge1, dr1, dipedge2, sbend2, dr2]
 
 
-def assert_final_beam(moments):
+def assert_final_beam(moments, rtol_emittance_t=2.0e-2):
     """Check the final beam against the dogleg reference values: the same
     final-beam properties that the horizontal dogleg checks in
     ``analysis_dogleg.py``, with x <-> y exchanged. The 90-degree roll makes the
@@ -78,10 +78,8 @@ def assert_final_beam(moments):
     either the envelope or the particle beam."""
     rtol = 2.0e-2
     if Config.precision == "SINGLE":
-        # FIXME: sigma_y, sigma_t, emittance_y and emittance_t are off by 20% in
-        # single precision, for both the envelope and the particle beam
-        # https://github.com/BLAST-ImpactX/impactx/issues/1485
-        rtol = 0.5
+        # from random sampling, for alpha and beta, as in analysis_dogleg.py
+        rtol = 3.5 * npart**-0.5
     assert np.allclose(
         [
             moments["sigma_x"],
@@ -89,7 +87,6 @@ def assert_final_beam(moments):
             moments["sigma_t"],
             moments["emittance_x"],
             moments["emittance_y"],
-            moments["emittance_t"],
             moments["alpha_x"],
             moments["beta_x"],
             moments["alpha_y"],
@@ -102,7 +99,6 @@ def assert_final_beam(moments):
             1.101353e-04,
             1.020439e-10,
             8.561046e-09,
-            8.569865e-09,
             -1.347910e00,
             4.600362e00,
             1.338583e00,
@@ -111,6 +107,9 @@ def assert_final_beam(moments):
         ],
         rtol=rtol,
         atol=0.0,  # do not let the default atol swallow the emittance checks
+    )
+    assert np.isclose(
+        moments["emittance_t"], 8.569865e-09, rtol=rtol_emittance_t, atol=0.0
     )
 
 
@@ -135,7 +134,13 @@ sim.lattice.append(monitor)
 # path through the rolled elements.
 sim.init_envelope(ref, dogleg_vertical_distribution(), bunch_charge_C)
 sim.track_envelope()
-assert_final_beam(sim.envelope.beam_moments(ref))
+# FIXME: in single precision, the moments of the covariance matrix do not hold the
+# emittance_t of this beam, whose t-pt correlation is near 1: rounding them gives up to 30%
+# https://github.com/BLAST-ImpactX/impactx/issues/1485
+assert_final_beam(
+    sim.envelope.beam_moments(ref),
+    rtol_emittance_t=0.5 if Config.precision == "SINGLE" else 2.0e-2,
+)
 
 # (2) particle tracking: exercises the particle push through the rolled elements.
 sim.add_particles(bunch_charge_C, dogleg_vertical_distribution(), npart)

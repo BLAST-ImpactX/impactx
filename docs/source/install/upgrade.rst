@@ -231,6 +231,20 @@ With ``repeat_x`` or ``repeat_y``, :py:class:`~impactx.elements.PolygonAperture`
 Previously, it reflected negative coordinates, which mirrored polygons that are not symmetric about :math:`x = 0` or :math:`y = 0`.
 This changes the results of periodic polygon apertures with such polygons.
 
+``Aperture``: overlapping shifted rows act as their union
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+With ``shift_odd_x`` and ``aperture_y > repeat_y / 2``, the shifted rows of :py:class:`~impactx.elements.Aperture` overlap.
+The aperture now acts as the union of all rows; previously, each row was cut at its edges.
+
+**What to check in your scripts and inputs files:** ``shift_odd_x`` with ``aperture_y > repeat_y / 2``.
+For the ``rectangular`` shape, a plane without a boundary, ``aperture_y = 0``, gives the previous result; the ``elliptical`` shape has no exact replacement:
+
+.. code-block:: python
+
+   Aperture(aperture_x=0.1e-3, aperture_y=0.7e-3, repeat_x=1.0e-3, repeat_y=1.0e-3, shift_odd_x=True)  # before
+   Aperture(aperture_x=0.1e-3, aperture_y=0.0, repeat_x=1.0e-3, repeat_y=1.0e-3, shift_odd_x=True)  # now
+
 New in this release
 """""""""""""""""""
 

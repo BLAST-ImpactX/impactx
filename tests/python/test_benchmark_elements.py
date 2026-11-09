@@ -135,6 +135,22 @@ def test_Aperture(benchmark, sim):
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_Aperture_periodic(benchmark, sim):
+    # pepperpot with staggered rows, spanning several periods of the ~3.2e-5 m rms
+    # beam size of the sim fixture: exercises the fold into the period cell
+    el = elements.Aperture(
+        name="pepperpot",
+        aperture_x=1.0e-5,
+        aperture_y=1.0e-5,
+        repeat_x=4.0e-5,
+        repeat_y=4.0e-5,
+        shift_odd_x=True,
+        shape="rectangular",
+    )
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Buncher(benchmark, sim):
     el = elements.Buncher(name="shortrf1", V=0.01, k=15.0)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)

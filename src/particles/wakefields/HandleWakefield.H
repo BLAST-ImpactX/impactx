@@ -237,11 +237,11 @@ namespace impactx::particles::wakefields
                 }
 
                 // Combine CSR and short-range wakefield contributions.
-                amrex::Real *const dptr_csr_wakefield = convolved_csr_wakefield.data(); 
-                amrex::Real *const dptr_sr_wakefield = convolved_sr_wakefield.data(); 
+                amrex::Real *const dptr_csr_wakefield = convolved_csr_wakefield.data();
+                amrex::Real *const dptr_sr_wakefield = convolved_sr_wakefield.data();
                 amrex::Real *const dptr_wakefield = convolved_wakefield.data();
                 amrex::ParallelFor(num_edges, [=] AMREX_GPU_DEVICE(int i) noexcept {
-                    // Total wakefield, including CSR and short-range wake contributions:  
+                    // Total wakefield, including CSR and short-range wake contributions:
                     dptr_wakefield[i] = dptr_csr_wakefield[i] + dptr_sr_wakefield[i];
                 });
             }

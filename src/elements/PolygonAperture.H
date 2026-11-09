@@ -16,6 +16,7 @@
 #include "mixin/beamoptic.H"
 #include "helper/ArrayValidation.H"
 #include "mixin/lineartransport.H"
+#include "mixin/repeatedmask.H"
 #include "mixin/spintransport.H"
 #include "mixin/thin.H"
 
@@ -28,6 +29,7 @@
 #include <AMReX_SIMD.H>
 #include <AMReX_TrackedVector.H>
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <memory>
@@ -56,6 +58,7 @@ namespace impactx::elements
     : public mixin::ParticlePush<PolygonAperturePusher>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::RepeatedMask,
       public mixin::SpinTransport
       // public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -71,9 +74,6 @@ namespace impactx::elements
         action_name (Action const & action);
 
         static constexpr amrex::ParticleReal DEFAULT_min_radius2 = 0;
-        static constexpr amrex::ParticleReal DEFAULT_repeat_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_repeat_y = 0;
-        static constexpr bool DEFAULT_shift_odd_x = false;
         static constexpr Action DEFAULT_action = Action::transmit;
 
         /** The particle-facing configuration of a polygon aperture
@@ -98,48 +98,13 @@ namespace impactx::elements
             amrex::ParticleReal rotation_degree
         )
           : Alignment(dx, dy, rotation_degree),
-            m_action(action), m_shift_odd_x(shift_odd_x), m_min_radius2(min_radius2)
+            RepeatedMask(repeat_x, repeat_y, shift_odd_x),
+            m_action(action), m_min_radius2(min_radius2)
         {
-            using namespace amrex::literals; // for _rt and _prt
-
-            set_repeat_x(repeat_x);
-            set_repeat_y(repeat_y);
-
-            if (m_repeat_y == 0_prt && m_shift_odd_x) {
-                throw std::invalid_argument("PolygonAperture: shift_odd_x can only be used if repeat_y is set, too!");
-            }
         }
 
         /** Reverse the element (no-op: aperture is not invertible for absorbed particles) */
         void reverse () { /* no-op */ }
-
-        /** Set the horizontal period for repeated masking
-         *
-         * @param repeat_x horizontal period [m]; zero disables the repetition
-         */
-        void set_repeat_x (amrex::ParticleReal repeat_x)
-        {
-            using namespace amrex::literals; // for _prt
-
-            if (!(std::isfinite(repeat_x) && repeat_x >= 0_prt)) {
-                throw std::invalid_argument("PolygonAperture: repeat_x must be finite and >= 0");
-            }
-            m_repeat_x = repeat_x;
-        }
-
-        /** Set the vertical period for repeated masking
-         *
-         * @param repeat_y vertical period [m]; zero disables the repetition
-         */
-        void set_repeat_y (amrex::ParticleReal repeat_y)
-        {
-            using namespace amrex::literals; // for _prt
-
-            if (!(std::isfinite(repeat_y) && repeat_y >= 0_prt)) {
-                throw std::invalid_argument("PolygonAperture: repeat_y must be finite and >= 0");
-            }
-            m_repeat_y = repeat_y;
-        }
 
         /** Push all particles on a tile */
         using mixin::ParticlePush<PolygonAperturePusher>::operator();
@@ -176,31 +141,14 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
             namespace stdx = amrex::simd::stdx;
             using amrex::Math::powi;
-            using std::fmod;
-            using std::floor;
             using std::abs;
             using amrex::arg;
             using VBool = decltype(x>0_prt);
 
-            // define intermediate variables
-            amrex::ParticleReal const dx = m_repeat_x * 0.5_prt;
-            amrex::ParticleReal const dy = m_repeat_y * 0.5_prt;
-
-            // shift every 2nd row by half of m_repeat_x
-            T_Real sx = x;
-            T_Real const sy = y;
-            VBool const shift_x = m_shift_odd_x == false ? VBool{false} : fmod(floor((y+dy)/m_repeat_y), 2) != T_Real{0};
-#ifdef AMREX_USE_SIMD
-            amrex::simd::stdx::where(shift_x, sx) += dx;
-#else
-            sx += shift_x ? dx : 0_prt;
-#endif
-
-            // if the aperture is periodic, shift sx,sy coordinates to the fundamental domain
-            T_Real const u = (m_repeat_x == 0_prt) ? sx
-                : sx - m_repeat_x * floor((sx+dx)/m_repeat_x);
-            T_Real const v = (m_repeat_y == 0_prt) ? sy
-                : sy - m_repeat_y * floor((sy+dy)/m_repeat_y);
+            // if the aperture is periodic, translate the coordinates by whole periods
+            // into the period cell around the origin
+            T_Real u, v;
+            to_period_cell(x, y, u, v);
 
             // compare against the aperture boundary
             VBool inside_aperture;
@@ -312,9 +260,6 @@ namespace impactx::elements
         }
 
         Action m_action; //! action type (transmit, absorb)
-        amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
-        amrex::ParticleReal m_repeat_y; //! vertical period for repeated masking
-        bool m_shift_odd_x; //! for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by m_repeat_x / 2. Use Alignment offsets to move whole mask as needed.
 
         /** Vertices resolved to this pusher's execution space; non-owning */
         //! non-owning, device-copyable; valid for the launch it was prepared for
@@ -367,6 +312,10 @@ namespace impactx::elements
             m_vertices{std::move(vertices_x), std::move(vertices_y)}
         {
             require_closed_outline(m_vertices.x.host_const(), m_vertices.y.host_const());
+            set_shape_extent(
+                max_abs(m_vertices.x.host_const()),
+                max_abs(m_vertices.y.host_const())
+            );
         }
 
         /** Push all particles */
@@ -409,7 +358,8 @@ namespace impactx::elements
          *
          * The two are validated before either is stored, so a rejected update leaves the
          * element as it was. They are always the same length, which is why this takes
-         * both rather than offering to change one of them alone.
+         * both rather than offering to change one of them alone. With repeat_x or
+         * repeat_y, the polygon must lie inside one period, @see mixin::RepeatedMask.
          *
          * @param first the new horizontal values
          * @param second the new vertical values
@@ -420,6 +370,7 @@ namespace impactx::elements
         )
         {
             require_closed_outline(first, second);
+            set_shape_extent(max_abs(first), max_abs(second));
             m_vertices.x.host() = std::move(first);
             m_vertices.y.host() = std::move(second);
         }
@@ -441,6 +392,22 @@ namespace impactx::elements
             if ((vx.front() != vx.back()) || (vy.front() != vy.back())) {
                 throw std::invalid_argument("PolygonAperture: first and last vertex must be exactly equal!");
             }
+        }
+
+        /** Largest absolute value of a coordinate array
+         *
+         * @param v vertex coordinates [m]
+         * @return largest |v| [m]
+         */
+        static amrex::ParticleReal max_abs (std::vector<amrex::ParticleReal> const & v)
+        {
+            using namespace amrex::literals; // for _prt
+
+            amrex::ParticleReal m = 0_prt;
+            for (amrex::ParticleReal const vi : v) {
+                m = std::max(m, std::abs(vi));
+            }
+            return m;
         }
 
         /** Release device storage; host configuration survives for reuse */

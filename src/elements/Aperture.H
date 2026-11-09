@@ -18,6 +18,7 @@
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/nofinalize.H"
+#include "mixin/repeatedmask.H"
 
 #include <AMReX_Enum.H>
 #include <AMReX_Extension.H>
@@ -26,7 +27,6 @@
 #include <AMReX_SIMD.H>
 
 #include <cmath>
-#include <stdexcept>
 
 namespace impactx::elements
 {
@@ -35,6 +35,7 @@ namespace impactx::elements
       public mixin::LinearTransport<ApertureGPU>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::RepeatedMask,
       public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -52,9 +53,6 @@ namespace impactx::elements
             absorb,    //! absorb particles inside the aperture
         );
 
-        static constexpr amrex::ParticleReal DEFAULT_repeat_x = 0;
-        static constexpr amrex::ParticleReal DEFAULT_repeat_y = 0;
-        static constexpr bool DEFAULT_shift_odd_x = false;
         static constexpr Shape DEFAULT_shape = Shape::rectangular;
         static constexpr Action DEFAULT_action = Action::transmit;
 
@@ -95,18 +93,11 @@ namespace impactx::elements
             amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree
         )
         : Alignment(dx, dy, rotation_degree),
-          m_shape(shape), m_action(action), m_shift_odd_x(shift_odd_x)
+          RepeatedMask(repeat_x, repeat_y, shift_odd_x),
+          m_shape(shape), m_action(action)
         {
-            using namespace amrex::literals; // for _rt and _prt
-
             set_aperture_x(aperture_x);
             set_aperture_y(aperture_y);
-            set_repeat_x(repeat_x);
-            set_repeat_y(repeat_y);
-
-            if (m_repeat_y == 0_prt && m_shift_odd_x) {
-                throw std::invalid_argument("Aperture: shift_odd_x can only be used if repeat_y is set, too!");
-            }
         }
 
         /** Reverse the element (no-op: aperture is not invertible for absorbed particles) */
@@ -327,34 +318,6 @@ namespace impactx::elements
             m_inv_aperture_y = aperture_y > 0_prt ? 1_prt / aperture_y : 0_prt;
         }
 
-        /** Set the horizontal period for repeated masking
-         *
-         * @param repeat_x horizontal period [m]; zero disables the repetition
-         */
-        void set_repeat_x (amrex::ParticleReal repeat_x)
-        {
-            using namespace amrex::literals; // for _prt
-
-            if (!(std::isfinite(repeat_x) && repeat_x >= 0_prt)) {
-                throw std::invalid_argument("Aperture: repeat_x must be finite and >= 0");
-            }
-            m_repeat_x = repeat_x;
-        }
-
-        /** Set the vertical period for repeated masking
-         *
-         * @param repeat_y vertical period [m]; zero disables the repetition
-         */
-        void set_repeat_y (amrex::ParticleReal repeat_y)
-        {
-            using namespace amrex::literals; // for _prt
-
-            if (!(std::isfinite(repeat_y) && repeat_y >= 0_prt)) {
-                throw std::invalid_argument("Aperture: repeat_y must be finite and >= 0");
-            }
-            m_repeat_y = repeat_y;
-        }
-
         Shape m_shape; //! aperture type (rectangular, elliptical)
         Action m_action; //! action type (transmit, absorb)
         // performance optimization: we intentionally store the inverse of
@@ -364,10 +327,6 @@ namespace impactx::elements
         //   boundary in that plane, @see set_aperture_x
         amrex::ParticleReal m_inv_aperture_x = 0; //! inverse of the horizontal half-aperture [1/m]
         amrex::ParticleReal m_inv_aperture_y = 0; //! inverse of the vertical half-aperture [1/m]
-        amrex::ParticleReal m_repeat_x; //! horizontal period for repeated masking
-        amrex::ParticleReal m_repeat_y; //! vertical period for repeated masking
-        bool m_shift_odd_x; //! for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by m_repeat_x / 2. Use Alignment offsets to move whole mask as needed.
-
     };
 
     /** Aperture: GPU state plus common host-only metadata */

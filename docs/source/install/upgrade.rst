@@ -217,6 +217,13 @@ To compare with earlier results, set the previous value:
 
    ref.set_species("Hminus").set_gyromagnetic_anomaly(1.7928473446)
 
+``PolygonAperture``: periodic polygons are repeated by translation
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+With ``repeat_x`` or ``repeat_y``, :py:class:`~impactx.elements.PolygonAperture` now repeats the polygon by translation with that period.
+Previously, it reflected negative coordinates, which mirrored polygons that are not symmetric about :math:`x = 0` or :math:`y = 0`.
+This changes the results of periodic polygon apertures with such polygons.
+
 New in this release
 """""""""""""""""""
 

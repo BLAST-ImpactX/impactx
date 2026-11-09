@@ -14,6 +14,7 @@
 #include "includescollectiveeffects.H"
 #include "named.H"
 #include "pipeaperture.H"
+#include "repeatedmask.H"
 #include "shortrangewake.H"
 #include "spintransport.H"
 #include "synchrotronradiation.H"
@@ -61,6 +62,11 @@ namespace impactx::elements::mixin
     /** Does this element support a transverse beam pipe aperture (@see PipeAperture)? */
     template<typename T_Element>
     inline constexpr bool has_pipe_aperture_v = std::is_base_of_v<PipeAperture, std::decay_t<T_Element>>;
+
+    /** Does this element repeat its aperture mask periodically (@see RepeatedMask)? */
+    template<typename T_Element>
+    inline constexpr bool has_repeated_mask_v =
+        std::is_base_of_v<RepeatedMask, std::decay_t<T_Element>>;
 
     /** Does this element support spin transport (@see SpinTransport)? */
     template<typename T_Element>

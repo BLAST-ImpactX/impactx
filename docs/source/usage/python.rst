@@ -2777,7 +2777,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (rectangular or elliptical) in m; zero or less disables the vertical boundary
    :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
    :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
-   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Requires repeat_x and repeat_y. Use alignment offsets dx,dy to move whole mask as needed.
    :param shape: aperture boundary shape: ``"rectangular"`` (default) or ``"elliptical"``
    :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m
@@ -2810,9 +2810,9 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param vertices_x: sequence of aperture boundary :math:`x` coordinates in m
    :param vertices_y: sequence of aperture boundary :math:`y` coordinates in m
    :param min_radius2: radius-squared of a circle fully inscribed by the polygon aperture (default 0) (meters-squared)
-   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
-   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
-   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter); the polygon is repeated by translation and must lie inside one period, ``|x| < repeat_x / 2`` for all vertices
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter); the polygon is repeated by translation and must lie inside one period, ``|y| < repeat_y / 2`` for all vertices
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Requires repeat_x and repeat_y. Use alignment offsets dx,dy to move whole mask as needed.
    :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m

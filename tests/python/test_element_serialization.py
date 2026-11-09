@@ -701,6 +701,10 @@ def test_mixin_properties_are_settable(all_elements):
         "dx": 0.007,
         "dy": 0.008,
         "rotation": 0.09,
+        # the apertures and polygons of all_elements fit inside these periods
+        "repeat_x": 0.2,
+        "repeat_y": 0.2,
+        "shift_odd_x": True,
     }
     # apertures are stored inverted, so a set/get pair costs two divisions
     rtol = 1e-5 if Config.precision == "SINGLE" else 1e-12

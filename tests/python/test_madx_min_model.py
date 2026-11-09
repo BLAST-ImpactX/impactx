@@ -40,8 +40,10 @@ from impactx.element_models import MODEL_TIERS, select_model
 from impactx.madx_to_impactx import (
     MADXImpactXTranslatorWarning,
     lattice,
+    read_beam,
     read_lattice,
 )
+from impactx.MADXParser import MADXInputError
 
 
 def _translate(elems, **kwargs):
@@ -175,10 +177,14 @@ def test_combined_function_bend_tiers_round_up(min_model, expected):
 
 @pytest.mark.parametrize(
     "min_model, expected",
-    [("linear", "linear"), ("paraxial", "nonlinear"), ("exact", "nonlinear")],
+    [
+        ("linear", "linear_slac75"),
+        ("paraxial", "nonlinear_hwang_lee"),
+        ("exact", "nonlinear_hwang_lee"),
+    ],
 )
 def test_dipedge_fringe_model_follows_min_model(min_model, expected):
-    """DipEdge switches its fringe model by argument. "nonlinear" is its exact tier."""
+    """DipEdge switches its fringe model by argument. "nonlinear_hwang_lee" is its exact tier."""
     beamline = _translate(
         {
             "name": "de",
@@ -212,15 +218,15 @@ def test_bend_edges_follow_min_model():
     beamline = _translate(dict(elem), min_model="linear")
     assert _types(beamline) == ["DipEdge", "Sbend", "DipEdge"]
     assert [e.model for e in beamline if isinstance(e, elements.DipEdge)] == [
-        "linear",
-        "linear",
+        "linear_slac75",
+        "linear_slac75",
     ]
 
     beamline = _translate(dict(elem), min_model="exact")
     assert _types(beamline) == ["DipEdge", "ExactSbend", "DipEdge"]
     assert [e.model for e in beamline if isinstance(e, elements.DipEdge)] == [
-        "nonlinear",
-        "nonlinear",
+        "nonlinear_hwang_lee",
+        "nonlinear_hwang_lee",
     ]
 
 
@@ -398,11 +404,16 @@ def test_solenoid_exact_floor_warns_but_still_promotes():
     assert len(floor) == 1, [str(w.message) for w in caught]
 
 
-def test_solenoid_promotion_end_to_end_from_madx_file(tmp_path):
+@pytest.mark.parametrize(
+    "beam_energy",
+    # 2 GeV kinetic energy as ENERGY and as PC
+    ["energy=2.93827208816", "pc=sqrt(2 * (2 + 2 * pmass))"],
+)
+def test_solenoid_promotion_end_to_end_from_madx_file(tmp_path, beam_energy):
     """read_lattice derives beta*gamma from BEAM and promotes the solenoid."""
     madx_file = tmp_path / "sol.madx"
     madx_file.write_text(
-        "beam, particle=proton, energy=2.93827208816;\n"  # total energy in GeV
+        f"beam, particle=proton, {beam_energy};\n"
         "s1: solenoid, l=0.5, ks=1.0;\n"
         "cell: line=(s1);\n"
         "use, sequence=cell;\n"
@@ -417,6 +428,315 @@ def test_solenoid_promotion_end_to_end_from_madx_file(tmp_path):
     assert _only(paraxial, elements.ChrAcc).bz == pytest.approx(
         1.0 * _SOL_BETA_GAMMA, rel=1e-6
     )
+
+
+@pytest.mark.parametrize(
+    "beam_commands, beta_gamma",
+    [
+        ("beam, particle=ion, mass=200, charge=82, pc=300;", 1.5),
+        ("beam, particle=ion, mass=200, charge=82, gamma=5;", math.sqrt(24.0)),
+        ("beam, particle=proton, mass=2, pc=3;", 3.0 / 0.93827208816),
+        (
+            "beam, mass=2, charge=1, pc=3;\nbeam, particle=proton, pc=2;",
+            2.0 / 0.93827208816,
+        ),
+        # a stated momentum is kept, also below the resolution of the total energy
+        ("beam, particle=proton, pc=1e-9;", 1.0e-9 / 0.93827208816),
+    ],
+)
+def test_solenoid_promotion_uses_the_particle_of_the_beam(
+    tmp_path, beam_commands, beta_gamma
+):
+    """beta*gamma uses the same mass as the energy, which MAD-X resolves per BEAM."""
+    madx_file = tmp_path / "sol.madx"
+    madx_file.write_text(
+        f"{beam_commands}\n"
+        "s1: solenoid, l=0.5, ks=1.0;\n"
+        "cell: line=(s1);\n"
+        "use, sequence=cell;\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        paraxial = read_lattice(str(madx_file), min_model="paraxial")
+
+    rel = 1.0e-14 if Config.precision != "SINGLE" else 1.0e-6
+    assert _only(paraxial, elements.ChrAcc).bz == pytest.approx(beta_gamma, rel=rel)
+
+
+@pytest.mark.parametrize(
+    "beam_command, charge_qe, mass_MeV, beta_gamma",
+    [
+        ("beam;", 1.0, 0.51099895, 0.99999986944002806 / 0.51099895e-3),
+        ("beam, particle=ion, mass=200, charge=82, pc=300;", 82.0, 200.0e3, 1.5),
+        (
+            "beam, particle=ion, mass=200, charge=82, gamma=5;",
+            82.0,
+            200.0e3,
+            math.sqrt(24.0),
+        ),
+        ("beam, particle=proton, pc=2;", 1.0, 938.27208816, 2.0 / 0.93827208816),
+        ("beam, particle=proton, beta=0;", 1.0, 938.27208816, 0.0),
+        ("beam, particle=proton, brho=0;", 1.0, 938.27208816, 0.0),
+        ("beam, particle=posmuon, gamma=5;", 1.0, 105.6583755, math.sqrt(24.0)),
+        ("beam, particle=antiproton, gamma=5;", -1.0, 938.27208816, math.sqrt(24.0)),
+    ],
+)
+def test_read_beam(tmp_path, beam_command, charge_qe, mass_MeV, beta_gamma):
+    """RefPart.load_file takes the particle and energy MAD-X resolves, also at rest."""
+    madx_file = tmp_path / "beam.madx"
+    madx_file.write_text(f"{beam_command}\n")
+    ref = RefPart()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        read_beam(ref, str(madx_file))
+
+    is_double = Config.precision != "SINGLE"
+    assert ref.charge_qe == pytest.approx(charge_qe, rel=1e-14 if is_double else 1e-6)
+    assert ref.mass_MeV == pytest.approx(mass_MeV, rel=1e-14 if is_double else 1e-6)
+    assert ref.beta_gamma == pytest.approx(
+        beta_gamma, rel=1e-9 if is_double else 1e-6, abs=1e-12
+    )
+
+
+def test_read_beam_low_energy(tmp_path):
+    """RefPart.load_file keeps a low kinetic energy."""
+    madx_file = tmp_path / "beam.madx"
+    madx_file.write_text("beam, particle=proton, beta=1e-3;\n")
+    ref = RefPart()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        read_beam(ref, str(madx_file))
+
+    # single precision: the reference `pt` near -1 cannot resolve a beta*gamma of 1e-3
+    rel = 1e-9 if Config.precision != "SINGLE" else 3e-2
+    assert ref.beta_gamma == pytest.approx(1.0e-3 / math.sqrt(1.0 - 1.0e-6), rel=rel)
+
+
+@pytest.mark.parametrize(
+    "beam_commands, mass_MeV",
+    [
+        ("beam, particle=proton, pc=sqrt(-1);", 938.27208816),
+        ("beam, particle=proton, beta=-1;", 938.27208816),
+        ("beam, particle=proton, energy=2;\nbeam->energy=0.5;", 938.27208816),
+        ("beam, particle=proton, energy=2;\nbeam->mass=3;", 3000.0),
+        ("beam, mass=2, charge=sqrt(-1), energy=3;", 2000.0),
+    ],
+)
+def test_rf_voltage_only_needs_the_mass(tmp_path, beam_commands, mass_MeV):
+    """A valid mass normalizes the voltage, also if the beam is no reference particle."""
+    madx_file = tmp_path / "rf.madx"
+    madx_file.write_text(
+        f"{beam_commands}\nrf: rfcavity, volt=5, freq=100;\ns1: line=(rf);\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        short_rf = _only(read_lattice(str(madx_file)), elements.ShortRF)
+
+    rel = 1.0e-14 if Config.precision != "SINGLE" else 1.0e-6
+    assert short_rf.V == pytest.approx(5.0 / mass_MeV, rel=rel)
+
+
+@pytest.mark.parametrize(
+    "beam_command",
+    ["", "beam, mass=-1, charge=1;", "beam, mass=sqrt(-1), charge=1, energy=3;"],
+)
+def test_rf_voltage_needs_the_reference_mass(tmp_path, beam_command):
+    """A voltage cannot be normalized without a mass, unlike a cavity that is off."""
+    madx_file = tmp_path / "rf.madx"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        madx_file.write_text(
+            f"{beam_command}\nrf: rfcavity, volt=5, freq=100;\ns1: line=(rf);\n"
+        )
+        with pytest.raises(MADXInputError, match="RFCAVITY with VOLT=5"):
+            read_lattice(str(madx_file))
+
+        madx_file.write_text(
+            f"{beam_command}\nrf: rfcavity, volt=0, freq=100;\ns1: line=(rf);\n"
+        )
+        assert _only(read_lattice(str(madx_file)), elements.ShortRF).V == 0.0
+
+
+@pytest.mark.parametrize(
+    "definition",
+    [
+        "drift, l=sqrt(-1)",
+        "drift, l=(-1)^0.5",
+        "quadrupole, l=1, k1=sqrt(-1)",
+        "sbend, l=1, angle=sqrt(-1)",
+        "drift, l=exp(1000)",
+    ],
+)
+def test_element_in_use_with_a_non_finite_attribute_raises(tmp_path, definition):
+    """The translation would treat NaN like zero, and drop or replace the element."""
+    madx_file = tmp_path / "element.madx"
+    madx_file.write_text(
+        f"beam, particle=proton, energy=2;\ne1: {definition};\ns1: line=(e1);\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(MADXInputError, match="'e1'.*not finite"):
+            read_lattice(str(madx_file))
+
+
+def test_element_not_in_use_with_a_non_finite_attribute(tmp_path):
+    """An element that is only defined does not matter, as in MAD-X."""
+    madx_file = tmp_path / "element.madx"
+    madx_file.write_text(
+        "beam, particle=proton, energy=2;\n"
+        "unused: drift, l=sqrt(-1);\n"
+        "d1: drift, l=1;\n"
+        "s1: line=(d1);\n"
+        "use, sequence=s1;\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
+
+
+@pytest.mark.parametrize("argument", ["line", "sequence"])
+def test_read_lattice_uses_the_beam_of_the_requested_line(tmp_path, argument):
+    """The requested line counts, not the one of USE, which has no beam here."""
+    madx_file = tmp_path / "lines.madx"
+    madx_file.write_text(
+        "d1: drift, l=1;\n"
+        "a: line=(d1);\n"
+        "b: line=(d1);\n"
+        "beam, sequence=b, particle=proton, energy=2;\n"
+        "use, period=a;\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert _types(read_lattice(str(madx_file), **{argument: "b"})) == ["Drift"]
+
+
+@pytest.mark.parametrize(
+    "use_commands, name",
+    [
+        ("use, sequence=food;", "food"),
+        ("use, sequence=fodo;\nuse, sequence=food;", "food"),
+        ('use, sequence="FODO";', "FODO"),
+    ],
+)
+def test_use_of_an_unknown_sequence_raises_in_the_lattice_import(
+    tmp_path, use_commands, name
+):
+    """Stricter than MAD-X, which warns: a typo in USE must not load another line."""
+    madx_file = tmp_path / "use.madx"
+    madx_file.write_text(
+        "d1: drift, l=1;\n"
+        "fodo: line=(d1);\n"
+        "beam, particle=proton, energy=2;\n"
+        f"{use_commands}\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(MADXInputError, match=f"sequence '{name}' is not defined"):
+            read_lattice(str(madx_file))
+
+        # a requested line does not depend on it, and neither does the reference particle
+        assert _types(read_lattice(str(madx_file), line="fodo")) == ["Drift"]
+        ref = RefPart()
+        read_beam(ref, str(madx_file))
+    rel = 1.0e-14 if Config.precision != "SINGLE" else 1.0e-6
+    assert ref.mass_MeV == pytest.approx(938.27208816, rel=rel)
+
+
+def test_use_of_a_known_sequence_replaces_an_unknown_one(tmp_path):
+    """Only the last USE counts, also for a sequence that an earlier one could not find."""
+    madx_file = tmp_path / "use.madx"
+    madx_file.write_text(
+        "d1: drift, l=1;\n"
+        "fodo: line=(d1);\n"
+        "beam, particle=proton, energy=2;\n"
+        "use, sequence=food;\n"
+        "use, sequence=fodo;\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
+
+
+def test_read_lattice_uses_the_beam_of_the_inferred_sequence(tmp_path):
+    """Without USE, the lattice import selects the line, and that line's beam."""
+    madx_file = tmp_path / "sol.madx"
+    madx_file.write_text(
+        "beam, particle=electron, energy=2;\n"
+        "beam, sequence=cell, particle=proton, pc=2;\n"
+        "s1: solenoid, l=0.5, ks=1.0;\n"
+        "cell: line=(s1);\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        paraxial = read_lattice(str(madx_file), min_model="paraxial")
+
+    rel = 1.0e-14 if Config.precision != "SINGLE" else 1.0e-6
+    assert _only(paraxial, elements.ChrAcc).bz == pytest.approx(
+        2.0 / 0.93827208816, rel=rel
+    )
+
+
+def test_read_lattice_without_a_beam_command(tmp_path):
+    """MAD-X stops at USE without BEAM, but reads a file of definitions."""
+    definitions = "d1: drift, l=0.5;\ncell: line=(d1);\n"
+    madx_file = tmp_path / "no_beam.madx"
+
+    madx_file.write_text(definitions)
+    with pytest.warns(MADXImpactXTranslatorWarning, match="no BEAM command"):
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
+
+    madx_file.write_text(f"{definitions}use, sequence=cell;\n")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(MADXInputError, match="no BEAM command"):
+            read_lattice(str(madx_file))
+
+    # an empty BEAM is enough
+    madx_file.write_text(f"beam;\n{definitions}use, sequence=cell;\n")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
+
+
+def test_read_beam_without_a_beam_command(tmp_path):
+    """There is no reference particle to load from a file without BEAM."""
+    madx_file = tmp_path / "no_beam.madx"
+    madx_file.write_text("d1: drift, l=0.5;\ncell: line=(d1);\n")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(MADXInputError, match="no BEAM command"):
+            read_beam(RefPart(), str(madx_file))
+
+
+@pytest.mark.parametrize(
+    "beam_command",
+    [
+        "beam, mass=-1, charge=1;",
+        "beam, mass=-1, charge=1, energy=0.5;",
+        "beam, particle=proton, beta=-1;",
+        "beam, particle=proton, beta=-2;",
+        "beam, particle=proton, pc=sqrt(-1);",
+        "beam, particle=proton, gamma=asin(2);",
+        "beam, mass=sqrt(-1), charge=1, energy=3;",
+        "beam, mass=2, charge=sqrt(-1), energy=3;",
+    ],
+)
+def test_beam_that_is_no_reference_particle(tmp_path, beam_command):
+    """MAD-X reads these, and so does the lattice import: only RefPart cannot use them."""
+    madx_file = tmp_path / "beam.madx"
+    madx_file.write_text(
+        f"{beam_command}\nd1: drift, l=0.5;\ncell: line=(d1);\nuse, sequence=cell;\n"
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(MADXInputError, match="no valid reference particle"):
+            read_beam(RefPart(), str(madx_file))
+
+    with pytest.warns(
+        MADXImpactXTranslatorWarning, match="no valid reference particle"
+    ):
+        assert _types(read_lattice(str(madx_file))) == ["Drift"]
 
 
 def test_solenoid_not_promoted_without_a_stated_beam_energy(tmp_path):

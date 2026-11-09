@@ -1228,7 +1228,7 @@ void init_elements(py::module& m)
             [](DipEdge & dip_edge, std::string const & model) {
                 dip_edge.m_model = amrex::getEnum<DipEdge::Model>(model);
             },
-            "Fringe field model (linear or nonlinear)"
+            "Fringe field model"
         )
         .def_property("location",
             [](DipEdge & dip_edge) { return amrex::getEnumNameString(dip_edge.m_location); },
@@ -1398,7 +1398,7 @@ void init_elements(py::module& m)
             [](elements::ExactMultipole & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(std::move(v), el.k_skew_coefficients());
             },
-            "normal multipole coefficients\n\n"
+            "normal multipole coefficients, up to order m=12\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1407,7 +1407,7 @@ void init_elements(py::module& m)
             [](elements::ExactMultipole & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(el.k_normal_coefficients(), std::move(v));
             },
-            "skew multipole coefficients\n\n"
+            "skew multipole coefficients, up to order m=12\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1505,7 +1505,7 @@ void init_elements(py::module& m)
             [](elements::ExactCFbend & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(std::move(v), el.k_skew_coefficients());
             },
-            "normal multipole coefficients\n\n"
+            "normal multipole coefficients, up to decapole order (m=5)\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1514,7 +1514,7 @@ void init_elements(py::module& m)
             [](elements::ExactCFbend & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(el.k_normal_coefficients(), std::move(v));
             },
-            "skew multipole coefficients\n\n"
+            "skew multipole coefficients, up to decapole order (m=5)\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1880,10 +1880,9 @@ void init_elements(py::module& m)
         .def_property("multipole",
             [](Multipole & multipole) { return multipole.m_multipole; },
             [](Multipole & multipole, int multipole_index) {
-                multipole.m_multipole = multipole_index;
-                multipole.compute_factorial();
+                multipole.set_multipole(multipole_index);
             },
-            "index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)"
+            "index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc., up to m=13)"
         )
         .def_property("K_normal",
             [](Multipole & multipole) { return multipole.m_Kn; },
@@ -2368,6 +2367,10 @@ void init_elements(py::module& m)
                     std::make_pair("phase", rfc.m_phase),
                     std::make_pair("cos_coefficients", rfc.cos_coefficients()),
                     std::make_pair("sin_coefficients", rfc.sin_coefficients()),
+                    std::make_pair("z_data", rfc.z_data()),
+                    std::make_pair("wake_x_data", rfc.wake_x_data()),
+                    std::make_pair("wake_y_data", rfc.wake_y_data()),
+                    std::make_pair("wake_z_data", rfc.wake_z_data()),
                     std::make_pair("mapsteps", rfc.m_mapsteps)
                 );
             }
@@ -2379,6 +2382,10 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::vector<amrex::ParticleReal>,
                 std::vector<amrex::ParticleReal>,
+                std::optional<std::vector<amrex::ParticleReal>>,
+                std::optional<std::vector<amrex::ParticleReal>>,
+                std::optional<std::vector<amrex::ParticleReal>>,
+                std::optional<std::vector<amrex::ParticleReal>>,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
                 amrex::ParticleReal,
@@ -2394,6 +2401,10 @@ void init_elements(py::module& m)
              py::arg("phase"),
              py::arg("cos_coefficients"),
              py::arg("sin_coefficients"),
+             py::arg("z_data") = py::none(),
+             py::arg("wake_x_data") = py::none(),
+             py::arg("wake_y_data") = py::none(),
+             py::arg("wake_z_data") = py::none(),
              py::arg("dx") = RFCavity::DEFAULT_dx,
              py::arg("dy") = RFCavity::DEFAULT_dy,
              py::arg("rotation") = RFCavity::DEFAULT_rotation_degree,
@@ -3490,6 +3501,7 @@ void init_elements(py::module& m)
 
     // freestanding push function
     m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::ElementHandle &, int, int>(&push),
+        py::call_guard<py::gil_scoped_release>(),
         py::arg("pc"), py::arg("element"), py::arg("step")=0, py::arg("period")=0,
         "Push a whole particle beam (incl. reference particle) through an element"
     );

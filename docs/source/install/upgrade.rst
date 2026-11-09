@@ -10,6 +10,50 @@ requirements. Newest release first.
 26.11
 -----
 
+Maximum multipole order
+"""""""""""""""""""""""
+
+:py:class:`~impactx.elements.Multipole` raises a ``ValueError`` for ``multipole > 13``, and :py:class:`~impactx.elements.ExactMultipole` and :py:class:`~impactx.elements.ExactCFbend` for ``k_normal`` and ``k_skew`` arrays longer than 12 and 5 entries, respectively.
+Importing a MAD-X ``MULTIPOLE`` with a nonzero ``KNL`` or ``KSL`` entry above index 12 raises the same error.
+
+Look for high-order terms in your lattices and for arrays padded with zeros, and remove the zero entries:
+
+.. code-block:: python
+
+   elements.ExactMultipole(ds=0.2, k_normal=[0.0, k1, 0.0, 0.0], k_skew=[0.0, 0.0, 0.0, 0.0])
+   # same field
+   elements.ExactMultipole(ds=0.2, k_normal=[0.0, k1], k_skew=[0.0, 0.0])
+
+``DipEdge``: default linear model changed to ``linear_slac75``
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+For the :py:class:`~impactx.elements.DipEdge` element, there were previously two models: ``linear`` (default) and ``nonlinear``.
+
+Both of these models were based on the paper:
+
+K. Hwang and S. Y. Lee, "Dipole fringe field map for compact synchrotrons", Phys. Rev. ST Accel. Beams 18, 122401 (2015),
+
+which performs an expansion in powers of ``g/rc``, where ``g`` is the magnetic gap, and ``rc`` is the bend radius of curvature.
+
+In this release, the default model (``linear``, which is now an alias for the new ``linear_slac75``) has been changed to coincide with the linear part of the map described in:
+
+K. Brown, "A First- and Second-Order Matrix Theory for the Design of Beam Transport Systems and Charged Particle Spectrometers", SLAC Report-75, 1982.
+
+The previous default linear model is still available as ``linear_hwang_lee``.  It coincides with ``linear_slac75`` through
+first order in ``g/rc``.
+
+The ``nonlinear`` DipEdge model is unchanged, and is now an alias for ``nonlinear_hwang_lee``.
+
+The new linear default model ``linear_slac75`` was chosen to match the commonly used MAD-X model.
+
+``DipEdge``: reference particle deflection with ``modify_ref_part = True``
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+With ``modify_ref_part = True``, the ``nonlinear`` :py:class:`~impactx.elements.DipEdge` model now deflects the reference particle by the angle by which it deflects a beam particle on the reference orbit with ``modify_ref_part = False``.
+Previously, the sine of the reference deflection angle had an extra factor of :math:`1/(\beta\gamma)`.
+This changes the reference trajectory, and the beam coordinates relative to it, downstream of such an edge.
+
+
 ``Programmable``: ``nslice`` and ``name`` moved to the 3rd and 4th argument
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -24,9 +68,147 @@ requirements. Newest release first.
    pge = elements.Programmable(0.5, 2)                # before
    pge = elements.Programmable(ds=0.5, nslice=2)      # preferred by name, works as before
 
+At fixed :math:`t`, the longitudinal attributes are named ``position_z`` and ``momentum_z``
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+While the beam is at fixed :math:`t`, inside a :py:meth:`~impactx.ParticleContainer.at_fixed_t` block or after
+:py:func:`~impactx.coordinate_transformation` to ``CoordSystem.t``, the longitudinal attributes are named
+``position_z`` and ``momentum_z``.
+Previously, they kept the names ``position_t`` and ``momentum_t`` while holding :math:`z` and :math:`p_z`.
+
+**What to check in your scripts:** code that reads ``position_t`` or ``momentum_t`` by name while the beam is
+at fixed :math:`t` raises a ``KeyError``. Use the new names:
+
+.. code-block:: python
+
+   with sim.beam.at_fixed_t() as beam:
+       for pti in ImpactXParIter(beam, level=0):
+           soa = pti.soa().to_xp()
+           z = soa.real["position_t"]   # before
+           z = soa.real["position_z"]   # now
+
+Access by index, e.g., ``soa.get_real_data()[2]``, is unchanged.
+A :py:class:`~impactx.elements.BeamMonitor` and ``beam.plot_phasespace()`` now raise at fixed
+:math:`t`, where they used to label :math:`z` and :math:`p_z` as :math:`t` and :math:`p_t`; use them at fixed :math:`s`.
+
+Particle weights count real particles, also for ions
+""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+The weight of a particle is the number of real particles it represents, each with the charge of the reference
+particle, in all collective effects (space charge, CSR) and in the beam charge ``charge_C``.
+Previously, weights set from a bunch charge counted elementary charges, and so did the 1D charge deposition of
+the ``Gauss2p5D``, ``2p5D`` and CSR models for all weights.
+This changes the results for ions with a charge other than :math:`\pm q_e`, which are set up in Python.
+
+**What to check in your scripts with ions:**
+
+- ``sim.add_particles(bunch_charge, distr, npart)`` and ``beam.add_n_particles(..., bunch_charge=...)`` set up
+  particles of the total charge ``bunch_charge``.
+  Before, ``charge_C`` read :math:`|Z|` times the bunch charge.
+- Weights passed as ``w`` are the number of real particles:
+
+  .. code-block:: python
+
+     w = np.full(npart, bunch_charge / scipy.constants.e / npart)  # before
+     w = np.full(npart, bunch_charge / abs(sim.beam.ref.charge) / npart)  # now
+
+- Ion beams that a :py:class:`~impactx.elements.BeamMonitor` wrote with an earlier version carry weights in
+  elementary charges, :math:`|Z|` times the number of real particles.
+
+**What to check in all scripts:** :py:meth:`~impactx.ParticleContainer.add_n_particles` raises a
+``RuntimeError`` for a negative ``bunch_charge``: it is a magnitude, and the sign of the charge is the one of
+the reference particle.
+It also raises for a nonzero ``bunch_charge`` if the reference particle has no charge yet.
+Set up the reference particle first:
+
+.. code-block:: python
+
+   sim.beam.ref.set_mass_MeV(3727.4).set_charge_qe(2.0).set_kin_energy_MeV(1.0e3)
+   sim.beam.add_n_particles(x, y, t, px, py, pt, qm, bunch_charge=1.0e-9)
+
+``wakeconvolution``: charge density with sign, ``derivative_charge`` without ``GetNumberDensity``
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+``wakeconvolution.deposit_charge`` deposits the charge :math:`q w` of each particle, with the charge :math:`q`
+of the reference particle: the charge density is negative for electrons.
+``wakeconvolution.derivative_charge`` returns the slopes of this charge density.
+
+**What to check in your scripts:** ``derivative_charge`` with a fourth argument ``GetNumberDensity`` raises a
+``TypeError``. Remove the argument and divide the slopes by the reference particle charge for the number density:
+
+.. code-block:: python
+
+   wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size, True)  # before
+
+   wakeconvolution.derivative_charge(charge_distribution, slopes, bin_size)  # now
+   slopes.to_xp()[:] /= sim.beam.ref.charge  # number density
+
+MAD-X ``BEAM``: reference particle and energy as in MAD-X
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` and
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` now resolve each ``BEAM`` command of a
+MAD-X file following MAD-X. Previously, only ``ENERGY`` was read, so ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` left 1 GeV:
+remove workarounds that set the energy after loading.
+
+**What to check in your MAD-X files:**
+
+.. code-block:: text
+
+   BEAM, ENERGY=2;                 ! now a positron: add PARTICLE
+   BEAM, SEQUENCE=B2, BV=-1;       ! now a positron at 1 GeV: add PARTICLE and ENERGY
+   BEAM, PARTICLE=ION, MASS=193.7, CHARGE=82, ENERGY=574;  ! now uses MASS and CHARGE
+
+   ! now errors
+   BEAM, MASS=2, CHARGE=1;         ! the 1 GeV default is below the mass: add ENERGY
+   BEAM, PARTICLE=PROTN, PC=2;     ! an unknown particle needs a MASS
+   BEAM, PARTICLE="PROTON", PC=2;  ! a quoted name keeps its case, also in SEQUENCE and USE
+   BEAM, ENERGIE=3;                ! an unknown parameter
+   BEAM, ENERGY=2 PC=3;            ! a number without a comma
+   USE, SEQUENCE=FOOD;             ! an unknown sequence, in KnownElementsList.load_file
+
+``RefPart.load_file`` also raises without ``BEAM`` or a valid reference particle. ``KnownElementsList.load_file`` raises for ``USE`` without ``BEAM``, an ``RFCAVITY`` with ``VOLT`` but no valid mass, and a NaN or infinite attribute of an element in use, and warns otherwise.
+
+Also as in MAD-X: ``CIRC`` sets ``FREQ0``, a parameter without a value is zero, a label does not change a command, ``beam->energy`` reads and sets ``BEAM`` parameters, ``RESBEAM`` resets a beam, redefining a constant warns, math outside of its domain gives NaN or infinity, and ``FRAC(-2.5)`` is -0.5.
+Masses now use the MAD-X constants, a change of at most 4 parts in :math:`10^8`.
+
+``Thermal``: invalid parameters raise an error
+""""""""""""""""""""""""""""""""""""""""""""""
+
+:py:class:`~impactx.distribution.Thermal` parameters without a stationary radial density, which mostly gave NaN
+coordinates, now raise an error, e.g., a ``RuntimeError`` in ``sim.add_particles``.
+
+**What to check in your scripts and inputs files:**
+
+- ``normalize`` or ``normalize_halo`` for which the space charge exceeds the focusing on the axis makes the radial
+  density diverge: reduce it below the limit in the error message.
+- ``halo > 0`` with ``normalize_halo = 0``: for a beam without a halo, set ``halo = 0``.
+- ``halo < 1`` with ``normalize = 0``: for a beam without a core, set ``halo = 1``.
+
+MAD-X files: evaluation of ``^``
+""""""""""""""""""""""""""""""""
+
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate powers in MAD-X files as MAD-X does: ``a^b^c`` is
+``(a^b)^c``, and ``-a^b`` is ``-(a^b)``.
+
+**What to check in your MAD-X files:** more than one ``^`` in an expression, and a sign directly before a power. A
+subtraction, ``a-b^2``, is not affected. To keep the previous meaning, add parentheses:
+
+.. code-block:: text
+
+   k = a^(b^c);  ! previously a^b^c:  2^3^2 was 512, now 64
+   k = (-a)^b;   ! previously -a^b:   -2^2 was 4, now -4
+
+ImpactX also accepts a sign directly after an operator, as in ``a*-b^2`` or ``a^-b^c``, which MAD-X does not support: write
+these with parentheses. Their values change as well, e.g., ``2^-3^2`` was 512 and is now 0.015625, and ``2^((-3)^2)`` is 512.
+
 New in this release
 """""""""""""""""""
 
+- :py:meth:`beam.at_fixed_t() <impactx.ParticleContainer.at_fixed_t>` represents the beam at fixed :math:`t`
+  inside a ``with`` block, e.g., to exchange particles with a code that uses time as the independent variable.
+  The beam returns to fixed :math:`s` when the block ends, also if it raises.
 - :py:attr:`Programmable.includes_collective_effects <impactx.elements.Programmable.includes_collective_effects>`
   declares that a push already models collective effects, e.g., by calling an external code.
   ImpactX then applies no additional space charge, wakefield, CSR or ISR kicks for this element.

@@ -9,12 +9,13 @@ import impactx.impactx_pybind.elements
 from amrex.space3d.amrex_3d_pybind import SmallMatrix_6x6_F_SI1_double as Map6x6
 from impactx.element_models import select_model, tier_rank, validate_model
 from impactx.impactx_pybind import RefPart, elements
-from impactx.MADXParser import MADXParser
+from impactx.MADXParser import MADXInputError, MADXParser
 
 __all__: list[str] = [
     "APERTURE_SHAPE_MAP",
     "DRIFT_MODEL_CLASSES",
     "MADXImpactXTranslatorWarning",
+    "MADXInputError",
     "MADXParser",
     "Map6x6",
     "QUAD_MODEL_CLASSES",
@@ -54,6 +55,18 @@ class sc:
     physical_constants: typing.ClassVar[dict] = {
         "electron-muon mass ratio": (0.00483633169, "", 1.1e-10)
     }
+
+def _beam_summary(madx_beam) -> str:
+    """
+    Describe a MAD-X beam for an error or warning.
+    """
+
+def _require_finite_attributes(element: dict):
+    """
+    Stop on a NaN or infinite attribute, as of `L=SQRT(-1)`, of an element in use.
+
+    MAD-X carries it along, but the translation below would treat it like zero.
+    """
 
 def _warn(message: str):
     """

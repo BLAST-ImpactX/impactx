@@ -22,7 +22,7 @@ NEGATIVE_ERROR = "Must be negative"
 N_CELL_MULTIPLE_ERROR = "Must be a multiple of its blocking factor"
 PYTHON_IDENTIFIER_ERROR = "Must be a valid Python identifier"
 
-# Utilized in prob_relative validation
+# Utilized in prob_relative and csr_bins validation
 GREATER_THAN_THREE_ERROR = "Must be greater than 3"
 GREATER_THAN_ONE_ERROR = "Must be greater than 1"
 LESS_THAN_PREVIOUS_ERROR = "Must be less than previous value"
@@ -173,6 +173,8 @@ class DashboardValidation:
                 errors.append(POSITIVE_ERROR)
             elif condition == "negative" and value >= 0:
                 errors.append(NEGATIVE_ERROR)
+            elif condition == "greater_than_one" and value <= 1:
+                errors.append(GREATER_THAN_ONE_ERROR)
 
         return errors
 

@@ -19,6 +19,9 @@ def get_moments(beam):
     -------
     meanx, meany, sigx, sigy, sigt, emittance_x, emittance_y, emittance_t
     """
+    # float64 arithmetic, also for single-precision data
+    beam = beam.select_dtypes(np.floating).astype(np.float64)
+
     meanx = tmean(beam["position_x"])
     meany = tmean(beam["position_y"])
     sigx = moment(beam["position_x"], moment=2) ** 0.5  # variance -> std dev.

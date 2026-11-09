@@ -11,6 +11,7 @@
 #define WAKE_CONVOLUTION_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "InterpolateLinear1D.H"
 
 #include <AMReX_GpuContainers.H>
 #include <AMReX_Math.H>
@@ -89,17 +90,47 @@ namespace impactx::particles::wakefields
         amrex::Real L
     );
 
+    /** Interpolated User-Defined Wake Function
+     *
+     * The values are tabulated at the separations i * dz, @see elements::mixin::ShortRangeWake
+     *
+     * @param[in] s separation between source and test particle [m]
+     * @param[in] wake_data tabulated single-particle wake function supplied by user [V/(C*m)],
+     *                      positive where it decelerates a trailing particle
+     * @param[in] n_data number of tabulated values in wake_data, at least two
+     * @param[in] dz spacing of the tabulated values [m]
+     * @return value wake function [V/(C*m)], zero outside the tabulated range
+     */
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    amrex::Real
+    w_user (
+        amrex::Real s,
+        amrex::Real const * wake_data,
+        int const n_data,
+        amrex::Real const dz
+    )
+    {
+        using namespace amrex::literals;
+
+        // outside the tabulated range the wake function is not defined: it is taken as zero
+        if (s < 0_rt || s > static_cast<amrex::Real>(n_data - 1) * dz) { return 0_rt; }
+
+        return InterpolateLinear1D(s, wake_data, n_data, 0_rt, 1_rt / dz);
+    }
+
     /** CSR Wake Function
+     *
+     * The wake between a source and a test particle of one elementary charge each.
      *
      * Eq. (28) in:
      * E.L. Saldin et al., "On the coherent radiation of an electron bunch moving in an arc of a circle",
      * NiMA Volume 398, Issues 2–3, Pages 373-394, 21 October (1997)
      * https://doi.org/10.1016/S0168-9002(97)00822-X
      *
-     * @param[in] s value along s [m]
-     * @param[in] R band radius [m]
+     * @param[in] s separation between source point and observation point [m]
+     * @param[in] R bend radius [m]
      * @param[in] bin_size longitudinal bin size [m]
-     * @return wake functions in [V*pc/mm]
+     * @return integrated single-particle wake function in [V*C]=[J]
      */
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     amrex::Real
@@ -120,8 +151,12 @@ namespace impactx::particles::wakefields
 
     /** Perform FFT-based convolution
      *
-     * @param[in] beam_profile_slope number density slope along s [1/m]
-     * @param[in] wake_func wake function along s [V*pc/mm]
+     * @param[in] beam_profile_slope derivative of the line density along s that the wake function
+     *                               acts on [1/m^2]: for the CSR wake function w_l_csr, between
+     *                               two elementary charges, (q/e)^2 times the derivative of the
+     *                               number density of particles with the charge q; for a
+     *                               user-tabulated wake function, the line density itself
+     * @param[in] wake_func wake function along s [J] (before convolution) [N] (after convolution)
      * @param[in] delta_t size of a bin in wake_func [m]
      * @return FFT convolution of beam_profile_slope & wake_func (N = len(beam_profile_slope) = len(wake_func)/2)
      */

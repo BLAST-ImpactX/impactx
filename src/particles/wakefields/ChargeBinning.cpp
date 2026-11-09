@@ -10,6 +10,10 @@
 #include "ChargeBinning.H"
 #include "particles/ImpactXParticleContainer.H"
 
+#include <AMReX_BLassert.H>
+#include <AMReX_BLProfiler.H>
+#include <AMReX_GpuParallelReduce.H>
+
 #include <cmath>
 
 
@@ -25,6 +29,9 @@ namespace impactx::particles::wakefields
     {
         int const num_bins = charge_distribution.size();
         amrex::Real * const dptr_data = charge_distribution.data();
+
+        // charge of a particle
+        amrex::Real const charge = myspc.GetRefParticle().charge;
 
         // Loop over each grid level
         int const nlevs = myspc.finestLevel();
@@ -58,9 +65,9 @@ namespace impactx::particles::wakefields
                         auto const w = amrex::Real(d_w[i]);  // (Macro)Particle weight at i
 
                         /*
-                        Weight w is given in [number of electrons]:
-                        For w = 1 --> macroparticle = 1 electron making up a macroparticle
-                        For w > 1 --> macroparticle > 1 electrons making up a macroparticle
+                        Weight w is given in [number of real particles]:
+                        For w = 1 --> macroparticle = 1 real particle making up a macroparticle
+                        For w > 1 --> macroparticle > 1 real particles making up a macroparticle
                         */
 
                         // Calculate bin index based on z-position
@@ -68,7 +75,7 @@ namespace impactx::particles::wakefields
                         if (bin < 0 || bin >= num_bins) { return; }  // Discard if bin index is out of range
 
                         // Divide charge by bin size to get binned charge density
-                        amrex::Real add_value = ablastr::constant::SI::q_e / bin_size;
+                        amrex::Real add_value = charge / bin_size;
 
                         // Calculate the charge contribution of the macro particle
                         if (!is_unity_particle_weight)
@@ -87,8 +94,7 @@ namespace impactx::particles::wakefields
     void DerivativeCharge1D (
         amrex::Gpu::DeviceVector<amrex::Real> const & charge_distribution,
         amrex::Gpu::DeviceVector<amrex::Real> & slopes,
-        amrex::Real bin_size,
-        bool GetNumberDensity
+        amrex::Real bin_size
     )
     {
         int const num_bins = charge_distribution.size();
@@ -98,17 +104,8 @@ namespace impactx::particles::wakefields
         amrex::ParallelFor(num_bins - 1, [=] AMREX_GPU_DEVICE(int i)
         {
             // Compute the charge density derivative
-            amrex::Real const charge_derivative = (dptr_charge_distribution[i + 1] - dptr_charge_distribution[i]) / bin_size;
-
-            // If GetNumberDensity = True, convert charge density derivative to number density derivative for CSR convolution
-            if (GetNumberDensity)
-            {
-                dptr_slopes[i] = charge_derivative / ablastr::constant::SI::q_e;
-            }
-            else
-            {
-                dptr_slopes[i] = charge_derivative;
-            }
+            dptr_slopes[i] =
+                (dptr_charge_distribution[i + 1] - dptr_charge_distribution[i]) / bin_size;
         });
     }
 
@@ -121,20 +118,23 @@ namespace impactx::particles::wakefields
         bool is_unity_particle_weight
     )
     {
+        BL_PROFILE("impactx::particles::wakefields::MeanTransversePosition");
+
         using namespace amrex::literals;
 
-        int const num_bins = mean_x.size();
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(mean_x.size() == mean_y.size(),
+            "MeanTransversePosition: mean_x and mean_y must have the same size");
+        int const num_bins = static_cast<int>(mean_x.size());
         amrex::Real* dptr_mean_x = mean_x.data();
         amrex::Real* dptr_mean_y = mean_y.data();
 
-        // Declare arrays for sums of positions and weights
-        auto sum_x = amrex::Gpu::DeviceVector<amrex::Real>(num_bins, 0.0_rt);
-        auto sum_y = amrex::Gpu::DeviceVector<amrex::Real>(num_bins, 0.0_rt);
-        auto sum_w = amrex::Gpu::DeviceVector<amrex::Real>(num_bins, 0.0_rt);
+        // Sums of the weights, of x * weight and of y * weight per bin, in one array to reduce
+        // them over all MPI ranks in one call
+        auto sums = amrex::Gpu::DeviceVector<amrex::Real>(3 * num_bins, 0.0_rt);
 
-        amrex::Real* const sum_w_ptr = sum_w.data();
-        amrex::Real* const sum_x_ptr = sum_x.data();
-        amrex::Real* const sum_y_ptr = sum_y.data();
+        amrex::Real* const sum_w_ptr = sums.data();
+        amrex::Real* const sum_x_ptr = sum_w_ptr + num_bins;
+        amrex::Real* const sum_y_ptr = sum_x_ptr + num_bins;
 
         int const nlevs = myspc.finestLevel();
         for (int lev = 0; lev <= nlevs; ++lev)
@@ -150,12 +150,17 @@ namespace impactx::particles::wakefields
                     auto& soa = pti.GetStructOfArrays();
                     long const np = pti.numParticles();
 
-                    amrex::Real* const AMREX_RESTRICT pos_x = soa.GetRealData(impactx::RealSoA::x).dataPtr();
-                    amrex::Real* const AMREX_RESTRICT pos_y = soa.GetRealData(impactx::RealSoA::y).dataPtr();
-                    amrex::Real* const AMREX_RESTRICT pos_z = soa.GetRealData(impactx::RealSoA::z).dataPtr();
-                    amrex::Real* const AMREX_RESTRICT d_w = soa.GetRealData(impactx::RealSoA::w).dataPtr();
+                    amrex::ParticleReal const * const AMREX_RESTRICT pos_x =
+                        soa.GetRealData(impactx::RealSoA::x).dataPtr();
+                    amrex::ParticleReal const * const AMREX_RESTRICT pos_y =
+                        soa.GetRealData(impactx::RealSoA::y).dataPtr();
+                    amrex::ParticleReal const * const AMREX_RESTRICT pos_z =
+                        soa.GetRealData(impactx::RealSoA::z).dataPtr();
+                    amrex::ParticleReal const * const AMREX_RESTRICT d_w =
+                        soa.GetRealData(impactx::RealSoA::w).dataPtr();
 
-                    amrex::For(np, [=] AMREX_GPU_DEVICE(int i)
+                    // amrex::For: different particles add to the same bins
+                    amrex::For(np, [=] AMREX_GPU_DEVICE(long i)
                     {
                         amrex::Real const w = d_w[i];
                         amrex::Real const x = pos_x[i];
@@ -174,6 +179,12 @@ namespace impactx::particles::wakefields
                 }
             }
         }
+
+        // Sum up the partial sums of all MPI ranks, so every rank gets the global means
+        amrex::ParallelAllReduce::Sum(
+            sums,
+            amrex::ParallelDescriptor::Communicator()
+        );
 
         amrex::ParallelFor(num_bins, [=] AMREX_GPU_DEVICE(int i)
         {

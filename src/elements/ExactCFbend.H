@@ -66,6 +66,9 @@ namespace impactx::elements
         static constexpr int DEFAULT_int_order = 2;
         static constexpr int DEFAULT_mapsteps = 10;
 
+        //! most coefficients per array: map2 and map3 implement the orders through the decapole
+        static constexpr int MAX_order = 5;
+
         /** The particle-facing configuration of an exact combined-function bend
          *
          * @param ds Segment length in m.
@@ -388,8 +391,6 @@ namespace impactx::elements
                             - 15_prt*powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
                             +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
                      break;
-                // default:
-                //   TODO: print a warning here that order > 5 is not currently supported
                }
 
             }
@@ -692,7 +693,7 @@ namespace impactx::elements
             m_coefficients{std::move(k_normal), std::move(k_skew)}
         {
             require_array_pair(m_coefficients.k_normal, m_coefficients.k_skew,
-                               "ExactCFbend: normal and skew coefficient", 1);
+                               "ExactCFbend: normal and skew coefficient", 1, MAX_order);
             if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
                 throw std::invalid_argument("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
 
@@ -783,6 +784,7 @@ namespace impactx::elements
         transport_map (RefPart const & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
         {
             using namespace amrex::literals; // for _rt and _prt
+            using namespace amrex::Math;  // for powi
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
@@ -826,28 +828,39 @@ namespace impactx::elements
             amrex::ParticleReal const sinhy = std::sinh(omega_y * slice_ds);
             amrex::ParticleReal const coshy = std::cosh(omega_y * slice_ds);
 
-            amrex::ParticleReal const igbrc = 1_prt / (gx * bet * rc);
-            amrex::ParticleReal const iobrc = 1_prt / (omega_x * bet * rc);
-            amrex::ParticleReal const igobr = 1_prt / (gx * omega_x * b2rc2);
+            // sin(w ds)/w and sinh(w ds)/w, which tend to ds for a vanishing w
+            amrex::ParticleReal const sincx = omega_x != 0_prt ? sinx / omega_x : slice_ds;
+            amrex::ParticleReal const sinhcx = omega_x != 0_prt ? sinhx / omega_x : slice_ds;
+            amrex::ParticleReal const sincy = omega_y != 0_prt ? siny / omega_y : slice_ds;
+            amrex::ParticleReal const sinhcy = omega_y != 0_prt ? sinhy / omega_y : slice_ds;
+
+            // other intermediate quantities with special limiting cases
+            amrex::ParticleReal const coslim = omega_x != 0_prt ? (1_prt - cosx)/gx : 0.5_prt * powi<2>(slice_ds);
+            amrex::ParticleReal const coshlim = omega_x != 0_prt ? (1_prt - coshx)/gx : 0.5_prt * powi<2>(slice_ds);
+            amrex::ParticleReal const sinlim = omega_x != 0_prt ? (sincx - slice_ds)/gx : -powi<3>(slice_ds) / 6_prt;
+            amrex::ParticleReal const sinhlim = omega_x != 0_prt ? (sinhcx - slice_ds)/gx : -powi<3>(slice_ds) / 6_prt;
+
+            amrex::ParticleReal const iobrc = 1_prt / (bet * rc);
+            amrex::ParticleReal const iobrc2 = 1_prt / b2rc2;
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
             R(1,1) = gx > 0_prt ? cosx : coshx;
-            R(1,2) = gx > 0_prt ? sinx / omega_x : sinhx / omega_x;
-            R(1,6) = gx > 0_prt ? -(1_prt - cosx) * igbrc : -(1_prt - coshx) * igbrc;
+            R(1,2) = gx > 0_prt ? sincx : sinhcx;
+            R(1,6) = gx > 0_prt ? -coslim * iobrc : -coshlim * iobrc;
             R(2,1) = gx > 0_prt ? -omega_x * sinx : omega_x * sinhx;
             R(2,2) = gx > 0_prt ? cosx : coshx;
-            R(2,6) = gx > 0_prt ? -sinx * iobrc : -sinhx * iobrc;
+            R(2,6) = gx > 0_prt ? -sincx * iobrc : -sinhcx * iobrc;
             R(3,3) = gy > 0_prt ? cosy : coshy;
-            R(3,4) = gy > 0_prt ? siny / omega_y : sinhy / omega_y;
+            R(3,4) = gy > 0_prt ? sincy : sinhcy;
             R(4,3) = gy > 0_prt ? -omega_y * siny : omega_y * sinhy;
             R(4,4) = gy > 0_prt ? cosy : coshy;
-            R(5,1) = gx > 0_prt ? sinx * iobrc : sinhx * iobrc;
-            R(5,2) = gx > 0_prt ? (1_prt - cosx) * igbrc : (1_prt - coshx) * igbrc;
+            R(5,1) = gx > 0_prt ? sincx * iobrc : sinhcx * iobrc;
+            R(5,2) = gx > 0_prt ? coslim * iobrc : coshlim * iobrc;
             R(5,6) = gx > 0_prt ?
-                slice_ds * ibetgam2 + (sinx  - omega_x * slice_ds) * igobr :
-                slice_ds * ibetgam2 + (sinhx - omega_x * slice_ds) * igobr;
+                slice_ds * ibetgam2 + sinlim * iobrc2 :
+                slice_ds * ibetgam2 + sinhlim * iobrc2;
 
             // apply the transverse rotation (roll) alignment error
             return rotate_aligned_map(R);
@@ -898,7 +911,8 @@ namespace impactx::elements
             std::vector<amrex::ParticleReal> second
         )
         {
-            require_array_pair(first, second, "ExactCFbend: normal and skew coefficient", 1);
+            require_array_pair(first, second,
+                               "ExactCFbend: normal and skew coefficient", 1, MAX_order);
             m_coefficients.k_normal.host() = std::move(first);
             m_coefficients.k_skew.host() = std::move(second);
         }

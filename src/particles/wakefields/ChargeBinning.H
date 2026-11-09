@@ -12,13 +12,19 @@
 
 #include "particles/ImpactXParticleContainer.H"
 
+#include <AMReX_GpuContainers.H>
+#include <AMReX_REAL.H>
+
 
 namespace impactx::particles::wakefields
 {
     /** Function to calculate charge density profile
      *
+     * A particle deposits its charge q w, with the charge q of the reference particle and the
+     * weight w as the number of real particles it represents.
+     *
      * @param[in] myspc the particle species to deposit along s
-     * @param[out] charge_distribution the output array (1D)
+     * @param[out] charge_distribution the output array (1D): charge per bin_size
      * @param[in] bin_min lower end of the beam in s
      * @param[in] bin_size size of the beam in s divided by num_bins
      * @param[in] is_unity_particle_weight ignore the particle weighting per macro particle,
@@ -32,27 +38,30 @@ namespace impactx::particles::wakefields
         bool is_unity_particle_weight = false
     );
 
-    /** Function to calculate the slope of the number (or charge) density
+    /** Function to calculate the slope of the charge density
      *
-     * @param[in] charge_distribution deposited charge in 1D along s
+     * @param[in] charge_distribution deposited charge density in 1D along s
      * @param[out] slopes derivative of charge_distribution along s with len(charge_distribution)-1
      * @param[in] bin_size size of the beam in s divided by num_bins
-     * @param[in] GetNumberDensity number density if true, otherwise charge density
      */
     void DerivativeCharge1D (
         amrex::Gpu::DeviceVector<amrex::Real> const & charge_distribution,
         amrex::Gpu::DeviceVector<amrex::Real> & slopes,
-        amrex::Real bin_size,
-        bool GetNumberDensity = true
+        amrex::Real bin_size
     );
 
     /** Function to calculate the mean transverse positions (x and y) at each bin along s
      *
+     * Bin k covers [bin_min + k * bin_size, bin_min + (k + 1) * bin_size), as in DepositCharge1D.
+     * The means are over the particles of all MPI ranks: every rank must call this function.
+     * Bins without particles get a mean of zero.
+     *
      * @param[in] myspc the particle species to deposit along s
-     * @param[out] mean_x the output array for mean x positions (1D)
-     * @param[out] mean_y the output array for mean y positions (1D)
+     * @param[in,out] mean_x the output array for mean x positions (1D), its size sets the number
+     *                       of bins
+     * @param[out] mean_y the output array for mean y positions (1D), the same size as mean_x
      * @param[in] bin_min lower end of the beam in s
-     * @param[in] bin_size size of the beam in s divided by num_bins
+     * @param[in] bin_size width of a bin in s
      * @param[in] is_unity_particle_weight ignore the particle weighting per macro particle,
      *                                     otherwise treat each particle as one physical particle
      */

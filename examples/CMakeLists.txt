@@ -946,6 +946,13 @@ add_impactx_test(kicker.py
     examples/kicker/analysis_kicker.py
     OFF  # no plot script yet
 )
+# more grids than MPI ranks: each rank owns two grids
+add_impactx_test(kicker-grids.py
+    examples/kicker/run_kicker_grids.py
+    ON   # ImpactX MPI-parallel
+    examples/kicker/analysis_kicker.py
+    OFF  # no plot script yet
+)
 # copy MAD-X lattice file
 file(COPY ${ImpactX_SOURCE_DIR}/examples/kicker/kicker.madx
         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kicker_madx.py)
@@ -2243,3 +2250,55 @@ add_impactx_test(expanding-2d-acc.py
     OFF  # analysis in situ in run script
     OFF  # no plot script yet
 )
+
+# Momentum Kick in the 1D Steady-State CSR Model ###########
+if(ImpactX_FFT)
+    add_impactx_test(csr-kick
+        examples/wake_csr_kick/input_csr_kick.in
+        ON    # ImpactX MPI-parallel
+        examples/wake_csr_kick/analysis_csr_kick.py
+        examples/wake_csr_kick/plot_csr_kick.py
+    )
+    add_impactx_test(csr-kick.py
+        examples/wake_csr_kick/run_csr_kick.py
+        ON    # ImpactX MPI-parallel
+        examples/wake_csr_kick/analysis_csr_kick.py
+        examples/wake_csr_kick/plot_csr_kick.py
+    )
+endif()
+
+# Benchmark of linear dipole fringe field map #################################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/edge_effects/dipedge.madx
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dipedge-linear-map.py)
+add_impactx_test(dipedge-linear-map.py
+    examples/edge_effects/run_dipedge_linear_map.py
+    ON    # ImpactX MPI-parallel
+    examples/edge_effects/analysis_dipedge_linear_map.py
+    OFF  # no plot script yet
+)
+
+# Momentum Kick in a 1D User-Specified Longitudinal Wake Model ###########
+if(ImpactX_FFT)
+# copy on-axis RF cavity field data
+file(COPY ${ImpactX_SOURCE_DIR}/examples/wake_csr_kick/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/user-wake-kick.py)
+        add_impactx_test(user-wake-kick.py
+        examples/wake_csr_kick/run_user_wake_kick.py
+        ON    # ImpactX MPI-parallel
+        examples/wake_csr_kick/analysis_user_wake_kick.py
+        examples/wake_csr_kick/plot_user_wake_kick.py
+    )
+endif()
+
+# Acceleration by RF Cavities with Space Charge and Wakefields ###########
+if(ImpactX_FFT)
+    file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-wake-sc.MPI.py)
+    add_impactx_test(rfcavity-wake-sc.MPI.py
+        examples/rfcavity/run_rfcavity_wake_sc.py
+        ON   # ImpactX MPI-parallel
+        examples/rfcavity/analysis_rfcavity_wake_sc.py
+        OFF  # no plot script yet
+    )
+    label_impactx_test(rfcavity-wake-sc.MPI.py slow)
+endif()

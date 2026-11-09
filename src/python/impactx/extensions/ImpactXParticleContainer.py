@@ -6,10 +6,17 @@ Authors: Axel Huebl
 License: BSD-3-Clause-LBNL
 """
 
+from contextlib import contextmanager
+
+from ..impactx_pybind import CoordSystem, coordinate_transformation
+
 
 def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     """
     Plot the longitudinal and transverse phase space projections with matplotlib.
+
+    The histograms show the magnitude of the charge per bin. A beam without charge,
+    e.g., of zero-weight test particles, shows its number of macroparticles per bin.
 
     Parameters
     ----------
@@ -24,7 +31,25 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     -------
     A matplotlib figure with containing the plot.
     For MPI-parallel ranks, the figure is only created on the root_rank.
+
+    Raises
+    ------
+    RuntimeError
+        If the particles are not at fixed s, or the beam has no particles.
     """
+    if self.coord_system != CoordSystem.s:
+        raise RuntimeError(
+            "plot_phasespace: the particles must be at fixed s, "
+            f"but are at {self.coord_system}."
+        )
+
+    # on all MPI ranks: a rank without particles still plots the others
+    if self.total_number_of_particles() == 0:
+        raise RuntimeError(
+            "plot_phasespace: the beam has no particles: "
+            "none were added yet, or all of them are lost."
+        )
+
     import matplotlib.pyplot as plt
     import numpy as np
     from quantiphy import Quantity
@@ -38,6 +63,10 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
 
     # Data Histogramming
     df = self.to_df(local=True)
+
+    # a beam without charge would show nothing: count its macroparticles instead
+    has_charge = rbc["charge_C"] != 0.0
+    hist_label = r"$|Q|$ [C/bin]" if has_charge else "macroparticles/bin"
 
     # calculate local histograms
     if df is None:
@@ -70,9 +99,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             )
         )
         t_edges = np.linspace(rbc["min_t"] * m2mm, rbc["max_t"] * m2mm, num_bins + 1)
-        pt_edges = np.linspace(
-            rbc["min_pt"] * rad2mrad, rbc["max_pt"] * rad2mrad, num_bins + 1
-        )
+        pt_edges = np.linspace(rbc["min_pt"], rbc["max_pt"], num_bins + 1)
     else:
         # update for plot unit system
         # TODO: normalize to t/z to um and mc depending on s or t
@@ -82,7 +109,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
 
         df.momentum_x = df.momentum_x.multiply(rad2mrad)
         df.momentum_y = df.momentum_y.multiply(rad2mrad)
-        df.momentum_t = df.momentum_t.multiply(rad2mrad)
+
+        # the magnitude keeps the density positive for negative charges
+        weights = abs(self.ref.charge) * df["weighting"] if has_charge else None
 
         xpx, x_edges, px_edges = np.histogram2d(
             df["position_x"],
@@ -92,6 +121,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
                 [rbc["min_x"] * m2mm, rbc["max_x"] * m2mm],
                 [rbc["min_px"] * rad2mrad, rbc["max_px"] * rad2mrad],
             ],
+            weights=weights,
         )
 
         ypy, y_edges, py_edges = np.histogram2d(
@@ -102,6 +132,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
                 [rbc["min_y"] * m2mm, rbc["max_y"] * m2mm],
                 [rbc["min_py"] * rad2mrad, rbc["max_py"] * rad2mrad],
             ],
+            weights=weights,
         )
 
         tpt, t_edges, pt_edges = np.histogram2d(
@@ -110,8 +141,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             bins=num_bins,
             range=[
                 [rbc["min_t"] * m2mm, rbc["max_t"] * m2mm],
-                [rbc["min_pt"] * rad2mrad, rbc["max_pt"] * rad2mrad],
+                [rbc["min_pt"], rbc["max_pt"]],
             ],
+            weights=weights,
         )
 
     # MPI reduce
@@ -226,27 +258,27 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     fig.canvas.manager.set_window_title("Phase Space")
     ax_xpx.set_xlabel(r"$\Delta x$ [mm]")
     ax_xpx.set_ylabel(r"$\Delta p_x$ [mrad]")
-    cbar_xpx.set_label(r"$Q$ [C/bin]")
+    cbar_xpx.set_label(hist_label)
     # ax_x.patch.set_alpha(0)
     ax_x.set_yticks([])
     ax_px.set_xticks([])
 
     ax_ypy.set_xlabel(r"$\Delta y$ [mm]")
     ax_ypy.set_ylabel(r"$\Delta p_y$ [mrad]")
-    cbar_ypy.set_label(r"$Q$ [C/bin]")
+    cbar_ypy.set_label(hist_label)
     ax_y.set_yticks([])
     ax_py.set_xticks([])
 
     # TODO: update depending on s or t
     ax_tpt.set_xlabel(r"$\Delta ct$ [mm]")
     ax_tpt.set_ylabel(r"$\Delta p_t$ [$p_0\cdot c$]")
-    cbar_tpt.set_label(r"$Q$ [C/bin]")
+    cbar_tpt.set_label(hist_label)
     ax_t.set_yticks([])
     ax_pt.set_xticks([])
 
     leg = ax_xpx.legend(
         title=r"$\epsilon_{n,x}=$"
-        f"{Quantity(rbc['emittance_x'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_xn'], 'm'):.3}\n"
         rf"$\sigma_x=${Quantity(rbc['sig_x'], 'm'):.3}"
         "\n"
         rf"$\beta_x=${Quantity(rbc['beta_x'], 'm'):.3}"
@@ -259,7 +291,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     leg._legend_box.sep = 0
     leg = ax_ypy.legend(
         title=r"$\epsilon_{n,y}=$"
-        f"{Quantity(rbc['emittance_y'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_yn'], 'm'):.3}\n"
         rf"$\sigma_y=${Quantity(rbc['sig_y'], 'm'):.3}"
         "\n"
         rf"$\beta_y=${Quantity(rbc['beta_y'], 'm'):.3}"
@@ -272,7 +304,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     leg._legend_box.sep = 0
     leg = ax_tpt.legend(
         title=r"$\epsilon_{n,t}=$"
-        f"{Quantity(rbc['emittance_t'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_tn'], 'm'):.3}\n"
         r"$\sigma_{ct}=$"
         f"{Quantity(rbc['sig_t'], 'm'):.3}\n"
         r"$\sigma_{pt}=$"
@@ -327,7 +359,7 @@ def ix_pc_add_n_particles(
     self, x, y, t, px, py, pt, qm, bunch_charge=None, w=None, sx=None, sy=None, sz=None
 ):
     """
-    Add new particles to the container for fixed s.
+    Add new particles to the container.
 
     The coordinate and weight arguments accept NumPy or CuPy arrays (or
     array-likes), as well as pyAMReX ``PODVector`` objects. Inputs are copied
@@ -335,6 +367,9 @@ def ix_pc_add_n_particles(
 
     Either the total charge (``bunch_charge``) or the weight of each particle
     (``w``) must be provided.
+    With ``bunch_charge``, each particle represents the same number of real
+    particles with the charge of the reference particle, which must be set up
+    before.
 
     Note: This can only be used *after* the grids have been created, i.e. after
     ``ImpactX.init_grids`` has been called.
@@ -342,11 +377,19 @@ def ix_pc_add_n_particles(
     Parameters
     ----------
     x, y, t, px, py, pt : array_like
-        Particle positions (x, y, time-of-flight c*t) and momenta.
+        Particle coordinates, relative to the reference particle.
+        ``x`` and ``y`` are positions in m, ``px`` and ``py`` are momenta
+        normalized by the reference momentum (unitless).
+        At fixed s (the default), ``t`` is the time-of-flight c*t in m and
+        ``pt`` is the energy deviation p_t = -Delta(gamma)/(beta_0 gamma_0)
+        (unitless).
+        Inside a ``beam.at_fixed_t()`` block, ``t`` takes the position z in m
+        and ``pt`` takes the momentum deviation
+        p_z = Delta(beta_z gamma)/(beta_0 gamma_0) (unitless).
     qm : float
         Charge over mass in 1/eV.
     bunch_charge : float, optional
-        Total charge within a bunch in C.
+        Magnitude of the total charge of the particles added in this call in C.
     w : array_like, optional
         Weight of each particle: how many real particles to represent.
     sx, sy, sz : array_like, optional
@@ -368,9 +411,83 @@ def ix_pc_add_n_particles(
     )
 
 
+@contextmanager
+def ix_pc_at_fixed_t(self):
+    """
+    Temporarily represent the beam at fixed t, e.g., to exchange particles with a code
+    that uses time as the independent variable.
+
+    On entry, the particle coordinates are transformed from fixed s to fixed t.
+    When the ``with`` block is left, normally or through an exception, they are
+    transformed back to fixed s.
+
+    Inside the block, the particle arrays hold ``x, y, z, px, py, pz`` instead of
+    ``x, y, t, px, py, pt``: ``z`` is the longitudinal position relative to the
+    reference particle, in meters, ``px, py`` are the transverse momenta and ``pz``
+    is the deviation from the reference momentum, all normalized by the reference
+    momentum.
+    The arrays are named accordingly: ``position_z`` and ``momentum_z`` replace
+    ``position_t`` and ``momentum_t``.
+    The arguments of ``add_n_particles`` keep their names ``t`` and ``pt``; inside the
+    block, they take ``z`` and ``pz``.
+
+    Both transformations take the design energy from ``self.ref.pt`` at the moment
+    they run: the one on entry uses the reference particle as it is when the block
+    starts, the one on exit uses the reference particle as it is when the block ends.
+    If the block changes the reference energy, it must also write the particle
+    coordinates relative to the new reference particle before the block ends.
+    Only ``ref.pt`` is read, so update it (e.g., with ``ref.set_kin_energy_MeV``)
+    rather than ``ref.pz`` alone.
+
+    Parameters
+    ----------
+    self : ImpactXParticleContainer
+        The particle container; its particles must be at fixed s.
+
+    Yields
+    ------
+    ImpactXParticleContainer
+        The same particle container, now at fixed t.
+
+    Raises
+    ------
+    RuntimeError
+        If the particles are not at fixed s on entry, or no longer at fixed t
+        when the block ends without an exception.
+
+    Examples
+    --------
+    >>> with sim.beam.at_fixed_t() as beam:
+    ...     beam.add_n_particles(x, y, z, px, py, pz, qm, bunch_charge=charge_C)
+    """
+    if self.coord_system != CoordSystem.s:
+        raise RuntimeError(
+            "at_fixed_t: the particles must be at fixed s when entering the block, "
+            f"but are at {self.coord_system}."
+        )
+
+    coordinate_transformation(self, CoordSystem.t)
+    try:
+        yield self
+    except BaseException:
+        # keep the original exception; only restore fixed s if it is still possible
+        if self.coord_system == CoordSystem.t:
+            coordinate_transformation(self, CoordSystem.s)
+        raise
+
+    if self.coord_system != CoordSystem.t:
+        raise RuntimeError(
+            "at_fixed_t: the particles were transformed out of fixed t inside the "
+            "block. Do not call coordinate_transformation inside the block: leaving "
+            "the block transforms the particles back to fixed s."
+        )
+    coordinate_transformation(self, CoordSystem.s)
+
+
 def register_ImpactXParticleContainer_extension(ixpc):
     """ImpactXParticleContainer helper methods"""
     # register member functions for ImpactXParticleContainer
     ixpc.plot_phasespace = ix_pc_plot_mpl_phasespace
     ixpc.beam_moments_history = ix_beam_moments_history
     ixpc.add_n_particles = ix_pc_add_n_particles
+    ixpc.at_fixed_t = ix_pc_at_fixed_t

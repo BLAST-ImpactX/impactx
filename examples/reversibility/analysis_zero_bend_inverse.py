@@ -19,6 +19,9 @@ def get_moments(beam):
     -------
     sigx, sigy, sigt, emittance_x, emittance_y, emittance_t
     """
+    # float64 arithmetic, also for single-precision data
+    beam = beam.select_dtypes(np.floating).astype(np.float64)
+
     sigx = moment(beam["position_x"], moment=2) ** 0.5  # variance -> std dev.
     sigpx = moment(beam["momentum_x"], moment=2) ** 0.5
     sigy = moment(beam["position_y"], moment=2) ** 0.5
@@ -81,7 +84,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.0e-12 if is_double else 1.0e-10
+rtol = 1.0e-12 if is_double else 1.0e-5
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

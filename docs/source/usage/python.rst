@@ -128,7 +128,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge_gauss_charge_z_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``129``).  Used by the Gauss2p5D space charge model.
+      Number of bins (grid points) for longitudinal charge density deposition, at least ``2`` (default: ``129``).  Used by the Gauss2p5D space charge model.
 
    .. py:property:: space_charge_gauss_long_scale
 
@@ -144,7 +144,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge_num_longitudinal_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``100``).  Used by the 2p5D space charge model.
+      Number of bins (grid points) for longitudinal charge density deposition, at least ``2`` (default: ``100``).  Used by the 2p5D space charge model.
 
    .. py:property:: space_charge_apply_longitudinal_kick
 
@@ -216,7 +216,28 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr_bins
 
-      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the CSR calculations, at least ``2`` (default: ``150``).
+
+   .. py:property:: short_range_wakefields
+
+      Enable (``True``) or disable (``False``) Short-range wakefield calculations (default: ``False``).
+
+      Currently, this uses a 1D model based on user-specified tabulated single-particle wake functions.
+
+      .. note::
+
+         Short-range wakefield effects are only calculated for ``RFCavity`` elements, and only for the longitudinal wake.
+
+         Short-range wakefield effects are only supported with particle tracking: ``track_envelope`` and ``track_reference`` raise a ``RuntimeError``.
+
+         Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
+
+   .. py:property:: wake_bins
+
+      The number of bins along the longitudinal direction used for the short-range wakefield calculations, at least ``2`` (default: ``150``).
+
+      The wakefield is sampled on the bin edges only, so a bin has to be short against the shortest length scale of the wakefield, which is not checked.
+      Coarser bins overestimate the kick of a wakefield that decays with the separation.
 
    .. py:property:: isr
 
@@ -251,17 +272,22 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: particle_bc
 
       The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference
-      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.
+      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``
+      (see :py:meth:`~impactx.ParticleContainer.set_bucket_length`).
+
+      The boundary condition acts on the particle coordinate :math:`t` (:math:`c\,\Delta t`, in m) and is applied at the end of each slice.
+      A bucket of length :math:`L` (``bucket_length``) spans :math:`L/\beta_0` in :math:`t`, where :math:`\beta_0` is the normalized velocity of the reference particle at that slice:
+      The domain is centered on the reference particle and extends to :math:`t = \pm L/(2\beta_0)`.
 
       Options:
 
       * ``"open"`` (default): no action is applied at the boundary.
 
-      * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+      * ``"periodic"``: each particle's coordinate :math:`t` is treated modulo :math:`L/\beta_0` (phase wrapping).
 
-      * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+      * ``"absorbing"``: a particle whose coordinate :math:`t` falls outside the domain is declared lost.
 
-      * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+      * ``"reflecting"``: a particle whose coordinate :math:`t` crosses the boundary of the domain is reflected about that boundary, with reversed longitudinal momentum.
 
         .. note::
 
@@ -642,10 +668,15 @@ For step-by-step recipes on how to access particle data live during a simulation
 
    .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bunch_charge=None, w=None, sx=None, sy=None, sz=None)
 
-      Add new particles to the container for fixed s.
+      Add new particles to the container.
+
+      Positions are in meters and momenta are normalized by the reference momentum (unitless), all relative to the reference particle (see :ref:`theory-coordinates-and-units`).
+      At fixed :math:`s` (the default), ``t`` and ``pt`` are the time-of-flight :math:`c\,t` and the energy deviation :math:`p_t = -\Delta\gamma/(\beta_0\gamma_0)`.
+      Inside an :py:meth:`at_fixed_t` block, they take the position :math:`z` and the momentum deviation :math:`p_z = \Delta(\beta_z\gamma)/(\beta_0\gamma_0)` instead.
 
       Either the charge (bunch_charge) of the particles added in this call, or the weight of each
       particle (w) must be provided.
+      With ``bunch_charge``, each particle represents the same number of real particles with the charge of the reference particle, which must be set up before.
 
       .. note::
 
@@ -665,16 +696,43 @@ For step-by-step recipes on how to access particle data live during a simulation
 
       :param x: positions in x
       :param y: positions in y
-      :param t: positions as time-of-flight in c*t
+      :param t: time-of-flight :math:`c\,t` in m (at fixed :math:`s`) or position :math:`z` in m (at fixed :math:`t`)
       :param px: momentum in x
       :param py: momentum in y
-      :param pt: momentum in t
+      :param pt: energy deviation :math:`p_t` (at fixed :math:`s`) or momentum deviation :math:`p_z` (at fixed :math:`t`), unitless
       :param qm: charge over mass in 1/eV
-      :param bunch_charge: total charge within a bunch in C
-      :param w: weight of each particle: the macroparticle charge in units of the elementary charge `e` (i.e., how many real particles to represent)
+      :param bunch_charge: magnitude of the total charge of the particles added in this call in C
+      :param w: weight of each particle: how many real particles to represent
       :param sx: spin component in x (optional; if provided, sy and sz must also be provided)
       :param sy: spin component in y (optional; if provided, sx and sz must also be provided)
       :param sz: spin component in z (optional; if provided, sx and sy must also be provided)
+
+   .. py:property:: coord_system
+
+      The coordinate system the particle data is currently in: :py:class:`impactx.CoordSystem` ``s`` (default) or ``t``.
+      The longitudinal attributes are named after it: ``position_t`` and ``momentum_t`` at fixed :math:`s`, ``position_z`` and ``momentum_z`` at fixed :math:`t`.
+
+   .. py:method:: at_fixed_t()
+
+      Context manager that represents the particles at fixed :math:`t` inside a ``with`` block.
+
+      On entry, the particles are transformed from fixed :math:`s` to fixed :math:`t`.
+      When the block ends, normally or through an exception, they are transformed back to fixed :math:`s`.
+      Inside the block, the attributes ``position_z`` and ``momentum_z`` replace ``position_t`` and ``momentum_t`` and hold :math:`z` and :math:`p_z`.
+      The ``t`` and ``pt`` arguments of :py:meth:`add_n_particles` keep their names and take :math:`z` and :math:`p_z` inside the block.
+
+      The transformation to fixed :math:`t` uses the reference energy ``ref.pt`` as the block starts, the transformation back to fixed :math:`s` uses ``ref.pt`` as the block ends.
+      A block that changes the reference energy must write the particle coordinates relative to the updated reference particle.
+
+      .. code-block:: python
+
+         with sim.beam.at_fixed_t() as beam:
+             ...  # read, modify or add particles at fixed t
+
+      See :ref:`usage-howto-python-particle-data-fixed-t` for details.
+
+      :return: this particle container, at fixed :math:`t` inside the block
+      :raises RuntimeError: if the particles are not at fixed :math:`s` on entry (blocks cannot be nested), or if they were transformed out of fixed :math:`t` inside the block
 
    .. py:method:: ref_particle()
 
@@ -696,7 +754,7 @@ For step-by-step recipes on how to access particle data live during a simulation
 
    .. py:method:: set_bucket_length(bucket_length)
 
-      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions.
+      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions (see :py:attr:`~impactx.ImpactX.particle_bc`).
 
       :param bucket_length: length of the longitudinal particle domain in m
 
@@ -1008,6 +1066,15 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
 
    A 6D stationary thermal or bithermal distribution.
 
+   .. py:method:: radial_cdf(bunch_charge, ref)
+
+      Tabulated radial cumulative distribution functions (CDFs) that the particle radius is sampled from, on uniform bins in radius.
+      A population with zero weight is never sampled and its table is zero.
+
+      :param bunch_charge: bunch charge (C)
+      :param ref: the reference particle
+      :return: the radius in the beam rest frame (m), and the core and halo CDF at this radius, as a tuple of three lists
+
 Initial Beam Spin Distribution
 ------------------------------
 
@@ -1023,9 +1090,12 @@ Initial Beam Spin Distribution
    - K. V. Mardia and P. E. Jupp, Directional Statistics, Wiley, 1999;
    - S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat. and Comput. 34, 106 (2024), `DOI:10.1007/s11222-024-10419-3 <https://doi.org/10.1007/s11222-024-10419-3>`__
 
-   :param mux: x component of the unit vector specifying the mean direction
-   :param muy: y component of the unit vector specifying the mean direction
-   :param muz: z component of the unit vector specifying the mean direction
+   The polarization vector ``(mux, muy, muz)`` must lie within the unit ball: its direction is the mean spin direction and its magnitude is the degree of polarization.
+   A zero vector describes an unpolarized beam, with spins uniformly distributed on the unit sphere.
+
+   :param mux: x component of the polarization vector
+   :param muy: y component of the polarization vector
+   :param muz: z component of the polarization vector
 
 
 Lattice
@@ -1204,9 +1274,7 @@ This module provides elements and methods for the accelerator lattice.
       reference energy that the MAD-X ``BEAM`` command declares.
       Changing the reference energy after the import does not rescale it, and the
       reader warns when it applies this translation.
-      Only an ``ENERGY`` that the file actually states is used for this: MAD-X
-      defaults it to 1 GeV, so a lattice whose ``BEAM`` command omits it keeps
-      ``Sol`` at every floor rather than converting against an assumed energy.
+      Only a stated energy (``ENERGY``, ``PC``, ``GAMMA``, ``BETA`` or ``BRHO``) is used: MAD-X defaults it to 1 GeV, so a lattice without one keeps ``Sol`` at every floor.
 
       Elements that MAD-X itself defines as thin (``MULTIPOLE``, ``KICKER``,
       ``RFCAVITY``, ``NLLENS``) and structural elements (``MARKER``, apertures,
@@ -1915,7 +1983,13 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    Edge focusing associated with bend entry or exit
 
-   The model here is based on:
+   If ``model = "linear_slac75"``, then the model is given by the linear part of the map described in:
+
+   * K. L. Brown, SLAC Report No. 75 (1982)
+
+   which coincides with the dipole edge focusing model in MAD-X.
+
+   If ``model = "nonlinear_hwang_lee"``, then the model is given by:
 
    * K. Hwang and S. Y. Lee, PRAB 18, 122401 (2015).
 
@@ -1924,17 +1998,14 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    * C. Mitchell and K. Hwang, in Proc. NAPAC2025, TUP040, Sacramento, CA (2025).
 
    Here, ``g`` denotes the magnetic gap, which is a length scale that sets the rate of decay of the fringe field.  The values ``K0`` - ``K6`` denote
-   dimensionless field integrals, describing the shape of the fringe field, as defined in eqs. (28-34) of the first reference above.  In
+   dimensionless field integrals, describing the shape of the fringe field, as defined in eqs. (28-34) of Hwang & Lee PRAB 18.  In
    particular, ``K2`` is the well-known fringe field parameter denoted ``FINT`` in MAD-X.  The default values of the field integrals ``K0`` - ``K6`` are
-   those given in eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
+   those given in Hwang & Lee PRAB 18, eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
 
-   When ``model = "linear"``, the linearized map is used.  This model is identical to:
+   If ``model = "linear_hwang_lee"``, then the model is given by the linearization of this map.  In this case, the values ``K0=K1=K5=0`` are assumed.  This enforces zero centroid offset and ensures the correct bend angle.
+   This is identical to the linear model in K. L. Brown when expanded to first order in ``g/rc`` (gap / radius of curvature).
 
-   * K. L. Brown, SLAC Report No. 75 (1982)
-
-   when expanded to first order in ``g/rc`` (gap / radius of curvature).
-
-   By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
+   Note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
    the corresponding default value of ``K2`` is set to 1).
 
    Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference
@@ -1958,7 +2029,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param K4: Fringe field integral [unitless]
    :param K5: Fringe field integral [unitless]
    :param K6: Fringe field integral [unitless]
-   :param model: the fringe field model: ``linear`` (default) or ``nonlinear``
+   :param model: the fringe field model: ``linear_slac75`` (default), ``nonlinear_hwang_lee``, or ``linear_hwang_lee``
    :param location: the fringe field edge location: ``entry`` (default) or ``exit``
    :param modify_ref_part: apply fringe field to the reference particle ``True`` or ``False`` (default)
    :param dx: horizontal translation error [m]
@@ -2057,7 +2128,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    A general thin multipole element.
 
-   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
+   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc., up to m=13)
    :param K_normal: Integrated normal multipole coefficient (meter^(-m+1))
                     = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
    :param K_skew: Integrated skew multipole coefficient (meter^(-m+1))
@@ -2071,7 +2142,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 .. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (m=5).
    The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
    For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
@@ -2119,7 +2190,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 .. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order m=12.
    The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
    The coefficients must appear in the following sequence:
 
@@ -2526,7 +2597,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, z_data=None, wake_x_data=None, wake_y_data=None, wake_z_data=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -2551,6 +2622,10 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
    :param field_on_axis: array of on-axis electric field Ez values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
+   :param z_data: optional longitudinal positions of the single-particle wake function in m, ascending from 0 in uniform steps; other positions are not yet implemented and raise a ``RuntimeError``; the wake function is zero beyond the last position
+   :param wake_x_data: optional horizontal single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_y_data: optional vertical single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_z_data: optional longitudinal single-particle wake function data in V/(C m), positive where it decelerates a trailing particle
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -2897,12 +2972,12 @@ Each lattice element provides a ``.to_dict()`` method, which can be used to seri
 Coordinate Transformation
 -------------------------
 
-.. py:class:: impactx.TransformationDirection
+.. py:class:: impactx.CoordSystem
 
-   Enumerated type indicating whether to transform to fixed :math:`s` or fixed :math:`t` coordinate system when applying ``impactx.coordinate_transformation``.
+   Enumerated type for the coordinate system of particle data: the independent variable is either the position :math:`s` or the time :math:`t`.
 
-   :param to_fixed_t:
-   :param to_fixed_s:
+   :param s: fixed :math:`s` (the ImpactX default)
+   :param t: fixed :math:`t`
 
 .. py:function:: impactx.push(pc, element, step=0, period=0)
 
@@ -2927,7 +3002,11 @@ Coordinate Transformation
 
 .. py:function:: impactx.coordinate_transformation(pc, direction)
 
-   Function to transform the coordinates of the particles in a particle container either to fixed :math:`t` or to fixed :math:`s`.
+   Transform the coordinates of the particles in a particle container either to fixed :math:`t` or to fixed :math:`s`.
+   Both directions take the reference energy from ``pc.ref.pt`` at the time of the call.
+   The longitudinal attributes are renamed accordingly, see :py:attr:`impactx.ParticleContainer.coord_system`.
 
-   :param pc: ``impactx.particle_container`` whose particle coordinates are to be transformed.
-   :param direction: enumerated type ``impactx.TransformationDirection``, indicates whether to transform to fixed :math:`s` or fixed :math:`t`.
+   Prefer :py:meth:`impactx.ParticleContainer.at_fixed_t`, which pairs both transformations and restores fixed :math:`s` if an exception is raised.
+
+   :param pc: :py:class:`impactx.ParticleContainer` whose particle coordinates are to be transformed.
+   :param direction: :py:class:`impactx.CoordSystem` to transform to; must differ from ``pc.coord_system``.

@@ -14,7 +14,6 @@
 #include "diagnostics/ReducedBeamCharacteristics.H"
 #include "particles/SplitEqually.H"
 
-#include <ablastr/constant.H>
 #include <ablastr/particles/ParticleMoments.H>
 #include <ablastr/warn_manager/WarnManager.H>
 
@@ -26,6 +25,7 @@
 #include <AMReX_Particle.H>
 
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <stdexcept>
 #include <sstream>
@@ -139,7 +139,7 @@ namespace impactx
     {
         // make sure we have at least one box with enough tiles for each OpenMP thread
 
-        // make sure level 0, grid 0 exists
+        // make sure this MPI rank owns a grid on level 0: the first one is used below
         int lid = 0, gid = 0;
         {
             const auto& pmap = ParticleDistributionMap(lid).ProcessorMap();
@@ -147,7 +147,7 @@ namespace impactx
             if (it == std::end(pmap)) {
                 amrex::Abort("Particle container needs to have at least one grid.");
             } else {
-                gid = *it;
+                gid = static_cast<int>(std::distance(pmap.begin(), it));
             }
         }
 
@@ -163,9 +163,9 @@ namespace impactx
         );
 
         // When running without space charge and OpenMP parallelization,
-        // we need to make sure we have enough tiles on level 0, grid 0
+        // we need to make sure we have enough tiles on the first grid of this rank
         // to thread over the available tiles. We try to set the tile_size
-        // appropriately here. We start by setting the tile_size to the size of box 0.
+        // appropriately here. We start by setting the tile_size to the size of this grid.
         // Then we try to reduce the tile size in the (z, y, x) directions alternately
         // until there are enough tiles for the number of threads.
 
@@ -273,6 +273,21 @@ namespace impactx
         {
             throw std::runtime_error("AddNParticles: Exactly one of bunch_charge or w must be provided!");
         }
+        if (bunch_charge.has_value() && bunch_charge.value() < 0.0_prt)
+        {
+            throw std::runtime_error("AddNParticles: The bunch_charge is a magnitude and must not "
+                                     "be negative. The sign of the charge is the one of the "
+                                     "reference particle.");
+        }
+        // a bunch charge of zero adds particles of zero weight, e.g., test particles, and needs
+        // no reference particle charge
+        bool const zero_bunch_charge = bunch_charge.has_value() && bunch_charge.value() == 0.0_prt;
+        if (bunch_charge.has_value() && !zero_bunch_charge && m_refpart.charge == 0.0_prt)
+        {
+            throw std::runtime_error("AddNParticles: The reference particle charge is zero. "
+                                     "Set up the reference particle before adding particles "
+                                     "with a bunch_charge.");
+        }
 
         bool const has_spin = sx.has_value();
 
@@ -289,7 +304,15 @@ namespace impactx
         }
         if (has_w) { AMREX_ALWAYS_ASSERT(np_s == w->size()); }
 
-        // we add particles to lev 0, grid 0
+        // nothing to add, e.g., on MPI ranks that got no particles of a distribution
+        if (np_s == 0) { return; }
+
+        // weight from the bunch charge: the number of real particles of the reference charge
+        amrex::ParticleReal const w_from_bunch_charge = (has_w || zero_bunch_charge) ? 0_prt :
+            bunch_charge.value() / std::abs(m_refpart.charge)
+            / static_cast<amrex::ParticleReal>(np_s);
+
+        // we add particles to lev 0, to the first grid of this MPI rank
         int lid = 0, gid = 0;
         {
             const auto& pmap = ParticleDistributionMap(lid).ProcessorMap();
@@ -297,7 +320,7 @@ namespace impactx
             if (it == std::end(pmap)) {
                 throw std::runtime_error("AddNParticles: Attempting to add particles to box that does not exist.");
             } else {
-                gid = *it;
+                gid = static_cast<int>(std::distance(pmap.begin(), it));
             }
         }
 
@@ -374,7 +397,6 @@ namespace impactx
             amrex::ParticleReal const * const AMREX_RESTRICT sy_ptr = has_spin ? sy.value().data() : nullptr;
             amrex::ParticleReal const * const AMREX_RESTRICT sz_ptr = has_spin ? sz.value().data() : nullptr;
             amrex::ParticleReal const * const AMREX_RESTRICT w_ptr = has_w ? w->data() : nullptr;
-            amrex::ParticleReal const bunch_charge_value = has_w ? 0_prt : bunch_charge.value();
 
             amrex::ParallelFor(num_to_add,
                 [=] AMREX_GPU_DEVICE (amrex::Long i) noexcept
@@ -400,7 +422,7 @@ namespace impactx
                 }
 
                 qm_arr[old_np+i] = qm;
-                w_arr[old_np+i]  = has_w ? w_ptr[my_offset+i] : bunch_charge_value / ablastr::constant::SI::q_e/np;
+                w_arr[old_np+i]  = has_w ? w_ptr[my_offset+i] : w_from_bunch_charge;
             });
         }
 
@@ -459,6 +481,19 @@ namespace impactx
     ImpactXParticleContainer::SetCoordSystem (CoordSystem coord_system)
     {
         m_coordsystem = coord_system;
+
+        // name the components after the coordinates they hold: t, pt at fixed s and z, pz at fixed t
+        if (coord_system == CoordSystem::s) {
+            SetSoACompileTimeNames(
+                {RealSoA::names_s.begin(), RealSoA::names_s.end()},
+                {IntSoA::names_s.begin(), IntSoA::names_s.end()}
+            );
+        } else {
+            SetSoACompileTimeNames(
+                {RealSoA::names_t.begin(), RealSoA::names_t.end()},
+                {IntSoA::names_t.begin(), IntSoA::names_t.end()}
+            );
+        }
     }
 
     void

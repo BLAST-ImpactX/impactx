@@ -108,15 +108,16 @@ namespace impactx::initialization
             amrex::RandomEngine const & engine
         ) const
         {
-            m_distribution(
-                m_part_x[i],
-                m_part_y[i],
-                m_part_t[i],
-                m_part_px[i],
-                m_part_py[i],
-                m_part_pt[i],
-                engine
-            );
+            // sample in registers and write each coordinate once
+            amrex::ParticleReal x, y, t, px, py, pt;
+            m_distribution(x, y, t, px, py, pt, engine);
+
+            m_part_x[i] = x;
+            m_part_y[i] = y;
+            m_part_t[i] = t;
+            m_part_px[i] = px;
+            m_part_py[i] = py;
+            m_part_pt[i] = pt;
         }
 
     private:

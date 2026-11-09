@@ -89,6 +89,16 @@ namespace impactx
             );
         }
 
+        bool short_range_wakefields = false;
+        pp_algo.query("short_range_wakefields", short_range_wakefields);
+        if (short_range_wakefields)
+        {
+            throw std::runtime_error(
+                "Short-range wakefields cannot be modeled for single particle tracking. "
+                "Please set the short_range_wakefields option to false."
+            );
+        }
+
         // the external-field transport map ``M`` of one element slice
         auto element_push = [&ref] (
             elements::ElementHandle & element_variant,

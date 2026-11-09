@@ -18,7 +18,7 @@ from .element_models import (
     tier_rank,
     validate_model,
 )
-from .MADXParser import MADXParser
+from .MADXParser import MADXInputError, MADXParser
 
 # Single-shape mapping from MAD-X APERTYPE to ImpactX Aperture.shape.
 # Edit this table first when adding support for new MAD-X aperture types.
@@ -42,6 +42,27 @@ class MADXImpactXTranslatorWarning(UserWarning):
 def _warn(message: str):
     """Emit a translation warning without mutating process-wide warning formatting."""
     warnings.warn(message, MADXImpactXTranslatorWarning, stacklevel=2)
+
+
+def _beam_summary(madx_beam) -> str:
+    """Describe a MAD-X beam for an error or warning."""
+    return (
+        f"mass {madx_beam.mass} GeV, charge {madx_beam.charge}, "
+        f"total energy {madx_beam.energy} GeV"
+    )
+
+
+def _require_finite_attributes(element: dict):
+    """Stop on a NaN or infinite attribute, as of `L=SQRT(-1)`, of an element in use.
+
+    MAD-X carries it along, but the translation below would treat it like zero.
+    """
+    for attr, value in element.items():
+        for item in value if isinstance(value, (list, tuple)) else (value,):
+            if isinstance(item, float) and not math.isfinite(item):
+                raise MADXInputError(
+                    f"MAD-X element '{element.get('name')}': {attr.upper()} is not finite"
+                )
 
 
 class sc:
@@ -527,11 +548,13 @@ def lattice(
 
     def normalized_rf_voltage(volt_MV):
         """Convert MAD-X VOLT [MV] to ImpactX ShortRF normalized voltage."""
+        if volt_MV == 0.0:
+            return 0.0
         if ref_mass_MeV is None or ref_mass_MeV <= 0.0:
-            _warn(
-                "RFCAVITY reference particle mass is unavailable; using unnormalized MAD-X VOLT value as a fallback."
+            raise MADXInputError(
+                f"RFCAVITY with VOLT={volt_MV} needs the mass of the reference "
+                "particle, from a valid BEAM command."
             )
-            return volt_MV
         return volt_MV / ref_mass_MeV
 
     def make_bend_body_element(
@@ -676,6 +699,7 @@ def lattice(
             )
 
     for d_raw in parsed_beamline:
+        _require_finite_attributes(d_raw)
         d = _TrackedElement(d_raw)
         # print(d)
         if d["type"] in supported_madx_element_types:
@@ -1578,17 +1602,27 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
     """
     madx = MADXParser()
     madx.parse(madx_file)
+    has_use_command = madx.context.selected_sequence is not None
     beamline = madx.getBeamline(line_name=line, sequence_name=sequence)
     freq0 = madx.getFreq0()
-    if getattr(madx.context.beam, "mass", 0.0) > 0.0:
-        ref_mass_MeV = madx.context.beam.mass * 1.0e3
-    else:
-        ref_mass_MeV = beam(
-            madx.getParticle(),
-            charge=getattr(madx.context.beam, "charge", None),
-            mass=None,
-            energy=float(madx.getEtot()),
-        )["mass"]
+    # after getBeamline, which selects the requested line, or one if the file did not
+    madx_beam = madx.context.beam
+    # MAD-X stops at USE without a BEAM command, but reads a file of definitions
+    if has_use_command and not madx_beam.defined:
+        raise MADXInputError("The sequence has no BEAM command", file=str(madx_file))
+    # Only an element that depends on the mass or energy needs a reference particle:
+    # the translation stops at such an element, or says that it does not use it.
+    has_reference = madx_beam.defined and madx_beam.is_physical
+    if not madx_beam.defined:
+        _warn("The MAD-X file has no BEAM command, so no reference particle is known.")
+    elif not has_reference:
+        _warn(
+            "The MAD-X BEAM command gives no valid reference particle: "
+            f"{_beam_summary(madx_beam)}."
+        )
+    # Normalizing an RF voltage only needs the mass, whatever else the beam gets wrong
+    has_mass = madx_beam.defined and madx_beam.mass > 0.0
+    ref_mass_MeV = madx_beam.mass * 1.0e3 if has_mass else None
     all_options = madx.getOptions()
     options = {
         # MAD-X options are numeric in parser context; bool() captures 0/1 and expressions.
@@ -1601,25 +1635,18 @@ def read_lattice(madx_file, nslice=1, *, line=None, sequence=None, min_model="li
                 f"OPTION '{opt_name}' was parsed but is not consumed by MAD-X->ImpactX translation."
             )
 
-    bv = float(getattr(madx.context.beam, "bv", 1.0))
+    bv = madx_beam.bv
 
     # beta*gamma of the reference particle, from the MAD-X BEAM total energy.
     # Elements whose strength is expressed per unit rigidity rather than in the
     # MAD-X k convention need it, see `ref_beta_gamma` in `lattice`.
     #
-    # Only an ENERGY that the file actually states is used. MAD-X defaults it to
+    # Only a stated energy (ENERGY, PC, GAMMA, BETA or BRHO) is used. MAD-X defaults it to
     # 1 GeV, and translating a rigidity against an assumed energy would bake a
     # wrong field strength into the lattice instead of merely approximating one.
     ref_beta_gamma = None
-    if (
-        getattr(madx.context.beam, "energy_is_explicit", False)
-        and ref_mass_MeV is not None
-        and ref_mass_MeV > 0.0
-    ):
-        # MAD-X ENERGY is the total energy in GeV
-        gamma = float(madx.getEtot()) * 1.0e3 / ref_mass_MeV
-        if gamma > 1.0:
-            ref_beta_gamma = math.sqrt(gamma**2 - 1.0)
+    if has_reference and madx_beam.energy_is_explicit and madx_beam.pc > 0.0:
+        ref_beta_gamma = madx_beam.pc / madx_beam.mass
 
     return lattice(
         beamline,
@@ -1731,24 +1758,18 @@ def read_beam(ref: RefPart, madx_file):
 
     madx = MADXParser()
     madx.parse(madx_file)
+    madx_beam = madx.context.beam
+    if not madx_beam.defined:
+        raise MADXInputError("The file has no BEAM command", file=str(madx_file))
+    if not madx_beam.is_physical:
+        raise MADXInputError(
+            f"The BEAM command gives no valid reference particle: {_beam_summary(madx_beam)}",
+            file=str(madx_file),
+        )
 
-    ref_particle_dict = beam(
-        madx.getParticle(),  # if particle species is known, mass, charge, and potentially energy are set to default
-        charge=(
-            None
-            if getattr(madx.context.beam, "charge", 0.0) == 0.0
-            else float(madx.context.beam.charge)
-        ),
-        mass=(
-            None
-            if getattr(madx.context.beam, "mass", 0.0) == 0.0
-            else float(madx.context.beam.mass)
-        ),
-        energy=float(madx.getEtot()),  # MADX default energy is in GeV
-    )
-
-    ref.set_charge_qe(ref_particle_dict["charge"])
-    ref.set_mass_MeV(ref_particle_dict["mass"])
-    ref.set_kin_energy_MeV(ref_particle_dict["energy"] - ref_particle_dict["mass"])
+    GeV2MeV = 1.0e3
+    ref.set_charge_qe(madx_beam.charge)
+    ref.set_mass_MeV(madx_beam.mass * GeV2MeV)
+    ref.set_kin_energy_MeV((madx_beam.energy - madx_beam.mass) * GeV2MeV)
 
     return ref

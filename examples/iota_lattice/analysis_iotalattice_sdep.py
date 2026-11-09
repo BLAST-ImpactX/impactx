@@ -15,6 +15,9 @@ def get_moments(beam):
     -------
     meanH, sigH, meanI, sigI
     """
+    # float64 arithmetic, also for single-precision data
+    beam = beam.select_dtypes(np.floating).astype(np.float64)
+
     meanH = np.mean(beam["H"])
     sigH = moment(beam["H"], moment=2) ** 0.5
     meanI = np.mean(beam["I"])

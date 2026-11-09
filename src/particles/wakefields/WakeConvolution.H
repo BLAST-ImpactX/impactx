@@ -11,6 +11,7 @@
 #define WAKE_CONVOLUTION_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "InterpolateLinear1D.H"
 
 #include <AMReX_GpuContainers.H>
 #include <AMReX_Math.H>
@@ -89,6 +90,34 @@ namespace impactx::particles::wakefields
         amrex::Real L
     );
 
+    /** Interpolated User-Defined Wake Function
+     *
+     * The values are tabulated at the separations i * dz, @see elements::mixin::ShortRangeWake
+     *
+     * @param[in] s separation between source and test particle [m]
+     * @param[in] wake_data tabulated single-particle wake function supplied by user [V/(C*m)],
+     *                      positive where it decelerates a trailing particle
+     * @param[in] n_data number of tabulated values in wake_data, at least two
+     * @param[in] dz spacing of the tabulated values [m]
+     * @return value wake function [V/(C*m)], zero outside the tabulated range
+     */
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    amrex::Real
+    w_user (
+        amrex::Real s,
+        amrex::Real const * wake_data,
+        int const n_data,
+        amrex::Real const dz
+    )
+    {
+        using namespace amrex::literals;
+
+        // outside the tabulated range the wake function is not defined: it is taken as zero
+        if (s < 0_rt || s > static_cast<amrex::Real>(n_data - 1) * dz) { return 0_rt; }
+
+        return InterpolateLinear1D(s, wake_data, n_data, 0_rt, 1_rt / dz);
+    }
+
     /** CSR Wake Function
      *
      * The wake between a source and a test particle of one elementary charge each.
@@ -125,7 +154,8 @@ namespace impactx::particles::wakefields
      * @param[in] beam_profile_slope derivative of the line density along s that the wake function
      *                               acts on [1/m^2]: for the CSR wake function w_l_csr, between
      *                               two elementary charges, (q/e)^2 times the derivative of the
-     *                               number density of particles with the charge q
+     *                               number density of particles with the charge q; for a
+     *                               user-tabulated wake function, the line density itself
      * @param[in] wake_func wake function along s [J] (before convolution) [N] (after convolution)
      * @param[in] delta_t size of a bin in wake_func [m]
      * @return FFT convolution of beam_profile_slope & wake_func (N = len(beam_profile_slope) = len(wake_func)/2)

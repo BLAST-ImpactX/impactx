@@ -342,16 +342,17 @@ namespace impactx::elements
 
                 amrex::ParticleReal const pnorm = std::sqrt(pt*pt-1_prt);
                 amrex::ParticleReal const dx_ref = -c3_ref;
+                // kicks in units of the reference momentum, as on the beam particles
                 amrex::ParticleReal const dpx_ref = c13_ref - c2_ref - c3_ref*c5_ref;
-                amrex::ParticleReal const dpz_ref = pnorm*(-1_prt + std::sqrt(1_prt - powi<2>(dpx_ref/pnorm)));
+                amrex::ParticleReal const dpz_ref = -1_prt + std::sqrt(1_prt - powi<2>(dpx_ref));
                 amrex::ParticleReal const dt_ref = -c3_ref * dpx_ref / refpart.beta();
 
                 // advance position and momentum
                 refpart.x = x + (pz/pnorm)*dx_ref;
                 refpart.z = z - (px/pnorm)*dx_ref;
                 refpart.t = t + dt_ref;
-                refpart.px = px + (pz/pnorm)*dpx_ref + (px/pnorm)*dpz_ref;
-                refpart.pz = pz - (px/pnorm)*dpx_ref + (pz/pnorm)*dpz_ref;
+                refpart.px = px + pz*dpx_ref + px*dpz_ref;
+                refpart.pz = pz - px*dpx_ref + pz*dpz_ref;
                 // refpart.pt = pt;  // Unchanged
             }
 

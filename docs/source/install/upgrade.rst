@@ -10,6 +10,20 @@ requirements. Newest release first.
 26.11
 -----
 
+Maximum multipole order
+"""""""""""""""""""""""
+
+:py:class:`~impactx.elements.Multipole` raises a ``ValueError`` for ``multipole > 13``, and :py:class:`~impactx.elements.ExactMultipole` and :py:class:`~impactx.elements.ExactCFbend` for ``k_normal`` and ``k_skew`` arrays longer than 12 and 5 entries, respectively.
+Importing a MAD-X ``MULTIPOLE`` with a nonzero ``KNL`` or ``KSL`` entry above index 12 raises the same error.
+
+Look for high-order terms in your lattices and for arrays padded with zeros, and remove the zero entries:
+
+.. code-block:: python
+
+   elements.ExactMultipole(ds=0.2, k_normal=[0.0, k1, 0.0, 0.0], k_skew=[0.0, 0.0, 0.0, 0.0])
+   # same field
+   elements.ExactMultipole(ds=0.2, k_normal=[0.0, k1], k_skew=[0.0, 0.0])
+
 ``DipEdge``: default linear model changed to ``linear_slac75``
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -31,6 +45,13 @@ first order in ``g/rc``.
 The ``nonlinear`` DipEdge model is unchanged, and is now an alias for ``nonlinear_hwang_lee``.
 
 The new linear default model ``linear_slac75`` was chosen to match the commonly used MAD-X model.
+
+``DipEdge``: reference particle deflection with ``modify_ref_part = True``
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+With ``modify_ref_part = True``, the ``nonlinear`` :py:class:`~impactx.elements.DipEdge` model now deflects the reference particle by the angle by which it deflects a beam particle on the reference orbit with ``modify_ref_part = False``.
+Previously, the sine of the reference deflection angle had an extra factor of :math:`1/(\beta\gamma)`.
+This changes the reference trajectory, and the beam coordinates relative to it, downstream of such an edge.
 
 
 ``Programmable``: ``nslice`` and ``name`` moved to the 3rd and 4th argument
@@ -128,6 +149,66 @@ of the reference particle: the charge density is negative for electrons.
 The skew dipole coefficient ``k_skew[0]`` of :py:class:`~impactx.elements.ExactCFbend` now deflects the particles vertically: it changes ``py`` by ``k_skew[0]`` per meter (divided by the magnetic rigidity with ``unit=1``).
 Previously, only the spin push used it.
 This changes the results of lattices with a nonzero ``k_skew[0]`` in an ``ExactCFbend``.
+
+MAD-X ``BEAM``: reference particle and energy as in MAD-X
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` and
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` now resolve each ``BEAM`` command of a
+MAD-X file following MAD-X. Previously, only ``ENERGY`` was read, so ``PC``, ``GAMMA``, ``BETA`` and ``BRHO`` left 1 GeV:
+remove workarounds that set the energy after loading.
+
+**What to check in your MAD-X files:**
+
+.. code-block:: text
+
+   BEAM, ENERGY=2;                 ! now a positron: add PARTICLE
+   BEAM, SEQUENCE=B2, BV=-1;       ! now a positron at 1 GeV: add PARTICLE and ENERGY
+   BEAM, PARTICLE=ION, MASS=193.7, CHARGE=82, ENERGY=574;  ! now uses MASS and CHARGE
+
+   ! now errors
+   BEAM, MASS=2, CHARGE=1;         ! the 1 GeV default is below the mass: add ENERGY
+   BEAM, PARTICLE=PROTN, PC=2;     ! an unknown particle needs a MASS
+   BEAM, PARTICLE="PROTON", PC=2;  ! a quoted name keeps its case, also in SEQUENCE and USE
+   BEAM, ENERGIE=3;                ! an unknown parameter
+   BEAM, ENERGY=2 PC=3;            ! a number without a comma
+   USE, SEQUENCE=FOOD;             ! an unknown sequence, in KnownElementsList.load_file
+
+``RefPart.load_file`` also raises without ``BEAM`` or a valid reference particle. ``KnownElementsList.load_file`` raises for ``USE`` without ``BEAM``, an ``RFCAVITY`` with ``VOLT`` but no valid mass, and a NaN or infinite attribute of an element in use, and warns otherwise.
+
+Also as in MAD-X: ``CIRC`` sets ``FREQ0``, a parameter without a value is zero, a label does not change a command, ``beam->energy`` reads and sets ``BEAM`` parameters, ``RESBEAM`` resets a beam, redefining a constant warns, math outside of its domain gives NaN or infinity, and ``FRAC(-2.5)`` is -0.5.
+Masses now use the MAD-X constants, a change of at most 4 parts in :math:`10^8`.
+
+``Thermal``: invalid parameters raise an error
+""""""""""""""""""""""""""""""""""""""""""""""
+
+:py:class:`~impactx.distribution.Thermal` parameters without a stationary radial density, which mostly gave NaN
+coordinates, now raise an error, e.g., a ``RuntimeError`` in ``sim.add_particles``.
+
+**What to check in your scripts and inputs files:**
+
+- ``normalize`` or ``normalize_halo`` for which the space charge exceeds the focusing on the axis makes the radial
+  density diverge: reduce it below the limit in the error message.
+- ``halo > 0`` with ``normalize_halo = 0``: for a beam without a halo, set ``halo = 0``.
+- ``halo < 1`` with ``normalize = 0``: for a beam without a core, set ``halo = 1``.
+
+MAD-X files: evaluation of ``^``
+""""""""""""""""""""""""""""""""
+
+:py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate powers in MAD-X files as MAD-X does: ``a^b^c`` is
+``(a^b)^c``, and ``-a^b`` is ``-(a^b)``.
+
+**What to check in your MAD-X files:** more than one ``^`` in an expression, and a sign directly before a power. A
+subtraction, ``a-b^2``, is not affected. To keep the previous meaning, add parentheses:
+
+.. code-block:: text
+
+   k = a^(b^c);  ! previously a^b^c:  2^3^2 was 512, now 64
+   k = (-a)^b;   ! previously -a^b:   -2^2 was 4, now -4
+
+ImpactX also accepts a sign directly after an operator, as in ``a*-b^2`` or ``a^-b^c``, which MAD-X does not support: write
+these with parentheses. Their values change as well, e.g., ``2^-3^2`` was 512 and is now 0.015625, and ``2^((-3)^2)`` is 512.
 
 New in this release
 """""""""""""""""""

@@ -66,6 +66,9 @@ namespace impactx::elements
         static constexpr int DEFAULT_int_order = 2;
         static constexpr int DEFAULT_mapsteps = 10;
 
+        //! most coefficients per array: map2 and map3 implement the orders through the decapole
+        static constexpr int MAX_order = 5;
+
         /** The particle-facing configuration of an exact combined-function bend
          *
          * @param ds Segment length in m.
@@ -384,8 +387,6 @@ namespace impactx::elements
                             - 15_prt*powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
                             +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
                      break;
-                // default:
-                //   TODO: print a warning here that order > 5 is not currently supported
                }
 
             }
@@ -688,7 +689,7 @@ namespace impactx::elements
             m_coefficients{std::move(k_normal), std::move(k_skew)}
         {
             require_array_pair(m_coefficients.k_normal, m_coefficients.k_skew,
-                               "ExactCFbend: normal and skew coefficient", 1);
+                               "ExactCFbend: normal and skew coefficient", 1, MAX_order);
             if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
                 throw std::invalid_argument("ExactCFbend: The order used for symplectic integration must be 2, 4 or 6.");
 
@@ -906,7 +907,8 @@ namespace impactx::elements
             std::vector<amrex::ParticleReal> second
         )
         {
-            require_array_pair(first, second, "ExactCFbend: normal and skew coefficient", 1);
+            require_array_pair(first, second,
+                               "ExactCFbend: normal and skew coefficient", 1, MAX_order);
             m_coefficients.k_normal.host() = std::move(first);
             m_coefficients.k_skew.host() = std::move(second);
         }

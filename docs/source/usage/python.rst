@@ -216,7 +216,28 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr_bins
 
-      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the CSR calculations, at least ``2`` (default: ``150``).
+
+   .. py:property:: short_range_wakefields
+
+      Enable (``True``) or disable (``False``) Short-range wakefield calculations (default: ``False``).
+
+      Currently, this uses a 1D model based on user-specified tabulated single-particle wake functions.
+
+      .. note::
+
+         Short-range wakefield effects are only calculated for ``RFCavity`` elements, and only for the longitudinal wake.
+
+         Short-range wakefield effects are only supported with particle tracking: ``track_envelope`` and ``track_reference`` raise a ``RuntimeError``.
+
+         Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
+
+   .. py:property:: wake_bins
+
+      The number of bins along the longitudinal direction used for the short-range wakefield calculations, at least ``2`` (default: ``150``).
+
+      The wakefield is sampled on the bin edges only, so a bin has to be short against the shortest length scale of the wakefield, which is not checked.
+      Coarser bins overestimate the kick of a wakefield that decays with the separation.
 
    .. py:property:: isr
 
@@ -251,17 +272,22 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: particle_bc
 
       The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference
-      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.
+      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``
+      (see :py:meth:`~impactx.ParticleContainer.set_bucket_length`).
+
+      The boundary condition acts on the particle coordinate :math:`t` (:math:`c\,\Delta t`, in m) and is applied at the end of each slice.
+      A bucket of length :math:`L` (``bucket_length``) spans :math:`L/\beta_0` in :math:`t`, where :math:`\beta_0` is the normalized velocity of the reference particle at that slice:
+      The domain is centered on the reference particle and extends to :math:`t = \pm L/(2\beta_0)`.
 
       Options:
 
       * ``"open"`` (default): no action is applied at the boundary.
 
-      * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+      * ``"periodic"``: each particle's coordinate :math:`t` is treated modulo :math:`L/\beta_0` (phase wrapping).
 
-      * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+      * ``"absorbing"``: a particle whose coordinate :math:`t` falls outside the domain is declared lost.
 
-      * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+      * ``"reflecting"``: a particle whose coordinate :math:`t` crosses the boundary of the domain is reflected about that boundary, with reversed longitudinal momentum.
 
         .. note::
 
@@ -728,7 +754,7 @@ For step-by-step recipes on how to access particle data live during a simulation
 
    .. py:method:: set_bucket_length(bucket_length)
 
-      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions.
+      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions (see :py:attr:`~impactx.ImpactX.particle_bc`).
 
       :param bucket_length: length of the longitudinal particle domain in m
 
@@ -1040,6 +1066,15 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
 
    A 6D stationary thermal or bithermal distribution.
 
+   .. py:method:: radial_cdf(bunch_charge, ref)
+
+      Tabulated radial cumulative distribution functions (CDFs) that the particle radius is sampled from, on uniform bins in radius.
+      A population with zero weight is never sampled and its table is zero.
+
+      :param bunch_charge: bunch charge (C)
+      :param ref: the reference particle
+      :return: the radius in the beam rest frame (m), and the core and halo CDF at this radius, as a tuple of three lists
+
 Initial Beam Spin Distribution
 ------------------------------
 
@@ -1055,9 +1090,12 @@ Initial Beam Spin Distribution
    - K. V. Mardia and P. E. Jupp, Directional Statistics, Wiley, 1999;
    - S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat. and Comput. 34, 106 (2024), `DOI:10.1007/s11222-024-10419-3 <https://doi.org/10.1007/s11222-024-10419-3>`__
 
-   :param mux: x component of the unit vector specifying the mean direction
-   :param muy: y component of the unit vector specifying the mean direction
-   :param muz: z component of the unit vector specifying the mean direction
+   The polarization vector ``(mux, muy, muz)`` must lie within the unit ball: its direction is the mean spin direction and its magnitude is the degree of polarization.
+   A zero vector describes an unpolarized beam, with spins uniformly distributed on the unit sphere.
+
+   :param mux: x component of the polarization vector
+   :param muy: y component of the polarization vector
+   :param muz: z component of the polarization vector
 
 
 Lattice
@@ -1236,9 +1274,7 @@ This module provides elements and methods for the accelerator lattice.
       reference energy that the MAD-X ``BEAM`` command declares.
       Changing the reference energy after the import does not rescale it, and the
       reader warns when it applies this translation.
-      Only an ``ENERGY`` that the file actually states is used for this: MAD-X
-      defaults it to 1 GeV, so a lattice whose ``BEAM`` command omits it keeps
-      ``Sol`` at every floor rather than converting against an assumed energy.
+      Only a stated energy (``ENERGY``, ``PC``, ``GAMMA``, ``BETA`` or ``BRHO``) is used: MAD-X defaults it to 1 GeV, so a lattice without one keeps ``Sol`` at every floor.
 
       Elements that MAD-X itself defines as thin (``MULTIPOLE``, ``KICKER``,
       ``RFCAVITY``, ``NLLENS``) and structural elements (``MARKER``, apertures,
@@ -2092,7 +2128,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    A general thin multipole element.
 
-   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
+   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc., up to m=13)
    :param K_normal: Integrated normal multipole coefficient (meter^(-m+1))
                     = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
    :param K_skew: Integrated skew multipole coefficient (meter^(-m+1))
@@ -2106,7 +2142,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 .. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (m=5).
    The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
    For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
@@ -2154,7 +2190,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 .. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order m=12.
    The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
    The coefficients must appear in the following sequence:
 
@@ -2561,7 +2597,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, z_data=None, wake_x_data=None, wake_y_data=None, wake_z_data=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -2586,6 +2622,10 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
    :param field_on_axis: array of on-axis electric field Ez values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
+   :param z_data: optional longitudinal positions of the single-particle wake function in m, ascending from 0 in uniform steps; other positions are not yet implemented and raise a ``RuntimeError``; the wake function is zero beyond the last position
+   :param wake_x_data: optional horizontal single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_y_data: optional vertical single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_z_data: optional longitudinal single-particle wake function data in V/(C m), positive where it decelerates a trailing particle
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]

@@ -179,7 +179,7 @@ class DashboardDefaults:
         "emitt": ["positive"],
         "charge_qe": ["non_zero"],
         "mass_MeV": ["positive"],
-        "csr_bins": ["positive"],
+        "csr_bins": ["greater_than_one"],
         "blocking_factor": ["positive"],
         "periods": ["positive"],
         "mlmg_relative_tolerance": ["positive"],

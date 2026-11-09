@@ -621,30 +621,30 @@ This element is defined via ``<cfbend_exact_name>.type = cfbend_exact`` and requ
 
 .. pp:param:: <rfcavity_name>.z_data
     :type: ``array of float``
-    :optional:      
-    
+    :optional:
+
     Tabulated array of uniformly-spaced values of the separation z_source - z_observation at which the user-defined single-particle wakefield data is defined (units of m).
     The values must ascend from 0 in uniform steps; other tabulations are not yet implemented and raise an error.
     The wakefield is zero beyond the last value.
-    
+
 .. pp:param:: <rfcavity_name>.wake_x_data
     :type: ``array of float``
     :optional:
-    
+
     Tabulated array of user-defined values of the single-particle wakefield W_x, evaluated at the separation values specified by z_data (units of V/C/m).
     Transverse wakefields are not yet implemented: setting this parameter raises an error.
-    
+
 .. pp:param:: <rfcavity_name>.wake_y_data
     :type: ``array of float``
     :optional:
-    
+
     Tabulated array of user-defined values of the single-particle wakefield W_y, evaluated at the separation values specified by z_data (units of V/C/m).
     Transverse wakefields are not yet implemented: setting this parameter raises an error.
-    
+
 .. pp:param:: <rfcavity_name>.wake_z_data
     :type: ``array of float``
     :optional:
-    
+
     Tabulated array of user-defined values of the single-particle wakefield W_z, evaluated at the separation values specified by z_data (units of V/C/m).
     Positive values decelerate a trailing particle.
 

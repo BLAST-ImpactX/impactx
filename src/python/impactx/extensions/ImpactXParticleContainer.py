@@ -15,6 +15,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     """
     Plot the longitudinal and transverse phase space projections with matplotlib.
 
+    The histograms show the magnitude of the charge per bin. A beam without charge,
+    e.g., of zero-weight test particles, shows its number of macroparticles per bin.
+
     Parameters
     ----------
     self : ImpactXParticleContainer_*
@@ -28,11 +31,23 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     -------
     A matplotlib figure with containing the plot.
     For MPI-parallel ranks, the figure is only created on the root_rank.
+
+    Raises
+    ------
+    RuntimeError
+        If the particles are not at fixed s, or the beam has no particles.
     """
     if self.coord_system != CoordSystem.s:
         raise RuntimeError(
             "plot_phasespace: the particles must be at fixed s, "
             f"but are at {self.coord_system}."
+        )
+
+    # on all MPI ranks: a rank without particles still plots the others
+    if self.total_number_of_particles() == 0:
+        raise RuntimeError(
+            "plot_phasespace: the beam has no particles: "
+            "none were added yet, or all of them are lost."
         )
 
     import matplotlib.pyplot as plt
@@ -48,6 +63,10 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
 
     # Data Histogramming
     df = self.to_df(local=True)
+
+    # a beam without charge would show nothing: count its macroparticles instead
+    has_charge = rbc["charge_C"] != 0.0
+    hist_label = r"$|Q|$ [C/bin]" if has_charge else "macroparticles/bin"
 
     # calculate local histograms
     if df is None:
@@ -80,9 +99,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             )
         )
         t_edges = np.linspace(rbc["min_t"] * m2mm, rbc["max_t"] * m2mm, num_bins + 1)
-        pt_edges = np.linspace(
-            rbc["min_pt"] * rad2mrad, rbc["max_pt"] * rad2mrad, num_bins + 1
-        )
+        pt_edges = np.linspace(rbc["min_pt"], rbc["max_pt"], num_bins + 1)
     else:
         # update for plot unit system
         # TODO: normalize to t/z to um and mc depending on s or t
@@ -92,7 +109,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
 
         df.momentum_x = df.momentum_x.multiply(rad2mrad)
         df.momentum_y = df.momentum_y.multiply(rad2mrad)
-        df.momentum_t = df.momentum_t.multiply(rad2mrad)
+
+        # the magnitude keeps the density positive for negative charges
+        weights = abs(self.ref.charge) * df["weighting"] if has_charge else None
 
         xpx, x_edges, px_edges = np.histogram2d(
             df["position_x"],
@@ -102,6 +121,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
                 [rbc["min_x"] * m2mm, rbc["max_x"] * m2mm],
                 [rbc["min_px"] * rad2mrad, rbc["max_px"] * rad2mrad],
             ],
+            weights=weights,
         )
 
         ypy, y_edges, py_edges = np.histogram2d(
@@ -112,6 +132,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
                 [rbc["min_y"] * m2mm, rbc["max_y"] * m2mm],
                 [rbc["min_py"] * rad2mrad, rbc["max_py"] * rad2mrad],
             ],
+            weights=weights,
         )
 
         tpt, t_edges, pt_edges = np.histogram2d(
@@ -120,8 +141,9 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             bins=num_bins,
             range=[
                 [rbc["min_t"] * m2mm, rbc["max_t"] * m2mm],
-                [rbc["min_pt"] * rad2mrad, rbc["max_pt"] * rad2mrad],
+                [rbc["min_pt"], rbc["max_pt"]],
             ],
+            weights=weights,
         )
 
     # MPI reduce
@@ -236,27 +258,27 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     fig.canvas.manager.set_window_title("Phase Space")
     ax_xpx.set_xlabel(r"$\Delta x$ [mm]")
     ax_xpx.set_ylabel(r"$\Delta p_x$ [mrad]")
-    cbar_xpx.set_label(r"$Q$ [C/bin]")
+    cbar_xpx.set_label(hist_label)
     # ax_x.patch.set_alpha(0)
     ax_x.set_yticks([])
     ax_px.set_xticks([])
 
     ax_ypy.set_xlabel(r"$\Delta y$ [mm]")
     ax_ypy.set_ylabel(r"$\Delta p_y$ [mrad]")
-    cbar_ypy.set_label(r"$Q$ [C/bin]")
+    cbar_ypy.set_label(hist_label)
     ax_y.set_yticks([])
     ax_py.set_xticks([])
 
     # TODO: update depending on s or t
     ax_tpt.set_xlabel(r"$\Delta ct$ [mm]")
     ax_tpt.set_ylabel(r"$\Delta p_t$ [$p_0\cdot c$]")
-    cbar_tpt.set_label(r"$Q$ [C/bin]")
+    cbar_tpt.set_label(hist_label)
     ax_t.set_yticks([])
     ax_pt.set_xticks([])
 
     leg = ax_xpx.legend(
         title=r"$\epsilon_{n,x}=$"
-        f"{Quantity(rbc['emittance_x'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_xn'], 'm'):.3}\n"
         rf"$\sigma_x=${Quantity(rbc['sig_x'], 'm'):.3}"
         "\n"
         rf"$\beta_x=${Quantity(rbc['beta_x'], 'm'):.3}"
@@ -269,7 +291,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     leg._legend_box.sep = 0
     leg = ax_ypy.legend(
         title=r"$\epsilon_{n,y}=$"
-        f"{Quantity(rbc['emittance_y'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_yn'], 'm'):.3}\n"
         rf"$\sigma_y=${Quantity(rbc['sig_y'], 'm'):.3}"
         "\n"
         rf"$\beta_y=${Quantity(rbc['beta_y'], 'm'):.3}"
@@ -282,7 +304,7 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     leg._legend_box.sep = 0
     leg = ax_tpt.legend(
         title=r"$\epsilon_{n,t}=$"
-        f"{Quantity(rbc['emittance_t'], 'm'):.3}\n"
+        f"{Quantity(rbc['emittance_tn'], 'm'):.3}\n"
         r"$\sigma_{ct}=$"
         f"{Quantity(rbc['sig_t'], 'm'):.3}\n"
         r"$\sigma_{pt}=$"

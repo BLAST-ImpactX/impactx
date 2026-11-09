@@ -270,7 +270,7 @@ Two additional (optional) sets of input parameters may be provided:
     :type: ``float``
     :unit: m
 
-    Length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions.
+    Length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions (see :pp:param:`algo.particle_bc`).
 
 Initial Spin Distributions
 --------------------------
@@ -278,6 +278,7 @@ Initial Spin Distributions
 The specification of an initial particle spin distribution is optional, and is required only if spin tracking is used.
 The default distribution type is the von Mises-Fisher distribution, uniquely determined by the input polarization vector.
 The polarization vector provided by the user must lie within the unit ball.
+A zero polarization vector describes an unpolarized beam, with spins uniformly distributed on the unit sphere.
 
 .. pp:param:: beam.polarization_x/y/z
     :link_aliases: beam.polarization_x beam.polarization_y beam.polarization_z
@@ -584,7 +585,7 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^
 
 A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (:math:`m = 5`).
 The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
 For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
@@ -1129,7 +1130,7 @@ This requires these additional parameters:
     :type: ``integer``
     :unit: dimensionless
 
-    Order of multipole: (m = 1) dipole, (m = 2) quadrupole, (m = 3) sextupole, etc.
+    Order of multipole: (m = 1) dipole, (m = 2) quadrupole, (m = 3) sextupole, etc., up to (m = 13).
 
 .. pp:param:: <multipole_name>.k_normal
     :type: ``float``
@@ -1167,7 +1168,7 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^^^^
 
 ``multipole_exact`` for a thick multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order :math:`m = 12`.
 The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
 The coefficients must appear in the following sequence:
 
@@ -1796,6 +1797,35 @@ This element is defined via ``<rfcavity_name>.type = rfcavity`` and requires the
 
     Sine coefficients in Fourier expansion of on-axis electric field Ez.
     Default is a 9-cell TESLA superconducting cavity model from `DOI:10.1103/PhysRevSTAB.3.092001 <https://doi.org/10.1103/PhysRevSTAB.3.092001>`__.
+
+.. pp:param:: <rfcavity_name>.z_data
+    :type: ``array of float``
+    :optional:
+
+    Tabulated array of uniformly-spaced values of the separation z_source - z_observation at which the user-defined single-particle wakefield data is defined (units of m).
+    The values must ascend from 0 in uniform steps; other tabulations are not yet implemented and raise an error.
+    The wakefield is zero beyond the last value.
+
+.. pp:param:: <rfcavity_name>.wake_x_data
+    :type: ``array of float``
+    :optional:
+
+    Tabulated array of user-defined values of the single-particle wakefield W_x, evaluated at the separation values specified by z_data (units of V/C/m).
+    Transverse wakefields are not yet implemented: setting this parameter raises an error.
+
+.. pp:param:: <rfcavity_name>.wake_y_data
+    :type: ``array of float``
+    :optional:
+
+    Tabulated array of user-defined values of the single-particle wakefield W_y, evaluated at the separation values specified by z_data (units of V/C/m).
+    Transverse wakefields are not yet implemented: setting this parameter raises an error.
+
+.. pp:param:: <rfcavity_name>.wake_z_data
+    :type: ``array of float``
+    :optional:
+
+    Tabulated array of user-defined values of the single-particle wakefield W_z, evaluated at the separation values specified by z_data (units of V/C/m).
+    Positive values decelerate a trailing particle.
 
 .. pp:param:: <rfcavity_name>.dx/dy
     :link_aliases: <rfcavity_name>.dx <rfcavity_name>.dy
@@ -2708,7 +2738,7 @@ Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19
     :optional:
     :default: ``150``
 
-    The number of bins used for the CSR calculations along the longitudinal direction. Increasing the number of bins can lead to more accurate wakefield resolution at the cost of higher computational expense.
+    The number of bins used for the CSR calculations along the longitudinal direction, at least ``2``. Increasing the number of bins can lead to more accurate wakefield resolution at the cost of higher computational expense.
 
 .. note::
 
@@ -2760,6 +2790,43 @@ However, a Taylor expansion is used to evaluate the dependence on the quantum pa
    ISR effects are only calculated for lattice elements that include bending, such as ``Sbend``, ``ExactSbend`` and ``CFbend``.
 
 
+.. _running-cpp-parameters-collective-short-range-wake:
+
+Short-Range Wakefields
+^^^^^^^^^^^^^^^^^^^^^^
+
+Short-range wakefield effects can currently be included in the simulation for ``RFCavity`` elements.
+
+These effects are important for accurately modeling the interaction of particles in a bunch with the wakefields generated by the (same) bunch due to the presence of the conducting vacuum chamber.
+Currently, the data used to specify the short-range wakefield is attached to the element.  (See ``RFCavity`` for details.)
+
+.. pp:param:: algo.short_range_wakefields
+    :type: ``boolean``
+    :optional:
+    :default: ``false``
+
+    Whether to calculate short-range wakefield effects.
+
+.. pp:param:: algo.wake_bins
+    :type: ``integer``
+    :optional:
+    :default: ``150``
+
+    The number of longitudinal bins used for the short-range wakefield calculation, at least ``2``.
+    The wakefield is sampled on the bin edges only, so a bin has to be short against the shortest length scale of the wakefield, which is not checked.
+    Coarser bins overestimate the kick of a wakefield that decays with the separation.
+
+.. note::
+
+   Short-range wakefield effects are currently only calculated for ``RFCavity`` elements.  Support for additional elements will be added.
+
+   Only the longitudinal wakefield is implemented.  Setting ``wake_x_data`` or ``wake_y_data`` raises an error.
+
+   Short-range wakefield effects are only supported with particle tracking.  Requesting them for envelope or reference particle tracking raises an error.
+
+   Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
+
+
 .. _running-cpp-parameters-particle-bc:
 
 Particle Boundary Condition
@@ -2774,15 +2841,21 @@ To handle this effectively without tracking multiple bunches, a periodic particl
     :optional:
     :default: ``open``
 
-    The type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter :pp:param:`beam.bucket_length`.  Options:
+    The type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter :pp:param:`beam.bucket_length`.
+
+    The boundary condition acts on the particle coordinate :math:`t` (:math:`c\,\Delta t`, in m) and is applied at the end of each slice.
+    A bucket of length :math:`L` (:pp:param:`beam.bucket_length`) spans :math:`L/\beta_0` in :math:`t`, where :math:`\beta_0` is the normalized velocity of the reference particle at that slice:
+    The domain is centered on the reference particle and extends to :math:`t = \pm L/(2\beta_0)`.
+
+    Options:
 
     * ``open`` (default): no action is applied at the boundary.
 
-    * ``periodic``: each particle's longitudinal coordinate is treated modulo the value :pp:param:`beam.bucket_length` (phase wrapping).
+    * ``periodic``: each particle's coordinate :math:`t` is treated modulo :math:`L/\beta_0` (phase wrapping).
 
-    * ``absorbing``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+    * ``absorbing``: a particle whose coordinate :math:`t` falls outside the domain is declared lost.
 
-    * ``reflecting``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+    * ``reflecting``: a particle whose coordinate :math:`t` crosses the boundary of the domain is reflected about that boundary, with reversed longitudinal momentum.
 
       .. note::
 

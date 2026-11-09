@@ -521,6 +521,9 @@ class ImpactXParticleContainer(
         """
         Plot the longitudinal and transverse phase space projections with matplotlib.
 
+        The histograms show the magnitude of the charge per bin. A beam without charge,
+        e.g., of zero-weight test particles, shows its number of macroparticles per bin.
+
         Parameters
         ----------
         self : ImpactXParticleContainer_*
@@ -534,6 +537,11 @@ class ImpactXParticleContainer(
         -------
         A matplotlib figure with containing the plot.
         For MPI-parallel ranks, the figure is only created on the root_rank.
+
+        Raises
+        ------
+        RuntimeError
+            If the particles are not at fixed s, or the beam has no particles.
         """
     def record_beam_moments(self) -> None:
         """
@@ -765,7 +773,7 @@ class ImpactX:
     @property
     def csr_bins(self) -> int:
         """
-        Number of longitudinal bins used for CSR calculations (default: 150).
+        Number of longitudinal bins used for CSR calculations, at least 2 (default: 150).
         """
     @csr_bins.setter
     def csr_bins(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
@@ -1020,6 +1028,13 @@ class ImpactX:
         arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
     ) -> None: ...
     @property
+    def short_range_wakefields(self) -> bool:
+        """
+        Enable or disable short range structure wakefield calculations (default: disabled).
+        """
+    @short_range_wakefields.setter
+    def short_range_wakefields(self, arg1: bool) -> None: ...
+    @property
     def slice_step_diagnostics(self) -> bool:
         """
         Enable or disable diagnostics every slice step in elements (default: disabled).
@@ -1184,6 +1199,13 @@ class ImpactX:
         """
     @verbose.setter
     def verbose(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def wake_bins(self) -> int:
+        """
+        Number of longitudinal bins used for short range wakefield calculations, at least 2 (default: 150).
+        """
+    @wake_bins.setter
+    def wake_bins(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class UnorderedMap:
     def __bool__(self) -> bool:

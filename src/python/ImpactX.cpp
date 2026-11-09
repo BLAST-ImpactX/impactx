@@ -286,10 +286,39 @@ void init_ImpactX (py::module& m)
                 return detail::get_or_throw<int>("algo", "csr_bins");
             },
             [](ImpactX & /* ix */, int csr_bins) {
+                if (csr_bins < 2) {
+                    throw std::runtime_error("csr_bins must be at least 2");
+                }
+
                 amrex::ParmParse pp_algo("algo");
                 pp_algo.add("csr_bins", csr_bins);
             },
-            "Number of longitudinal bins used for CSR calculations (default: 150)."
+            "Number of longitudinal bins used for CSR calculations, at least 2 (default: 150)."
+        )
+
+        .def_property("short_range_wakefields",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "short_range_wakefields");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("short_range_wakefields", enable);
+            },
+            "Enable or disable short range structure wakefield calculations (default: disabled)."
+        )
+        .def_property("wake_bins",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo", "wake_bins");
+            },
+            [](ImpactX & /* ix */, int wake_bins) {
+                if (wake_bins < 2) {
+                    throw std::runtime_error("wake_bins must be at least 2");
+                }
+
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("wake_bins", wake_bins);
+            },
+            "Number of longitudinal bins used for short range wakefield calculations, at least 2 (default: 150)."
         )
         .def_property("isr",
             [](ImpactX & /* ix */) {

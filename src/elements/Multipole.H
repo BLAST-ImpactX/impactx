@@ -27,6 +27,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <string>
 
 namespace impactx::elements
 {
@@ -46,13 +47,26 @@ namespace impactx::elements
         static constexpr auto type = "Multipole";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        /** compute factorial of multipole index
+        //! highest multipole index: the factorial of m_multipole - 1 is stored in an int
+        static constexpr int MAX_order = 13;
+
+        /** Set the multipole index and its factorial
          *
-         * Needs to be called whenever m_multipole is changed.
+         * The index is validated before it is stored, so a rejected update leaves the element
+         * as it was.
+         *
+         * @param multipole index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
          */
         void
-        compute_factorial ()
+        set_multipole (int multipole)
         {
+            if (multipole < 1 || multipole > MAX_order) {
+                throw std::invalid_argument(
+                    "Multipole: multipole must be between 1 and " + std::to_string(MAX_order) +
+                    ", got " + std::to_string(multipole) + "!");
+            }
+            m_multipole = multipole;
+
             int const m = m_multipole - 1;
             m_mfactorial = 1;
             for( int n = 1; n < m + 1; n = n + 1 ) {
@@ -83,9 +97,9 @@ namespace impactx::elements
         )
         : Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
-          m_multipole(multipole), m_Kn(K_normal), m_Ks(K_skew)
+          m_Kn(K_normal), m_Ks(K_skew)
         {
-            compute_factorial();
+            set_multipole(multipole);
         }
 
         /** Reverse the element (negate strengths) */
@@ -355,7 +369,7 @@ namespace impactx::elements
 
       private:
         // constants that are independent of the individually tracked particle
-        // see: compute_factorial() to refresh
+        // see: set_multipole() to refresh
         int m_mfactorial;  //! factorial of multipole index
         // see: compute_constants() to refresh
         amrex::GpuComplex<amrex::ParticleReal> m_alpha;

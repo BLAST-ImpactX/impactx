@@ -11,8 +11,8 @@
 #define IMPACTX_DISTRIBUTION_WATERBAG
 
 #include "particles/ReferenceParticle.H"
-
-#include <ablastr/constant.H>
+#include "particles/distribution/BoxMuller.H"
+#include "particles/distribution/mixin/beamellipse.H"
 
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
@@ -23,6 +23,7 @@
 namespace impactx::distribution
 {
     struct Waterbag
+    : public mixin::BeamEllipse
     {
         /** A Waterbag distribution
          *
@@ -57,10 +58,8 @@ namespace impactx::distribution
             amrex::ParticleReal dispy=0.0,
             amrex::ParticleReal disppy=0.0
         )
-        : m_lambdaX(lambdax), m_lambdaY(lambday), m_lambdaT(lambdat), m_lambdaPx(lambdapx), m_lambdaPy(lambdapy),
-          m_lambdaPt(lambdapt), m_muxpx(muxpx), m_muypy(muypy), m_mutpt(mutpt), m_meanx(meanx), m_meany(meany),
-          m_meant(meant), m_meanpx(meanpx), m_meanpy(meanpy), m_meanpt(meanpt), m_dispx(dispx), m_disppx(disppx),
-          m_dispy(dispy), m_disppy(disppy)
+        : BeamEllipse(lambdax, lambday, lambdat, lambdapx, lambdapy, lambdapt, muxpx, muypy, mutpt,
+                      meanx, meany, meant, meanpx, meanpy, meanpt, dispx, disppx, dispy, disppy)
         {
         }
 
@@ -106,28 +105,14 @@ namespace impactx::distribution
         ) const
         {
             using namespace amrex::literals;
-            using ablastr::constant::math::pi;
 
-            amrex::ParticleReal ln1,norm,u1,u2;
+            amrex::ParticleReal norm,u1,u2;
             amrex::ParticleReal g1,g2,g3,g4,g5,g6;
-            amrex::ParticleReal root,a1,a2;
 
             // Generate six standard normal random variables using Box-Muller:
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g1 = ln1*std::cos(2_prt*pi*u2);
-            g2 = ln1*std::sin(2_prt*pi*u2);
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g3 = ln1*std::cos(2_prt*pi*u2);
-            g4 = ln1*std::sin(2_prt*pi*u2);
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g5 = ln1*std::cos(2_prt*pi*u2);
-            g6 = ln1*std::sin(2_prt*pi*u2);
+            box_muller::pair(g1, g2, engine);
+            box_muller::pair(g3, g4, engine);
+            box_muller::pair(g5, g6, engine);
 
             // Normalize to produce uniform samples on the unit sphere:
             norm = std::sqrt(g1*g1+g2*g2+g3*g3+g4*g4+g5*g5+g6*g6);
@@ -148,44 +133,9 @@ namespace impactx::distribution
             py = g5*u2;
             pt = g6*u2;
 
-            // Transform to produce the desired second moments/correlations:
-            root = std::sqrt(1.0_prt-m_muxpx*m_muxpx);
-            a1 = m_lambdaX * x / root;
-            a2 = m_lambdaPx * (-m_muxpx * x / root + px);
-            x = a1;
-            px = a2;
-            root = std::sqrt(1.0_prt-m_muypy*m_muypy);
-            a1 = m_lambdaY * y / root;
-            a2 = m_lambdaPy * (-m_muypy * y / root + py);
-            y = a1;
-            py = a2;
-            root = std::sqrt(1.0_prt-m_mutpt*m_mutpt);
-            a1 = m_lambdaT * t / root;
-            a2 = m_lambdaPt * (-m_mutpt * t / root + pt);
-            t = a1;
-            pt = a2;
-
-            // Apply dispersive correlations
-            x = x - m_dispx * pt;
-            px = px - m_disppx * pt;
-            y = y - m_dispy * pt;
-            py = py - m_disppy * pt;
-
-            // Apply centroid translation
-            x = x + m_meanx;
-            px = px + m_meanpx;
-            y = y + m_meany;
-            py = py + m_meanpy;
-            t = t + m_meant;
-            pt = pt + m_meanpt;
+            // Transform to the beam ellipse:
+            to_beam_ellipse(x, y, t, px, py, pt);
         }
-
-        amrex::ParticleReal m_lambdaX, m_lambdaY, m_lambdaT;  //! related position axis intercepts (length) of the phase space ellipse
-        amrex::ParticleReal m_lambdaPx, m_lambdaPy, m_lambdaPt;  //! related momentum axis intercepts of the phase space ellipse
-        amrex::ParticleReal m_muxpx, m_muypy, m_mutpt;  //! correlation length-momentum
-        amrex::ParticleReal m_meanx, m_meany, m_meant;  //! spatial coordinates of centroid offset
-        amrex::ParticleReal m_meanpx, m_meanpy, m_meanpt;  //! momentum coordinates of centroid offset
-        amrex::ParticleReal m_dispx, m_disppx, m_dispy, m_disppy;  //! dispersion and its derivative
     };
 
 } // namespace impactx::distribution

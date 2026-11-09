@@ -11,6 +11,7 @@
 #define IMPACTX_DISTRIBUTION_THERMAL
 
 #include "particles/ReferenceParticle.H"
+#include "particles/distribution/BoxMuller.H"
 
 #include <ablastr/constant.H>
 
@@ -20,10 +21,16 @@
 #include <AMReX_Random.H>
 #include <AMReX_REAL.H>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <random>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -40,6 +47,12 @@ namespace distribution
         static constexpr amrex::ParticleReal rin = 1.0e-10_prt;  ///< initial r value for numerical integration
         static constexpr amrex::ParticleReal rout = 10.0;  ///< final r value for numerical integration
         static constexpr int nsteps = 2000;  ///< number of radial steps for numerical integration
+        /** maximum of -potential/kT, the logarithm of the density relative to the axis
+         *
+         * After check_space_charge, the density stays below its value on the axis, up
+         * to integration errors. This bound keeps std::exp finite regardless.
+         */
+        static constexpr amrex::ParticleReal max_exponent = 1.0_prt;
 
         amrex::ParticleReal m_f1;  ///< cumulative distribution of first population
         amrex::ParticleReal m_f2;  ///< cumulative distribution of second population
@@ -49,9 +62,9 @@ namespace distribution
         amrex::ParticleReal m_p2; ///< normalization constant of second population
         amrex::ParticleReal m_rmin;  ///< minimum r value for tabulated cdf
         amrex::ParticleReal m_rmax;  ///< maximum r value for tabulated cdf
-        int m_nbins;  ///< number of radial bins for tabulated cdf
-        amrex::ParticleReal* m_cdf1 = nullptr;  ///< tabulated cumulative distribution (first)
-        amrex::ParticleReal* m_cdf2 = nullptr;  ///< tabulated cumulative distribution (second)
+        int m_nbins = 0;  ///< number of radial bins for tabulated cdf
+        std::vector<amrex::ParticleReal> m_cdf1;  ///< tabulated cumulative distribution (first)
+        std::vector<amrex::ParticleReal> m_cdf2;  ///< tabulated cumulative distribution (second)
         amrex::ParticleReal m_Cintensity;  ///< space charge intensity parameter
         amrex::ParticleReal m_bg; ///< reference value of relativistic beta*gamma
         amrex::ParticleReal m_k;  ///< linear focusing strength (1/meters)
@@ -101,8 +114,11 @@ namespace distribution
             amrex::ParticleReal Erest = refpart.mass_MeV() * 1.0e6_prt;
             amrex::ParticleReal q_e = refpart.charge_qe();
 
-            // Set space charge intensity
-            m_Cintensity = q_e*bunch_charge/(powi<2>(bg)*Erest*ep0);
+            check_parameters(bunch_charge, bg, Erest);
+
+            // Set space charge intensity: the self-field of the beam is repulsive
+            // for either sign of the charge, and bunch_charge is a magnitude
+            m_Cintensity = std::abs(q_e)*bunch_charge/(powi<2>(bg)*Erest*ep0);
 
             // Set minimum and maximum radius
             amrex::ParticleReal r_scale = matched_scale_radius();
@@ -116,16 +132,16 @@ namespace distribution
             m_p1 = m_p1*p_scale;
             m_p2 = m_p2*p_scale;
 
+            check_space_charge(p_scale);
+
             // store integration parameters
             m_nbins = nsteps;
             m_rmin = rmin;
             m_rmax = rmax;
 
             // allocate CDFs
-            std::vector<amrex::ParticleReal> cdf1(m_nbins+1);
-            std::vector<amrex::ParticleReal> cdf2(m_nbins+1);
-            m_cdf1 = cdf1.data();
-            m_cdf2 = cdf2.data();
+            m_cdf1.resize(m_nbins+1);
+            m_cdf2.resize(m_nbins+1);
 
             // set initial conditions
             m_f1 = 0.0_prt;
@@ -136,26 +152,174 @@ namespace distribution
             m_cdf2[0] = 0.0_prt;
 
             // integrate ODEs for the radial density
-            integrate(rmin,rmax,nsteps);
+            if (!integrate(rmin,rmax,nsteps))
+            {
+                throw std::runtime_error(
+                    "Thermal distribution: the numerical integration of the radial "
+                    "density diverges."
+                );
+            }
 
             // a search over normalization parameters p1, p2 can be added here
 
-            // rescale cdf to ensure the exact range [0,1]
-            for (int n = 0; n < m_nbins; ++n) {
-                m_cdf1[n] = m_cdf1[n] / m_cdf1[m_nbins];
-                m_cdf2[n] = m_cdf2[n] / m_cdf2[m_nbins];
+            // The radial grid does not resolve a population that is much colder than
+            // the beam: its density can vanish on all of it. A total below the smallest
+            // normal number vanishes, too: normalize_cdf can multiply by its reciprocal
+            // (fast-math), which overflows.
+            constexpr amrex::ParticleReal min_total =
+                std::numeric_limits<amrex::ParticleReal>::min();
+            if (m_w < 1_prt && m_cdf1.back() < min_total) {
+                throw std::runtime_error(
+                    std::string("Thermal distribution: the core density vanishes on the "
+                                "radial grid, e.g., for a ")
+                    + (m_w > 0_prt ? "kT much smaller than kT_halo" : "very small kT")
+                    + ". Please check kT."
+                );
+            }
+            if (m_w > 0_prt && m_cdf2.back() < min_total) {
+                throw std::runtime_error(
+                    std::string("Thermal distribution: the halo density vanishes on the "
+                                "radial grid, e.g., for a ")
+                    + (m_w < 1_prt ? "kT_halo much smaller than kT" : "very small kT_halo")
+                    + ". Please check kT_halo."
+                );
             }
 
-            // copy CFD data to device
-            m_d_cdf1 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
-            m_d_cdf2 = std::make_unique<amrex::Gpu::DeviceVector<amrex::ParticleReal>>(m_nbins+1);
+            // rescale the cdf of each population in the beam to the exact range [0,1]
+            if (m_w < 1_prt) {
+                normalize_cdf(m_cdf1);
+            }
+            if (m_w > 0_prt) {
+                normalize_cdf(m_cdf2);
+            }
+        }
+
+        /** Check the parameters of the distribution and of the beam.
+         *
+         * Valid parameters keep all values in the integration of the radial
+         * density finite.
+         *
+         * @param[in] bunch_charge the bunch charge in C
+         * @param[in] bg relativistic beta*gamma of the reference particle
+         * @param[in] Erest rest energy of the reference particle in eV
+         * @throws std::runtime_error for an invalid parameter
+         */
+        void
+        check_parameters (
+            amrex::ParticleReal bunch_charge,
+            amrex::ParticleReal bg,
+            amrex::ParticleReal Erest
+        ) const
+        {
+            using namespace amrex::literals;  // for _rt and _prt
+
+            auto const require = [] (bool condition, char const * message)
+            {
+                if (!condition) {
+                    throw std::runtime_error(std::string("Thermal distribution: ") + message);
+                }
+            };
+
+            require(m_k > 0_prt, "k must be positive.");
+            require(m_w >= 0_prt && m_w <= 1_prt, "halo must be in [0, 1].");
+            if (m_w < 1_prt) {
+                require(m_T1 > 0_prt, "kT must be positive if halo < 1.");
+                require(m_p1 > 0_prt, "normalize must be positive if halo < 1.");
+            }
+            if (m_w > 0_prt) {
+                require(m_T2 > 0_prt, "kT_halo must be positive if halo > 0.");
+                require(m_p2 > 0_prt, "normalize_halo must be positive if halo > 0.");
+            }
+            require(bunch_charge >= 0_prt, "the bunch charge must not be negative.");
+            require(bg > 0_prt && Erest > 0_prt,
+                    "the reference particle needs a positive mass and kinetic energy.");
+        }
+
+        /** Check that the focusing exceeds the space charge on the axis.
+         *
+         * Near the axis, the potential is (k^2/2 - ((1-w) p1 + w p2) C/6) r^2. If the
+         * space charge ((1-w) p1 + w p2) C is not below 3 k^2, the density grows with
+         * the radius, which lowers the potential further: the density diverges.
+         * Otherwise, the density decreases from the axis outward.
+         *
+         * @param[in] p_scale scale of the normalization constants p1 and p2
+         * @throws std::runtime_error if the radial density diverges
+         */
+        void
+        check_space_charge (amrex::ParticleReal p_scale) const
+        {
+            using namespace amrex::literals;  // for _rt and _prt
+
+            // the density on the axis, weighted with the charge fraction of each population
+            amrex::ParticleReal density = 0_prt;
+            if (m_w < 1_prt) { density += (1_prt - m_w) * m_p1; }
+            if (m_w > 0_prt) { density += m_w * m_p2; }
+
+            amrex::ParticleReal const focusing = 3_prt * amrex::Math::powi<2>(m_k);
+            if (m_Cintensity * density < focusing) { return; }
+
+            std::string const normalization =
+                m_w == 0_prt ? "normalize" :
+                m_w == 1_prt ? "normalize_halo" :
+                "(1 - halo) * normalize + halo * normalize_halo";
+            std::string const parameters =
+                m_w == 0_prt ? "k, kT" :
+                m_w == 1_prt ? "k, kT_halo" :
+                "k, kT, kT_halo, halo";
+            std::ostringstream limit;
+            limit.precision(7);
+            limit << focusing / (m_Cintensity * p_scale);
+            throw std::runtime_error(
+                "Thermal distribution: the space charge exceeds the focusing on the axis, "
+                "so the radial density diverges. Reduce " + normalization + " below "
+                + limit.str() + ", the limit for this " + parameters + ", bunch charge and "
+                "reference particle."
+            );
+        }
+
+        /** Copy the radial CDF data from generate_radial_dist to the device.
+         */
+        void
+        copy_to_device ()
+        {
+            using DeviceVector = amrex::Gpu::DeviceVector<amrex::ParticleReal>;
+            m_d_cdf1 = std::make_unique<DeviceVector>(m_cdf1.size());
+            m_d_cdf2 = std::make_unique<DeviceVector>(m_cdf2.size());
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                  cdf1.begin(), cdf1.end(),
+                                  m_cdf1.begin(), m_cdf1.end(),
                                   m_d_cdf1->begin());
             amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice,
-                                  cdf2.begin(), cdf2.end(),
+                                  m_cdf2.begin(), m_cdf2.end(),
                                   m_d_cdf2->begin());
             amrex::Gpu::streamSynchronize();
+        }
+
+        /** Rescale a tabulated radial CDF to the exact range [0,1].
+         *
+         * The radial lookup in Thermal::operator() requires cdf[0] == 0,
+         * cdf[nbins] == 1 and a non-decreasing table. The integrated table starts
+         * at 0 and is non-decreasing, since the density is non-negative. Dividing
+         * all entries by the last one keeps that order. The last entry is then
+         * set to exactly 1 and the others are clamped to 1, which also holds if
+         * the division is evaluated as a multiplication with the reciprocal
+         * (fast-math).
+         *
+         * The last entry must be finite and at least the smallest normal number,
+         * so that its reciprocal is finite, too. generate_radial_dist ensures this
+         * for each population in the beam.
+         *
+         * @param[inout] cdf tabulated cumulative distribution of one population
+         */
+        static void
+        normalize_cdf (std::vector<amrex::ParticleReal> & cdf)
+        {
+            using namespace amrex::literals;  // for _rt and _prt
+
+            amrex::ParticleReal const total = cdf.back();
+            for (amrex::ParticleReal & c : cdf) {
+                c = std::min(c / total, 1_prt);
+            }
+            cdf.back() = 1_prt;
         }
 
         amrex::ParticleReal
@@ -165,14 +329,21 @@ namespace distribution
             using namespace ablastr::constant::math;  // for pi
 
             amrex::ParticleReal k = m_k;
-            amrex::ParticleReal kT = (1_prt - m_w) * m_T1 + m_w * m_T2;
+            // temperature of the beam, weighted with the charge fraction of each population
+            amrex::ParticleReal kT = 0_prt;
+            if (m_w < 1_prt) { kT += (1_prt - m_w) * m_T1; }
+            if (m_w > 0_prt) { kT += m_w * m_T2; }
             amrex::ParticleReal a = m_Cintensity/(4_prt*pi*5_prt*std::sqrt(5_prt));
             amrex::ParticleReal rscale = std::sqrt(kT + std::pow(a*k,2_prt/3_prt))/k;
 
             return rscale;
         }
 
-        void
+        /** Integrate the radial density and tabulate its CDF.
+         *
+         * @return false if the radial density diverges
+         */
+        bool
         integrate (
             amrex::ParticleReal in,
             amrex::ParticleReal out,
@@ -193,7 +364,9 @@ namespace distribution
             {
                 // for a second-order Strang splitting
                 map1(half, reval);
-                map2(tau, reval);
+                if (!map2(tau, reval)) {
+                    return false;
+                }
                 map1(half, reval);
                 // store tabulated CDF
                 m_cdf1[j+1] = m_f1;
@@ -207,6 +380,7 @@ namespace distribution
                 */
             }
 
+            return true;
         }
 
         void
@@ -232,7 +406,11 @@ namespace distribution
             m_f2 = f2;
         }
 
-        void
+        /** Advance the integrated densities of both populations.
+         *
+         * @return false if the radial density diverges
+         */
+        bool
         map2 (
             amrex::ParticleReal const tau,
             amrex::ParticleReal & reval
@@ -258,8 +436,23 @@ namespace distribution
             // Define intermediate quantities
             amrex::ParticleReal potential = 0_prt;
             potential = amrex::Math::powi<2>(k*r)*0.5_prt + c1*phi1 + c2*phi2;
-            amrex::ParticleReal Pdensity1 = m_p1 * std::exp(-potential/T1);
-            amrex::ParticleReal Pdensity2 = m_p2 * std::exp(-potential/T2);
+
+            // The density of a population is proportional to exp(-potential/T), where
+            // -potential/T is the logarithm of the density relative to the axis. A
+            // population with zero weight carries no charge and is never sampled, so
+            // its density stays zero.
+            amrex::ParticleReal Pdensity1 = 0_prt;
+            amrex::ParticleReal Pdensity2 = 0_prt;
+            if (w < 1_prt) {
+                amrex::ParticleReal const exponent = -potential/T1;
+                if (exponent > max_exponent) { return false; }
+                Pdensity1 = m_p1 * std::exp(exponent);
+            }
+            if (w > 0_prt) {
+                amrex::ParticleReal const exponent = -potential/T2;
+                if (exponent > max_exponent) { return false; }
+                Pdensity2 = m_p2 * std::exp(exponent);
+            }
             // amrex::ParticleReal Pdensity_tot = (1.0_prt-w)*Pdensity1 + w*Pdensity2;
             // amrex::PrintToFile("Pdensity.out") << reval << " " << Pdensity_tot << "\n";
 
@@ -269,6 +462,8 @@ namespace distribution
             m_f1 = f1 + tau*4_prt*pi * amrex::Math::powi<2>(r)*Pdensity1;
             m_f2 = f2 + tau*4_prt*pi * amrex::Math::powi<2>(r)*Pdensity2;
             reval = r;
+
+            return true;
         }
     };
 
@@ -302,6 +497,8 @@ namespace distribution
           m_normalize_halo(normalize_halo),
           m_halo(halo)
         {
+            m_sqrtT1 = std::sqrt(m_T1);
+            m_sqrtT2 = std::sqrt(m_T2);
         }
 
         /** Initialize the distribution.
@@ -316,6 +513,7 @@ namespace distribution
             // Generate the struct "data" containing the radial CDF:
             ThermalData data(m_k, m_T1, m_T2, m_normalize, m_normalize_halo, m_halo);
             data.generate_radial_dist(bunch_charge, ref);
+            data.copy_to_device();
 
             // share data
             m_w = data.m_w;
@@ -327,6 +525,38 @@ namespace distribution
             m_bg = data.m_bg;
             m_cdf1 = data.m_d_cdf1->data();
             m_cdf2 = data.m_d_cdf2->data();
+        }
+
+        /** Tabulated radial CDFs of the core and halo populations.
+         *
+         * These are the tables that the radius of each particle is sampled from,
+         * on ThermalData::nsteps uniform bins in radius. A population with zero
+         * weight is never sampled and its table is zero.
+         *
+         * @param bunch_charge charge of the beam in C
+         * @param ref the reference particle
+         * @return the radius in m in the beam rest frame, and the core and halo CDF
+         *         at this radius, with ThermalData::nsteps + 1 entries each
+         */
+        std::tuple<
+            std::vector<amrex::ParticleReal>,
+            std::vector<amrex::ParticleReal>,
+            std::vector<amrex::ParticleReal>
+        >
+        radial_cdf (amrex::ParticleReal bunch_charge, RefPart const & ref) const
+        {
+            ThermalData data(m_k, m_T1, m_T2, m_normalize, m_normalize_halo, m_halo);
+            data.generate_radial_dist(bunch_charge, ref);
+
+            // the radius that Thermal::operator() samples at each table entry
+            std::vector<amrex::ParticleReal> r(data.m_nbins + 1);
+            for (int n = 0; n <= data.m_nbins; ++n) {
+                amrex::ParticleReal const xv =
+                    amrex::ParticleReal(n) / amrex::ParticleReal(data.m_nbins);
+                r[n] = data.m_rmin + (data.m_rmax - data.m_rmin) * xv;
+            }
+
+            return {std::move(r), std::move(data.m_cdf1), std::move(data.m_cdf2)};
         }
 
         /** Close and deallocate all data and handles.
@@ -360,41 +590,28 @@ namespace distribution
             amrex::RandomEngine const & engine
         ) const
         {
-
-            using namespace amrex::literals;  // for _rt and _prt
-            using namespace ablastr::constant::math;  // for pi
-
-            amrex::ParticleReal ln1,norm,u1,u2,uhalo;
+            amrex::ParticleReal norm,uhalo;
             amrex::ParticleReal g1,g2,g3,g4,g5,g6;
             amrex::ParticleReal z,pz;
 
             // Use a Bernoulli random variable to select between core and halo:
             // If u < w, the particle is in the halo population.
             // If u >= w, the particle is in the core population.
+            // Since u is in [0,1), a population with zero weight is never selected.
             uhalo = amrex::Random(engine);
+            bool const is_halo = uhalo < m_w;
 
             // Generate six standard normal random variables using Box-Muller:
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g1 = ln1 * std::cos(2_prt*pi*u2);
-            g2 = ln1 * std::sin(2_prt*pi*u2);
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g3 = ln1 * std::cos(2_prt*pi*u2);
-            g4 = ln1 * std::sin(2_prt*pi*u2);
-            u1 = amrex::Random(engine);
-            u2 = amrex::Random(engine);
-            ln1 = std::sqrt(-2_prt*std::log(u1));
-            g5 = ln1 * std::cos(2_prt*pi*u2);
-            g6 = ln1 * std::sin(2_prt*pi*u2);
+            box_muller::pair(g1, g2, engine);
+            box_muller::pair(g3, g4, engine);
+            box_muller::pair(g5, g6, engine);
 
             // Scale the last three variables to produce the momenta:
-            amrex::ParticleReal kT = (uhalo > m_w) ? m_T1 : m_T2;  // select core or halo value
-            px = std::sqrt(kT)*g4;
-            py = std::sqrt(kT)*g5;
-            pz = std::sqrt(kT)*g6;
+            // select core or halo value
+            amrex::ParticleReal const sqrtkT = is_halo ? m_sqrtT2 : m_sqrtT1;
+            px = sqrtkT*g4;
+            py = sqrtkT*g5;
+            pz = sqrtkT*g6;
 
             // Normalize the first three variables to produce uniform samples on the unit 3-sphere:
             norm = std::sqrt(g1*g1+g2*g2+g3*g3);
@@ -405,9 +622,10 @@ namespace distribution
             // Collect the radial CDF returned by generate_radial_dist:
 
             // select core or halo CDF
-            amrex::ParticleReal const * cdf = (uhalo > m_w) ? m_cdf1 : m_cdf2;
+            amrex::ParticleReal const * cdf = is_halo ? m_cdf2 : m_cdf1;
 
             // Generate a radial coordinate from the CDF
+            // Since cdf[0] == 0, cdf[m_nbins] == 1 and u is in [0,1), off + 1 <= m_nbins.
             amrex::ParticleReal u = amrex::Random(engine);
             amrex::ParticleReal const * ptr = amrex::lower_bound(cdf, cdf + m_nbins + 1, u);
             int const off = amrex::max(0, int(ptr - cdf - 1));
@@ -436,6 +654,10 @@ namespace distribution
         amrex::ParticleReal m_w;  ///< weight of the secondary (halo) population
 
     private:
+        // constants that are independent of the individually sampled particle,
+        // computed from the parameters above in the constructor
+        amrex::ParticleReal m_sqrtT1, m_sqrtT2; //! sqrt(k*T): rms momentum of each particle population
+
         // radial profile data
         amrex::ParticleReal const * m_cdf1 = nullptr; //! non-owning pointer to device core CDF
         amrex::ParticleReal const * m_cdf2 = nullptr; //! non-owning pointer to device halo CDF

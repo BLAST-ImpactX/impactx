@@ -218,7 +218,8 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
     tol = atol
     if Config.precision == "SINGLE":
         # FIXME: the bend map cancels terms of order rc in single precision,
-        # M^T J M - J is up to 1e-2
+        # M^T J M - J is up to 1e-2; with #1774 and #1776, it is up to 2e-5 and
+        # the default atol holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
         tol = 3.0e-2
     check_symplectic(
@@ -255,7 +256,8 @@ def test_ExactCFbend_multipoles(sim, m, skew):
     tol = atol
     if Config.precision == "SINGLE":
         # FIXME: the bend map cancels terms of order rc in single precision,
-        # M^T J M - J is up to 5e-4
+        # M^T J M - J is up to 5e-4; with #1774 and #1776, it is up to 3e-5 and
+        # the default atol holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
         tol = 2.0e-3
     check_symplectic(el, sim, atol=tol)
@@ -283,7 +285,8 @@ def test_ExactSbend(sim):
     tol = atol
     if Config.precision == "SINGLE":
         # FIXME: the bend map cancels terms of order rc in single precision,
-        # M^T J M - J is up to 6e-4
+        # M^T J M - J is up to 6e-4; with #1776, it is up to 4e-6 and the default
+        # atol holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
         tol = 2.0e-3
     check_symplectic(

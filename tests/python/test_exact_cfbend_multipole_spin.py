@@ -137,10 +137,11 @@ def test_exact_cfbend_multipole_spin():
 
     phase_atol = 1.0e-7
     if Config.precision == "SINGLE":
-        # FIXME: the roundtrip does not close in single precision, position_t is off
-        # by up to 1.6e-3
+        # FIXME: the roundtrip does not close in single precision, off by up to 9e-5:
+        # the multipole kicks lose precision at small curvature; with #1774, it is
+        # off by 1.4e-8 and phase_atol = 1e-7 holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1483
-        phase_atol = 5.0e-3
+        phase_atol = 5.0e-4
     for c in PHASE_COLS:
         np.testing.assert_allclose(
             final_beam_df[c].to_numpy(),
@@ -152,7 +153,8 @@ def test_exact_cfbend_multipole_spin():
     spin_atol = 3.0e-7
     if Config.precision == "SINGLE":
         # FIXME: the roundtrip does not close in single precision, spin_z is off by
-        # up to 2.1e-4
+        # up to 5e-4: the multipole kicks lose precision at small curvature; with
+        # #1774, it is off by 6.6e-7 and spin_atol = 2e-6 holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1483
         spin_atol = 1.0e-3
     for c in SPIN_COLS:

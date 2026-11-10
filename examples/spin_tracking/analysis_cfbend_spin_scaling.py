@@ -58,13 +58,13 @@ print(f"  slope={m}")
 # Test for  quadratic scaling with initial phase space vector:
 rtol = 2.0e-2
 print(f"  rtol={rtol}")
-# assert np.allclose(
-#    [m],
-#    [
-#        2.0,
-#    ],
-#    rtol=rtol,
-# )
+assert np.allclose(
+    [m],
+    [
+        2.0,
+    ],
+    rtol=rtol,
+)
 
 print(":")
 print("Spin difference norm:")
@@ -76,9 +76,10 @@ print(f"  slope={m}")
 # Test for  quadratic scaling with initial phase space vector:
 rtol = 2.0e-2
 if not is_double:
-    # FIXME: in single precision, the fitted slope of the spin difference is 1.7
-    # https://github.com/BLAST-ImpactX/impactx/issues/1484
-    rtol = 0.3
+    # FIXME: in single precision, the multipole kicks lose precision at small
+    # curvature; with #1774, the slope is 2.017 and rtol = 2e-2 holds
+    # https://github.com/BLAST-ImpactX/impactx/issues/1771
+    rtol = 8.0e-2
 print(f"  rtol={rtol}")
 assert np.allclose(
     [m],

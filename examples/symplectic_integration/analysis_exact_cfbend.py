@@ -84,12 +84,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.0e-10
-if not is_double:
-    # FIXME: the beam does not return to its initial moments in single precision,
-    # off by up to 20% (input file) and 0.3% (Python script)
-    # https://github.com/BLAST-ImpactX/impactx/issues/1483
-    rtol = 0.5
+rtol = 1.0e-10 if is_double else 5.0e-5
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

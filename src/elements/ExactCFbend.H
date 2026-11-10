@@ -17,6 +17,7 @@
 #include "mixin/beamoptic.H"
 #include "helper/ArrayValidation.H"
 #include "helper/ExactDriftSlopes.H"
+#include "helper/SectorBend.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/pipeaperture.H"
@@ -141,6 +142,7 @@ namespace impactx::elements
             // find magnetic field and curvature; normalize units to MAD-X convention if needed
             amrex::ParticleReal curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];
             m_rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
+            m_h = curvature;
 
             // arc length and angle of the current slice
             m_slice_ds = m_ds / nslice();
@@ -217,7 +219,6 @@ namespace impactx::elements
                    [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
-            using namespace amrex::Math;  // for powi
 
             amrex::ParticleReal const x = particle(1);
             amrex::ParticleReal const px = particle(2);
@@ -250,41 +251,16 @@ namespace impactx::elements
 
             } else {
 
-               // assign intermediate quantities
-               amrex::ParticleReal const pperp2 = powi<2>(pt)-2.0_prt * m_ibeta * pt - powi<2>(py)+1.0_prt;
-               amrex::ParticleReal const px2 = powi<2>(px);
-
-               // trigonometric evaluations
-               amrex::ParticleReal const slice_phi = tau / m_rc;
-               auto const [sin_phi, cos_phi] = amrex::Math::sincos(slice_phi);
-
-               // determine if particle lies within the domain of map definition
-               if (pperp2 > px2)
-               {
-                   amrex::ParticleReal const pperp = std::sqrt(pperp2);
-                   amrex::ParticleReal const pzi = std::sqrt(powi<2>(pperp) - powi<2>(px));
-                   amrex::ParticleReal const rho = m_rc + x;
-
-                   // update momenta
-                   pxout = px * cos_phi + (pzi - rho / m_rc) * sin_phi;
-                   pyout = py;
-                   ptout = pt;
-
-                   // angle of momentum rotation
-                   amrex::ParticleReal const px2f = powi<2>(pxout);
-                   // determine if particle lies within domain of map definition
-                   if (pperp2 > px2f)
-                   {
-                       amrex::ParticleReal const pzf = std::sqrt(powi<2>(pperp)-powi<2>(pxout));
-                       amrex::ParticleReal const theta = slice_phi + std::asin(px/pperp) - std::asin(pxout/pperp);
-
-                       // update position coordinates
-                       xout = -m_rc + rho*cos_phi + m_rc*(pzf + px*sin_phi - pzi*cos_phi);
-                       yout = y + theta * m_rc * py;
-                       tout = t - theta * m_rc * (pt - 1.0_prt * m_ibeta) - slice_phi * m_rc * m_ibeta;
-
-                   } // else { amrex::Print() << "Warning: outside map domain." << "\n"; }
-               } // else { amrex::Print() << "Warning: outside map domain." << "\n"; }
+               // exact map of the sector bend; outside of its domain, the particle stays
+               amrex::ParticleReal xf = x, pxf = px, yf = y, tf = t;
+               bool const outside = exact_sector_bend(
+                   xf, pxf, yf, tf, py, pt, sector_bend(m_h, tau), m_ibeta);
+               if (!outside) {
+                   xout = xf;
+                   pxout = pxf;
+                   yout = yf;
+                   tout = tf;
+               }
             }
 
             // push particle coordinates
@@ -633,6 +609,7 @@ namespace impactx::elements
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m
         amrex::ParticleReal m_rc;             //! magnet radius of curvature
+        amrex::ParticleReal m_h;              //! curvature of the design orbit
     };
 
     /** An exact combined-function bend: the canonical element that owns its coefficients.
@@ -778,7 +755,6 @@ namespace impactx::elements
         transport_map (RefPart const & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
         {
             using namespace amrex::literals; // for _rt and _prt
-            using namespace amrex::Math;  // for powi
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
@@ -800,61 +776,12 @@ namespace impactx::elements
             amrex::ParticleReal const brho = refpart.rigidity_Tm();
 
             amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / brho : k_normal[0];
-            amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
             // a pure bend carries no quadrupole component, and then supplies no k_normal[1]
             amrex::ParticleReal const kn_raw = static_cast<int>(k_normal_h.size()) > 1 ? k_normal[1] : 0.0_prt;
             amrex::ParticleReal const kn = m_unit == 1 ? kn_raw / brho : kn_raw;
-            amrex::ParticleReal const b2rc2 = amrex::Math::powi<2>(bet) * amrex::Math::powi<2>(rc);
 
-            // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = kn + amrex::Math::powi<-2>(rc);
-            amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
-
-            // update vertical phase space variables
-            amrex::ParticleReal const gy = -kn;
-            amrex::ParticleReal const omega_y = std::sqrt(std::abs(gy));
-
-            // trigonometry
-            auto const [sinx, cosx] = amrex::Math::sincos(omega_x * slice_ds);
-            amrex::ParticleReal const sinhx = std::sinh(omega_x * slice_ds);
-            amrex::ParticleReal const coshx = std::cosh(omega_x * slice_ds);
-            auto const [siny, cosy] = amrex::Math::sincos(omega_y * slice_ds);
-            amrex::ParticleReal const sinhy = std::sinh(omega_y * slice_ds);
-            amrex::ParticleReal const coshy = std::cosh(omega_y * slice_ds);
-
-            // sin(w ds)/w and sinh(w ds)/w, which tend to ds for a vanishing w
-            amrex::ParticleReal const sincx = omega_x != 0_prt ? sinx / omega_x : slice_ds;
-            amrex::ParticleReal const sinhcx = omega_x != 0_prt ? sinhx / omega_x : slice_ds;
-            amrex::ParticleReal const sincy = omega_y != 0_prt ? siny / omega_y : slice_ds;
-            amrex::ParticleReal const sinhcy = omega_y != 0_prt ? sinhy / omega_y : slice_ds;
-
-            // other intermediate quantities with special limiting cases
-            amrex::ParticleReal const coslim = omega_x != 0_prt ? (1_prt - cosx)/gx : 0.5_prt * powi<2>(slice_ds);
-            amrex::ParticleReal const coshlim = omega_x != 0_prt ? (1_prt - coshx)/gx : 0.5_prt * powi<2>(slice_ds);
-            amrex::ParticleReal const sinlim = omega_x != 0_prt ? (sincx - slice_ds)/gx : -powi<3>(slice_ds) / 6_prt;
-            amrex::ParticleReal const sinhlim = omega_x != 0_prt ? (sinhcx - slice_ds)/gx : -powi<3>(slice_ds) / 6_prt;
-
-            amrex::ParticleReal const iobrc = 1_prt / (bet * rc);
-            amrex::ParticleReal const iobrc2 = 1_prt / b2rc2;
-
-            // initialize linear map matrix elements
-            Map6x6 R = Map6x6::Identity();
-
-            R(1,1) = gx > 0_prt ? cosx : coshx;
-            R(1,2) = gx > 0_prt ? sincx : sinhcx;
-            R(1,6) = gx > 0_prt ? -coslim * iobrc : -coshlim * iobrc;
-            R(2,1) = gx > 0_prt ? -omega_x * sinx : omega_x * sinhx;
-            R(2,2) = gx > 0_prt ? cosx : coshx;
-            R(2,6) = gx > 0_prt ? -sincx * iobrc : -sinhcx * iobrc;
-            R(3,3) = gy > 0_prt ? cosy : coshy;
-            R(3,4) = gy > 0_prt ? sincy : sinhcy;
-            R(4,3) = gy > 0_prt ? -omega_y * siny : omega_y * sinhy;
-            R(4,4) = gy > 0_prt ? cosy : coshy;
-            R(5,1) = gx > 0_prt ? sincx * iobrc : sinhcx * iobrc;
-            R(5,2) = gx > 0_prt ? coslim * iobrc : coshlim * iobrc;
-            R(5,6) = gx > 0_prt ?
-                slice_ds * ibetgam2 + sinlim * iobrc2 :
-                slice_ds * ibetgam2 + sinhlim * iobrc2;
+            // linear map of the sector bend with a gradient
+            Map6x6 const R = sector_bend_transport_map(slice_ds, curvature, kn, bet, ibetgam2);
 
             // apply the transverse rotation (roll) alignment error
             return rotate_aligned_map(R);

@@ -56,7 +56,7 @@ m, b = np.polyfit(np.log(norm_phase_space_vector), np.log(norm_phase_space_diff)
 print(f"  slope={m}")
 
 # Test for  quadratic scaling with initial phase space vector:
-rtol = 2.0e-2 if is_double else 8.0e-2
+rtol = 2.0e-2
 print(f"  rtol={rtol}")
 assert np.allclose(
     [m],
@@ -74,7 +74,8 @@ m, b = np.polyfit(np.log(norm_phase_space_vector), np.log(norm_spin_diff), deg=1
 print(f"  slope={m}")
 
 # Test for  quadratic scaling with initial phase space vector:
-rtol = 2.0e-2
+# in single precision, the smallest amplitude is at the rounding floor of the spin rotation
+rtol = 2.0e-2 if is_double else 8.0e-2
 print(f"  rtol={rtol}")
 assert np.allclose(
     [m],

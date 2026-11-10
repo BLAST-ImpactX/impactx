@@ -74,11 +74,8 @@ m, b = np.polyfit(np.log(norm_phase_space_vector), np.log(norm_spin_diff), deg=1
 print(f"  slope={m}")
 
 # Test for  quadratic scaling with initial phase space vector:
-rtol = 2.0e-2
-if not is_double:
-    # FIXME: in single precision, the fitted slope of the spin difference is 1.7
-    # https://github.com/BLAST-ImpactX/impactx/issues/1484
-    rtol = 0.3
+# in single precision, the smallest amplitude is at the rounding floor of the spin rotation
+rtol = 2.0e-2 if is_double else 8.0e-2
 print(f"  rtol={rtol}")
 assert np.allclose(
     [m],

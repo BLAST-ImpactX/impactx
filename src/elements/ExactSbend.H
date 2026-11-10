@@ -21,6 +21,7 @@
 #include "mixin/synchrotronradiation.H"
 #include "mixin/nofinalize.H"
 #include "helper/ExactDriftSlopes.H"
+#include "helper/SectorBend.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -124,10 +125,11 @@ namespace impactx::elements
             amrex::ParticleReal const bend_sign = m_ds * m_rc / std::abs(m_ds * m_rc);
             m_slice_phi = bend_sign * std::abs(m_phi) / nslice();  // the sign is determined by rc/ds
 
-            // trigonometric evaluations
-            auto const [sin_phi, cos_phi] = amrex::Math::sincos(m_slice_phi);
-            m_sin_phi = sin_phi;
-            m_cos_phi = cos_phi;
+            // curvature and arc length of the reference orbit in the slice
+            bool const bend = m_phi != 0_prt || m_B != 0_prt;
+            m_bend = bend ?
+                sector_bend(1_prt / m_rc, m_slice_phi * m_rc) :
+                sector_bend(0_prt, m_slice_ds);
 
             // access reference particle values to find relativistic factors
             m_ibeta = 1_prt / refpart.beta();
@@ -164,7 +166,6 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
             using namespace std; // for cmath(float)
             namespace stdx = amrex::simd::stdx;
 
@@ -172,11 +173,6 @@ namespace impactx::elements
             T_Real const xout = x;
             T_Real const yout = y;
             T_Real const tout = t;
-
-            // initialize output values of momenta
-            T_Real pxout = px;
-            // T_Real pyout = py;
-            // T_Real ptout = pt;
 
             // treat the special case of zero field
             if (m_phi==0_prt && m_B==0_prt) {
@@ -198,42 +194,9 @@ namespace impactx::elements
 
             } else {
 
-               // assign intermediate quantities
-               T_Real const pperp2 = powi<2>(pt)-2.0_prt * m_ibeta * pt - powi<2>(py)+1.0_prt;
-               T_Real const px2 = powi<2>(px);
-               // determine if particle lies within the domain of map definition
-               auto const mask = pperp2 <= px2;
-               amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
-               {
-                   T_Real const pperp = sqrt(pperp2);
-                   T_Real const pzi = sqrt(powi<2>(pperp) - powi<2>(px));
-                   T_Real const rho = m_rc + xout;
-
-                   // update momenta
-                   pxout = px * m_cos_phi + (pzi - rho / m_rc) * m_sin_phi;
-                   // pyout = py;
-                   // ptout = pt;
-
-                   // angle of momentum rotation
-                   T_Real const px2f = powi<2>(pxout);
-                   // determine if particle lies within domain of map definition
-                   auto const mask2 = pperp2 <= px2f;
-                   amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask2);
-                   {
-                       T_Real const pzf = sqrt(powi<2>(pperp)-powi<2>(pxout));
-                       T_Real const theta = m_slice_phi + asin(px/pperp) - asin(pxout/pperp);
-
-                       // update position coordinates
-                       x = -m_rc + rho*m_cos_phi + m_rc*(pzf + px*m_sin_phi - pzi*m_cos_phi);
-                       y = yout + theta * m_rc * py;
-                       t = tout - theta * m_rc * (pt - 1.0_prt * m_ibeta) - m_slice_phi * m_rc * m_ibeta;
-
-                       // assign updated momenta
-                       px = pxout;
-                       // py = pyout;
-                       // pt = ptout;
-                   }
-               }
+               // exact map of the sector bend; particles outside of its domain are lost
+               auto const outside = exact_sector_bend(x, px, y, t, py, pt, m_bend, m_ibeta);
+               amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(outside);
             }
         }
 
@@ -446,7 +409,8 @@ namespace impactx::elements
       private:
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
-        amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_rc, m_sin_phi, m_cos_phi;
+        amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_rc;
+        SectorBend m_bend; //! geometry of the slice
         amrex::ParticleReal m_gyro, m_beta, m_beta_gamma;
 
     };

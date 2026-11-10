@@ -261,7 +261,9 @@ def oscillator(g, s):
 def linear_sector_bend(beta, beta_gamma, h, k, ds):
     """Linear map of the sector bend with a gradient, evaluated with 60 digits
 
-    Returns the map and the size of the terms of R56, which can cancel.
+    Returns the map and the scale of the rounding error of R56: the size of its terms,
+    which can cancel, where (beta gamma)^2 = gamma^2 - 1 of the reference particle's
+    gamma is rounded relative to gamma^2, much larger at low energy.
     """
     with localcontext() as ctx:
         ctx.prec = PREC
@@ -280,14 +282,15 @@ def linear_sector_bend(beta, beta_gamma, h, k, ds):
         R[4][0], R[4][1] = sx * hb, vx * hb
         R56_terms = (ds / beta_gamma**2, ux * hb * hb)
         R[4][5] = sum(R56_terms)
+        gamma2_over_bg2 = (1 + beta_gamma**2) / beta_gamma**2
         return (
             np.array([[float(v) for v in row] for row in R]),
-            sum(abs(float(v)) for v in R56_terms),
+            float(abs(R56_terms[0]) * gamma2_over_bg2 + abs(R56_terms[1])),
         )
 
 
 def check_linear_map(R, R_ref, R56_scale):
-    """Each entry to a few rounding errors, R56 relative to its terms"""
+    """Each entry to a few rounding errors, R56 relative to the scale of its error"""
     eps = np.finfo(np.float32 if Config.precision == "SINGLE" else np.float64).eps
     scale = np.abs(R_ref)
     scale[4, 5] = R56_scale

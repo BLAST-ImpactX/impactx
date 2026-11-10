@@ -755,7 +755,6 @@ namespace impactx::elements
         transport_map (RefPart const & AMREX_RESTRICT refpart) const  // TODO: update as well, but needs more careful placement of calc_constants
         {
             using namespace amrex::literals; // for _rt and _prt
-            using namespace amrex::Math;  // for powi
 
             // length of the current slice
             amrex::ParticleReal const slice_ds = m_ds / nslice();
@@ -777,61 +776,12 @@ namespace impactx::elements
             amrex::ParticleReal const brho = refpart.rigidity_Tm();
 
             amrex::ParticleReal const curvature = m_unit == 1 ? k_normal[0] / brho : k_normal[0];
-            amrex::ParticleReal const rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
             // a pure bend carries no quadrupole component, and then supplies no k_normal[1]
             amrex::ParticleReal const kn_raw = static_cast<int>(k_normal_h.size()) > 1 ? k_normal[1] : 0.0_prt;
             amrex::ParticleReal const kn = m_unit == 1 ? kn_raw / brho : kn_raw;
-            amrex::ParticleReal const b2rc2 = amrex::Math::powi<2>(bet) * amrex::Math::powi<2>(rc);
 
-            // update horizontal and longitudinal phase space variables
-            amrex::ParticleReal const gx = kn + amrex::Math::powi<-2>(rc);
-            amrex::ParticleReal const omega_x = std::sqrt(std::abs(gx));
-
-            // update vertical phase space variables
-            amrex::ParticleReal const gy = -kn;
-            amrex::ParticleReal const omega_y = std::sqrt(std::abs(gy));
-
-            // trigonometry
-            auto const [sinx, cosx] = amrex::Math::sincos(omega_x * slice_ds);
-            amrex::ParticleReal const sinhx = std::sinh(omega_x * slice_ds);
-            amrex::ParticleReal const coshx = std::cosh(omega_x * slice_ds);
-            auto const [siny, cosy] = amrex::Math::sincos(omega_y * slice_ds);
-            amrex::ParticleReal const sinhy = std::sinh(omega_y * slice_ds);
-            amrex::ParticleReal const coshy = std::cosh(omega_y * slice_ds);
-
-            // sin(w ds)/w and sinh(w ds)/w, which tend to ds for a vanishing w
-            amrex::ParticleReal const sincx = omega_x != 0_prt ? sinx / omega_x : slice_ds;
-            amrex::ParticleReal const sinhcx = omega_x != 0_prt ? sinhx / omega_x : slice_ds;
-            amrex::ParticleReal const sincy = omega_y != 0_prt ? siny / omega_y : slice_ds;
-            amrex::ParticleReal const sinhcy = omega_y != 0_prt ? sinhy / omega_y : slice_ds;
-
-            // other intermediate quantities with special limiting cases
-            amrex::ParticleReal const coslim = omega_x != 0_prt ? (1_prt - cosx)/gx : 0.5_prt * powi<2>(slice_ds);
-            amrex::ParticleReal const coshlim = omega_x != 0_prt ? (1_prt - coshx)/gx : 0.5_prt * powi<2>(slice_ds);
-            amrex::ParticleReal const sinlim = omega_x != 0_prt ? (sincx - slice_ds)/gx : -powi<3>(slice_ds) / 6_prt;
-            amrex::ParticleReal const sinhlim = omega_x != 0_prt ? (sinhcx - slice_ds)/gx : -powi<3>(slice_ds) / 6_prt;
-
-            amrex::ParticleReal const iobrc = 1_prt / (bet * rc);
-            amrex::ParticleReal const iobrc2 = 1_prt / b2rc2;
-
-            // initialize linear map matrix elements
-            Map6x6 R = Map6x6::Identity();
-
-            R(1,1) = gx > 0_prt ? cosx : coshx;
-            R(1,2) = gx > 0_prt ? sincx : sinhcx;
-            R(1,6) = gx > 0_prt ? -coslim * iobrc : -coshlim * iobrc;
-            R(2,1) = gx > 0_prt ? -omega_x * sinx : omega_x * sinhx;
-            R(2,2) = gx > 0_prt ? cosx : coshx;
-            R(2,6) = gx > 0_prt ? -sincx * iobrc : -sinhcx * iobrc;
-            R(3,3) = gy > 0_prt ? cosy : coshy;
-            R(3,4) = gy > 0_prt ? sincy : sinhcy;
-            R(4,3) = gy > 0_prt ? -omega_y * siny : omega_y * sinhy;
-            R(4,4) = gy > 0_prt ? cosy : coshy;
-            R(5,1) = gx > 0_prt ? sincx * iobrc : sinhcx * iobrc;
-            R(5,2) = gx > 0_prt ? coslim * iobrc : coshlim * iobrc;
-            R(5,6) = gx > 0_prt ?
-                slice_ds * ibetgam2 + sinlim * iobrc2 :
-                slice_ds * ibetgam2 + sinhlim * iobrc2;
+            // linear map of the sector bend with a gradient
+            Map6x6 const R = sector_bend_transport_map(slice_ds, curvature, kn, bet, ibetgam2);
 
             // apply the transverse rotation (roll) alignment error
             return rotate_aligned_map(R);

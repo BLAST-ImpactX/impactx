@@ -11,6 +11,7 @@
 #define IMPACTX_ELEMENTS_HELPER_SECTORBEND_H
 
 #include "Stumpff.H"
+#include "particles/CovarianceMatrix.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_GpuQualifiers.H>
@@ -152,6 +153,57 @@ namespace impactx::elements
         t = t - bend.L * pt - rc_dtheta * (pt - ibeta);
 
         return outside;
+    }
+
+    /** Linear transport map of a sector bend with a quadrupole gradient
+     *
+     * The horizontal motion is a harmonic oscillator of strength gx = h^2 + k and the
+     * vertical one of strength gy = -k, of any sign. With the Stumpff functions c_j of
+     * z = g ds^2, the map entries have no cancellation, also for weak bends, and are
+     * finite at h = 0 and g = 0.
+     *
+     * @param ds arc length of the reference orbit [m]
+     * @param h curvature of the reference orbit, 1/rc [1/m]
+     * @param k quadrupole strength [1/m^2], horizontally focusing for k > 0
+     * @param beta relativistic beta of the reference particle
+     * @param ibetagam2 1/(beta gamma)^2 of the reference particle
+     * @return 6x6 transport matrix
+     */
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    Map6x6
+    sector_bend_transport_map (
+        amrex::ParticleReal ds,
+        amrex::ParticleReal h,
+        amrex::ParticleReal k,
+        amrex::ParticleReal beta,
+        amrex::ParticleReal ibetagam2
+    )
+    {
+        amrex::ParticleReal const gx = k + h * h;
+        amrex::ParticleReal const gy = -k;
+        auto const cx = stumpff(gx * ds * ds);
+        auto const cy = stumpff(gy * ds * ds);
+
+        // 1 / (beta rc)
+        amrex::ParticleReal const hb = h / beta;
+
+        Map6x6 R = Map6x6::Identity();
+
+        R(1,1) = cx.c0;
+        R(1,2) = ds * cx.c1;
+        R(1,6) = -ds * ds * cx.c2 * hb;
+        R(2,1) = -gx * ds * cx.c1;
+        R(2,2) = cx.c0;
+        R(2,6) = -ds * cx.c1 * hb;
+        R(3,3) = cy.c0;
+        R(3,4) = ds * cy.c1;
+        R(4,3) = -gy * ds * cy.c1;
+        R(4,4) = cy.c0;
+        R(5,1) = ds * cx.c1 * hb;
+        R(5,2) = ds * ds * cx.c2 * hb;
+        R(5,6) = ds * ibetagam2 - ds * ds * ds * cx.c3 * hb * hb;
+
+        return R;
     }
 
 } // namespace impactx::elements

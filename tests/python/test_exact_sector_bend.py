@@ -7,12 +7,13 @@
 #
 # -*- coding: utf-8 -*-
 
-"""Exact map of the sector bend, from strong to very weak bends.
+"""Exact map of the sector bend, and its linear map, from strong to very weak bends.
 
 In a sector bend of radius rc, the exact map moves a particle by a small amount
 compared to rc. The elements ExactSbend and ExactCFbend (with only a dipole) must
 reproduce this map to rounding, relative to the change of each coordinate, also for
-|x/rc| << 1.
+|x/rc| << 1. Their linear maps must be accurate to rounding for any curvature and
+gradient, including zero.
 """
 
 from decimal import Decimal, localcontext
@@ -20,7 +21,7 @@ from decimal import Decimal, localcontext
 import numpy as np
 import pytest
 
-from impactx import Config, ImpactX, elements
+from impactx import Config, ImpactX, RefPart, elements
 
 DS = 0.7  # element length [m]
 
@@ -230,3 +231,94 @@ def test_exact_sector_bend_half_turn():
     element = elements.ExactSbend(ds=ds, phi=180.0)
     initial, final, beta = push(element, 1.0e3, particles)
     check_exact_sector_bend(initial, final, beta, rc, ds)
+
+
+# combined-function bends (curvature h [1/m], gradient k [1/m^2]): a weak dipole,
+# focusing and defocusing in x, without curvature, and gx = h^2 + k = 0
+CF_BENDS = {
+    "dipole": (-1.0 / 1060.0, 0.0),
+    "focusing": (1.0 / 40.7, 0.8),
+    "defocusing": (-1.0 / 1060.0, -2.5),
+    "straight": (0.0, 0.8),
+    "gx=0": (0.5, -0.25),
+}
+
+
+def oscillator(g, s):
+    """cos(w s), sin(w s)/w, (1 - cos(w s))/g and (sin(w s)/w - s)/g for g = w^2,
+    and their hyperbolic counterparts for g < 0"""
+    if g == 0:
+        return Decimal(1), s, s * s / 2, -(s**3) / 6
+    w = abs(g).sqrt()
+    if g > 0:
+        sin_ws, cos_ws = sin_cos(w * s)
+    else:
+        e = (w * s).exp()
+        sin_ws, cos_ws = (e - 1 / e) / 2, (e + 1 / e) / 2
+    return cos_ws, sin_ws / w, (1 - cos_ws) / g, (sin_ws / w - s) / g
+
+
+def linear_sector_bend(beta, beta_gamma, h, k, ds):
+    """Linear map of the sector bend with a gradient, evaluated with 60 digits
+
+    Returns the map and the size of the terms of R56, which can cancel.
+    """
+    with localcontext() as ctx:
+        ctx.prec = PREC
+        beta, beta_gamma = Decimal(beta), Decimal(beta_gamma)
+        h, k, ds = Decimal(h), Decimal(k), Decimal(ds)
+        gx, gy = k + h * h, -k
+        cx, sx, vx, ux = oscillator(gx, ds)
+        cy, sy, _, _ = oscillator(gy, ds)
+        hb = h / beta
+
+        R = [[Decimal(int(i == j)) for j in range(6)] for i in range(6)]
+        R[0][0], R[0][1], R[0][5] = cx, sx, -vx * hb
+        R[1][0], R[1][1], R[1][5] = -gx * sx, cx, -sx * hb
+        R[2][2], R[2][3] = cy, sy
+        R[3][2], R[3][3] = -gy * sy, cy
+        R[4][0], R[4][1] = sx * hb, vx * hb
+        R56_terms = (ds / beta_gamma**2, ux * hb * hb)
+        R[4][5] = sum(R56_terms)
+        return (
+            np.array([[float(v) for v in row] for row in R]),
+            sum(abs(float(v)) for v in R56_terms),
+        )
+
+
+def check_linear_map(R, R_ref, R56_scale):
+    """Each entry to a few rounding errors, R56 relative to its terms"""
+    eps = np.finfo(np.float32 if Config.precision == "SINGLE" else np.float64).eps
+    scale = np.abs(R_ref)
+    scale[4, 5] = R56_scale
+    error = np.abs(R - R_ref)
+    assert np.all(error <= 32.0 * eps * scale), error / (
+        eps * np.maximum(scale, 1e-300)
+    )
+
+
+@pytest.mark.parametrize("bend", RC.keys())
+@pytest.mark.parametrize("kin_energy_MeV", [1.0e-3, 1.0e3], ids=["1keV", "1GeV"])
+def test_sbend_linear_map(bend, kin_energy_MeV):
+    """The linear map of ExactSbend, for any curvature"""
+    ref = RefPart()
+    ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
+
+    rc = RC[bend]
+    R = ELEMENTS["ExactSbend"](rc).transfer_map(ref).to_numpy()
+    R_ref, R56_scale = linear_sector_bend(ref.beta, ref.beta_gamma, 1.0 / rc, 0.0, DS)
+    check_linear_map(R, R_ref, R56_scale)
+
+
+@pytest.mark.parametrize("bend", CF_BENDS.keys())
+@pytest.mark.parametrize("kin_energy_MeV", [1.0e-3, 1.0e3], ids=["1keV", "1GeV"])
+def test_cfbend_linear_map(bend, kin_energy_MeV):
+    """The linear map of ExactCFbend, for any curvature and gradient"""
+    ref = RefPart()
+    ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
+
+    h, k = CF_BENDS[bend]
+    element = elements.ExactCFbend(ds=DS, k_normal=[h, k], k_skew=[0.0, 0.0])
+    R = element.transfer_map(ref).to_numpy()
+    R_ref, R56_scale = linear_sector_bend(ref.beta, ref.beta_gamma, h, k, DS)
+    check_linear_map(R, R_ref, R56_scale)

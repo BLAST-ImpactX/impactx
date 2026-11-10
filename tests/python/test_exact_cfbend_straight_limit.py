@@ -92,7 +92,8 @@ def test_exact_cfbend_small_curvature(m, skew):
     rtol = 1.0e-5
     if Config.precision == "SINGLE":
         # FIXME: the bend map rounds x to multiples of eps * rc in single precision,
-        # which changes the kick by up to 0.1
+        # which changes the kick by up to 0.1; with #1776, the error is up to 4e-6
+        # and rtol = 1e-5 holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
         rtol = 0.3
     assert np.all(error < rtol), error

@@ -6,7 +6,14 @@ from __future__ import annotations
 
 import typing
 
-__all__: list[str] = ["Alignment", "Named", "PipeAperture", "Thick", "Thin"]
+__all__: list[str] = [
+    "Alignment",
+    "Named",
+    "PipeAperture",
+    "RepeatedMask",
+    "Thick",
+    "Thin",
+]
 
 class Named:
     @property
@@ -85,3 +92,38 @@ class PipeAperture:
         """
     @aperture_y.setter
     def aperture_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+
+class RepeatedMask:
+    def set_repeat(
+        self,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex,
+        shift_odd_x: bool,
+    ) -> None:
+        """
+        Set the periods and the odd-row shift at once.
+
+        They are validated together and applied as one step, so a rejected update
+        leaves the element unchanged.
+        """
+    @property
+    def repeat_x(self) -> float:
+        """
+        horizontal period for repeated aperture masking in m; zero disables the repetition
+        """
+    @repeat_x.setter
+    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def repeat_y(self) -> float:
+        """
+        vertical period for repeated aperture masking in m; zero disables the repetition
+        """
+    @repeat_y.setter
+    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def shift_odd_x(self) -> bool:
+        """
+        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Requires repeat_x and repeat_y. Use alignment offsets dx,dy to move whole mask as needed.
+        """
+    @shift_odd_x.setter
+    def shift_odd_x(self, arg1: bool) -> None: ...

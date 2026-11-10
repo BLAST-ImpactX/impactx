@@ -112,7 +112,9 @@ class BeamMonitor(mixin.Thin):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -283,7 +285,7 @@ class BeamMonitor(mixin.Thin):
     @tn.setter
     def tn(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
+class Aperture(mixin.Named, mixin.Thin, mixin.Alignment, mixin.RepeatedMask):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -341,7 +343,9 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -460,33 +464,12 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
     @aperture_y.setter
     def aperture_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
-    def repeat_x(self) -> float:
-        """
-        horizontal period for repeated aperture masking
-        """
-    @repeat_x.setter
-    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def repeat_y(self) -> float:
-        """
-        vertical period for repeated aperture masking
-        """
-    @repeat_y.setter
-    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
     def shape(self) -> str:
         """
         aperture type (rectangular, elliptical)
         """
     @shape.setter
     def shape(self, arg1: str) -> None: ...
-    @property
-    def shift_odd_x(self) -> bool:
-        """
-        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
-        """
-    @shift_odd_x.setter
-    def shift_odd_x(self, arg1: bool) -> None: ...
 
 class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -543,7 +526,9 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -698,7 +683,9 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -867,7 +854,9 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -1036,7 +1025,9 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -1206,7 +1197,9 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -1392,7 +1385,9 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -1644,7 +1639,9 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -1811,7 +1808,9 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -1964,7 +1963,9 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -2122,7 +2123,9 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -2338,7 +2341,9 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -2553,7 +2558,9 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -2736,7 +2743,9 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -2908,7 +2917,9 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -3076,7 +3087,9 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -3240,7 +3253,9 @@ class Empty(mixin.Named, mixin.Thin):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -3383,7 +3398,9 @@ class Marker(mixin.Named, mixin.Thin):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -3536,7 +3553,9 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -3700,7 +3719,9 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -3805,7 +3826,7 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
     @angle.setter
     def angle(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
+class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment, mixin.RepeatedMask):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -3867,7 +3888,9 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -3996,27 +4019,6 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         self, arg1: typing.SupportsFloat | typing.SupportsIndex
     ) -> None: ...
     @property
-    def repeat_x(self) -> float:
-        """
-        horizontal period for repeated aperture masking
-        """
-    @repeat_x.setter
-    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def repeat_y(self) -> float:
-        """
-        vertical period for repeated aperture masking
-        """
-    @repeat_y.setter
-    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def shift_odd_x(self) -> bool:
-        """
-        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
-        """
-    @shift_odd_x.setter
-    def shift_odd_x(self, arg1: bool) -> None: ...
-    @property
     def vertices_x(self) -> list[float]:
         """
         horizontal vertex coordinates in m
@@ -4094,7 +4096,9 @@ class Programmable(mixin.Named):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4274,7 +4278,9 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -4450,7 +4456,9 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -4685,7 +4693,9 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -4844,7 +4854,9 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -5011,7 +5023,9 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -5179,7 +5193,9 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -5364,7 +5380,9 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -5597,7 +5615,9 @@ class Source(mixin.Named, mixin.Thin):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -5797,7 +5817,9 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -5952,7 +5974,9 @@ class PRot(mixin.Named, mixin.Thin):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -6129,7 +6153,9 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -6349,7 +6375,9 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -6516,7 +6544,9 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -6690,7 +6720,9 @@ class LinearMap(mixin.Named, mixin.Alignment, mixin.PipeAperture):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -6871,7 +6903,9 @@ class SpinMap(mixin.Named, mixin.Alignment):
 
         Parameters that only mean something as a pair -- the cosine and sine
         coefficients, the normal and skew coefficients, the polygon vertices -- are
-        given together, as the constructor takes them.
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
         """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):

@@ -150,6 +150,13 @@ The skew dipole coefficient ``k_skew[0]`` of :py:class:`~impactx.elements.ExactC
 Previously, only the spin push used it.
 This changes the results of lattices with a nonzero ``k_skew[0]`` in an ``ExactCFbend``.
 
+``ExactCFbend``: sign of the skew decapole
+""""""""""""""""""""""""""""""""""""""""""
+
+The horizontal kick of the skew decapole coefficient ``k_skew[4]`` of :py:class:`~impactx.elements.ExactCFbend` now has the sign of its field: to leading order, the kick of the same coefficient in :py:class:`~impactx.elements.ExactMultipole`.
+Previously, this kick and the vertical field in the spin push had the opposite sign, so the particle map was not symplectic.
+This changes the results of lattices with a nonzero ``k_skew[4]`` in an ``ExactCFbend``.
+
 MAD-X ``BEAM``: reference particle and energy as in MAD-X
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""
 

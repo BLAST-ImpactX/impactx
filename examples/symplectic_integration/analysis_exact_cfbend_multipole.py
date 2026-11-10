@@ -87,7 +87,8 @@ atol = 0.0  # ignored
 rtol = 1.0e-4
 if not is_double:
     # FIXME: the beam does not return to its initial moments in single precision,
-    # off by up to 75%
+    # off by up to 41%: the multipole kicks lose precision at small curvature;
+    # with #1774, it is off by 7e-8 and rtol = 1e-4 holds
     # https://github.com/BLAST-ImpactX/impactx/issues/1483
     rtol = 1.5
 print(f"  rtol={rtol} (ignored: atol~={atol})")

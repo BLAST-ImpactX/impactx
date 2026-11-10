@@ -9,7 +9,7 @@
 import numpy as np
 
 import amrex.space3d as amr
-from impactx import ImpactX, distribution, elements, fourier_coefficients
+from impactx import ImpactX, elements, fourier_coefficients
 
 sim = ImpactX()
 
@@ -99,7 +99,7 @@ quad_lin = elements.SoftQuadrupole(
     name="quad1",
     ds=1.5,
     gscale=1.0,
-    cos_coefficients=cos_coeffs,           
+    cos_coefficients=cos_coeffs,
     sin_coefficients=sin_coeffs,
     mapsteps=200,
     nslice=ns,
@@ -114,7 +114,7 @@ quad_chr_inv = elements.ChrSoftQuadrupole(
     mapsteps=200,
     nslice=ns,
 )
-        
+
 quad_lin_inv = elements.SoftQuadrupole(
     name="quad1",
     ds=-1.5,
@@ -122,7 +122,7 @@ quad_lin_inv = elements.SoftQuadrupole(
     cos_coefficients=cos_coeffs,
     sin_coefficients=sin_coeffs,
     mapsteps=200,
-    nslice=ns,   
+    nslice=ns,
 )
 
 

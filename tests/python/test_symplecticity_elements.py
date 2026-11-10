@@ -79,7 +79,7 @@ def check_symplectic(el, sim, center=CENTER, atol=atol):
 
 
 @pytest.mark.parametrize("skew", [False, True], ids=["normal", "skew"])
-@pytest.mark.parametrize("m", [1, 2, 3, 4])
+@pytest.mark.parametrize("m", range(1, 12))
 def test_ExactCFbend(sim, m, skew):
     """Each curvilinear multipole of index m (quadrupole: m = 1), with the same
     field at r = 5 cm for all orders

@@ -747,8 +747,12 @@ def test_RFCavity(sim, mapsteps):
         ),
         sim,
         # in single precision, the reference momentum of about 2e3 accumulates one
-        # rounding per map step: up to 1.6e-3 for 64 steps forward and back
-        ref_atol=4.0e-3 if Config.precision == "SINGLE" else ref_atol,
+        # rounding per map step: 7e-4 for 32 and 1.6e-3 for 64 steps forward and back
+        ref_atol=(
+            max(ref_atol, 5.0e-5 * mapsteps)
+            if Config.precision == "SINGLE"
+            else ref_atol
+        ),
     )
 
 

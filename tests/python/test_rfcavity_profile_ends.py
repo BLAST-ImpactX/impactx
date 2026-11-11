@@ -46,13 +46,14 @@ def electron_1GeV():
 
 
 def assert_maps_equal(maps):
-    """All maps agree with the first, relative to its largest entry"""
+    """All maps agree with the first, entry by entry to rtol, and entries close to
+    zero to a tenth of rtol of the largest entry"""
     maps = np.array(maps, dtype=np.float64)
     np.testing.assert_allclose(
         maps,
         np.broadcast_to(maps[0], maps.shape),
-        rtol=0.0,
-        atol=rtol * np.abs(maps[0]).max(),
+        rtol=rtol,
+        atol=0.1 * rtol * np.abs(maps[0]).max(),
     )
 
 
@@ -70,9 +71,12 @@ def test_map_is_continuous_in_ds(mapsteps):
     assert_maps_equal(maps)
 
 
-@pytest.mark.parametrize("nslice", [1, 2, 3, 4, 5, 8])
+@pytest.mark.parametrize("nslice", [2, 3, 4, 5, 8])
 def test_map_is_independent_of_s(nslice):
-    """The map of a cavity is the same at any position s in the beamline"""
+    """The map of a cavity is the same at any position s in the beamline
+
+    The first slice starts at s - sedge = 0 exactly, so at least two slices.
+    """
     lattice = elements.KnownElementsList()
     lattice.append(elements.RFCavity(ds=DS, nslice=nslice, **PROFILE))
     maps = []

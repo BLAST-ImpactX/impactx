@@ -277,14 +277,17 @@ namespace impactx::elements
          *  z, together with certain required integrals and derivatives.
          *  The field returned is normalized to a peak value of 1.
          *
+         *  The field profile lies on 0 <= zeval <= |ds|. A location outside of it
+         *  returns the values at the nearest end of the profile.
+         *
          * @param zeval Longitudinal on-axis location in m
+         * @return the field, its derivative in z, and an antiderivative of it in z
          */
         std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         RF_Efield (amrex::ParticleReal const zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
 
             // the coefficients were resolved to this pusher's execution space when it
             // was prepared, so there is a single copy of the field expansion below
@@ -298,28 +301,23 @@ namespace impactx::elements
             amrex::ParticleReal const zmid = zlen * 0.5_prt;
 
             // compute on-axis electric field (z is relative to cavity midpoint)
-            amrex::ParticleReal efield = 0.0;
-            amrex::ParticleReal efieldp = 0.0;
-            amrex::ParticleReal efieldpp = 0.0;
-            amrex::ParticleReal efieldint = 0.0;
-            // The profile lies on 0 <= zeval <= zlen. The integration accumulates zeval
-            // step by step, and round-off can put an evaluation at an end of the profile
-            // a few ulp outside of it: evaluate at the end itself, so that the field,
-            // its slope and its integral are continuous in zeval.
+            //   The integration accumulates zeval step by step, and round-off can put an
+            //   evaluation at an end of the profile a few ulp outside of it: evaluate at
+            //   the end itself, so that the field, its slope and its integral are
+            //   continuous in zeval.
             amrex::ParticleReal const z = amrex::Clamp(zeval - zmid, -zmid, zmid);
 
-            efield = 0.5_prt*cos_data[0];
-            efieldint = z*efield;
+            amrex::ParticleReal efield = 0.5_prt*cos_data[0];
+            amrex::ParticleReal efieldp = 0.0_prt;
+            amrex::ParticleReal efieldint = z*efield;
             for (int j=1; j < ncoef; ++j)
             {
-              efield = efield + cos_data[j] * std::cos(j*2*pi*z/zlen) +
-                  sin_data[j] * std::sin(j*2*pi*z/zlen);
-              efieldp = efieldp-j*2*pi*cos_data[j] * std::sin(j*2*pi*z/zlen)/zlen +
-                   j*2*pi*sin_data[j] * std::cos(j*2*pi*z/zlen)/zlen;
-              efieldpp = efieldpp- powi<2>(j*2*pi*cos_data[j]/zlen)  * std::cos(j*2*pi*z/zlen) -
-                  powi<2>(j*2*pi*sin_data[j]/zlen)  * std::sin(j*2*pi*z/zlen);
-              efieldint = efieldint + zlen*cos_data[j] * std::sin(j*2*pi*z/zlen)/(j*2*pi) -
-                   zlen*sin_data[j] * std::cos(j*2*pi*z/zlen)/(j*2*pi);
+                efield = efield + cos_data[j] * std::cos(j*2*pi*z/zlen) +
+                    sin_data[j] * std::sin(j*2*pi*z/zlen);
+                efieldp = efieldp-j*2*pi*cos_data[j] * std::sin(j*2*pi*z/zlen)/zlen +
+                     j*2*pi*sin_data[j] * std::cos(j*2*pi*z/zlen)/zlen;
+                efieldint = efieldint + zlen*cos_data[j] * std::sin(j*2*pi*z/zlen)/(j*2*pi) -
+                     zlen*sin_data[j] * std::cos(j*2*pi*z/zlen)/(j*2*pi);
             }
             return std::make_tuple(efield, efieldp, efieldint);
         }

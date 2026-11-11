@@ -703,7 +703,10 @@ def test_ShortRF(sim):
 # Spin reversibility is not validated here: with finite mapsteps the spin
 # precession reverse is not the exact inverse of the forward push, leaving an
 # O(1e-3) residual. Keep nospin-only (the benchmark covers the forward spin push).
-def test_RFCavity(sim):
+# Several mapsteps: depending on the round-off of the integration steps, the last
+# evaluation of the field profile lands at its end or a few ulp outside of it.
+@pytest.mark.parametrize("mapsteps", [1, 3, 4, 7, 10, 14, 32, 64])
+def test_RFCavity(sim, mapsteps):
     roundtrip(
         elements.RFCavity(
             ds=1.31879807,
@@ -743,7 +746,9 @@ def test_RFCavity(sim):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=5e-4,  # energy-changing element: finite mapsteps limit roundtrip precision
+        # in single precision, the reference momentum of about 2e3 accumulates one
+        # rounding per map step: up to 1.6e-3 for 64 steps forward and back
+        ref_atol=4.0e-3 if Config.precision == "SINGLE" else ref_atol,
     )
 
 

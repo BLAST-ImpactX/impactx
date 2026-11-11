@@ -199,23 +199,23 @@ coordinates, now raise an error, e.g., a ``RuntimeError`` in ``sim.add_particles
 - ``halo > 0`` with ``normalize_halo = 0``: for a beam without a halo, set ``halo = 0``.
 - ``halo < 1`` with ``normalize = 0``: for a beam without a core, set ``halo = 1``.
 
-MAD-X files: evaluation of ``^``
-""""""""""""""""""""""""""""""""
+MAD-X files: powers and signs
+"""""""""""""""""""""""""""""
 
 :py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
-:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate powers in MAD-X files as MAD-X does: ``a^b^c`` is
-``(a^b)^c``, and ``-a^b`` is ``-(a^b)``.
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate a sign before a power in MAD-X files as MAD-X does:
+``-a^b`` is ``-(a^b)``.
+A chained power, ``a^b^c``, and a sign directly after an operator, as in ``a*-b`` or ``a^-b``, now raise a
+``MADXInputError``, because MAD-X evaluates them differently from the usual rules.
 
-**What to check in your MAD-X files:** more than one ``^`` in an expression, and a sign directly before a power. A
-subtraction, ``a-b^2``, is not affected. To keep the previous meaning, add parentheses:
+**What to check in your MAD-X files:** a sign directly before a power, more than one ``^`` in an expression, and a sign
+directly after an operator. A subtraction, ``a-b^2``, is not affected. Add parentheses:
 
 .. code-block:: text
 
-   k = a^(b^c);  ! previously a^b^c:  2^3^2 was 512, now 64
-   k = (-a)^b;   ! previously -a^b:   -2^2 was 4, now -4
-
-ImpactX also accepts a sign directly after an operator, as in ``a*-b^2`` or ``a^-b^c``, which MAD-X does not support: write
-these with parentheses. Their values change as well, e.g., ``2^-3^2`` was 512 and is now 0.015625, and ``2^((-3)^2)`` is 512.
+   k = (-a)^b;   ! previously -a^b:  -2^2 was 4, now -4
+   k = a^(b^c);  ! previously a^b^c, now an error
+   k = a*(-b);   ! previously a*-b,  now an error
 
 ``Hminus``: gyromagnetic anomaly follows the shielded proton moment
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

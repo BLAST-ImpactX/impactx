@@ -16,6 +16,7 @@ References:
 """
 
 import math
+import re
 import warnings
 
 import pytest
@@ -1502,15 +1503,10 @@ def tight_approx(expected):
 @pytest.mark.parametrize(
     "expression, expected",
     [
-        ("2^3^2", 64.0),
-        ("2^2^3^2", 4096.0),
         ("(2^3)^2", 64.0),
         ("2^(3^2)", 512.0),
-        ("3*2^3^2", 192.0),
-        ("2^3^2*3", 192.0),
         ("2^(-1)", 0.5),
         ("-2^2", -4.0),
-        ("-2^3^2", -64.0),
         ("-2^2*3", -12.0),
         ("-2^2+1", -3.0),
         ("(-2^2)", -4.0),
@@ -1520,13 +1516,18 @@ def tight_approx(expected):
         ("(-2)^2", 4.0),
         ("-(2^2)", -4.0),
         ("1-2^2", -3.0),
+        ("-2*3", -6.0),
+        ("3*(-2)", -6.0),
+        ("-(-2)", 2.0),
+        ("2*exp(-1)", 0.73575888234288467),
     ],
 )
 def test_power_as_in_madx(expression, expected):
-    """``^`` is left associative and binds tighter than a sign, as in MAD-X.
+    """``^`` binds tighter than a sign, as in MAD-X.
 
-    See polish_expr and polish_value in src/mad_eval.c. The expected values
-    are from MAD-X 5.09.03.
+    A sign at the start of an expression and after ``(`` applies to the whole
+    power. See polish_expr and polish_value in src/mad_eval.c and pre_split in
+    src/mad_parse.c. The expected values are from MAD-X 5.09.03.
     """
     parser = MADXParser()
     parser.parse_string(f"X = {expression};\n")
@@ -1534,40 +1535,151 @@ def test_power_as_in_madx(expression, expected):
 
 
 @pytest.mark.parametrize(
-    "expression, expected",
+    "expression, pattern",
     [
-        ("2^-1", 0.5),
-        ("2^-1^2", 0.25),
-        ("-2^-2", -0.25),
-        ("3*-2", -6.0),
-        ("3*-2^2", -12.0),
-        ("2--3", 5.0),
-        ("2+-3", -1.0),
+        ("3*-2", "*-"),
+        ("3/-2", "/-"),
+        ("3*+2", "*+"),
+        ("2--3", "--"),
+        ("2+-3", "+-"),
+        ("3-+2", "-+"),
+        ("2^-1", "^-"),
+        ("-2^-2", "^-"),
+        ("3 * - 2", "*-"),
+        ("10 + 3*-2", "*-"),
+        ("(3*-2)", "*-"),
+        ("(3--2)", "--"),
+        ("(2^-1)", "^-"),
+        ("sqrt(2^-2)", "^-"),
     ],
 )
-def test_signed_operand_impactx_only(expression, expected):
-    """ImpactX-only leniency: a sign directly after a binary operator.
+def test_sign_after_operator_raises(expression, pattern):
+    """A sign directly after an operator raises, as MAD-X does not evaluate it as written.
 
-    MAD-X rejects these as illegal expressions (loc_expr, src/mad_expr.c), so
-    there is no MAD-X value to compare with. The sign belongs to the operand
-    that follows it: ``a^-b^c`` is ``(a^(-b))^c`` and ``a*-b^c`` is
-    ``a*(-(b^c))``.
+    MAD-X rejects these outside of parentheses (loc_expr, src/mad_expr.c).
+    Inside of them, it applies an operator that lacks its left operand to 0
+    (polish_value, src/mad_eval.c): in MAD-X 5.09.03, (3*-2) is -2, (3--2) is
+    -5, (2^-1) is -1 and sqrt(2^-2) is NaN.
     """
+    parser = MADXParser()
+    with pytest.raises(
+        MADXInputError,
+        match=re.escape(f'a sign directly after an operator, "{pattern}"'),
+    ):
+        parser.parse_string(f"X = {expression};\n")
+
+
+@pytest.mark.parametrize(
+    "expression, pattern",
+    [
+        ("--2", "--"),
+        ("+-2", "+-"),
+        ("(--2)", "--"),
+        ("1 + (-+2)", "-+"),
+    ],
+)
+def test_two_leading_signs_raise(expression, pattern):
+    """Two signs in a row raise. In MAD-X 5.09.03, (--2) is -2."""
+    parser = MADXParser()
+    with pytest.raises(
+        MADXInputError, match=re.escape(f'two signs in a row, "{pattern}"')
+    ):
+        parser.parse_string(f"X = {expression};\n")
+
+
+@pytest.mark.parametrize(
+    "expression",
+    [
+        "2^3^2",
+        "2^2^3^2",
+        "3*2^3^2",
+        "2^3^2*3",
+        "-2^3^2",
+        "(2^3)^2^2",
+        "sqrt(4)^2^2",
+    ],
+)
+def test_chained_power_raises(expression):
+    """A chained power raises: MAD-X evaluates it from the left, 2^3^2 = 64.
+
+    See polish_expr in src/mad_eval.c; the usual reading is 2^(3^2) = 512.
+    """
+    parser = MADXParser()
+    with pytest.raises(MADXInputError, match="a chained power"):
+        parser.parse_string(f"X = {expression};\n")
+
+
+@pytest.mark.parametrize(
+    "statements",
+    [
+        "A = 3; B = 2; X := A*-B;",
+        "CONST X = 2*-1;",
+        "INT N = 2*-1;",
+        "A = 3; B = 2; Q: QUADRUPOLE, L=1, K1=(A*-B);",
+        "A = 3; B = 2; Q: QUADRUPOLE, L=1, K1:=A^B^2;",
+        "M: MULTIPOLE, KNL={0, 2*-1};",
+        "S: SEQUENCE, L=10; Q: QUADRUPOLE, L=1, AT=5*-1; ENDSEQUENCE;",
+        "BEAM, PARTICLE=PROTON, ENERGY=2*-1;",
+        "BEAM, PARTICLE=PROTON, ENERGY=2; BEAM->ENERGY = 2*-1;",
+        "X = 1; IF (X > 2*-1) { Y = 1; }",
+        "X = 1; WHILE (X < 2^2^2) { X = X + 1; }",
+        "X = MAX(1, 2*-1);",
+        'X := 1; ADD2EXPR, VAR=X, EXPR="2*-1";',
+    ],
+)
+def test_unsupported_expression_contexts(statements):
+    """Every kind of statement raises for these forms, also deferred ones."""
+    parser = MADXParser()
+    with pytest.raises(MADXInputError, match="is not supported"):
+        parser.parse_string(statements + "\n")
+
+
+@pytest.mark.parametrize(
+    "expression, expected",
+    [
+        ("-2", -2.0),
+        ("+2", 2.0),
+        ("3*(+2)", 6.0),
+        ("max(-1, -2)", -1.0),
+        ("1e-3*2", 0.002),
+        ("1.d-3*2", 0.002),
+        ("1E+3*2", 2000.0),
+    ],
+)
+def test_leading_sign_accepted(expression, expected):
+    """A sign at the start, after ``(`` or after ``,`` stays accepted, as do exponents."""
     parser = MADXParser()
     parser.parse_string(f"X = {expression};\n")
     assert parser.getVariable("x") == tight_approx(expected)
 
 
-def test_power_left_associative_deferred():
-    """Chained ``^`` through variables, a deferred expression and an element."""
+def test_unsupported_expression_location(tmp_madx):
+    """The error names the file and line, also in a file read with CALL."""
+    main = tmp_madx("main.madx", "A = 1;\nB = 2^-1;\n")
+    with pytest.raises(MADXInputError) as excinfo:
+        MADXParser().parse(main)
+    assert excinfo.value.file == main
+    assert excinfo.value.line_number == 2
+    assert str(excinfo.value).startswith(f"{main}:2: ")
+
+    main = tmp_madx("call.madx", "A = 1;\nCALL, FILE='strengths.str';\nB = 2;\n")
+    strengths = tmp_madx("strengths.str", "KQ = 0.5;\n\nKQD := KQ^2^2;\n")
+    with pytest.raises(MADXInputError) as excinfo:
+        MADXParser().parse(main)
+    assert excinfo.value.file == strengths
+    assert excinfo.value.line_number == 3
+
+
+def test_power_parentheses_deferred():
+    """Nested powers through variables, a deferred expression and an element."""
     parser = MADXParser()
     parser.parse_string(
         """\
 A = 2;
 B = 3;
-NOW = A^B^2;
-LATER := A^B^2;
-QF: QUADRUPOLE, L=1.0, K1:=A^B^2;
+NOW = (A^B)^2;
+LATER := (A^B)^2;
+QF: QUADRUPOLE, L=1.0, K1:=(A^B)^2;
 FODO: LINE=(QF);
 USE, SEQUENCE=FODO;
 A = 3;

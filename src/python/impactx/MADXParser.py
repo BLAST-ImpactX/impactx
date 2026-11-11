@@ -511,14 +511,20 @@ class MADXExpressionParser:
     Parser for MAD-X expressions.
 
     Implements operator precedence:
-    1. ^ (exponentiation, left associative)
-    2. + - (sign, applies to the whole power: -a^b^c is -((a^b)^c))
+    1. ^ (exponentiation)
+    2. + - (sign, applies to the whole power: -a^b is -(a^b))
     3. * / (multiplication, division)
     4. + - (addition, subtraction)
 
-    Beyond MAD-X, which rejects it, the right operand of a binary operator can
-    carry its own sign: a*-b, a--b, a^-b. The sign of an exponent binds to that
-    exponent only: a^-b^c is (a^(-b))^c.
+    A sign can start an expression, or follow an opening parenthesis or a comma.
+    MAD-X does not evaluate the following forms as written, so they raise a
+    MADXInputError that asks for parentheses:
+
+    - a sign directly after an operator or another sign, as in a*-b, a^-b, a--b
+      or --a: MAD-X rejects these outside of parentheses and computes another
+      value inside of them, e.g., (3*-2) is -2;
+    - a chained power, a^b^c: MAD-X evaluates it from the left, (a^b)^c, unlike
+      the usual a^(b^c).
     """
 
     # MAD-X built-in functions
@@ -602,14 +608,34 @@ class MADXExpressionParser:
         """Parse an expression (entry point)."""
         return self._parse_additive()
 
+    def _reject_sign(self, op: Token, leading: bool = False):
+        """Raise if a sign directly follows the operator or leading sign ``op``."""
+        sign = self._current()
+        if sign.type in (TokenType.PLUS, TokenType.MINUS):
+            pattern = f'"{op.value}{sign.value}"'
+            if leading:
+                what = f"two signs in a row, {pattern}, are"
+                example = f"{op.value}({sign.value}b)"
+            else:
+                what = f"a sign directly after an operator, {pattern}, is"
+                example = f"a{op.value}({sign.value}b)"
+            raise MADXInputError(
+                f"{what} not supported: MAD-X rejects this form outside of parentheses "
+                "and computes another value inside of them, e.g., (3*-2) is -2 in MAD-X. "
+                f"Put the sign and its operand in parentheses: {example}.",
+                sign.line,
+                file=self.file,
+            )
+
     def _parse_additive(self) -> Expression:
         """Parse additive expression (+ -)."""
         left = self._parse_multiplicative()
 
         while self._current().type in (TokenType.PLUS, TokenType.MINUS):
-            op = self._advance().value
+            op = self._advance()
+            self._reject_sign(op)
             right = self._parse_multiplicative()
-            left = BinaryExpr(op, left, right)
+            left = BinaryExpr(op.value, left, right)
 
         return left
 
@@ -618,40 +644,42 @@ class MADXExpressionParser:
         left = self._parse_unary()
 
         while self._current().type in (TokenType.STAR, TokenType.SLASH):
-            op = self._advance().value
+            op = self._advance()
+            self._reject_sign(op)
             right = self._parse_unary()
-            left = BinaryExpr(op, left, right)
+            left = BinaryExpr(op.value, left, right)
 
         return left
 
     def _parse_unary(self) -> Expression:
         """Parse unary expression (+x, -x), where x is a whole power."""
         if self._current().type in (TokenType.PLUS, TokenType.MINUS):
-            op = self._advance().value
-            operand = self._parse_unary()
-            return UnaryExpr(op, operand)
+            op = self._advance()
+            self._reject_sign(op, leading=True)
+            return UnaryExpr(op.value, self._parse_power())
 
         return self._parse_power()
 
     def _parse_power(self) -> Expression:
-        """Parse power expression (^), left associative."""
-        left = self._parse_primary()
+        """Parse power expression (^) with a single exponent."""
+        base = self._parse_primary()
+        if self._current().type != TokenType.CARET:
+            return base
 
-        while self._current().type == TokenType.CARET:
-            self._advance()
-            right = self._parse_exponent()
-            left = BinaryExpr("^", left, right)
+        op = self._advance()
+        self._reject_sign(op)
+        exponent = self._parse_primary()
 
-        return left
+        if self._current().type == TokenType.CARET:
+            raise MADXInputError(
+                'a chained power, "a^b^c", is not supported: MAD-X evaluates it from '
+                "the left, (a^b)^c, unlike the usual a^(b^c). Add parentheses for the "
+                "order you mean.",
+                self._current().line,
+                file=self.file,
+            )
 
-    def _parse_exponent(self) -> Expression:
-        """Parse the right operand of ^, which can carry a sign (a^-b)."""
-        if self._current().type in (TokenType.PLUS, TokenType.MINUS):
-            op = self._advance().value
-            operand = self._parse_exponent()
-            return UnaryExpr(op, operand)
-
-        return self._parse_primary()
+        return BinaryExpr("^", base, exponent)
 
     def _parse_primary(self) -> Expression:
         """Parse primary expression (numbers, variables, function calls, parenthesized)."""
@@ -1742,7 +1770,7 @@ class MADXParser:
         self.pos = start
 
         expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
-        expr_parser = MADXExpressionParser(expr_tokens)
+        expr_parser = MADXExpressionParser(expr_tokens, file=self._current_file)
         expr = expr_parser.parse_expression()
         self.pos = end
         return expr
@@ -2368,7 +2396,7 @@ class MADXParser:
 
         # Extract tokens for expression parser
         expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
-        expr_parser = MADXExpressionParser(expr_tokens)
+        expr_parser = MADXExpressionParser(expr_tokens, file=self._current_file)
         expr = expr_parser.parse_expression()
 
         if complete and expr_parser._current().type != TokenType.EOF:

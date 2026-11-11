@@ -41,7 +41,7 @@ J = np.kron(np.eye(3), np.array([[0.0, 1.0], [-1.0, 0.0]]))
 # a particle far off axis, where nonlinear fields are strong: x, px, y, py, t, pt
 CENTER = np.array([0.05, 0.01, -0.03, 0.005, 0.0, 0.0])
 
-# finite-difference step of the Jacobian, and tolerance of M^T J M - lambda J
+# finite-difference step of the Jacobian, and tolerance of M^T J M / lambda - J
 if Config.precision == "SINGLE":
     step = 1.0e-3
     atol = 3.0e-4
@@ -100,9 +100,13 @@ def jacobian(el, sim, center=CENTER):
 
 
 def check_symplectic(el, sim, center=CENTER, atol=atol):
-    """Assert that the particle map of an element is symplectic at a point"""
+    """Assert that the particle map of an element is symplectic at a point
+
+    The check is relative to lambda, M^T J M / lambda = J, so that atol bounds the
+    same relative defect for every element.
+    """
     M, ratio = jacobian(el, sim, center)
-    np.testing.assert_allclose(M.T @ J @ M, ratio * J, rtol=0.0, atol=atol)
+    np.testing.assert_allclose(M.T @ J @ M / ratio, J, rtol=0.0, atol=atol)
 
 
 # =============================================================================

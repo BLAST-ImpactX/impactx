@@ -79,7 +79,7 @@ Group the new test near alphabetically-adjacent existing tests. Use `mapsteps=ma
 
 Use `PIPE_KWARGS` for elements that accept `aperture_x`/`aperture_y`, otherwise `ALIGNMENT_KWARGS`. Wrap the call in `roundtrip(el, sim, ...)`. Only relax `phase_atol` when a physically motivated reason exists (multi-step map, non-symplectic split, energy change); copy the rationale comment style already present.
 
-**test_symplecticity_elements.py** — use the same sections, element parameters and spin parametrization as the reversibility file, with `ALIGNMENT_KWARGS` for every element (no apertures: the particles of the Jacobian are far off axis and would be lost). Wrap the element in `check_symplectic(el, sim)`. A per-element `atol` needs a reason in a comment: a FIXME with the observed defect and an issue link for a known precision problem, or the physics (e.g., large Jacobian entries of a strong kick). Particles lost in the element fail the check, so choose parameters for which the element keeps them.
+**test_symplecticity_elements.py** — use the same sections as the reversibility file and start from its element parameters, with `ALIGNMENT_KWARGS` for every element that takes alignment kwargs (`PRot` does not; no apertures: the particles of the Jacobian are far off axis and would be lost). Cover every model of an element, linear and nonlinear (e.g., all `DipEdge` models, at entry and exit), with the parameters that switch on all terms of the map. Prefer parameters for which the Jacobian entries are of order one, so that the finite-difference stencil stays at physical energies (e.g., `ConstF` scales `kt` with the reference energy). Wrap the element in `check_symplectic(el, sim)`. A per-element `atol` needs a reason in a comment: a FIXME with the observed defect and an issue link for a known precision problem, or the physics (e.g., large Jacobian entries of a strong kick). Particles lost in the element fail the check, so choose parameters for which the element keeps them.
 
 ## Pass 2 — spin parametrization audit
 
@@ -90,7 +90,7 @@ An element is spin-capable iff its header under `src/elements/<Name>.H` inherits
 Grep: "mixin::SpinTransport" under src/elements/ (files_with_matches)
 ```
 
-For each spin-capable element that already has a test in files 1, 3 and 4, ensure the `sim` fixture is parametrized:
+For each spin-capable element that already has a test in files 1 and 3, ensure the `sim` fixture is parametrized (file 4: see below):
 
 ```python
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
@@ -98,7 +98,7 @@ def test_<Element>(benchmark, sim):
     ...
 ```
 
-In the reversibility file, additionally thread `spin=sim.spin` into the `roundtrip(...)` call. In the symplecticity file, `check_symplectic()` reads `sim.spin` itself: with spin, the orbit is pushed by a different integrator path, so test both variants even where the reversibility file leaves spin out because the spin map does not reverse.
+In the reversibility file, additionally thread `spin=sim.spin` into the `roundtrip(...)` call. In the symplecticity file, parametrize only the elements whose `spin_and_phasespace_push` integrates the orbit in its own code path instead of calling the orbit push `(*this)(...)` (currently `ExactCFbend`, `ExactMultipole`, `ExactQuad` and `NonlinearLens`), also where the reversibility file leaves spin out because the spin map does not reverse. For all other elements, the spin variant runs the same orbit code and adds no coverage. `check_symplectic()` reads `sim.spin` itself.
 When adding alignment kwargs breaks the spin path (some elements currently use `kwargs = {} if sim.spin else PIPE_KWARGS`), follow the same conditional pattern already in the file rather than forcing a unified call and WARN the user explicitly in the summary of the change.
 
 The serialization file (file 2) is not parametrized over spin — it only checks construction and dict round-trip. Do not add spin parametrize marks there.
@@ -137,7 +137,7 @@ Notes:
 
 - [ ] Listed the diff between `KnownElements` and each of the four test files.
 - [ ] Added missing tests using parameter values sourced from `examples/` (or documented why omission is intentional).
-- [ ] Added or verified the `spin/nospin` parametrize decorator on every spin-capable element in files 1, 3 and 4.
+- [ ] Added or verified the `spin/nospin` parametrize decorator on every spin-capable element in files 1 and 3, and in file 4 on the elements whose spin push integrates the orbit in its own code path.
 - [ ] Ran `pip_install` and executed the four tests with `pytest`; reported results.
 - [ ] Did NOT edit any `.pyi` stub files (auto-generated on `development` — see repo `CLAUDE.md`).
 - [ ] WARN user about any omissions/skips/tweaks needed to pass the new tests, e.g., alignment parameter issues.

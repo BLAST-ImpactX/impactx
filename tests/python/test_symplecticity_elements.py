@@ -44,12 +44,14 @@ CENTER = np.array([0.05, 0.01, -0.03, 0.005, 0.0, 0.0])
 # finite-difference step of the Jacobian, and tolerance of M^T J M - lambda J
 if Config.precision == "SINGLE":
     step = 1.0e-3
-    atol = 1.0e-3
+    atol = 3.0e-4
 else:
     step = 1.0e-4
     atol = 2.0e-9
 
 
+# Elements are tested with and without spin only if their spin push integrates
+# the orbit in its own code path; otherwise, it calls the same orbit push.
 @pytest.fixture(scope="function")
 def sim(request):
     sim = ImpactX()
@@ -85,8 +87,11 @@ def jacobian(el, sim, center=CENTER):
     el.push(beam)
     beta_gamma_out = beam.ref.beta_gamma
 
+    # lost particles stay in the container, flagged invalid
+    n_valid = beam.total_number_of_particles(only_valid=True, only_local=True)
+    assert n_valid == len(phase_space), "particles were lost"
+
     df = beam.to_df(local=True).reset_index(drop=True).sort_values("idcpu")
-    assert len(df) == len(phase_space), "particles were lost"
     plus2, plus1, minus1, minus2 = np.split(
         df[PHASE_COLS].to_numpy(dtype=np.float64), len(offsets)
     )
@@ -105,7 +110,6 @@ def check_symplectic(el, sim, center=CENTER, atol=atol):
 # =============================================================================
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_CFbend(sim):
     check_symplectic(
         elements.CFbend(
@@ -115,12 +119,10 @@ def test_CFbend(sim):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrDrift(sim):
     check_symplectic(elements.ChrDrift(ds=0.25, nslice=nslice, **ALIGNMENT_KWARGS), sim)
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k"),
     [(0, 2.98636067687944129), (0, -2.98636067687944129), (1, 5.0)],
@@ -135,7 +137,6 @@ def test_ChrPlasmaLens(sim, unit, k):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0), (1, 3.5)], ids=["madx", "marylie"])
 def test_ChrQuad(sim, unit, k):
     check_symplectic(
@@ -144,7 +145,6 @@ def test_ChrQuad(sim, unit, k):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrAcc(sim):
     check_symplectic(
         elements.ChrAcc(
@@ -158,22 +158,23 @@ def test_ChrAcc(sim):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ConstF(sim):
+    # M[pt, t] = -kt (beta gamma)^2 sin(kt ds) is of order one for this kt, which
+    # keeps the energies of the finite-difference stencil physical
+    ds = 2.0
+    kt = 1.0 / (sim.beam.ref.beta_gamma * np.sqrt(ds))
     check_symplectic(
         elements.ConstF(
-            ds=2.0, kx=1.0, ky=1.0, kt=1.0, nslice=nslice, **ALIGNMENT_KWARGS
+            ds=ds, kx=1.0, ky=1.0, kt=kt, nslice=nslice, **ALIGNMENT_KWARGS
         ),
         sim,
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Drift(sim):
     check_symplectic(elements.Drift(ds=0.25, nslice=nslice, **ALIGNMENT_KWARGS), sim)
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactDrift(sim):
     check_symplectic(
         elements.ExactDrift(ds=0.25, nslice=nslice, **ALIGNMENT_KWARGS), sim
@@ -218,10 +219,12 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
     tol = atol
     if Config.precision == "SINGLE":
         # FIXME: the bend map cancels terms of order rc in single precision,
-        # M^T J M - J is up to 1e-2; with #1774 and #1776, it is up to 2e-5 and
-        # the default atol holds
+        # M^T J M - J is up to 9e-3 with spin and 4e-3 without, which hides
+        # smaller defects here; test_ExactCFbend_multipoles checks each multipole
+        # order to 1e-3. With #1774 and #1776, it is up to 2e-5 and the default
+        # atol holds.
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
-        tol = 3.0e-2
+        tol = 2.0e-2
     check_symplectic(
         elements.ExactCFbend(
             ds=1.0,
@@ -238,6 +241,7 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize("skew", [False, True], ids=["normal", "skew"])
 @pytest.mark.parametrize("m", [1, 2, 3, 4])
 def test_ExactCFbend_multipoles(sim, m, skew):
@@ -259,7 +263,7 @@ def test_ExactCFbend_multipoles(sim, m, skew):
         # M^T J M - J is up to 5e-4; with #1774 and #1776, it is up to 3e-5 and
         # the default atol holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
-        tol = 2.0e-3
+        tol = 1.0e-3
     check_symplectic(el, sim, atol=tol)
 
 
@@ -280,7 +284,6 @@ def test_ExactQuad(sim, unit, k):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactSbend(sim):
     tol = atol
     if Config.precision == "SINGLE":
@@ -288,7 +291,7 @@ def test_ExactSbend(sim):
         # M^T J M - J is up to 6e-4; with #1776, it is up to 4e-6 and the default
         # atol holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
-        tol = 2.0e-3
+        tol = 1.2e-3
     check_symplectic(
         elements.ExactSbend(
             ds=1.0, phi=10.0, B=0.45, nslice=nslice, **ALIGNMENT_KWARGS
@@ -298,21 +301,18 @@ def test_ExactSbend(sim):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Quad(sim):
     check_symplectic(
         elements.Quad(ds=1.0, k=1.0, nslice=nslice, **ALIGNMENT_KWARGS), sim
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sbend(sim):
     check_symplectic(
         elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **ALIGNMENT_KWARGS), sim
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_SoftQuadrupole(sim):
     check_symplectic(
         elements.SoftQuadrupole(
@@ -328,7 +328,6 @@ def test_SoftQuadrupole(sim):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "bscale"),
     [(0, 1.233482899483985), (1, 2.0)],
@@ -386,7 +385,6 @@ def test_SoftSolenoid(sim, unit, bscale):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sol(sim):
     check_symplectic(
         elements.Sol(ds=3.820395, ks=0.8223219329893234, **ALIGNMENT_KWARGS), sim
@@ -398,12 +396,10 @@ def test_Sol(sim):
 # =============================================================================
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Buncher(sim):
     check_symplectic(elements.Buncher(V=0.01, k=15.0, **ALIGNMENT_KWARGS), sim)
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "xkick", "ykick"),
     [
@@ -418,7 +414,6 @@ def test_Kicker(sim, unit, xkick, ykick):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("multipole", "K_normal", "K_skew"),
     [(4, 65.0, 6.0), (2, 300.0, 100.0)],
@@ -428,8 +423,8 @@ def test_Multipole(sim, multipole, K_normal, K_skew):
     tol = atol
     if Config.precision == "SINGLE" and multipole == 2:
         # the strong kick makes the Jacobian entries of order 300, and the rounding
-        # error of M^T J M grows with them
-        tol = 2.0e-3
+        # error of M^T J M grows with them, up to 7e-4
+        tol = 1.5e-3
     check_symplectic(
         elements.Multipole(
             multipole=multipole, K_normal=K_normal, K_skew=K_skew, **ALIGNMENT_KWARGS
@@ -446,7 +441,6 @@ def test_NonlinearLens(sim):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0 / 0.5), (1, 6.0)], ids=["madx", "si"])
 def test_TaperedPL(sim, unit, k):
     check_symplectic(
@@ -457,7 +451,6 @@ def test_TaperedPL(sim, unit, k):
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ThinDipole(sim):
     check_symplectic(elements.ThinDipole(theta=0.45, rc=1.0, **ALIGNMENT_KWARGS), sim)
 
@@ -467,12 +460,10 @@ def test_ThinDipole(sim):
 # =============================================================================
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_PlaneXYRot(sim):
     check_symplectic(elements.PlaneXYRot(angle=90.0, **ALIGNMENT_KWARGS), sim)
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_PRot(sim):
     check_symplectic(elements.PRot(phi_in=0.0, phi_out=-5.0), sim)
 
@@ -482,14 +473,12 @@ def test_PRot(sim):
 # =============================================================================
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ShortRF(sim):
     check_symplectic(
         elements.ShortRF(V=1000.0, freq=1.3e9, phase=-89.5, **ALIGNMENT_KWARGS), sim
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_RFCavity(sim):
     check_symplectic(
         elements.RFCavity(
@@ -538,31 +527,45 @@ def test_RFCavity(sim):
 # =============================================================================
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+@pytest.mark.parametrize("location", ["entry", "exit"])
 @pytest.mark.parametrize(
-    ("model", "g", "K2"),
+    ("model", "g", "modify_ref_part"),
     [
-        ("linear", 0.0, 0.0),
-        ("linear", 0.058, 0.5),
-        ("nonlinear", 0.058, 0.5),
+        ("linear_slac75", 0.0, False),
+        ("linear_slac75", 0.058, False),
+        ("linear_hwang_lee", 0.058, False),
+        ("nonlinear_hwang_lee", 0.058, False),
+        ("nonlinear_hwang_lee", 0.058, True),
     ],
-    ids=["linear-zero-gap", "linear-finite-gap", "nonlinear-finite-gap"],
+    ids=[
+        "slac75-zero-gap",
+        "slac75",
+        "hwang-lee-linear",
+        "hwang-lee-nonlinear",
+        "hwang-lee-nonlinear-modify-ref",
+    ],
 )
-def test_DipEdge(sim, model, g, K2):
+def test_DipEdge(sim, model, g, modify_ref_part, location):
     check_symplectic(
         elements.DipEdge(
             psi=-0.048345620280243,
             rc=-10.3462283686195526,
             g=g,
-            K2=K2,
+            # nonzero fringe field integrals, for all terms of the Hwang-Lee map
+            K1=0.3,
+            K2=0.5,
+            K4=0.2,
+            K5=0.1,
+            K6=0.05,
             model=model,
+            location=location,
+            modify_ref_part=modify_ref_part,
             **ALIGNMENT_KWARGS,
         ),
         sim,
     )
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0), (1, 3.5)], ids=["madx", "marylie"])
 @pytest.mark.parametrize("flag", ["entry", "exit"])
 def test_QuadEdge(sim, flag, unit, k):
@@ -576,7 +579,6 @@ def test_QuadEdge(sim, flag, unit, k):
 # =============================================================================
 
 
-@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_LinearMap(sim):
     R1 = Map6x6.identity()
     ds1 = 0.25

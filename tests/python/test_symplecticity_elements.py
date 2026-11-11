@@ -18,7 +18,7 @@ from math import factorial
 import numpy as np
 import pytest
 
-from impactx import Config, ImpactX, Map6x6, elements
+from impactx import Config, ImpactX, Map6x6, RefPart, elements
 
 # element config
 nslice = 1
@@ -50,10 +50,31 @@ else:
     atol = 2.0e-9
 
 
+# reference particles, species and kinetic energy in MeV: the 1 GeV electron is
+# ultrarelativistic, which suppresses the beta-dependent terms of the maps; the
+# 2 GeV proton (beta = 0.95) does not
+REFERENCES = {
+    "electron": ("electron", 1.0e3),
+    "proton": ("proton", 2.0e3),
+}
+
+# ChrAcc, ShortRF and RFCavity normalize their field strengths to the rest energy
+# of the particle; scaled by m_e / m, the fields are those of the electron for
+# every reference, for which the parameters are chosen
+ELECTRON_MASS_MeV = RefPart().set_species("electron").mass_MeV
+
+
+@pytest.fixture(
+    scope="function", params=list(REFERENCES.values()), ids=list(REFERENCES)
+)
+def reference(request):
+    return request.param
+
+
 # Elements are tested with and without spin only if their spin push integrates
 # the orbit in its own code path; otherwise, it calls the same orbit push.
 @pytest.fixture(scope="function")
-def sim(request):
+def sim(request, reference):
     sim = ImpactX()
     sim.space_charge = False
     sim.diagnostics = False
@@ -61,7 +82,8 @@ def sim(request):
     sim.spin = getattr(request, "param", False)  # default to False if not parametrized
     sim.init_grids()
 
-    sim.beam.ref.set_species("electron").set_kin_energy_MeV(1.0e3)
+    species, kin_energy_MeV = reference
+    sim.beam.ref.set_species(species).set_kin_energy_MeV(kin_energy_MeV)
 
     yield sim
 
@@ -150,11 +172,12 @@ def test_ChrQuad(sim, unit, k):
 
 
 def test_ChrAcc(sim):
+    scale = ELECTRON_MASS_MeV / sim.beam.ref.mass_MeV
     check_symplectic(
         elements.ChrAcc(
             ds=1.8,
-            ez=10871.950994502130424,
-            bz=250.0,
+            ez=10871.950994502130424 * scale,
+            bz=250.0 * scale,
             nslice=nslice,
             **ALIGNMENT_KWARGS,
         ),
@@ -223,10 +246,10 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
     tol = atol
     if Config.precision == "SINGLE":
         # FIXME: the bend map cancels terms of order rc in single precision,
-        # M^T J M - J is up to 9e-3 with spin and 4e-3 without, which hides
-        # smaller defects here; test_ExactCFbend_multipoles checks each multipole
-        # order to 1e-3. With #1774 and #1776, it is up to 2e-5 and the default
-        # atol holds.
+        # M^T J M - J is up to 1e-2, which hides smaller defects here;
+        # test_ExactCFbend_multipoles checks each multipole order to 1e-3. With
+        # #1774 and #1776, it is up to 2e-5 for the electron and the default atol
+        # holds.
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
         tol = 2.0e-2
     check_symplectic(
@@ -264,8 +287,8 @@ def test_ExactCFbend_multipoles(sim, m, skew):
     tol = atol
     if Config.precision == "SINGLE":
         # FIXME: the bend map cancels terms of order rc in single precision,
-        # M^T J M - J is up to 5e-4; with #1774 and #1776, it is up to 3e-5 and
-        # the default atol holds
+        # M^T J M - J is up to 5e-4; with #1774 and #1776, it is up to 3e-5 for
+        # the electron and the default atol holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
         tol = 1.0e-3
     check_symplectic(el, sim, atol=tol)
@@ -288,14 +311,15 @@ def test_ExactQuad(sim, unit, k):
     )
 
 
-def test_ExactSbend(sim):
+def test_ExactSbend(sim, reference):
     tol = atol
     if Config.precision == "SINGLE":
         # FIXME: the bend map cancels terms of order rc in single precision,
-        # M^T J M - J is up to 6e-4; with #1776, it is up to 4e-6 and the default
-        # atol holds
+        # M^T J M - J is up to 6e-4 for the electron and 1.5e-3 for the proton,
+        # with the larger rc at the same B; with #1776, it is up to 4e-6 for the
+        # electron and the default atol holds
         # https://github.com/BLAST-ImpactX/impactx/issues/1771
-        tol = 1.2e-3
+        tol = 1.2e-3 if reference == REFERENCES["electron"] else 3.0e-3
     check_symplectic(
         elements.ExactSbend(
             ds=1.0, phi=10.0, B=0.45, nslice=nslice, **ALIGNMENT_KWARGS
@@ -478,16 +502,19 @@ def test_PRot(sim):
 
 
 def test_ShortRF(sim):
+    scale = ELECTRON_MASS_MeV / sim.beam.ref.mass_MeV
     check_symplectic(
-        elements.ShortRF(V=1000.0, freq=1.3e9, phase=-89.5, **ALIGNMENT_KWARGS), sim
+        elements.ShortRF(V=1000.0 * scale, freq=1.3e9, phase=-89.5, **ALIGNMENT_KWARGS),
+        sim,
     )
 
 
 def test_RFCavity(sim):
+    scale = ELECTRON_MASS_MeV / sim.beam.ref.mass_MeV
     check_symplectic(
         elements.RFCavity(
             ds=1.31879807,
-            escale=62.0,
+            escale=62.0 * scale,
             freq=1.3e9,
             phase=85.5,
             cos_coefficients=[

@@ -843,17 +843,6 @@ namespace impactx::elements
             m_spin_coupling = pusher.m_spin_coupling;
             amrex::ParticleReal const ptf = refpart.pt;
 
-            /*
-            // print computed linear map:
-               for(int i=1; i<7; ++i){
-                 for(int j=1; j<7; ++j){
-                    amrex::PrintToFile("QuadMap.txt") << i << " " <<
-                    j << " " << m_map(i,j) << "\n";
-                 }
-               }
-            //
-            */
-
             // advance position (x,y,z)
             refpart.x = x + slice_ds*px/bgi;
             refpart.y = y + slice_ds*py/bgi;
@@ -897,7 +886,7 @@ namespace impactx::elements
         [[nodiscard]] ChrSoftQuadrupolePusher make_particle_pusher (RefPart const & refpart) const
         {
             ChrSoftQuadrupolePusher pusher = *this;
-            pusher.Alignment::compute_constants(refpart);
+            pusher.compute_constants(refpart);
             pusher.m_cos_coefficients = m_coefficients.cos.device_const().data();
             pusher.m_sin_coefficients = m_coefficients.sin.device_const().data();
             pusher.m_ncoef = static_cast<int>(m_coefficients.cos.host_const().size());

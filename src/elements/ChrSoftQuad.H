@@ -336,8 +336,8 @@ namespace impactx::elements
 
             amrex::ParticleReal const gint = m_g * (bzint_f - bzint);
             amrex::ParticleReal const gp = m_g * (bzp_f - bzp);
-            amrex::ParticleReal const By_intz = y*gint - y*(3_prt*powi<2>(x)+powi<2>(y))*gp/12_prt;
-            amrex::ParticleReal const Bx_intz = x*gint - x*(3_prt*powi<2>(y)+powi<2>(x))*gp/12_prt;
+            T_Real const By_intz = y*gint - y*(3_prt*powi<2>(x)+powi<2>(y))*gp/12_prt;
+            T_Real const Bx_intz = x*gint - x*(3_prt*powi<2>(y)+powi<2>(x))*gp/12_prt;
             xout = x;
             pxout = px - By_intz;
             yout = y;
@@ -397,13 +397,13 @@ namespace impactx::elements
             amrex::ignore_unused(bz,bzint);
 
             // map obtained from splitting of the paraxial Hamiltonian
-            amrex::ParticleReal const Bzintx = 0.5_prt * powi<2>(x) * y * m_g * bzp;
+            T_Real const Bzintx = 0.5_prt * powi<2>(x) * y * m_g * bzp;
 
             xout = x + tau * px/delta1;
             yout = y;
             tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(px);
 
-            amrex::ParticleReal const Bzintx_f = 0.5_prt * powi<2>(xout) * y * m_g * bzp;
+            T_Real const Bzintx_f = 0.5_prt * powi<2>(xout) * y * m_g * bzp;                        
 
             pxout = px;
             pyout = py - Bzintx_f + Bzintx;
@@ -464,14 +464,14 @@ namespace impactx::elements
             amrex::ignore_unused(bz,bzint);
 
             // map obtained from splitting of the paraxial Hamiltonian
-            amrex::ParticleReal const Bzinty = 0.5_prt * powi<2>(y) * x * m_g * bzp;
-
+            T_Real const Bzinty = 0.5_prt * powi<2>(y) * x * m_g * bzp;
+            
             xout = x;
             yout = y + tau * py/delta1;
             tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(py);
-
-            amrex::ParticleReal const Bzinty_f = 0.5_prt * powi<2>(yout) * x * m_g * bzp;
-
+        
+            T_Real const Bzinty_f = 0.5_prt * powi<2>(yout) * x * m_g * bzp;
+         
             pxout = px + Bzinty_f - Bzinty;
             pyout = py;
             ptout = pt;

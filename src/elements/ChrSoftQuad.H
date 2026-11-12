@@ -403,7 +403,7 @@ namespace impactx::elements
             yout = y;
             tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(px);
 
-            T_Real const Bzintx_f = 0.5_prt * powi<2>(xout) * y * m_g * bzp;                        
+            T_Real const Bzintx_f = 0.5_prt * powi<2>(xout) * y * m_g * bzp;
 
             pxout = px;
             pyout = py - Bzintx_f + Bzintx;
@@ -465,13 +465,13 @@ namespace impactx::elements
 
             // map obtained from splitting of the paraxial Hamiltonian
             T_Real const Bzinty = 0.5_prt * powi<2>(y) * x * m_g * bzp;
-            
+
             xout = x;
             yout = y + tau * py/delta1;
             tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(py);
-        
+
             T_Real const Bzinty_f = 0.5_prt * powi<2>(yout) * x * m_g * bzp;
-         
+
             pxout = px + Bzinty_f - Bzinty;
             pyout = py;
             ptout = pt;

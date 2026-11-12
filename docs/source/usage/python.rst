@@ -226,7 +226,7 @@ Collective Effects & Overall Simulation Parameters
 
       .. note::
 
-         Short-range wakefield effects are only calculated for ``RFCavity`` elements, and only for the longitudinal wake.
+         Short-range wakefield effects are currently only calculated for ``RFCavity`` and ``ExactCFbend`` elements, and only for the longitudinal wake.
 
          Short-range wakefield effects are only supported with particle tracking: ``track_envelope`` and ``track_reference`` raise a ``RuntimeError``.
 
@@ -2161,6 +2161,10 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param ds: Segment length in m.
    :param k_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)
    :param k_skew: Array of skew multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,...)
+   :param z_data: optional longitudinal positions of the single-particle wake function in m, ascending from 0 in uniform steps; other positions are not yet implemented and raise a ``RuntimeError``; the wake function is zero beyond the last position
+   :param wake_x_data: optional horizontal single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_y_data: optional vertical single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_z_data: optional longitudinal single-particle wake function data in V/(C m), positive where it decelerates a trailing particle
    :param unit: specification of units for multipole coefficients (by default, these are normalized by magnetic rigidity)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m

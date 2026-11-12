@@ -126,6 +126,7 @@ class Token:
     value: Any
     line: int
     column: int
+    file: Optional[str] = None  # input file of the token, for messages
 
     def __repr__(self):
         return f"Token({self.type.name}, {self.value!r}, line={self.line})"
@@ -149,10 +150,15 @@ class MADXLexer:
     - Operators and delimiters
     """
 
-    def __init__(self, text: str, file: Optional[str] = None):
+    def __init__(self, text: str, file: Optional[str] = None, line: int = 1):
+        """
+        :param text: MAD-X input
+        :param file: file name of the input, for messages
+        :param line: line number of the first line of ``text`` in ``file``
+        """
         self.text = text
         self.pos = 0
-        self.line = 1
+        self.line = line
         self.column = 1
         self.length = len(text)
         self.file = file
@@ -425,6 +431,8 @@ class MADXLexer:
                 )
 
         tokens.append(Token(TokenType.EOF, None, self.line, self.column))
+        for token in tokens:
+            token.file = self.file
         return tokens
 
 
@@ -516,9 +524,10 @@ class MADXExpressionParser:
     3. * / (multiplication, division)
     4. + - (addition, subtraction)
 
-    A sign can start an expression, or follow an opening parenthesis or a comma.
-    MAD-X does not evaluate the following forms as written, so they raise a
-    MADXInputError that asks for parentheses:
+    A sign is accepted at the start of an operand: at the start of an expression,
+    a list element, a function argument or a comparison operand, and after an
+    opening parenthesis. MAD-X does not evaluate the following forms as written,
+    so they raise a MADXInputError that asks for parentheses:
 
     - a sign directly after an operator or another sign, as in a*-b, a^-b, a--b
       or --a: MAD-X rejects these outside of parentheses and computes another
@@ -1306,19 +1315,25 @@ class MADXParser:
             )
         return self._advance()
 
+    def _token_file(self) -> Optional[str]:
+        """File of the current token, e.g., of a macro body, else the current file."""
+        if self.tokens and self._current().file:
+            return self._current().file
+        return self._current_file
+
     def _error(self, message: str) -> MADXInputError:
         """Create a MADXInputError with current file and line context."""
         line = self._current().line if self.tokens else None
-        return MADXInputError(message, line_number=line, file=self._current_file)
+        return MADXInputError(message, line_number=line, file=self._token_file())
 
     def _update_context_location(self):
         """Update file/line on the evaluation context for warning messages."""
-        self.context.current_file = self._current_file
+        self.context.current_file = self._token_file()
         self.context.current_line = self._current().line if self.tokens else None
 
     def _warn(self, message: str):
         """Emit a warning with current file and line context."""
-        file_info = self._current_file or "<unknown>"
+        file_info = self._token_file() or "<unknown>"
         line_info = self._current().line if self.tokens else "?"
         warnings.warn(f"{file_info}:{line_info}: {message}", MADXInputWarning)
 
@@ -1607,12 +1622,14 @@ class MADXParser:
             elif attr_name == "expr":
                 # Accept both expression syntax and quoted expression text.
                 if self._current().type == TokenType.STRING:
-                    expr_text = self._advance().value
+                    expr_string = self._advance()
                     expr_tokens = MADXLexer(
-                        expr_text + ";", file=self._current_file
+                        expr_string.value + ";",
+                        file=expr_string.file,
+                        line=expr_string.line,
                     ).tokenize()
                     add_expr = MADXExpressionParser(
-                        expr_tokens, file=self._current_file
+                        expr_tokens, file=expr_string.file
                     ).parse_expression()
                 else:
                     add_expr = self._parse_expression()
@@ -1666,6 +1683,20 @@ class MADXParser:
         result = self._parse_logical_or()
         self._expect(TokenType.RPAREN)
         return result
+
+    def _skip_if_condition(self):
+        """Skip a condition, ( logical_expr ), without evaluating it."""
+        self._expect(TokenType.LPAREN)
+        depth = 1
+        while self._current().type != TokenType.EOF:
+            if self._current().type == TokenType.LPAREN:
+                depth += 1
+            elif self._current().type == TokenType.RPAREN:
+                depth -= 1
+                if depth == 0:
+                    break
+            self._advance()
+        self._expect(TokenType.RPAREN)
 
     def _parse_logical_or(self) -> bool:
         """Parse logical OR: expr || expr || ..."""
@@ -1769,9 +1800,7 @@ class MADXParser:
         end = self.pos
         self.pos = start
 
-        expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
-        expr_parser = MADXExpressionParser(expr_tokens, file=self._current_file)
-        expr = expr_parser.parse_expression()
+        expr = self._expression_parser(start, end).parse_expression()
         self.pos = end
         return expr
 
@@ -1793,12 +1822,13 @@ class MADXParser:
             and self._current().value == "elseif"
         ):
             self._advance()  # skip 'elseif'
-            # Always parse condition to consume tokens, even if a prior branch matched
-            this_cond = self._parse_if_condition()
-            execute = not condition and this_cond
-            if execute:
-                condition = True  # mark so subsequent branches are skipped
-            self._execute_or_skip_brace_block(execute)
+            if condition:
+                # as in MAD-X, a condition after a taken branch is not evaluated
+                self._skip_if_condition()
+                self._execute_or_skip_brace_block(False)
+            else:
+                condition = self._parse_if_condition()
+                self._execute_or_skip_brace_block(condition)
 
         # Handle ELSE
         if (
@@ -1943,13 +1973,20 @@ class MADXParser:
                 # (the identifier will be resolved as a variable, element
                 # name, or line reference during normal parsing)
                 expanded.append(
-                    Token(TokenType.IDENTIFIER, replacement, tok.line, tok.column)
+                    Token(
+                        TokenType.IDENTIFIER,
+                        replacement,
+                        tok.line,
+                        tok.column,
+                        tok.file,
+                    )
                 )
             else:
                 expanded.append(tok)
 
         # Parse the expanded body
-        expanded.append(Token(TokenType.EOF, None, 0, 0))
+        last = expanded[-1] if expanded else self._current()
+        expanded.append(Token(TokenType.EOF, None, last.line, last.column, last.file))
         saved_tokens = self.tokens
         saved_pos = self.pos
         self.tokens = expanded
@@ -2362,6 +2399,18 @@ class MADXParser:
 
         return None
 
+    def _expression_parser(self, start: int, end: int) -> MADXExpressionParser:
+        """Create an expression parser for the tokens in [start, end).
+
+        Its end of input has the line and file of the last token of the range,
+        or of the token at ``end`` for an empty range.
+        """
+        last = self.tokens[end - 1] if end > start else self.tokens[end]
+        eof = Token(TokenType.EOF, None, last.line, last.column, last.file)
+        return MADXExpressionParser(
+            self.tokens[start:end] + [eof], file=last.file or self._current_file
+        )
+
     def _parse_expression(self, complete: bool = False) -> Expression:
         """Parse an expression using the expression parser.
 
@@ -2394,9 +2443,7 @@ class MADXParser:
         end = self.pos
         self.pos = start
 
-        # Extract tokens for expression parser
-        expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
-        expr_parser = MADXExpressionParser(expr_tokens, file=self._current_file)
+        expr_parser = self._expression_parser(start, end)
         expr = expr_parser.parse_expression()
 
         if complete and expr_parser._current().type != TokenType.EOF:

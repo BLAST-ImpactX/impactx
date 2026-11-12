@@ -205,17 +205,20 @@ MAD-X files: powers and signs
 :py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
 :py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate a sign before a power in MAD-X files as MAD-X does:
 ``-a^b`` is ``-(a^b)``.
-A chained power, ``a^b^c``, and a sign directly after an operator, as in ``a*-b`` or ``a^-b``, now raise a
-``MADXInputError``, because MAD-X evaluates them differently from the usual rules.
+A chained power, ``a^b^c``, a sign directly after an operator, as in ``a*-b`` or ``a^-b``, and two signs in a row,
+``--a``, now raise a ``MADXInputError``, because MAD-X evaluates them differently from the usual rules.
 
 **What to check in your MAD-X files:** a sign directly before a power, more than one ``^`` in an expression, and a sign
-directly after an operator. A subtraction, ``a-b^2``, is not affected. Add parentheses:
+directly after an operator or another sign. A subtraction, ``a-b^2``, is not affected. To keep the previous values, add
+parentheses:
 
 .. code-block:: text
 
-   k = (-a)^b;   ! previously -a^b:  -2^2 was 4, now -4
-   k = a^(b^c);  ! previously a^b^c, now an error
-   k = a*(-b);   ! previously a*-b,  now an error
+   k = (-a)^b;    ! previously -a^b:   -2^2 was 4, now -4
+   k = a^(b^c);   ! previously a^b^c,  now an error
+   k = a*(-b);    ! previously a*-b,   now an error
+   k = a*(-b)^c;  ! previously a*-b^c, now an error
+   k = -(-a);     ! previously --a,    now an error
 
 ``Hminus``: gyromagnetic anomaly follows the shielded proton moment
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

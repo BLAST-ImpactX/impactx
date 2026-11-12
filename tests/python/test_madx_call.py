@@ -1640,7 +1640,7 @@ def test_unsupported_expression_contexts(statements):
         ("-2", -2.0),
         ("+2", 2.0),
         ("3*(+2)", 6.0),
-        ("max(-1, -2)", -1.0),
+        ("max(-1, -2)", -1.0),  # ImpactX extension: MAD-X has no max
         ("1e-3*2", 0.002),
         ("1.d-3*2", 0.002),
         ("1E+3*2", 2000.0),
@@ -1654,7 +1654,8 @@ def test_leading_sign_accepted(expression, expected):
 
 
 def test_unsupported_expression_location(tmp_madx):
-    """The error names the file and line, also in a file read with CALL."""
+    """The error names the file and line, also in a file read with CALL, in a
+    macro defined there and in a quoted ADD2EXPR expression."""
     main = tmp_madx("main.madx", "A = 1;\nB = 2^-1;\n")
     with pytest.raises(MADXInputError) as excinfo:
         MADXParser().parse(main)
@@ -1668,6 +1669,52 @@ def test_unsupported_expression_location(tmp_madx):
         MADXParser().parse(main)
     assert excinfo.value.file == strengths
     assert excinfo.value.line_number == 3
+
+    for expr in ("2*-1", "2^2^2"):
+        main = tmp_madx(
+            "add2expr.madx", f'X := 1;\n\nADD2EXPR, VAR=X, EXPR="{expr}";\n'
+        )
+        with pytest.raises(MADXInputError, match="is not supported") as excinfo:
+            MADXParser().parse(main)
+        assert excinfo.value.file == main
+        assert excinfo.value.line_number == 3
+
+    # the macro is defined in macros.str and executed from exec.madx
+    main = tmp_madx(
+        "exec.madx", "CALL, FILE='macros.str';\nB = 2;\nKQ = 3;\nEXEC, SETK(KQ);\n"
+    )
+    macros = tmp_madx("macros.str", "A = 1;\nSETK(V): MACRO = { K = V*-1; };\n")
+    with pytest.raises(MADXInputError, match="is not supported") as excinfo:
+        MADXParser().parse(main)
+    assert excinfo.value.file == macros
+    assert excinfo.value.line_number == 2
+
+
+def test_incomplete_expression_location(tmp_madx):
+    """An expression that ends early names its line, not line 0."""
+    main = tmp_madx("main.madx", "A = 1;\nB = 2+;\n")
+    with pytest.raises(MADXInputError, match="Unexpected token") as excinfo:
+        MADXParser().parse(main)
+    assert excinfo.value.file == main
+    assert excinfo.value.line_number == 2
+
+
+def test_elseif_after_taken_branch_not_evaluated():
+    """As in MAD-X, no ELSEIF condition is evaluated after a taken branch.
+
+    MAD-X 5.09.03 gives Y = 1 here, without a warning.
+    """
+    parser = MADXParser()
+    parser.parse_string(
+        "X = 1;\nIF (X > 0) { Y = 1; } ELSEIF (X > 2*-1) { Y = 2; } ELSE { Y = 3; }\n"
+    )
+    assert parser.getVariable("y") == 1.0
+
+    # a reached ELSEIF condition is evaluated
+    with pytest.raises(MADXInputError, match="is not supported"):
+        MADXParser().parse_string(
+            "X = -5;\nIF (X > 0) { Y = 1; } ELSEIF (X > 2*-1) { Y = 2; }\n"
+        )
 
 
 def test_power_parentheses_deferred():

@@ -1,22 +1,23 @@
 ---
 name: impactx-update-element-benchmarks
-description: This skill should be used when the user asks to "update element benchmarks", "add missing element tests", "audit element test coverage", "add a benchmark for <element>", or to check that every lattice element under `src/elements/` has matching entries in the three Python element-coverage tests (benchmark, serialization, reversibility) and that spin-capable elements carry the spin/nospin parametrization. Also covers re-running those three tests after edits.
+description: This skill should be used when the user asks to "update element benchmarks", "add missing element tests", "audit element test coverage", "add a benchmark for <element>", or to check that every lattice element under `src/elements/` has matching entries in the four Python element-coverage tests (benchmark, serialization, reversibility, symplecticity) and that spin-capable elements carry the spin/nospin parametrization. Also covers re-running those four tests after edits.
 version: 0.1.0
 ---
 
 # Update Element Benchmarks
 
-Audit and extend the three Python element-coverage tests so that every lattice element exposed from `src/elements/` is represented, and that every spin-capable element is parametrized over spin tracking. Then run the three tests.
+Audit and extend the four Python element-coverage tests so that every lattice element exposed from `src/elements/` is represented, and that every spin-capable element is parametrized over spin tracking. Then run the four tests.
 
 To run this skill, invoke `/impactx-update-element-benchmarks` in a new session.
 The skill also auto-loads on triggers like "update element benchmarks", "add missing element tests", "audit element test coverage", or "add a benchmark for <element>".
 
 
-## The three target files
+## The four target files
 
 1. `tests/python/test_benchmark_elements.py` — pytest-benchmark micro-benchmarks of a single `el.push(beam)` call. Uses the `sim` fixture and `pc_setup` helper.
 2. `tests/python/test_element_serialization.py` — builds one `KnownElementsList` containing one instance of every element, then verifies `to_dicts()`/`from_dicts()`/`to_py()` round-trip. A new element is "covered" by being appended inside the `all_elements` fixture.
 3. `tests/python/test_reversibility_elements.py` — verifies that `forward push → reverse() → forward push` returns phase space (and, when enabled, spin) to the initial state. Uses the `sim` fixture and the `roundtrip()` helper.
+4. `tests/python/test_symplecticity_elements.py` — verifies that the particle map of the element is symplectic, `M^T J M = J`, with the Jacobian `M` from finite differences around a particle far off axis (`M^T J M = lambda J` for elements that change the reference energy). Uses the `sim` fixture and the `check_symplectic()` helper. The reversibility test cannot see a map that is not symplectic: the reverse push undoes any kick.
 
 ## Canonical element list
 
@@ -24,25 +25,25 @@ Source of truth: the `KnownElements` `std::variant` at the bottom of `src/elemen
 
 ## Pass 1 — coverage audit
 
-For each element in `KnownElements`, confirm an entry exists in each of the three files. Missing coverage must either be added or intentionally skipped with a one-line comment explaining why.
+For each element in `KnownElements`, confirm an entry exists in each of the four files. Missing coverage must either be added or intentionally skipped with a one-line comment explaining why.
 
 ### Known intentional omissions (do NOT add)
 
 Some elements are intentionally not covered. Keep them omitted and leave the existing explanatory comments in place:
 
-- `Empty` — placeholder type in the variant; skipped across all three files (benchmark has commented stub; serialization lists it in `SKIP_ELEMENTS` with the `to_dict` bug note).
-- `Source` — requires an openPMD file path, cannot be constructed in-memory; skipped across all three files (serialization lists it in `SKIP_ELEMENTS`).
+- `Empty` — placeholder type in the variant; skipped across all four files (benchmark has commented stub; serialization lists it in `SKIP_ELEMENTS` with the `to_dict` bug note).
+- `Source` — requires an openPMD file path, cannot be constructed in-memory; skipped across all four files (serialization lists it in `SKIP_ELEMENTS`).
 - `Marker` — no push behavior to benchmark; no state change to reverse. Present in serialization only.
 - `Programmable` — user-supplied Python callback, not meaningful to benchmark or roundtrip generically. Present in serialization only.
 - `BeamMonitor` — I/O element, not a push. Present in serialization only (and `.finalize()` is called in fixture teardown).
-- `SpinMap` — reversibility is tracked as a known-broken draft (see the commented block at the bottom of `test_reversibility_elements.py`); keep it commented out until the C++ reversal is fixed. Present in serialization only.
+- `SpinMap` — reversibility is tracked as a known-broken draft (see the commented block at the bottom of `test_reversibility_elements.py`); keep it commented out until the C++ reversal is fixed. It does not change the orbit, so it has no symplecticity entry either. Present in serialization only.
 - `QuadEdge` benchmark — omitted pending issue #986 (see existing TODO comment). Keep omitted.
 
 When in doubt, check whether the element already appears as a commented-out stub in the file — that is the signal that omission is intentional.
 
 ### Aperture-style elements
 
-`Aperture` and `PolygonAperture` are both real push elements and should have benchmark + serialization coverage (`test_Aperture` is the template). They are intentionally excluded from the reversibility file — aperture filtering drops particles, which is not a reversible phase-space operation.
+`Aperture` and `PolygonAperture` are both real push elements and should have benchmark + serialization coverage (`test_Aperture` is the template). They are intentionally excluded from the reversibility and symplecticity files — aperture filtering drops particles, which is not a reversible phase-space operation, and leaves the phase space of the others unchanged.
 
 ### Finding element parameters
 
@@ -78,6 +79,8 @@ Group the new test near alphabetically-adjacent existing tests. Use `mapsteps=ma
 
 Use `PIPE_KWARGS` for elements that accept `aperture_x`/`aperture_y`, otherwise `ALIGNMENT_KWARGS`. Wrap the call in `roundtrip(el, sim, ...)`. Only relax `phase_atol` when a physically motivated reason exists (multi-step map, non-symplectic split, energy change); copy the rationale comment style already present.
 
+**test_symplecticity_elements.py** — use the same sections as the reversibility file and start from its element parameters, with `ALIGNMENT_KWARGS` for every element that takes alignment kwargs (`PRot` does not; no apertures: the particles of the Jacobian are far off axis and would be lost). Cover every model of an element, linear and nonlinear (e.g., all `DipEdge` models, at entry and exit), with the parameters that switch on all terms of the map. Prefer parameters for which the Jacobian entries are of order one, so that the finite-difference stencil stays at physical energies (e.g., `ConstF` scales `kt` with the reference energy). Wrap the element in `check_symplectic(el, sim)`. A per-element `atol` needs a reason in a comment: a FIXME with the observed defect and an issue link for a known precision problem, or the physics (e.g., large Jacobian entries of a strong kick). Particles lost in the element fail the check, so choose parameters for which the element keeps them.
+
 ## Pass 2 — spin parametrization audit
 
 An element is spin-capable iff its header under `src/elements/<Name>.H` inherits `public mixin::SpinTransport`. To find the current set in one shot:
@@ -87,7 +90,7 @@ An element is spin-capable iff its header under `src/elements/<Name>.H` inherits
 Grep: "mixin::SpinTransport" under src/elements/ (files_with_matches)
 ```
 
-For each spin-capable element that already has a test in files 1 and 3, ensure the `sim` fixture is parametrized:
+For each spin-capable element that already has a test in files 1 and 3, ensure the `sim` fixture is parametrized (file 4: see below):
 
 ```python
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
@@ -95,7 +98,7 @@ def test_<Element>(benchmark, sim):
     ...
 ```
 
-In the reversibility file, additionally thread `spin=sim.spin` into the `roundtrip(...)` call.
+In the reversibility file, additionally thread `spin=sim.spin` into the `roundtrip(...)` call. In the symplecticity file, parametrize only the elements whose `spin_and_phasespace_push` integrates the orbit in its own code path instead of calling the orbit push `(*this)(...)` (currently `ExactCFbend`, `ExactMultipole`, `ExactQuad` and `NonlinearLens`), also where the reversibility file leaves spin out because the spin map does not reverse. For all other elements, the spin variant runs the same orbit code and adds no coverage. `check_symplectic()` reads `sim.spin` itself.
 When adding alignment kwargs breaks the spin path (some elements currently use `kwargs = {} if sim.spin else PIPE_KWARGS`), follow the same conditional pattern already in the file rather than forcing a unified call and WARN the user explicitly in the summary of the change.
 
 The serialization file (file 2) is not parametrized over spin — it only checks construction and dict round-trip. Do not add spin parametrize marks there.
@@ -104,7 +107,7 @@ Elements that are NOT spin-capable (no `SpinTransport` inheritance) must not be 
 
 ## Pass 3 — run the tests
 
-After editing the Python test files, install the freshly-built Python bindings into the active environment and run the three test files directly with `pytest`.
+After editing the Python test files, install the freshly-built Python bindings into the active environment and run the four test files directly with `pytest`.
 
 ```bash
 # 1. Make sure a suitable micromamba env is active. Preference order:
@@ -116,10 +119,11 @@ After editing the Python test files, install the freshly-built Python bindings i
 cmake -S . -B build_cpu -DImpactX_PYTHON=ON -DImpactX_PYTHON_IPO=OFF -DpyAMReX_IPO=OFF
 cmake --build build_cpu -j 6 --target pip_install
 
-# 3. Run the three tests directly with pytest.
+# 3. Run the four tests directly with pytest.
 python -m pytest tests/python/test_benchmark_elements.py
 python -m pytest tests/python/test_element_serialization.py
 python -m pytest tests/python/test_reversibility_elements.py
+python -m pytest tests/python/test_symplecticity_elements.py
 ```
 
 Notes:
@@ -131,9 +135,9 @@ Notes:
 
 ## Deliverables checklist
 
-- [ ] Listed the diff between `KnownElements` and each of the three test files.
+- [ ] Listed the diff between `KnownElements` and each of the four test files.
 - [ ] Added missing tests using parameter values sourced from `examples/` (or documented why omission is intentional).
-- [ ] Added or verified the `spin/nospin` parametrize decorator on every spin-capable element in files 1 and 3.
-- [ ] Ran `pip_install` and executed the three tests with `pytest`; reported results.
+- [ ] Added or verified the `spin/nospin` parametrize decorator on every spin-capable element in files 1 and 3, and in file 4 on the elements whose spin push integrates the orbit in its own code path.
+- [ ] Ran `pip_install` and executed the four tests with `pytest`; reported results.
 - [ ] Did NOT edit any `.pyi` stub files (auto-generated on `development` — see repo `CLAUDE.md`).
 - [ ] WARN user about any omissions/skips/tweaks needed to pass the new tests, e.g., alignment parameter issues.

@@ -835,7 +835,7 @@ namespace impactx::elements
             amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
 
             // call integrator to advance (t,pt)
-            amrex::ParticleReal const zin = s - sedge - slice_ds;
+            amrex::ParticleReal const zin = s - sedge;
             amrex::ParticleReal const zout = zin + slice_ds;
             int const nsteps = m_mapsteps;
 

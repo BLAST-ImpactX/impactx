@@ -252,7 +252,7 @@ namespace impactx::elements
 
             // convert from mechanical to canonical momenta
             auto [Axout, Ayout] = vector_potential_transverse(particle(1),particle(3),zout);
-            px += Axout;    
+            px += Axout;
             py += Ayout;
 
             // assign updated values
@@ -265,9 +265,9 @@ namespace impactx::elements
         }
 
         template<typename T_Real>
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE 
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         std::tuple<T_Real, T_Real>
-        vector_potential_transverse (T_Real & x, T_Real & y, amrex::ParticleReal z) const 
+        vector_potential_transverse (T_Real & x, T_Real & y, amrex::ParticleReal z) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
@@ -403,7 +403,7 @@ namespace impactx::elements
             yout = y;
             tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(px);
 
-            amrex::ParticleReal const Bzintx_f = 0.5_prt * powi<2>(xout) * y * m_g * bzp;                        
+            amrex::ParticleReal const Bzintx_f = 0.5_prt * powi<2>(xout) * y * m_g * bzp;
 
             pxout = px;
             pyout = py - Bzintx_f + Bzintx;
@@ -462,16 +462,16 @@ namespace impactx::elements
             // compute the required quad field gradient values
             auto [bz, bzp, bzpp, bzint] = ChrQuad_Bfield(zeval);
             amrex::ignore_unused(bz,bzint);
-            
+
             // map obtained from splitting of the paraxial Hamiltonian
             amrex::ParticleReal const Bzinty = 0.5_prt * powi<2>(y) * x * m_g * bzp;
-            
+
             xout = x;
             yout = y + tau * py/delta1;
             tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(py);
-        
+
             amrex::ParticleReal const Bzinty_f = 0.5_prt * powi<2>(yout) * x * m_g * bzp;
-         
+
             pxout = px + Bzinty_f - Bzinty;
             pyout = py;
             ptout = pt;

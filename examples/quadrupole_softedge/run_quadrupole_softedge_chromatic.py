@@ -38,7 +38,7 @@ pxi = -0.01
 yi = 0.02
 pyi = 0.002
 ti = 0.003
-#pti = -0.03
+# pti = -0.03
 pti = 0.0
 
 # set test particles
@@ -108,7 +108,7 @@ quad_lin = elements.SoftQuadrupole(
 
 # assign a fodo segment
 sim.lattice.extend([monitor, quad_lin, monitor])
-#sim.lattice.extend([monitor, quad_chr, monitor])
+# sim.lattice.extend([monitor, quad_chr, monitor])
 
 # run simulation
 sim.track_particles()

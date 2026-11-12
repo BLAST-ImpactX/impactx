@@ -214,11 +214,12 @@ parentheses:
 
 .. code-block:: text
 
-   k = (-a)^b;    ! previously -a^b:   -2^2 was 4, now -4
-   k = a^(b^c);   ! previously a^b^c,  now an error
-   k = a*(-b);    ! previously a*-b,   now an error
-   k = a*(-b)^c;  ! previously a*-b^c, now an error
-   k = -(-a);     ! previously --a,    now an error
+   k = (-a)^b;      ! previously -a^b:   -2^2 was 4, now -4
+   k = a^(b^c);     ! previously a^b^c,  now an error
+   k = a*(-b);      ! previously a*-b,   now an error
+   k = a*(-b)^c;    ! previously a*-b^c, now an error
+   k = a^((-b)^c);  ! previously a^-b^c, now an error
+   k = -(-a);       ! previously --a,    now an error
 
 ``Hminus``: gyromagnetic anomaly follows the shielded proton moment
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

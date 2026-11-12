@@ -624,10 +624,17 @@ class MADXExpressionParser:
             pattern = f'"{op.value}{sign.value}"'
             if leading:
                 what = f"two signs in a row, {pattern}, are"
-                example = f"{op.value}({sign.value}b)"
+                left = op.value
             else:
                 what = f"a sign directly after an operator, {pattern}, is"
-                example = f"a{op.value}({sign.value}b)"
+                left = f"a{op.value}"
+            s = sign.value
+            if self._signed_operand_is_power():
+                # a^(-b)^c would be a chained power
+                power = f"{left}(({s}b)^c)" if op.value == "^" else f"{left}({s}b)^c"
+                example = f"{left}({s}b^c) for {s}(b^c), or {power} for ({s}b)^c"
+            else:
+                example = f"{left}({s}b)"
             raise MADXInputError(
                 f"{what} not supported: MAD-X rejects this form outside of parentheses "
                 "and computes another value inside of them, e.g., (3*-2) is -2 in MAD-X. "
@@ -635,6 +642,18 @@ class MADXExpressionParser:
                 sign.line,
                 file=self.file,
             )
+
+    def _signed_operand_is_power(self) -> bool:
+        """Whether the operand after the current sign is a power, as in -b^c."""
+        start = self.pos
+        try:
+            self._advance()  # sign
+            self._parse_primary()
+            return self._current().type == TokenType.CARET
+        except MADXInputError:
+            return False
+        finally:
+            self.pos = start
 
     def _parse_additive(self) -> Expression:
         """Parse additive expression (+ -)."""
@@ -1687,24 +1706,38 @@ class MADXParser:
     def _skip_if_condition(self):
         """Skip a condition, ( logical_expr ), without evaluating it."""
         self._expect(TokenType.LPAREN)
-        depth = 1
-        while self._current().type != TokenType.EOF:
-            if self._current().type == TokenType.LPAREN:
-                depth += 1
-            elif self._current().type == TokenType.RPAREN:
-                depth -= 1
-                if depth == 0:
-                    break
-            self._advance()
+        self._skip_condition()
         self._expect(TokenType.RPAREN)
+
+    def _skip_condition(self, *stops: TokenType):
+        """Skip condition tokens without evaluating them.
+
+        Stops before a token of a type in ``stops`` outside of parentheses, or
+        before the closing parenthesis of the condition.
+        """
+        depth = 0
+        while self._current().type != TokenType.EOF:
+            tok_type = self._current().type
+            if tok_type == TokenType.RPAREN:
+                if depth == 0:
+                    return
+                depth -= 1
+            elif tok_type == TokenType.LPAREN:
+                depth += 1
+            elif depth == 0 and tok_type in stops:
+                return
+            self._advance()
 
     def _parse_logical_or(self) -> bool:
         """Parse logical OR: expr || expr || ..."""
         result = self._parse_logical_and()
         while self._current().type == TokenType.OR:
             self._advance()
-            right = self._parse_logical_and()
-            result = result or right
+            if result:
+                # as in MAD-X, the right side of a decided || is not evaluated
+                self._skip_condition(TokenType.OR)
+            else:
+                result = self._parse_logical_and()
         return result
 
     def _parse_logical_and(self) -> bool:
@@ -1712,8 +1745,11 @@ class MADXParser:
         result = self._parse_comparison()
         while self._current().type == TokenType.AND:
             self._advance()
-            right = self._parse_comparison()
-            result = result and right
+            if not result:
+                # as in MAD-X, the right side of a decided && is not evaluated
+                self._skip_condition(TokenType.AND, TokenType.OR)
+            else:
+                result = self._parse_comparison()
         return result
 
     def _parse_comparison(self) -> bool:

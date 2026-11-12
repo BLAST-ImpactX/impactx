@@ -1625,12 +1625,14 @@ def test_chained_power_raises(expression):
         "X = 1; WHILE (X < 2^2^2) { X = X + 1; }",
         "X = MAX(1, 2*-1);",
         'X := 1; ADD2EXPR, VAR=X, EXPR="2*-1";',
+        "Q: QUADRUPOLE, L=1, K1=--1;",
+        'X := 1; ADD2EXPR, VAR=X, EXPR="--1";',
     ],
 )
 def test_unsupported_expression_contexts(statements):
     """Every kind of statement raises for these forms, also deferred ones."""
     parser = MADXParser()
-    with pytest.raises(MADXInputError, match="is not supported"):
+    with pytest.raises(MADXInputError, match="not supported"):
         parser.parse_string(statements + "\n")
 
 
@@ -1697,6 +1699,44 @@ def test_incomplete_expression_location(tmp_madx):
         MADXParser().parse(main)
     assert excinfo.value.file == main
     assert excinfo.value.line_number == 2
+
+
+@pytest.mark.parametrize(
+    "expression, hint",
+    [
+        ("A*-B", "a*(-b)."),
+        ("A*-(B^2)", "a*(-b)."),
+        ("A*-B^2", "a*(-b^c) for -(b^c), or a*(-b)^c for (-b)^c."),
+        ("A/+B^2", "a/(+b^c) for +(b^c), or a/(+b)^c for (+b)^c."),
+        ("2^-3^2", "a^(-b^c) for -(b^c), or a^((-b)^c) for (-b)^c."),
+        ("--B^2", "-(-b^c) for -(b^c), or -(-b)^c for (-b)^c."),
+    ],
+)
+def test_sign_rewrite_hint(expression, hint):
+    """For a power after the sign, the hint names both groupings."""
+    with pytest.raises(MADXInputError, match=re.escape(hint)):
+        MADXParser().parse_string(f"A = 2;\nB = 3;\nX = {expression};\n")
+
+
+def test_condition_short_circuit_not_evaluated():
+    """As in MAD-X, the right side of a decided || or && is not evaluated.
+
+    See logic_expr in src/mad_eval.c. MAD-X 5.09.03 gives Z = 1 and W = 2
+    here, without a warning.
+    """
+    parser = MADXParser()
+    parser.parse_string(
+        "X = 1;\n"
+        "IF (X > 0 || Y > 2*-1) { Z = 1; }\n"
+        "IF (X < 0 && Y > 2*-1) { W = 1; } ELSE { W = 2; }\n"
+    )
+    assert parser.getVariable("z") == 1.0
+    assert parser.getVariable("w") == 2.0
+
+    # a right side that is reached is evaluated
+    for condition in ("X < 0 || Y > 2*-1", "X > 0 && Y > 2*-1"):
+        with pytest.raises(MADXInputError, match="not supported"):
+            MADXParser().parse_string(f"X = 1;\nIF ({condition}) {{ Z = 1; }}\n")
 
 
 def test_elseif_after_taken_branch_not_evaluated():

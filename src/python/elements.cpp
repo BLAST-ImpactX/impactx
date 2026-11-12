@@ -3214,6 +3214,11 @@ void init_elements(py::module& m)
             },
             "number of integration steps per slice used for map and reference particle push in applied fields"
         )
+        .def_property("unit",
+            [](ChrSoftQuadrupole & chr_soft_quad) { return chr_soft_quad.m_unit; },
+            [](ChrSoftQuadrupole & chr_soft_quad, int unit) { chr_soft_quad.m_unit = unit; },
+            "unit specification for quad strength"
+        )
         .def_property_readonly("map",
             [](ChrSoftQuadrupole const & chr_soft_quad) { return chr_soft_quad.m_map; },
             "linearized transport map around the reference particle (valid after a reference-particle push)"

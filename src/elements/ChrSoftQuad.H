@@ -806,6 +806,7 @@ namespace impactx::elements
             // local to this call, so the canonical element never caches a pointer into
             // storage that a later mutation could replace.
             ChrSoftQuadrupolePusher pusher = *this;
+            pusher.compute_constants(refpart);
             pusher.m_cos_coefficients = m_coefficients.cos.host_const().data();
             pusher.m_sin_coefficients = m_coefficients.sin.host_const().data();
             pusher.m_ncoef = static_cast<int>(m_coefficients.cos.host_const().size());

@@ -38,7 +38,8 @@ pxi = -0.01
 yi = 0.02
 pyi = 0.002
 ti = 0.003
-pti = -0.03
+#pti = -0.03
+pti = 0.0
 
 # set test particles
 pc = sim.particle_container()
@@ -105,29 +106,9 @@ quad_lin = elements.SoftQuadrupole(
     nslice=ns,
 )
 
-quad_chr_inv = elements.ChrSoftQuadrupole(
-    name="quad1",
-    ds=-1.5,
-    gscale=1.0,
-    cos_coefficients=cos_coeffs,
-    sin_coefficients=sin_coeffs,
-    mapsteps=200,
-    nslice=ns,
-)
-
-quad_lin_inv = elements.SoftQuadrupole(
-    name="quad1",
-    ds=-1.5,
-    gscale=1.0,
-    cos_coefficients=cos_coeffs,
-    sin_coefficients=sin_coeffs,
-    mapsteps=200,
-    nslice=ns,
-)
-
-
 # assign a fodo segment
-sim.lattice.extend([monitor, quad_chr, monitor])
+sim.lattice.extend([monitor, quad_lin, monitor])
+#sim.lattice.extend([monitor, quad_chr, monitor])
 
 # run simulation
 sim.track_particles()

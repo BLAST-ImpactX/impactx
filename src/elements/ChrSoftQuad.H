@@ -199,6 +199,7 @@ namespace impactx::elements
             m_g = m_unit == 1 ? m_gscale / refpart.rigidity_Tm() : m_gscale;
 
             m_const1 = 1_prt / (2_prt * powi<3>(m_beta) * powi<2>(gamma));
+
         }
 
         /** This is a soft-edge quadrupole functor, so that a variable of this type can be used
@@ -241,8 +242,18 @@ namespace impactx::elements
                 x, px, y, py, t, pt
             };
 
+            // convert from canonical to mechanical momenta
+            auto [Axin, Ayin] = vector_potential_transverse(particle(1),particle(3),zin);
+            px -= Axin;
+            py -= Ayin;
+
             // currently second-order integration is supported
             integrators::symp2_integrate_split3_particle(particle,zin,zout,nsteps,refpart,*this);
+
+            // convert from mechanical to canonical momenta
+            auto [Axout, Ayout] = vector_potential_transverse(particle(1),particle(3),zout);
+            px += Axout;    
+            py += Ayout;
 
             // assign updated values
             x = particle(1);
@@ -251,6 +262,24 @@ namespace impactx::elements
             py = particle(4);
             t = particle(5);
             pt = particle(6);
+        }
+
+        template<typename T_Real>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE 
+        std::tuple<T_Real, T_Real>
+        vector_potential_transverse (T_Real & x, T_Real & y, amrex::ParticleReal z) const 
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
+            using amrex::Math::powi;
+
+            auto [bz, bzp, bzpp, bzint] = ChrQuad_Bfield(z);
+            amrex::ignore_unused(bz, bzpp);
+
+            T_Real Ax = 0.25_prt * (powi<3>(x) - x*powi<2>(y)) * m_g * bzp;
+            T_Real Ay = 0.25_prt * (powi<2>(x)*y - powi<3>(y)) * m_g * bzp;
+
+            return std::make_tuple(Ax, Ay);
         }
 
 
@@ -305,12 +334,14 @@ namespace impactx::elements
 
             // map obtained from splitting of the paraxial Hamiltonian
 
-            amrex::ParticleReal const gint = bzint_f - bzint;
-            amrex::ParticleReal const gp = bzp_f - bzp;
+            amrex::ParticleReal const gint = m_g * (bzint_f - bzint);
+            amrex::ParticleReal const gp = m_g * (bzp_f - bzp);
+            amrex::ParticleReal const By_intz = y*gint - y*(3_prt*powi<2>(x)+powi<2>(y))*gp/12_prt;
+            amrex::ParticleReal const Bx_intz = x*gint - x*(3_prt*powi<2>(y)+powi<2>(x))*gp/12_prt;
             xout = x;
-            pxout = px - x * gint + powi<3>(x) * gp / 3_prt;
+            pxout = px - By_intz;
             yout = y;
-            pyout = py + y * gint - powi<3>(y) * gp / 3_prt;
+            pyout = py + Bx_intz;
             tout = t - tau / m_beta + tau * (1_prt/m_beta - pt) / delta1;
             ptout = pt;
 
@@ -362,29 +393,21 @@ namespace impactx::elements
             T_Real const delta1 = sqrt(1_prt - 2_prt * pt / m_beta + powi<2>(pt));
 
             // compute the required quad field gradient values
-
-            // at initial z location
             auto [bz, bzp, bzpp, bzint] = ChrQuad_Bfield(zeval);
             amrex::ignore_unused(bz,bzint);
 
             // map obtained from splitting of the paraxial Hamiltonian
-            T_Real Ax = -y*bz/2_prt + y*(powi<2>(x)+powi<2>(y))*bzpp/16_prt;
-            T_Real Ay = x*bz/2_prt - x*(powi<2>(x)+powi<2>(y))*bzpp/16_prt;
-            T_Real Bzintx = x*bz - x*(powi<2>(x)+3_prt*powi<2>(y))*bzpp/12_prt;
-            T_Real px_mech = px - Ax;
+            amrex::ParticleReal const Bzintx = 0.5_prt * powi<2>(x) * y * m_g * bzp;
 
-            xout = x + tau * (px - (powi<3>(x) - x * powi<2>(y))*bzp/4_prt )/delta1;
+            xout = x + tau * px/delta1;
             yout = y;
+            tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(px);
 
-            T_Real Ax_f = -yout*bz/2_prt + yout*(powi<2>(xout)+powi<2>(yout))*bzpp/16_prt;
-            T_Real Ay_f = xout*bz/2_prt - xout*(powi<2>(xout)+powi<2>(yout))*bzpp/16_prt;
-            T_Real Bzintx_f = xout*bz - xout*(powi<2>(xout)+3_prt*powi<2>(yout))*bzpp/12_prt;
+            amrex::ParticleReal const Bzintx_f = 0.5_prt * powi<2>(xout) * y * m_g * bzp;                        
 
-            pxout = px - Ax + Ax_f;
-            pyout = py - Ay + Ay_f - Bzintx_f + Bzintx;
+            pxout = px;
+            pyout = py - Bzintx_f + Bzintx;
             ptout = pt;
-
-            tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(px_mech);
 
             // push particle coordinates
             particle(1) = xout;
@@ -437,29 +460,21 @@ namespace impactx::elements
             T_Real const delta1 = sqrt(1_prt - 2_prt * pt / m_beta + powi<2>(pt));
 
             // compute the required quad field gradient values
-
-            // at initial z location
             auto [bz, bzp, bzpp, bzint] = ChrQuad_Bfield(zeval);
             amrex::ignore_unused(bz,bzint);
-
+            
             // map obtained from splitting of the paraxial Hamiltonian
-            T_Real Ax = -y*bz/2_prt + y*(powi<2>(x)+powi<2>(y))*bzpp/16_prt;
-            T_Real Ay = x*bz/2_prt - x*(powi<2>(x)+powi<2>(y))*bzpp/16_prt;
-            T_Real Bzinty = y*bz - y*(powi<2>(y)+3_prt*powi<2>(x))*bzpp/12_prt;
-            T_Real py_mech = py - Ay;
-
+            amrex::ParticleReal const Bzinty = 0.5_prt * powi<2>(y) * x * m_g * bzp;
+            
             xout = x;
-            yout = y + tau * (py + (powi<3>(y) - y * powi<2>(x))*bzp/4_prt )/delta1;
-
-            T_Real Ax_f = -yout*bz/2_prt + yout*(powi<2>(xout)+powi<2>(yout))*bzpp/16_prt;
-            T_Real Ay_f = xout*bz/2_prt - xout*(powi<2>(xout)+powi<2>(yout))*bzpp/16_prt;
-            T_Real Bzinty_f = yout*bz - yout*(powi<2>(yout)+3_prt*powi<2>(xout))*bzpp/12_prt;
-
-            pxout = px - Ax + Ax_f - Bzinty_f + Bzinty;
-            pyout = py - Ay + Ay_f;
+            yout = y + tau * py/delta1;
+            tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(py);
+        
+            amrex::ParticleReal const Bzinty_f = 0.5_prt * powi<2>(yout) * x * m_g * bzp;
+         
+            pxout = px + Bzinty_f - Bzinty;
+            pyout = py;
             ptout = pt;
-
-            tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(py_mech);
 
             // push particle coordinates
             particle(1) = xout;

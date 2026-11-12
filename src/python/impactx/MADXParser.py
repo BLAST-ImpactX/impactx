@@ -635,9 +635,10 @@ class MADXExpressionParser:
                 example = f"{left}({s}b^c) for {s}(b^c), or {power} for ({s}b)^c"
             else:
                 example = f"{left}({s}b)"
+            madx = "(--2)" if leading else "(3*-2)"
             raise MADXInputError(
                 f"{what} not supported: MAD-X rejects this form outside of parentheses "
-                "and computes another value inside of them, e.g., (3*-2) is -2 in MAD-X. "
+                f"and computes another value inside of them, e.g., {madx} is -2 in MAD-X. "
                 f"Put the sign and its operand in parentheses: {example}.",
                 sign.line,
                 file=self.file,

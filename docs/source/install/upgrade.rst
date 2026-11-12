@@ -206,7 +206,7 @@ MAD-X files: powers and signs
 :py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate a sign before a power in MAD-X files as MAD-X does:
 ``-a^b`` is ``-(a^b)``.
 A chained power, ``a^b^c``, a sign directly after an operator, as in ``a*-b`` or ``a^-b``, and two signs in a row,
-``--a``, now raise a ``MADXInputError``, because MAD-X evaluates them differently from the usual rules.
+``--a``, now raise a ``MADXInputError``, because MAD-X rejects them or evaluates them differently from the usual rules.
 
 **What to check in your MAD-X files:** a sign directly before a power, more than one ``^`` in an expression, and a sign
 directly after an operator or another sign. A subtraction, ``a-b^2``, is not affected. To keep the previous values, add

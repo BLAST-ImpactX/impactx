@@ -1582,7 +1582,10 @@ def test_two_leading_signs_raise(expression, pattern):
     """Two signs in a row raise. In MAD-X 5.09.03, (--2) is -2."""
     parser = MADXParser()
     with pytest.raises(
-        MADXInputError, match=re.escape(f'two signs in a row, "{pattern}"')
+        MADXInputError,
+        match=re.escape(f'two signs in a row, "{pattern}"')
+        + ".*"
+        + re.escape("(--2) is -2 in MAD-X"),
     ):
         parser.parse_string(f"X = {expression};\n")
 
@@ -1742,13 +1745,16 @@ def test_condition_short_circuit_not_evaluated():
 def test_elseif_after_taken_branch_not_evaluated():
     """As in MAD-X, no ELSEIF condition is evaluated after a taken branch.
 
-    MAD-X 5.09.03 gives Y = 1 here, without a warning.
+    MAD-X 5.09.03 gives Y = 1 and W = 1 here, without a warning.
     """
     parser = MADXParser()
     parser.parse_string(
         "X = 1;\nIF (X > 0) { Y = 1; } ELSEIF (X > 2*-1) { Y = 2; } ELSE { Y = 3; }\n"
+        "IF (X > 0) { W = 1; } ELSEIF (X > 2*-1) { W = 2; } "
+        "ELSEIF (X > 2^2^2) { W = 3; } ELSE { W = 4; }\n"
     )
     assert parser.getVariable("y") == 1.0
+    assert parser.getVariable("w") == 1.0
 
     # a reached ELSEIF condition is evaluated
     with pytest.raises(MADXInputError, match="is not supported"):

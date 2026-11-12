@@ -233,8 +233,10 @@ namespace impactx::elements
             using namespace amrex::literals; // for _rt and _prt
 
             // numerical integration parameters
-            amrex::ParticleReal const zin = 0_prt;
-            amrex::ParticleReal const zout = m_slice_ds;
+            amrex::ParticleReal const s = refpart.s;
+            amrex::ParticleReal const sedge = refpart.sedge;
+            amrex::ParticleReal const zin = s - sedge;
+            amrex::ParticleReal const zout = zin + m_slice_ds;
             int const nsteps = m_mapsteps;
 
             // initialize phase space 6-vector
@@ -244,16 +246,16 @@ namespace impactx::elements
 
             // convert from canonical to mechanical momenta
             auto [Axin, Ayin] = vector_potential_transverse(particle(1),particle(3),zin);
-            px -= Axin;
-            py -= Ayin;
+            particle(2) -= Axin;
+            particle(4) -= Ayin;
 
             // currently second-order integration is supported
             integrators::symp2_integrate_split3_particle(particle,zin,zout,nsteps,refpart,*this);
 
             // convert from mechanical to canonical momenta
             auto [Axout, Ayout] = vector_potential_transverse(particle(1),particle(3),zout);
-            px += Axout;
-            py += Ayout;
+            particle(2) += Axout;
+            particle(4) += Ayout;
 
             // assign updated values
             x = particle(1);
@@ -336,8 +338,8 @@ namespace impactx::elements
 
             amrex::ParticleReal const gint = m_g * (bzint_f - bzint);
             amrex::ParticleReal const gp = m_g * (bzp_f - bzp);
-            T_Real const By_intz = y*gint - y*(3_prt*powi<2>(x)+powi<2>(y))*gp/12_prt;
-            T_Real const Bx_intz = x*gint - x*(3_prt*powi<2>(y)+powi<2>(x))*gp/12_prt;
+            T_Real const By_intz = x*gint - x*(3_prt*powi<2>(y)+powi<2>(x))*gp/12_prt;
+            T_Real const Bx_intz = y*gint - y*(3_prt*powi<2>(x)+powi<2>(y))*gp/12_prt;
             xout = x;
             pxout = px - By_intz;
             yout = y;
@@ -401,7 +403,7 @@ namespace impactx::elements
 
             xout = x + tau * px/delta1;
             yout = y;
-            tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(px);
+            tout = t + 0.5_prt * tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(px);
 
             T_Real const Bzintx_f = 0.5_prt * powi<2>(xout) * y * m_g * bzp;
 
@@ -468,7 +470,7 @@ namespace impactx::elements
 
             xout = x;
             yout = y + tau * py/delta1;
-            tout = t + tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(py);
+            tout = t + 0.5_prt * tau * (1/m_beta - pt) / powi<3>(delta1) * powi<2>(py);
 
             T_Real const Bzinty_f = 0.5_prt * powi<2>(yout) * x * m_g * bzp;
 
@@ -665,7 +667,7 @@ namespace impactx::elements
             amrex::ParticleReal const pt = refpart.pt;
 
             // Define parameters and intermediate constants
-            amrex::ParticleReal const G0 = m_gscale;
+            amrex::ParticleReal const G0 = m_g;
 
             // push the reference particle
             auto [bz, bzp, bzpp,bzint] = ChrQuad_Bfield(zeval);

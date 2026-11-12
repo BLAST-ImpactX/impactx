@@ -16,6 +16,7 @@
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "helper/ArrayValidation.H"
+#include "helper/CurvilinearMultipoles.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/pipeaperture.H"
@@ -66,8 +67,8 @@ namespace impactx::elements
         static constexpr int DEFAULT_int_order = 2;
         static constexpr int DEFAULT_mapsteps = 10;
 
-        //! most coefficients per array: map2 and map3 implement the orders through the decapole
-        static constexpr int MAX_order = 5;
+        //! most coefficients per array: orders 1 (dipole) through 12
+        static constexpr int MAX_order = curvilinear::max_index + 1;
 
         /** The particle-facing configuration of an exact combined-function bend
          *
@@ -141,6 +142,8 @@ namespace impactx::elements
             // find magnetic field and curvature; normalize units to MAD-X convention if needed
             amrex::ParticleReal curvature = m_unit == 1 ? k_normal[0] / m_brho : k_normal[0];
             m_rc = curvature == 0.0 ? 0.0_prt : 1.0_prt/curvature;
+            m_h = curvature;
+            m_k_scale = m_unit == 1 ? 1_prt / m_brho : 1_prt;
 
             // arc length and angle of the current slice
             m_slice_ds = m_ds / nslice();
@@ -320,88 +323,18 @@ namespace impactx::elements
                    [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
-            using namespace amrex::Math;  // for powi
 
             amrex::ParticleReal const x = particle(1);
-            amrex::ParticleReal const px = particle(2);
             amrex::ParticleReal const y = particle(3);
-            amrex::ParticleReal const py = particle(4);
-            amrex::ParticleReal const t = particle(5);
-            amrex::ParticleReal const pt = particle(6);
 
-            amrex::ParticleReal xout = x;
-            amrex::ParticleReal pxout = px;
-            amrex::ParticleReal yout = y;
-            amrex::ParticleReal pyout = py;
-            amrex::ParticleReal tout = t;
-            amrex::ParticleReal ptout = pt;
-
-            amrex::ParticleReal const * k_normal = m_k_normal;
-            amrex::ParticleReal const * k_skew = m_k_skew;
-
-            // defined dimensionless variables scaled by radius of curvature
-            amrex::ParticleReal rho = 1_prt + x / m_rc;
-            amrex::ParticleReal y_scl = y / m_rc;
-            amrex::ParticleReal ln_rho = std::log(rho);
-
-            // initialize the momentum kick with the skew dipole (the normal dipole is in map 1)
+            // kick of the multipoles; map 1 applies the normal dipole
             amrex::ParticleReal dpx = 0_prt;
-            amrex::ParticleReal dpy = m_unit == 1 ? k_skew[0] / m_brho : k_skew[0];
-
-            // loop over array of multipole coefficients
-            for (int m = 1; m < m_ncoef; m++) {
-
-               // normalize units to MAD-X convention if needed
-               amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
-               amrex::ParticleReal ks = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
-
-               int n = m+1;  // multipole order
-
-               // define dimensionless multipole coefficients (scaled by radius of curvature)
-               kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
-               ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
-
-               switch (n) {
-
-                  case 2:   // quadrupole-like contribution
-                     dpx += -rho*ln_rho*kn + y_scl*rho*ks;
-                     dpy += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks;
-                     break;
-                  case 3:  // sextupole-like contribution
-                     dpx += 0.25_prt*rho*(1_prt + 2_prt*y_scl*y_scl - rho*rho + 2_prt*ln_rho)*kn + y_scl*rho*ln_rho*ks;
-                     dpy += 0.5_prt*y_scl*(rho*rho - 1_prt)*kn + 0.25_prt*(1_prt - 2_prt*y_scl*y_scl - rho*rho + 2_prt*rho*rho*ln_rho)*ks;
-                     break;
-                  case 4:  // octupole-like contribution
-                     dpx += -0.25_prt*(rho - powi<3>(rho) + (rho - 2_prt*y_scl*y_scl*rho + powi<3>(rho))*ln_rho)*kn
-                            -1_prt/12_prt*y_scl*rho*(3_prt + 2_prt*y_scl*y_scl - 3_prt*rho*rho + 6_prt*ln_rho)*ks;
-                     dpy += -1_prt/12_prt*y_scl*(-3_prt + 2_prt*y_scl*y_scl + 3_prt*rho*rho - 6_prt*rho*rho*ln_rho)*kn
-                            -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
-                     break;
-                  case 5:  // decapole-like contribution
-                     dpx += -1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
-                            + 3_prt*(-5_prt + 4_prt*powi<2>(rho) + powi<4>(rho))
-                            +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
-                            -1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks;
-                     dpy += -1_prt/48_prt*y_scl*((-1_prt + rho*rho)*(4_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho)) + 12_prt*rho*rho*ln_rho)*kn
-                            + 1_prt/192_prt*(3_prt + 8_prt*powi<4>(y_scl) + 12_prt*rho*rho
-                            - 15_prt*powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
-                            +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
-                     break;
-               }
-
-            }
+            amrex::ParticleReal dpy = 0_prt;
+            curvilinear::kick(x, y, m_h, m_k_normal, m_k_skew, m_ncoef, m_k_scale, dpx, dpy);
 
             // advance momentum by a step of length tau
-            pxout = pxout + tau * dpx;
-            pyout = pyout + tau * dpy;
-
-            //update the particle coordinates
-            particle(1) = xout;
-            particle(2) = pxout;
-            particle(3) = yout;
-            particle(4) = pyout;
-            particle(5) = tout;
-            particle(6) = ptout;
+            particle(2) = particle(2) + tau * dpx;
+            particle(4) = particle(4) + tau * dpy;
 
             zeval += tau;
         }
@@ -425,7 +358,6 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
-            using amrex::Math::powi;
 
             // reference particle relativistic factors
             amrex::ParticleReal const gamma_ref = refpart.gamma();
@@ -446,73 +378,18 @@ namespace impactx::elements
             T_Real sy = particle_spin(2);
             T_Real sz = particle_spin(3);
 
-            amrex::ParticleReal const * const k_normal = m_k_normal;
-            amrex::ParticleReal const * const k_skew = m_k_skew;
-
-            // defined dimensionless variables scaled by radius of curvature
-            amrex::ParticleReal rho = 1_prt + x / m_rc;
-            amrex::ParticleReal y_scl = y / m_rc;
-            amrex::ParticleReal ln_rho = std::log(rho);
-
-            // Initialization of magnetic field variables:
-            T_Real Bx = 0_prt;
-            T_Real By = 0_prt;
-            T_Real Bz = 0_prt;
-
-            // loop over array of multipole coefficients
-            // NOTE:  Here we start at m = 0 in order to include the dipole contribution to the spin
-            for (int m = 0; m < m_ncoef; m++) {
-
-               // normalize units to MAD-X convention if needed
-               amrex::ParticleReal kn = m_unit == 1 ? k_normal[m] / m_brho : k_normal[m];
-               amrex::ParticleReal ks = m_unit == 1 ? k_skew[m] / m_brho : k_skew[m];
-
-               int n = m+1;  // multipole order
-
-               // define dimensionless multipole coefficients (scaled by radius of curvature)
-               kn = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * kn;
-               ks = std::pow(m_rc, static_cast<amrex::ParticleReal>(m)) * ks;
-
-               // Below, we use the consistency relationships Bx = dpy/rho and By = -dpx/rho.  See T. Zolkin, PRAB 20, 043501 (2017).
-
-               switch (n) {
-
-                  case 1:   // dipole-like contribution (not used - contributing to map 1)
-                     Bx += ks;
-                     By += rho * kn;
-                     break;
-                  case 2:   // quadrupole-like contribution
-                     Bx += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks;
-                     By += -(-rho*ln_rho*kn + y_scl*rho*ks);
-                     break;
-                  case 3:  // sextupole-like contribution
-                     Bx += 0.5_prt*y_scl*(rho*rho - 1_prt)*kn + 0.25_prt*(1_prt - 2_prt*y_scl*y_scl - rho*rho + 2_prt*rho*rho*ln_rho)*ks;
-                     By += -(0.25_prt*rho*(1_prt + 2_prt*y_scl*y_scl - rho*rho + 2_prt*ln_rho)*kn + y_scl*rho*ln_rho*ks);
-                     break;
-                  case 4:  // octupole-like contribution
-                     Bx += -1_prt/12_prt*y_scl*(-3_prt + 2_prt*y_scl*y_scl + 3_prt*rho*rho - 6_prt*rho*rho*ln_rho)*kn
-                            -1_prt/16_prt*((-1_prt + 4_prt*y_scl*y_scl - rho*rho)*(-1_prt + rho*rho) + 4_prt*rho*rho*ln_rho)*ks;
-                     By += -(-0.25_prt*(rho - powi<3>(rho) + (rho - 2_prt*y_scl*y_scl*rho + powi<3>(rho))*ln_rho)*kn
-                            -1_prt/12_prt*y_scl*rho*(3_prt + 2_prt*y_scl*y_scl - 3_prt*rho*rho + 6_prt*ln_rho)*ks);
-                     break;
-                  case 5:  // decapole-like contribution
-                     Bx += -1_prt/48_prt*y_scl*((-1_prt + rho*rho)*(4_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho)) + 12_prt*rho*rho*ln_rho)*kn
-                            + 1_prt/192_prt*(3_prt + 8_prt*powi<4>(y_scl) + 12_prt*rho*rho
-                            - 15_prt*powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
-                            +12_prt*rho*rho*(2_prt - 4_prt*y_scl*y_scl + rho*rho)*ln_rho)*ks;
-                     By += -(-1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
-                            + 3_prt*(-5_prt + 4_prt*powi<2>(rho) + powi<4>(rho))
-                            +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
-                            -1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks);
-                     break;
-               }
-
-            }
+            // field of the multipoles, rho Bx = dpy and rho By = -dpx with rho = 1 + h x,
+            // plus the normal dipole, the curvature h of the design orbit
+            T_Real dpx = 0_prt;
+            T_Real dpy = 0_prt;
+            curvilinear::kick(x, y, m_h, m_k_normal, m_k_skew, m_ncoef, m_k_scale, dpx, dpy);
+            T_Real const rho = 1_prt + m_h * x;
 
             // Scaling magnetic field to units used in the T-BMT representation (e.g. q*B/mc).
-
-            Bx = Bx * m_beta * gamma_ref / rho;
-            By = By * m_beta * gamma_ref / rho;
+            T_Real const field_scale = m_beta * gamma_ref / rho;
+            T_Real const Bx = dpy * field_scale;
+            T_Real const By = (rho * m_h - dpx) * field_scale;
+            T_Real const Bz = 0_prt;
 
             // Electric field normalized by q/mc^2:
             T_Real const Ex = 0.0_prt;
@@ -528,11 +405,9 @@ namespace impactx::elements
             T_Real const uy = py * iPnorm;
             T_Real const uz = Ps * iPnorm;
 
-            // Design-orbit curvature
-            amrex::ParticleReal const h = 1_prt/m_rc;
-
             // Evaluation of the full Thomas-BMT precession vector.
-            tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+            tbmt_precession_vector(x,ux,uy,uz,gamma,m_h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,
+                                   lambdax,lambday,lambdaz);
 
             // Generator of the spin rotation for a single step
             lambdax *= tau;
@@ -635,6 +510,8 @@ namespace impactx::elements
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m
         amrex::ParticleReal m_rc;             //! magnet radius of curvature
+        amrex::ParticleReal m_h;              //! curvature of the design orbit
+        amrex::ParticleReal m_k_scale;        //! 1/m_brho for unit = 1, else 1
     };
 
     /** An exact combined-function bend: the canonical element that owns its coefficients.

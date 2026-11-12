@@ -586,7 +586,7 @@ This requires these additional parameters:
 ^^^^^^^^^^^^^^^^
 
 A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (:math:`m = 5`).
+The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order :math:`m = 12`.
 The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
 For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
@@ -600,7 +600,8 @@ Particle tracking is performed using symplectic integration based on the Hamilto
 Here :math:`H_1` is the exact nonlinear Hamiltonian for a sector bend (including the kinematic square root),
 and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
 
-The vector potential is obtained from Table XI of the above-cited reference.
+The vector potential of each multipole is the sector harmonic of the above-cited reference, for all orders.
+The fields are computed to the floating-point precision for horizontal positions :math:`-0.22 < x/r_c < 0.28`, with :math:`r_c` the bending radius.
 
 This element is defined via ``<cfbend_exact_name>.type = cfbend_exact`` and requires these additional parameters:
 

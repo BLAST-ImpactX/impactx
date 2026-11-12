@@ -2142,7 +2142,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 .. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (m=5).
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order m=12.
    The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
    For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
@@ -2156,7 +2156,8 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    Here :math:`H_1` is the exact nonlinear Hamiltonian for a sector bend (including the kinematic square root),
    and :math:`H_2` is the term containing the vector potential, which is a superposition of multipole contributions.
 
-   The vector potential is obtained from Table XI of the above-cited reference.
+   The vector potential of each multipole is the sector harmonic of the above-cited reference, for all orders.
+   The fields are computed to the floating-point precision for horizontal positions -0.22 < x/rc < 0.28, with rc the bending radius.
 
    :param ds: Segment length in m.
    :param k_normal: Array of normal multipole coefficients (in meter^(-m) OR in T/meter^(m-1) for m=1,2,3,..)

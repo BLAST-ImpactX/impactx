@@ -1561,7 +1561,7 @@ void init_elements(py::module& m)
             [](elements::ExactCFbend & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(std::move(v), el.k_skew_coefficients());
             },
-            "normal multipole coefficients, up to decapole order (m=5)\n\n"
+            "normal multipole coefficients, up to order m=12\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )
@@ -1570,7 +1570,7 @@ void init_elements(py::module& m)
             [](elements::ExactCFbend & el, std::vector<amrex::ParticleReal> v) {
                 el.set_coefficients(el.k_normal_coefficients(), std::move(v));
             },
-            "skew multipole coefficients, up to decapole order (m=5)\n\n"
+            "skew multipole coefficients, up to order m=12\n\n"
             "Both arrays are always the same length. To change the length, set both at\n"
             "once with ``set_coefficients()``."
         )

@@ -20,6 +20,7 @@
 #include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
+#include "helper/ExactDriftSlopes.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -294,7 +295,6 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
-            using amrex::Math::powi;
 
             T_Real const x = particle(1);
             T_Real const px = particle(2);
@@ -303,20 +303,15 @@ namespace impactx::elements
             T_Real const t = particle(5);
             T_Real const pt = particle(6);
 
-            // compute the radical in the denominator (= pz):
-            T_Real const inv_pzden = 1_prt / sqrt(
-                powi<2>(pt - m_ibeta) -
-                m_ibetgam2 -
-                powi<2>(px) -
-                powi<2>(py)
-            );
+            // slopes of the exact drift, the linear part of which is in map1
+            auto const drift = exact_drift_slopes(px, py, pt, m_ibeta);
 
             // The momenta are not affected.
-            particle(1) = x + tau * px * (-1_prt + inv_pzden);
+            particle(1) = x + tau * px * drift.inv_pz_m1;
             particle(2) = px;
-            particle(3) = y + tau * py * (-1_prt + inv_pzden);
+            particle(3) = y + tau * py * drift.inv_pz_m1;
             particle(4) = py;
-            particle(5) = t + tau * (-m_ibeta - m_ibetgam2*pt + inv_pzden*(1_prt - pt*m_beta)*m_ibeta);
+            particle(5) = t + tau * (drift.dt_ds - m_ibetgam2 * pt);
             particle(6) = pt;
 
             zeval += tau;

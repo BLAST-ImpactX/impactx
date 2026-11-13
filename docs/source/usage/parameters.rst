@@ -1703,7 +1703,7 @@ This element is defined via ``<quadrupole_softedge_name>.type = quadrupole_softe
 ``quadrupole_softedge_chromatic`` for a paraxial nonlinear model of a soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
 The vector potential components A_x, A_y, and A_z are expanded in (x,y) through terms of degree 4, as reconstructed based on the user-supplied Fourier coefficients of the on-axis quadrupole gradient. Like other chromatic elements, a paraxial expansion of the Hamiltonian is made (to second degree in the transverse mechanical momenta). Tracking is performed using symplectic integration via a 3-term splitting of the Hamiltonian.
- 
+
 The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
 describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``) attain a peak on-axis value of 1, then the parameter
 ``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``

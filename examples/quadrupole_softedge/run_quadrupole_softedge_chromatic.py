@@ -6,9 +6,8 @@
 #
 # -*- coding: utf-8 -*-
 
-import numpy as np
-from numpy.polynomial import Polynomial
 import matplotlib.pyplot as plt
+import numpy as np
 
 import amrex.space3d as amr
 from impactx import ImpactX, elements, fourier_coefficients
@@ -109,7 +108,7 @@ sim.lattice.extend([quad_lin])
 # run simulation
 sim.track_particles()
 
-pc_lin_f = sim.particle_container()   
+pc_lin_f = sim.particle_container()
 beam_lin_f = pc_lin_f.to_df()
 x_lin = beam_lin_f["position_x"].to_numpy()
 y_lin = beam_lin_f["position_y"].to_numpy()
@@ -120,7 +119,7 @@ pt_lin = beam_lin_f["momentum_t"].to_numpy()
 
 # set up second simulation
 sim.lattice.clear()
-pc.clear(keep_mass=True,keep_charge=True)
+pc.clear(keep_mass=True, keep_charge=True)
 
 ref.set_species("electron").set_kin_energy_MeV(kin_energy_MeV)
 
@@ -152,11 +151,17 @@ py_chr = beam_chr_f["momentum_y"].to_numpy()
 pt_chr = beam_chr_f["momentum_t"].to_numpy()
 
 # clean shutdown
-sim.finalize()  
+sim.finalize()
 
 # norm of the difference in the final phase space 6-vector
-norm_phase_space_diff = np.sqrt((x_chr-x_lin)**2 + (px_chr-px_lin)**2 + (y_chr-y_lin)**2
-              + (py_chr-py_lin)**2 + (t_chr-t_lin)**2 + (pt_chr-pt_lin)**2)
+norm_phase_space_diff = np.sqrt(
+    (x_chr - x_lin) ** 2
+    + (px_chr - px_lin) ** 2
+    + (y_chr - y_lin) ** 2
+    + (py_chr - py_lin) ** 2
+    + (t_chr - t_lin) ** 2
+    + (pt_chr - pt_lin) ** 2
+)
 
 m, b = np.polyfit(np.log(scale_arr), np.log(norm_phase_space_diff), deg=1)
 print(f"  slope={m}")
@@ -164,7 +169,7 @@ print(f"  slope={m}")
 # Test for  quadratic scaling with initial phase space vector:
 rtol = 2.0e-2
 print(f"  rtol={rtol}")
-assert np.allclose(   
+assert np.allclose(
     [m],
     [
         2.0,
@@ -172,6 +177,6 @@ assert np.allclose(
     rtol=rtol,
 )
 
-plt.plot(scale_arr,norm_phase_space_diff)
+plt.plot(scale_arr, norm_phase_space_diff)
 
 plt.show()

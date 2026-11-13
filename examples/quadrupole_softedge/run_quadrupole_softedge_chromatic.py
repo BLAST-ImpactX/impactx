@@ -176,6 +176,6 @@ assert np.allclose(
     rtol=rtol,
 )
 
-plt.plot(scale_arr, norm_phase_space_diff)
+# plt.plot(scale_arr, norm_phase_space_diff)
 
-plt.show()
+# plt.show()

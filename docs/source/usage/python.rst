@@ -2858,6 +2858,40 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
+.. py:class:: impactx.elements.ChrSoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+
+   A chromatic (paraxial) model of a soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+   Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
+   **or** raw on-axis field/gradient data (``z``, ``gradient_on_axis``, ``ncoef``), not both.
+   When the latter is given, Fourier coefficients are computed automatically
+   using :func:`impactx.fourier_coefficients`.
+
+   The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
+   describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
+   ``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.
+
+   In this case, ``gscale`` has units of inverse meters squared.
+
+   :param ds: Segment length in m.
+   :param gscale: Scaling factor for on-axis field gradient in inverse meters squared OR in Tesla per meter
+   :param cos_coefficients: array of ``float`` cosine coefficients in Fourier expansion of on-axis field gradient dBy/dx
+            (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
+   :param sin_coefficients: array of ``float`` sine coefficients in Fourier expansion of on-axis field gradient dBy/dx
+            (optional); default is a tanh fringe field model based on `<http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__
+   :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
+   :param gradient_on_axis: array of on-axis field gradient dBy/dx values, typically normalized to a peak absolute value of 1; multiplied by ``gscale`` (alternative to Fourier coefficients)
+   :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param unit: specification of units for the quadrupole gradient parameter gscale (by default, this is normalized by magnetic rigidity)
+   :param mapsteps: number of integration steps per slice used for map and reference particle push in applied fields
+   :param nslice: number of slices used for the application of space charge
+   :param name: an optional name for the element
+
 .. py:class:: impactx.elements.SpinMap(v, A, ds=0, dx=0, dy=0, rotation=0, name=None)
 
    A custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.  Spin maps are specified in the Lie-algebraic form:

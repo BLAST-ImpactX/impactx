@@ -235,7 +235,7 @@ namespace impactx::elements
             // numerical integration parameters
             amrex::ParticleReal const s = refpart.s;
             amrex::ParticleReal const sedge = refpart.sedge;
-            amrex::ParticleReal const zin = s - sedge;
+            amrex::ParticleReal const zin = s - sedge - m_slice_ds;
             amrex::ParticleReal const zout = zin + m_slice_ds;
             int const nsteps = m_mapsteps;
 
@@ -577,23 +577,20 @@ namespace impactx::elements
             amrex::ParticleReal bfieldp = 0.0;
             amrex::ParticleReal bfieldpp = 0.0;
             amrex::ParticleReal bfieldint = 0.0;
-            amrex::ParticleReal const z = (m_ds < 0_prt ? zlen + zeval : zeval) - zmid;
+            amrex::ParticleReal const z = amrex::Clamp(zeval - zmid, -zmid, zmid);
 
-            if (std::abs(z) <= zmid)
+            bfield = 0.5_prt*cos_data[0];
+            bfieldint = z*bfield;
+            for (int j=1; j < ncoef; ++j)
             {
-               bfield = 0.5_prt*cos_data[0];
-               bfieldint = z*bfield;
-               for (int j=1; j < ncoef; ++j)
-               {
-                 bfield = bfield + cos_data[j] *std::cos(j * 2 * pi * z / zlen) +
-                         sin_data[j] *std::sin(j * 2 * pi * z / zlen);
-                 bfieldp = bfieldp - j * 2 * pi * cos_data[j] *std::sin(j * 2 * pi * z / zlen) / zlen +
-                           j * 2 * pi * sin_data[j] *std::cos(j * 2 * pi * z / zlen) / zlen;
-                 bfieldpp = bfieldpp - (j * 2 * pi / zlen) * (j * 2 * pi / zlen) * ( cos_data[j] *std::cos(j * 2 * pi * z / zlen) +
-                           - sin_data[j] *std::sin(j * 2 * pi * z / zlen) );
-                 bfieldint = bfieldint + zlen * cos_data[j] *std::sin(j * 2 * pi * z / zlen) / (j * 2 * pi) -
-                             zlen * sin_data[j] *std::cos(j * 2 * pi * z / zlen) / (j * 2 * pi);
-               }
+              bfield = bfield + cos_data[j] *std::cos(j * 2 * pi * z / zlen) +
+                      sin_data[j] *std::sin(j * 2 * pi * z / zlen);
+              bfieldp = bfieldp - j * 2 * pi * cos_data[j] *std::sin(j * 2 * pi * z / zlen) / zlen +
+                        j * 2 * pi * sin_data[j] *std::cos(j * 2 * pi * z / zlen) / zlen;
+              bfieldpp = bfieldpp - (j * 2 * pi / zlen) * (j * 2 * pi / zlen) * ( cos_data[j] *std::cos(j * 2 * pi * z / zlen) +
+                        - sin_data[j] *std::sin(j * 2 * pi * z / zlen) );
+              bfieldint = bfieldint + zlen * cos_data[j] *std::sin(j * 2 * pi * z / zlen) / (j * 2 * pi) -
+                          zlen * sin_data[j] *std::cos(j * 2 * pi * z / zlen) / (j * 2 * pi);
             }
             return std::make_tuple(bfield, bfieldp, bfieldpp, bfieldint);
         }

@@ -700,11 +700,9 @@ def test_ShortRF(sim):
     )
 
 
-# Spin reversibility is not validated here: with finite mapsteps the spin
-# precession reverse is not the exact inverse of the forward push, leaving an
-# O(1e-3) residual. Keep nospin-only (the benchmark covers the forward spin push).
 # Several mapsteps: depending on the round-off of the integration steps, the last
 # evaluation of the field profile lands at its end or a few ulp outside of it.
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize("mapsteps", [1, 3, 4, 7, 10, 14, 32, 64])
 def test_RFCavity(sim, mapsteps):
     roundtrip(
@@ -753,6 +751,7 @@ def test_RFCavity(sim, mapsteps):
             if Config.precision == "SINGLE"
             else ref_atol
         ),
+        spin=sim.spin,
     )
 
 

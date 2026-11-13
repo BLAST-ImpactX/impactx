@@ -30,7 +30,8 @@ namespace impactx::particles::spacecharge
     void HandleSpacecharge (
         std::unique_ptr<initialization::AmrCoreData> & amr_data,
         std::function<void()> ResizeMesh,
-        amrex::Real slice_ds
+        amrex::Real slice_ds,
+        int step
     )
     {
         if (slice_ds == 0.0) { return; }
@@ -74,6 +75,9 @@ namespace impactx::particles::spacecharge
             // 3D: x, y, z
             // 2D: x, y, t
             amr_data->track_particles.m_particle_container->Redistribute();
+
+            // optionally sort particles within their tiles, for deposition memory locality
+            amr_data->track_particles.m_particle_container->SortParticles(step);
 
             // charge deposition
             amr_data->track_particles.m_particle_container->DepositCharge(

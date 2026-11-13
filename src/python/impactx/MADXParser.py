@@ -126,6 +126,7 @@ class Token:
     value: Any
     line: int
     column: int
+    file: Optional[str] = None  # input file of the token, for messages
 
     def __repr__(self):
         return f"Token({self.type.name}, {self.value!r}, line={self.line})"
@@ -149,10 +150,15 @@ class MADXLexer:
     - Operators and delimiters
     """
 
-    def __init__(self, text: str, file: Optional[str] = None):
+    def __init__(self, text: str, file: Optional[str] = None, line: int = 1):
+        """
+        :param text: MAD-X input
+        :param file: file name of the input, for messages
+        :param line: line number of the first line of ``text`` in ``file``
+        """
         self.text = text
         self.pos = 0
-        self.line = 1
+        self.line = line
         self.column = 1
         self.length = len(text)
         self.file = file
@@ -425,6 +431,8 @@ class MADXLexer:
                 )
 
         tokens.append(Token(TokenType.EOF, None, self.line, self.column))
+        for token in tokens:
+            token.file = self.file
         return tokens
 
 
@@ -511,14 +519,21 @@ class MADXExpressionParser:
     Parser for MAD-X expressions.
 
     Implements operator precedence:
-    1. ^ (exponentiation, left associative)
-    2. + - (sign, applies to the whole power: -a^b^c is -((a^b)^c))
+    1. ^ (exponentiation)
+    2. + - (sign, applies to the whole power: -a^b is -(a^b))
     3. * / (multiplication, division)
     4. + - (addition, subtraction)
 
-    Beyond MAD-X, which rejects it, the right operand of a binary operator can
-    carry its own sign: a*-b, a--b, a^-b. The sign of an exponent binds to that
-    exponent only: a^-b^c is (a^(-b))^c.
+    A sign is accepted at the start of an operand: at the start of an expression,
+    a list element, a function argument or a comparison operand, and after an
+    opening parenthesis. MAD-X does not evaluate the following forms as written,
+    so they raise a MADXInputError that asks for parentheses:
+
+    - a sign directly after an operator or another sign, as in a*-b, a^-b, a--b
+      or --a: MAD-X rejects these outside of parentheses and computes another
+      value inside of them, e.g., (3*-2) is -2;
+    - a chained power, a^b^c: MAD-X evaluates it from the left, (a^b)^c, unlike
+      the usual a^(b^c).
     """
 
     # MAD-X built-in functions
@@ -602,14 +617,54 @@ class MADXExpressionParser:
         """Parse an expression (entry point)."""
         return self._parse_additive()
 
+    def _reject_sign(self, op: Token, leading: bool = False):
+        """Raise if a sign directly follows the operator or leading sign ``op``."""
+        sign = self._current()
+        if sign.type in (TokenType.PLUS, TokenType.MINUS):
+            pattern = f'"{op.value}{sign.value}"'
+            if leading:
+                what = f"two signs in a row, {pattern}, are"
+                left = op.value
+            else:
+                what = f"a sign directly after an operator, {pattern}, is"
+                left = f"a{op.value}"
+            s = sign.value
+            if self._signed_operand_is_power():
+                # a^(-b)^c would be a chained power
+                power = f"{left}(({s}b)^c)" if op.value == "^" else f"{left}({s}b)^c"
+                example = f"{left}({s}b^c) for {s}(b^c), or {power} for ({s}b)^c"
+            else:
+                example = f"{left}({s}b)"
+            madx = "(--2)" if leading else "(3*-2)"
+            raise MADXInputError(
+                f"{what} not supported: MAD-X rejects this form outside of parentheses "
+                f"and computes another value inside of them, e.g., {madx} is -2 in MAD-X. "
+                f"Put the sign and its operand in parentheses: {example}.",
+                sign.line,
+                file=self.file,
+            )
+
+    def _signed_operand_is_power(self) -> bool:
+        """Whether the operand after the current sign is a power, as in -b^c."""
+        start = self.pos
+        try:
+            self._advance()  # sign
+            self._parse_primary()
+            return self._current().type == TokenType.CARET
+        except MADXInputError:
+            return False
+        finally:
+            self.pos = start
+
     def _parse_additive(self) -> Expression:
         """Parse additive expression (+ -)."""
         left = self._parse_multiplicative()
 
         while self._current().type in (TokenType.PLUS, TokenType.MINUS):
-            op = self._advance().value
+            op = self._advance()
+            self._reject_sign(op)
             right = self._parse_multiplicative()
-            left = BinaryExpr(op, left, right)
+            left = BinaryExpr(op.value, left, right)
 
         return left
 
@@ -618,40 +673,42 @@ class MADXExpressionParser:
         left = self._parse_unary()
 
         while self._current().type in (TokenType.STAR, TokenType.SLASH):
-            op = self._advance().value
+            op = self._advance()
+            self._reject_sign(op)
             right = self._parse_unary()
-            left = BinaryExpr(op, left, right)
+            left = BinaryExpr(op.value, left, right)
 
         return left
 
     def _parse_unary(self) -> Expression:
         """Parse unary expression (+x, -x), where x is a whole power."""
         if self._current().type in (TokenType.PLUS, TokenType.MINUS):
-            op = self._advance().value
-            operand = self._parse_unary()
-            return UnaryExpr(op, operand)
+            op = self._advance()
+            self._reject_sign(op, leading=True)
+            return UnaryExpr(op.value, self._parse_power())
 
         return self._parse_power()
 
     def _parse_power(self) -> Expression:
-        """Parse power expression (^), left associative."""
-        left = self._parse_primary()
+        """Parse power expression (^) with a single exponent."""
+        base = self._parse_primary()
+        if self._current().type != TokenType.CARET:
+            return base
 
-        while self._current().type == TokenType.CARET:
-            self._advance()
-            right = self._parse_exponent()
-            left = BinaryExpr("^", left, right)
+        op = self._advance()
+        self._reject_sign(op)
+        exponent = self._parse_primary()
 
-        return left
+        if self._current().type == TokenType.CARET:
+            raise MADXInputError(
+                'a chained power, "a^b^c", is not supported: MAD-X evaluates it from '
+                "the left, (a^b)^c, unlike the usual a^(b^c). Add parentheses for the "
+                "order you mean.",
+                self._current().line,
+                file=self.file,
+            )
 
-    def _parse_exponent(self) -> Expression:
-        """Parse the right operand of ^, which can carry a sign (a^-b)."""
-        if self._current().type in (TokenType.PLUS, TokenType.MINUS):
-            op = self._advance().value
-            operand = self._parse_exponent()
-            return UnaryExpr(op, operand)
-
-        return self._parse_primary()
+        return BinaryExpr("^", base, exponent)
 
     def _parse_primary(self) -> Expression:
         """Parse primary expression (numbers, variables, function calls, parenthesized)."""
@@ -1278,19 +1335,25 @@ class MADXParser:
             )
         return self._advance()
 
+    def _token_file(self) -> Optional[str]:
+        """File of the current token, e.g., of a macro body, else the current file."""
+        if self.tokens and self._current().file:
+            return self._current().file
+        return self._current_file
+
     def _error(self, message: str) -> MADXInputError:
         """Create a MADXInputError with current file and line context."""
         line = self._current().line if self.tokens else None
-        return MADXInputError(message, line_number=line, file=self._current_file)
+        return MADXInputError(message, line_number=line, file=self._token_file())
 
     def _update_context_location(self):
         """Update file/line on the evaluation context for warning messages."""
-        self.context.current_file = self._current_file
+        self.context.current_file = self._token_file()
         self.context.current_line = self._current().line if self.tokens else None
 
     def _warn(self, message: str):
         """Emit a warning with current file and line context."""
-        file_info = self._current_file or "<unknown>"
+        file_info = self._token_file() or "<unknown>"
         line_info = self._current().line if self.tokens else "?"
         warnings.warn(f"{file_info}:{line_info}: {message}", MADXInputWarning)
 
@@ -1579,12 +1642,14 @@ class MADXParser:
             elif attr_name == "expr":
                 # Accept both expression syntax and quoted expression text.
                 if self._current().type == TokenType.STRING:
-                    expr_text = self._advance().value
+                    expr_string = self._advance()
                     expr_tokens = MADXLexer(
-                        expr_text + ";", file=self._current_file
+                        expr_string.value + ";",
+                        file=expr_string.file,
+                        line=expr_string.line,
                     ).tokenize()
                     add_expr = MADXExpressionParser(
-                        expr_tokens, file=self._current_file
+                        expr_tokens, file=expr_string.file
                     ).parse_expression()
                 else:
                     add_expr = self._parse_expression()
@@ -1639,13 +1704,41 @@ class MADXParser:
         self._expect(TokenType.RPAREN)
         return result
 
+    def _skip_if_condition(self):
+        """Skip a condition, ( logical_expr ), without evaluating it."""
+        self._expect(TokenType.LPAREN)
+        self._skip_condition()
+        self._expect(TokenType.RPAREN)
+
+    def _skip_condition(self, *stops: TokenType):
+        """Skip condition tokens without evaluating them.
+
+        Stops before a token of a type in ``stops`` outside of parentheses, or
+        before the closing parenthesis of the condition.
+        """
+        depth = 0
+        while self._current().type != TokenType.EOF:
+            tok_type = self._current().type
+            if tok_type == TokenType.RPAREN:
+                if depth == 0:
+                    return
+                depth -= 1
+            elif tok_type == TokenType.LPAREN:
+                depth += 1
+            elif depth == 0 and tok_type in stops:
+                return
+            self._advance()
+
     def _parse_logical_or(self) -> bool:
         """Parse logical OR: expr || expr || ..."""
         result = self._parse_logical_and()
         while self._current().type == TokenType.OR:
             self._advance()
-            right = self._parse_logical_and()
-            result = result or right
+            if result:
+                # as in MAD-X, the right side of a decided || is not evaluated
+                self._skip_condition(TokenType.OR)
+            else:
+                result = self._parse_logical_and()
         return result
 
     def _parse_logical_and(self) -> bool:
@@ -1653,8 +1746,11 @@ class MADXParser:
         result = self._parse_comparison()
         while self._current().type == TokenType.AND:
             self._advance()
-            right = self._parse_comparison()
-            result = result and right
+            if not result:
+                # as in MAD-X, the right side of a decided && is not evaluated
+                self._skip_condition(TokenType.AND, TokenType.OR)
+            else:
+                result = self._parse_comparison()
         return result
 
     def _parse_comparison(self) -> bool:
@@ -1741,9 +1837,7 @@ class MADXParser:
         end = self.pos
         self.pos = start
 
-        expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
-        expr_parser = MADXExpressionParser(expr_tokens)
-        expr = expr_parser.parse_expression()
+        expr = self._expression_parser(start, end).parse_expression()
         self.pos = end
         return expr
 
@@ -1765,12 +1859,13 @@ class MADXParser:
             and self._current().value == "elseif"
         ):
             self._advance()  # skip 'elseif'
-            # Always parse condition to consume tokens, even if a prior branch matched
-            this_cond = self._parse_if_condition()
-            execute = not condition and this_cond
-            if execute:
-                condition = True  # mark so subsequent branches are skipped
-            self._execute_or_skip_brace_block(execute)
+            if condition:
+                # as in MAD-X, a condition after a taken branch is not evaluated
+                self._skip_if_condition()
+                self._execute_or_skip_brace_block(False)
+            else:
+                condition = self._parse_if_condition()
+                self._execute_or_skip_brace_block(condition)
 
         # Handle ELSE
         if (
@@ -1915,13 +2010,20 @@ class MADXParser:
                 # (the identifier will be resolved as a variable, element
                 # name, or line reference during normal parsing)
                 expanded.append(
-                    Token(TokenType.IDENTIFIER, replacement, tok.line, tok.column)
+                    Token(
+                        TokenType.IDENTIFIER,
+                        replacement,
+                        tok.line,
+                        tok.column,
+                        tok.file,
+                    )
                 )
             else:
                 expanded.append(tok)
 
         # Parse the expanded body
-        expanded.append(Token(TokenType.EOF, None, 0, 0))
+        last = expanded[-1] if expanded else self._current()
+        expanded.append(Token(TokenType.EOF, None, last.line, last.column, last.file))
         saved_tokens = self.tokens
         saved_pos = self.pos
         self.tokens = expanded
@@ -2334,6 +2436,18 @@ class MADXParser:
 
         return None
 
+    def _expression_parser(self, start: int, end: int) -> MADXExpressionParser:
+        """Create an expression parser for the tokens in [start, end).
+
+        Its end of input has the line and file of the last token of the range,
+        or of the token at ``end`` for an empty range.
+        """
+        last = self.tokens[end - 1] if end > start else self.tokens[end]
+        eof = Token(TokenType.EOF, None, last.line, last.column, last.file)
+        return MADXExpressionParser(
+            self.tokens[start:end] + [eof], file=last.file or self._current_file
+        )
+
     def _parse_expression(self, complete: bool = False) -> Expression:
         """Parse an expression using the expression parser.
 
@@ -2366,9 +2480,7 @@ class MADXParser:
         end = self.pos
         self.pos = start
 
-        # Extract tokens for expression parser
-        expr_tokens = self.tokens[start:end] + [Token(TokenType.EOF, None, 0, 0)]
-        expr_parser = MADXExpressionParser(expr_tokens)
+        expr_parser = self._expression_parser(start, end)
         expr = expr_parser.parse_expression()
 
         if complete and expr_parser._current().type != TokenType.EOF:

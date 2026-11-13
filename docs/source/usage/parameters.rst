@@ -1700,6 +1700,89 @@ This element is defined via ``<quadrupole_softedge_name>.type = quadrupole_softe
 
     Number of slices used for the application of space charge.
 
+
+``quadrupole_softedge_chromatic``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``quadrupole_softedge_chromatic`` for a paraxial nonlinear model of a soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
+
+The vector potential components A_x, A_y, and A_z are expanded in (x,y) through terms of degree 4, as reconstructed based on the user-supplied Fourier coefficients of the on-axis quadrupole gradient. Like other chromatic elements, a paraxial expansion of the Hamiltonian is made (to second degree in the transverse mechanical momenta). Tracking is performed using symplectic integration via a 3-term splitting of the Hamiltonian.
+
+The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
+describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``) attain a peak on-axis value of 1, then the parameter
+``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``
+has units of inverse meters squared.
+
+This element is defined via ``<quadrupole_softedge_chromatic_name>.type = quadrupole_softedge_chromatic`` and requires these additional parameters:
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.ds
+    :type: ``float``
+    :unit: m
+
+    The segment length.
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.gscale
+    :type: ``float``
+    :unit: 1/m^2
+
+    Scaling factor for on-axis magnetic field gradient
+    = (magnetic field gradient in T/m) / (magnetic rigidity in T-m) - if ``unit = 0``,
+
+    OR = magnetic field gradient in T/m - if ``unit = 1``.
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.cos_coefficients
+    :type: ``array of float``
+    :optional:
+
+    Cos coefficients in Fourier expansion of the on-axis field gradient.
+    Default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__.
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.sin_coefficients
+    :type: ``array of float``
+    :optional:
+
+    Sin coefficients in Fourier expansion of the on-axis field gradient.
+    Default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__.
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.dx/dy
+    :link_aliases: <quadrupole_softedge_name>.dx <quadrupole_softedge_name>.dy
+    :type: ``float``
+    :unit: m
+
+    Horizontal / vertical translation error.
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.rotation
+    :type: ``float``
+    :unit: degree
+
+    Rotation error in the transverse plane.
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.aperture_x/y
+    :link_aliases: <quadrupole_softedge_name>.aperture_x <quadrupole_softedge_name>.aperture_y
+    :type: ``float``
+    :unit: m
+
+    Horizontal / vertical half-aperture (elliptical).
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.mapsteps
+    :type: ``integer``
+    :default: ``10``
+
+    Number of integration steps per slice used for map and reference particle push in applied fields.
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.unit
+    :type: ``integer``
+    :default: ``0``
+
+    Units of the parameter gscale.
+
+.. pp:param:: <quadrupole_softedge_chromatic_name>.nslice
+    :type: ``integer``
+    :default: ``1``
+
+    Number of slices used for the application of space charge.
+
+
 ``quadedge``
 ^^^^^^^^^^^^
 

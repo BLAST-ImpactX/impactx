@@ -101,3 +101,43 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_fodo_softedge.py
       :language: python3
       :caption: You can copy this file from ``examples/quadrupole_softedge/analysis_fodo_softedge.py``.
+
+
+.. _examples-quadrupole-softedge-chromatic:
+
+Scaling Test for a Chromatic Soft-Edge Quadrupole
+=================================================
+
+This example tests for consistency between the (paraxial) ``ChrSoftQuad`` and (linear) ``SoftQuad`` models of a soft-edge quadrupole.
+
+The quadrupole on-axis gradient and reference kinetic energy are taken from the example :ref:`<-quadrupole-softedge>`.
+
+Several distinct initial conditions are chosen with increasing distance from the origin in phase space.
+
+For these initial conditions, the final phase space coordinates obtained by tracking through ``ChrSoftQuad`` and ``SoftQuad`` elements with identical input parameters are compared.
+
+Because the models agree through linear order, the norm of the phase space difference between the two sets of coordinates should scale quadratically with distance from the origin of the initial condition in phase space.
+
+In this test, the scaling exponent is computed, and this must be equal to 2 within a small tolerance.
+
+Run
+---
+
+This example can be run as:
+
+* **Python** script: ``python3 run_quadrupole_softedge_chromatic.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_quadrupole_softedge.py
+          :language: python3
+          :caption: You can copy this file from ``examples/quadrupole_softedge/run_quadrupole_softedge_chromatic.py``.
+
+Analyze
+-------
+
+Analysis for this test occurs in-situ.

@@ -2302,3 +2302,11 @@ if(ImpactX_FFT)
     )
     label_impactx_test(rfcavity-wake-sc.MPI.py slow)
 endif()
+
+# Scaling Test for a Chromatic Soft-Edge Quadrupole ###########
+add_impactx_test(quad-softedge-chromatic.py
+    examples/quadrupole_softedge/run_quadrupole_softedge_chromatic.py
+    ON    # ImpactX MPI-parallel
+    OFF  # analysis in situ in run script
+    OFF  # no plot script yet
+)

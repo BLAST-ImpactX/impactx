@@ -66,11 +66,6 @@ print(
 
 atol = 0.0  # ignored
 rtol = 3.5 * num_particles**-0.5  # from random sampling of a smooth distribution
-if not is_double:
-    # FIXME: single precision does not resolve the near-unity t-pt correlation
-    # of this beam: sigt and emittance_t are off by 19% and 20% in the initial beam
-    # https://github.com/BLAST-ImpactX/impactx/issues/1485
-    rtol = 0.4
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
@@ -99,10 +94,9 @@ print(
 atol = 0.0  # ignored
 rtol = 8.1 * num_particles**-0.5  # from random sampling of a smooth distribution
 if not is_double:
-    # FIXME: sigt, emittance_x and emittance_t are off by 21% in single precision,
-    # see initial beam
-    # https://github.com/BLAST-ImpactX/impactx/issues/1485
-    rtol = 0.5
+    # FIXME: the CSR wake is 9% too strong in single precision, which grows emittance_t by 8%
+    # https://github.com/BLAST-ImpactX/impactx/issues/1713
+    rtol = 0.2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

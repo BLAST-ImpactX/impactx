@@ -92,9 +92,11 @@ namespace impactx::particles::wakefields
 
     /** Root-finding for finite-gamma steady-state CSR calculation
      *
-     * Eq. (18) in:
-     * K. L.F. Bane, "Short-Range Dipole Wakefields in Accelerating Structures for the NLC," SLAC-PUB-9663, 2003
-     *
+     * This function evaluates the root of Eq. (33) of:
+     * E.L. Saldin et al., "On the coherent radiation of an electron bunch moving in an arc of a circle",
+     * NiMA Volume 398, Issues 2–3, Pages 373-394, 21 October (1997)
+     * https://doi.org/10.1016/S0168-9002(97)00822-X
+     * 
      * @param[in] zeta scaled separation between source and test particle [dimensionless]
      * @return root u
      */
@@ -132,12 +134,11 @@ namespace impactx::particles::wakefields
 
     /** CSR Wake Function (Steady-State, Ultrarelativistic Model)
      *
-     * The wake between a source and a test particle of one elementary charge each.
+     * The finite-gamma steady-state integrated CSR wake function from Eq. (15b) of: 
      *
-     * Eq. (28) in:
-     * E.L. Saldin et al., "On the coherent radiation of an electron bunch moving in an arc of a circle",
-     * NiMA Volume 398, Issues 2–3, Pages 373-394, 21 October (1997)
-     * https://doi.org/10.1016/S0168-9002(97)00822-X
+     * C. Mitchell, J. Qiang, R. Ryne, "A fast method for computing 1-D wakefields due to coherent synchrotron radiation",
+     * NiMA Volume 715, Pages 119-125, 1 July (2013)
+     * https://doi.org/10.1016/j.nima.2013.03.013
      *
      * @param[in] s separation between source point and observation point [m]
      * @param[in] R bend radius [m]

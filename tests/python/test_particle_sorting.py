@@ -44,7 +44,8 @@ def _run(sort_intervals, for_deposition=False, idx_type=(0, 0, 0), bin_size=(1, 
     All sorting options are set explicitly in every run, because the parameter
     database is shared by all simulations in this process.
 
-    :return: the beam moments after tracking and the particle ids in storage order
+    :return: the beam moments after tracking, the particle ids in storage order
+             and the number of MPI ranks
     """
     sim = ImpactX()
 
@@ -75,6 +76,9 @@ def _run(sort_intervals, for_deposition=False, idx_type=(0, 0, 0), bin_size=(1, 
 
     sim.lattice.extend([elements.Drift(name="d1", ds=2.0, nslice=4)])
 
+    # query before finalize: AMReX's parallel context is gone afterwards
+    nprocs = amr.ParallelDescriptor.NProcs()
+
     try:
         sim.track_particles()
 
@@ -90,7 +94,7 @@ def _run(sort_intervals, for_deposition=False, idx_type=(0, 0, 0), bin_size=(1, 
     finally:
         sim.finalize()
 
-    return moments, ids
+    return moments, ids, nprocs
 
 
 # sorting for deposition is only implemented in AMReX for these backends
@@ -112,8 +116,8 @@ needs_deposition_sort = pytest.mark.skipif(
 )
 def test_sorting_preserves_physics(for_deposition, idx_type, bin_size):
     """Sorted runs reorder particles but track them like the unsorted run."""
-    ref_moments, ref_ids = _run(sort_intervals=-1)
-    moments, ids = _run(
+    ref_moments, ref_ids, _ = _run(sort_intervals=-1)
+    moments, ids, nprocs = _run(
         sort_intervals=1,
         for_deposition=for_deposition,
         idx_type=idx_type,
@@ -124,7 +128,7 @@ def test_sorting_preserves_physics(for_deposition, idx_type, bin_size):
     #   ids continue counting across simulations in one process, so compare the
     #   storage order by id rank within each run instead of the raw ids
     assert len(ids) == len(ref_ids)
-    if amr.ParallelDescriptor.NProcs() == 1:
+    if nprocs == 1:
         ranks = np.argsort(np.argsort(ids))
         ref_ranks = np.argsort(np.argsort(ref_ids))
         assert not np.array_equal(ranks, ref_ranks), "particles were not sorted"

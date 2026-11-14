@@ -94,12 +94,12 @@ namespace impactx::particles::wakefields
      *
      * Eq. (18) in:
      * K. L.F. Bane, "Short-Range Dipole Wakefields in Accelerating Structures for the NLC," SLAC-PUB-9663, 2003
-     * 
+     *
      * @param[in] zeta scaled separation between source and test particle [dimensionless]
      * @return root u
      */
     amrex::Real u_csr_root_caseB (
-        amrex::Real zeta 
+        amrex::Real zeta
     );
 
     /** Interpolated User-Defined Wake Function
@@ -162,7 +162,7 @@ namespace impactx::particles::wakefields
     }
 
     /** CSR Wake Function (Steady-State, Model for Finite Gamma)
-     * 
+     *
      * The wake between a source and a test particle of one elementary charge each.
      *
      * Eq. (28) in:
@@ -184,10 +184,10 @@ namespace impactx::particles::wakefields
         amrex::Real gamma,
         amrex::Real const bin_size
     )
-    {  
-        using namespace amrex::literals; 
+    {
+        using namespace amrex::literals;
         using amrex::Math::powi;
-        
+
         amrex::Real const rc = powi<2>(ablastr::constant::SI::q_e) / (4_rt * ablastr::constant::math::pi * ablastr::constant::SI::epsilon_0 * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c));
         amrex::Real const Erest = ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c);
 
@@ -198,7 +198,7 @@ namespace impactx::particles::wakefields
 
         amrex::Real Icsr1_dimensionless = -4_rt * u1 * (powi<2>(u1)+8_rt) / ((powi<2>(u1)+4_rt)*(powi<2>(u1)+12_rt));
         amrex::Real Icsr2_dimensionless = -4_rt * u2 * (powi<2>(u2)+8_rt) / ((powi<2>(u2)+4_rt)*(powi<2>(u2)+12_rt));
-      
+
         return (gamma * Erest * rc / R) * (Icsr1_dimensionless - Icsr2_dimensionless);
     }
 

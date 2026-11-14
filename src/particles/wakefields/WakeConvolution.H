@@ -96,7 +96,7 @@ namespace impactx::particles::wakefields
      * E.L. Saldin et al., "On the coherent radiation of an electron bunch moving in an arc of a circle",
      * NiMA Volume 398, Issues 2–3, Pages 373-394, 21 October (1997)
      * https://doi.org/10.1016/S0168-9002(97)00822-X
-     * 
+     *
      * @param[in] zeta scaled separation between source and test particle [dimensionless]
      * @return root u
      */
@@ -134,7 +134,7 @@ namespace impactx::particles::wakefields
 
     /** CSR Wake Function (Steady-State, Ultrarelativistic Model)
      *
-     * The finite-gamma steady-state integrated CSR wake function from Eq. (15b) of: 
+     * The finite-gamma steady-state integrated CSR wake function from Eq. (15b) of:
      *
      * C. Mitchell, J. Qiang, R. Ryne, "A fast method for computing 1-D wakefields due to coherent synchrotron radiation",
      * NiMA Volume 715, Pages 119-125, 1 July (2013)

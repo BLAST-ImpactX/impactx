@@ -28,7 +28,12 @@ namespace impactx
         amrex::ParmParse pp_algo("algo");
 
         // sort every sort_intervals global (slice) steps, never if <= 0
+        // sorting pays off for deposition on NVIDIA and AMD GPUs, but not on CPUs
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
+        int sort_intervals = 4;
+#else
         int sort_intervals = -1;
+#endif
         pp_algo.queryAddWithParser("sort_intervals", sort_intervals);
         if (sort_intervals <= 0 || step % sort_intervals != 0) { return; }
 

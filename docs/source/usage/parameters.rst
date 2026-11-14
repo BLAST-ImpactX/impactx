@@ -2723,7 +2723,7 @@ Particle sorting options, for the memory locality of charge deposition on the sp
 .. pp:param:: algo.sort_intervals
     :type: ``integer``
     :optional:
-    :default: ``-1``
+    :default: ``4`` for the CUDA and HIP backends, otherwise ``-1``
 
     Sort the beam particles in each tile every this many slice steps, after they are redistributed onto the space charge mesh and before their charge is deposited.
     If ``<=0``, particles are not sorted.

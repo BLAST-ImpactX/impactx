@@ -280,7 +280,7 @@ void init_ImpactX (py::module& m)
                 pp_algo.add("sort_intervals", sort_intervals);
             },
             "Sort particles before charge deposition every this many slice steps; "
-            "do not sort if <= 0 (default: -1)."
+            "do not sort if <= 0 (default: 4 for the CUDA and HIP backends, otherwise -1)."
         )
         .def_property("sort_particles_for_deposition",
             [](ImpactX & /* ix */) {

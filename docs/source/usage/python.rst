@@ -201,7 +201,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: sort_intervals
 
-      Default: ``-1``
+      Default: ``4`` for the CUDA and HIP backends, otherwise ``-1``
 
       Sort the beam particles in each tile every this many slice steps, before charge deposition for space charge.
       If ``<=0``, particles are not sorted.

@@ -293,6 +293,22 @@ namespace impactx
         DepositCharge (std::unordered_map<int, amrex::MultiFab> & rho,
                        amrex::Vector<amrex::IntVect> const & ref_ratio);
 
+        /** Sort the particles in each tile spatially, for memory locality in deposition
+         *
+         * Sorting runs only if ParmParse "algo.sort_intervals" is positive and @p step is a
+         * multiple of it. With "algo.sort_particles_for_deposition" set, particles are
+         * sorted by cell in the order x -> y -> z -> ppc on a grid of type
+         * "algo.sort_idx_type"; otherwise they are sorted in bins of "algo.sort_bin_size"
+         * cells in the order ppc -> x -> y -> z.
+         *
+         * Particles have to be in the positions the mesh was built for (x, y, z) and
+         * redistributed onto it before calling this.
+         *
+         * @param[in] step the current global (slice) step
+         */
+        void
+        SortParticles (int step);
+
         /** Get the current coordinate system of particles in this container */
         CoordSystem
         GetCoordSystem () const;

@@ -2718,6 +2718,43 @@ Multigrid-specific numerical options:
     Currently MLMG solver looks for verbosity levels from 0-5.
     A higher number results in more verbose output.
 
+Particle sorting options, for the memory locality of charge deposition on the space charge mesh (``3D``, ``2D`` and ``2.5D`` space charge):
+
+.. pp:param:: algo.sort_intervals
+    :type: ``integer``
+    :optional:
+    :default: ``4`` for the CUDA and HIP backends, otherwise ``-1``
+
+    Sort the beam particles in each tile every this many slice steps, after they are redistributed onto the space charge mesh and before their charge is deposited.
+    If ``<=0``, particles are not sorted.
+    Sorting does not change the physics, but can speed up charge deposition, especially on GPUs and with many particles per cell.
+
+.. pp:param:: algo.sort_particles_for_deposition
+    :type: ``boolean``
+    :optional:
+    :default: ``true`` for the CUDA and HIP backends, otherwise ``false``
+
+    The type of sorting used if particle sorting is turned on, i.e., if :pp:param:`algo.sort_intervals` is ``>0``.
+    If ``true``, particles are sorted by cell to optimize deposition with many particles per cell, in the order x -> y -> z -> ppc, on the grid type set by :pp:param:`algo.sort_idx_type`.
+    If ``false``, particles are sorted in bins of :pp:param:`algo.sort_bin_size` cells, in the order ppc -> x -> y -> z.
+    ``true`` is recommended for best performance on NVIDIA and AMD GPUs, especially if there are many particles per cell.
+    ``true`` is only available for the CUDA and HIP backends.
+
+.. pp:param:: algo.sort_idx_type
+    :type: list of 3 ``integer``
+    :optional:
+    :default: ``0 0 0``
+
+    The type of grid, per direction x, y, z, that particles are sorted to if :pp:param:`algo.sort_particles_for_deposition` is ``true``:
+    ``0`` sorts to a cell-centered grid, ``1`` to a node-centered grid and ``2`` to a compromise between the two.
+
+.. pp:param:: algo.sort_bin_size
+    :type: list of 3 ``integer``
+    :optional:
+    :default: ``1 1 1``
+
+    The size of the sorting bins, in cells per direction x, y, z, if :pp:param:`algo.sort_particles_for_deposition` is ``false``.
+
 
 .. _running-cpp-parameters-collective-csr:
 

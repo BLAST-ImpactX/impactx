@@ -199,6 +199,35 @@ Collective Effects & Overall Simulation Parameters
       Currently MLMG solver looks for verbosity levels from 0-5.
       A higher number results in more verbose output.
 
+   .. py:property:: sort_intervals
+
+      Default: ``4`` for the CUDA and HIP backends, otherwise ``-1``
+
+      Sort the beam particles in each tile every this many slice steps, before charge deposition for space charge.
+      If ``<=0``, particles are not sorted.
+      See :pp:param:`algo.sort_intervals`.
+
+   .. py:property:: sort_particles_for_deposition
+
+      Default: ``True`` for the CUDA and HIP backends, otherwise ``False``
+
+      Sort particles by cell for deposition (``True``), on the grid type :py:attr:`sort_idx_type`, or in bins of :py:attr:`sort_bin_size` cells (``False``).
+      ``True`` is only available for the CUDA and HIP backends.
+      See :pp:param:`algo.sort_particles_for_deposition`.
+
+   .. py:property:: sort_idx_type
+
+      Default: ``[0, 0, 0]``
+
+      Grid type per direction that particles are sorted to if :py:attr:`sort_particles_for_deposition` is ``True``:
+      ``0`` cell-centered, ``1`` node-centered, ``2`` in between.
+
+   .. py:property:: sort_bin_size
+
+      Default: ``[1, 1, 1]``
+
+      Size of the sorting bins, in cells per direction, if :py:attr:`sort_particles_for_deposition` is ``False``.
+
    .. py:property:: csr
 
       Enable (``True``) or disable (``False``) Coherent Synchrotron Radiation (CSR) calculations (default: ``False``).

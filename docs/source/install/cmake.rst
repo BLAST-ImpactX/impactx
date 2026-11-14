@@ -480,6 +480,11 @@ CMake Option                    Default & Values                             Des
 ``PY_PIP_INSTALL_OPTIONS``                                                   Additional options for ``pip install``, e.g., ``--user;-q``
 =============================== ============================================ ===========================================================
 
+.. note::
+
+   Single-precision builds (``ImpactX_PRECISION=SINGLE``) are in development and are not yet
+   fully supported.
+
 ImpactX can be configured in further detail with options from AMReX, which are documented in the AMReX manual:
 
 * `general AMReX build options <https://amrex-codes.github.io/amrex/docs_html/BuildingAMReX.html#customization-options>`__

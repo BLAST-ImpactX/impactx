@@ -90,6 +90,20 @@ namespace impactx::particles::wakefields
         amrex::Real L
     );
 
+    /** Root-finding for finite-gamma steady-state CSR calculation
+     *
+     * This function evaluates the root of Eq. (33) of:
+     * E.L. Saldin et al., "On the coherent radiation of an electron bunch moving in an arc of a circle",
+     * NiMA Volume 398, Issues 2–3, Pages 373-394, 21 October (1997)
+     * https://doi.org/10.1016/S0168-9002(97)00822-X
+     *
+     * @param[in] zeta scaled separation between source and test particle [dimensionless]
+     * @return root u
+     */
+    amrex::Real u_csr_root_caseB (
+        amrex::Real zeta
+    );
+
     /** Interpolated User-Defined Wake Function
      *
      * The values are tabulated at the separations i * dz, @see elements::mixin::ShortRangeWake
@@ -118,14 +132,13 @@ namespace impactx::particles::wakefields
         return InterpolateLinear1D(s, wake_data, n_data, 0_rt, 1_rt / dz);
     }
 
-    /** CSR Wake Function
+    /** CSR Wake Function (Steady-State, Ultrarelativistic Model)
      *
-     * The wake between a source and a test particle of one elementary charge each.
+     * The finite-gamma steady-state integrated CSR wake function from Eq. (15b) of:
      *
-     * Eq. (28) in:
-     * E.L. Saldin et al., "On the coherent radiation of an electron bunch moving in an arc of a circle",
-     * NiMA Volume 398, Issues 2–3, Pages 373-394, 21 October (1997)
-     * https://doi.org/10.1016/S0168-9002(97)00822-X
+     * C. Mitchell, J. Qiang, R. Ryne, "A fast method for computing 1-D wakefields due to coherent synchrotron radiation",
+     * NiMA Volume 715, Pages 119-125, 1 July (2013)
+     * https://doi.org/10.1016/j.nima.2013.03.013
      *
      * @param[in] s separation between source point and observation point [m]
      * @param[in] R bend radius [m]
@@ -147,6 +160,47 @@ namespace impactx::particles::wakefields
         amrex::Real const kappa = (2_rt * rc * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c)) / std::pow(3_rt, 1_rt/3_rt) / std::pow(R, 2_rt/3_rt);
 
         return -3_rt/2_rt * kappa / bin_size * (unit_step(s + bin_size / 2_rt) * std::pow(std::abs(s + bin_size / 2_rt), 2_rt/3_rt) - unit_step(s - bin_size / 2_rt) * std::pow(std::abs(s - bin_size / 2_rt), 2_rt/3_rt));
+    }
+
+    /** CSR Wake Function (Steady-State, Model for Finite Gamma)
+     *
+     * The wake between a source and a test particle of one elementary charge each.
+     *
+     * Eq. (28) in:
+     * E.L. Saldin et al., "On the coherent radiation of an electron bunch moving in an arc of a circle",
+     * NiMA Volume 398, Issues 2–3, Pages 373-394, 21 October (1997)
+     * https://doi.org/10.1016/S0168-9002(97)00822-X
+     *
+     * @param[in] s separation between source point and observation point [m]
+     * @param[in] R bend radius [m]
+     * @param[in] gamma design value of relativistic gamma
+     * @param[in] bin_size longitudinal bin size [m]
+     * @return integrated single-particle wake function in [V*C]=[J]
+     */
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+    amrex::Real
+    w_l_csr_caseB (
+        amrex::Real s,
+        amrex::Real R,
+        amrex::Real gamma,
+        amrex::Real const bin_size
+    )
+    {
+        using namespace amrex::literals;
+        using amrex::Math::powi;
+
+        amrex::Real const rc = powi<2>(ablastr::constant::SI::q_e) / (4_rt * ablastr::constant::math::pi * ablastr::constant::SI::epsilon_0 * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c));
+        amrex::Real const Erest = ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c);
+
+        amrex::Real const zeta1 = (s + bin_size / 2_rt) * powi<3>(gamma) / R;
+        amrex::Real const zeta2 = (s - bin_size / 2_rt) * powi<3>(gamma) / R;
+        amrex::Real const u1 = u_csr_root_caseB(zeta1);
+        amrex::Real const u2 = u_csr_root_caseB(zeta2);
+
+        amrex::Real Icsr1_dimensionless = -4_rt * u1 * (powi<2>(u1)+8_rt) / ((powi<2>(u1)+4_rt)*(powi<2>(u1)+12_rt));
+        amrex::Real Icsr2_dimensionless = -4_rt * u2 * (powi<2>(u2)+8_rt) / ((powi<2>(u2)+4_rt)*(powi<2>(u2)+12_rt));
+
+        return (gamma * Erest * rc / R) * (Icsr1_dimensionless - Icsr2_dimensionless);
     }
 
     /** Perform FFT-based convolution

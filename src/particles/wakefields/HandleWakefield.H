@@ -210,12 +210,12 @@ namespace impactx::particles::wakefields
                 if (apply_csr_finite_gamma){
                     // Construct wake function on 2N support: it only acts on trailing particles,
                     // so the upper half, for negative separations, stays zero
-                            
+
                     // The wake function is per unit source charge and positive where it
                     // decelerates: the longitudinal force on a test particle of charge q is -q
                     // times its convolution with the deposited line density q w.
                     amrex::Real const charge = particle_container.GetRefParticle().charge;
-                       
+
                     amrex::Gpu::DeviceVector<amrex::Real> wake_function(num_edges*2, 0.0);
                     amrex::Real *const dptr_wake_function = wake_function.data();
                     auto const dR = *rc;  // for NVCC capture; set, since CSR applies
@@ -230,8 +230,8 @@ namespace impactx::particles::wakefields
                         dptr_wake_function[i + 1] = -0.5_rt * (
                             w_l_csr_caseB(s_near, dR, gamma, bin_size) +
                             w_l_csr_caseB(s_far, dR, gamma, bin_size));
-                    });     
-                    
+                    });
+
                     // Call convolution function
                     convolved_wakefield = impactx::particles::wakefields::convolve_fft(charge_distribution, wake_function, bin_size);
                 }

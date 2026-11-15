@@ -60,11 +60,11 @@ def cnv_drift(elem, order):
     nm = elem.get_name()
     ns = nslice_by_elem_type["drift"]
     if order == Order.exact:
-        return impactx.elements.ExactDrift(ds, nslice=ns, name=nm)
+        return impactx.elements.ExactDrift(ds=ds, nslice=ns, name=nm)
     elif order == Order.linear:
-        return impactx.elements.Drift(ds, nslice=ns, name=nm)
+        return impactx.elements.Drift(ds=ds, nslice=ns, name=nm)
     elif order == Order.chr:
-        return impactx.elements.ChrDrift(ds, nslice=ns, name=nm)
+        return impactx.elements.ChrDrift(ds=ds, nslice=ns, name=nm)
     else:
         raise RuntimeError(f"unknown order: {order}")
 
@@ -126,9 +126,9 @@ def cnv_sbend(elem, order):
 
     if e1 != 0.0:
         us_dipedge = impactx.elements.DipEdge(
-            e1,
-            radius_of_curvature,
-            2 * hgap,
+            psi=e1,
+            rc=radius_of_curvature,
+            g=2 * hgap,
             K2=fint,
             location="entry",
             model=de_model,
@@ -137,9 +137,9 @@ def cnv_sbend(elem, order):
         )
     if e2 != 0.0:
         ds_dipedge = impactx.elements.DipEdge(
-            e2,
-            radius_of_curvature,
-            2 * hgap,
+            psi=e2,
+            rc=radius_of_curvature,
+            g=2 * hgap,
             K2=fint,
             location="exit",
             model=de_model,
@@ -161,18 +161,18 @@ def cnv_sbend(elem, order):
 
         if order == Order.linear:
             main_bend_elem = impactx.elements.Sbend(
-                ds, radius_of_curvature, name=nm, nslice=ns, rotation=rot
+                ds=ds, rc=radius_of_curvature, name=nm, nslice=ns, rotation=rot
             )
         else:
             phi = bendangle * 180 / np.pi
             main_bend_elem = impactx.elements.ExactSbend(
-                ds, phi, nslice=ns, rotation=rot, name=nm
+                ds=ds, phi=phi, nslice=ns, rotation=rot, name=nm
             )
     else:
         if order == Order.linear:
             # only do first order bend
             main_bend_elem = impactx.elements.CFbend(
-                ds, radius_of_curvature, k1, nslice=ns, name=nm, rotation=rot
+                ds=ds, rc=radius_of_curvature, k=k1, nslice=ns, name=nm, rotation=rot
             )
         else:
             # CF bend
@@ -246,9 +246,9 @@ def cnv_rbend(elem, order):
 
     if e1 != 0.0:
         us_dipedge = impactx.elements.DipEdge(
-            e1,
-            radius_of_curvature,
-            2 * hgap,
+            psi=e1,
+            rc=radius_of_curvature,
+            g=2 * hgap,
             K2=fint,
             model=de_model,
             name=nm + "_usedge",
@@ -257,9 +257,9 @@ def cnv_rbend(elem, order):
 
     if e2 != 0.0:
         ds_dipedge = impactx.elements.DipEdge(
-            e2,
-            radius_of_curvature,
-            2 * hgap,
+            psi=e2,
+            rc=radius_of_curvature,
+            g=2 * hgap,
             K2=fint,
             model=de_model,
             name=nm + "_dsedge",
@@ -280,12 +280,12 @@ def cnv_rbend(elem, order):
 
         if order == Order.linear:
             main_bend_elem = impactx.elements.Sbend(
-                ds, radius_of_curvature, name=nm, nslice=ns, rotation=rot
+                ds=ds, rc=radius_of_curvature, name=nm, nslice=ns, rotation=rot
             )
         else:
             phi = bendangle * 180 / np.pi
             main_bend_elem = impactx.elements.ExactSbend(
-                ds, phi, nslice=ns, name=nm, rotation=rot
+                ds=ds, phi=phi, nslice=ns, name=nm, rotation=rot
             )
 
     else:
@@ -294,7 +294,7 @@ def cnv_rbend(elem, order):
         if order == Order.linear:
             # only do linear bend
             main_bend_elem = impactx.elements.CFbend(
-                ds, radius_of_curvature, k1, nslice=ns, name=nm
+                ds=ds, rc=radius_of_curvature, k=k1, nslice=ns, name=nm
             )
         else:
             # full CF bend
@@ -335,16 +335,16 @@ def cnv_quadrupole(elem, order):
     rot = 180 * tilt / np.pi
     if order == Order.linear:
         ix_elem = impactx.elements.Quad(
-            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm, rotation=rot
+            ds=ds, k=k1, nslice=nslice_by_elem_type["quadrupole"], name=nm, rotation=rot
         )
     elif order == Order.chr:
         ix_elem = impactx.elements.ChrQuad(
-            ds, k1, nslice=nslice_by_elem_type["quadrupole"], name=nm, rotation=rot
+            ds=ds, k=k1, nslice=nslice_by_elem_type["quadrupole"], name=nm, rotation=rot
         )
     elif order == Order.exact:
         ix_elem = impactx.elements.ExactQuad(
-            ds,
-            k1,
+            ds=ds,
+            k=k1,
             nslice=nslice_by_elem_type["quadrupole"],
             mapsteps=6,
             int_order=6,
@@ -383,7 +383,11 @@ def cnv_multipole(elem, order):
             pass
         elem_list.append(
             impactx.elements.Multipole(
-                i + 1, norm_mom[i], skew_mom[i], name=f"{nm}_{order}", rotation=rot
+                multipole=i + 1,
+                K_normal=norm_mom[i],
+                K_skew=skew_mom[i],
+                name=f"{nm}_{order}",
+                rotation=rot,
             )
         )
     return elem_list
@@ -403,21 +407,23 @@ def cnv_rfcavity(elem, refpart, order):
     L = elem.get_length()
 
     # if cavity length > 0, create two drifts to sandwich it
-    RFelem = impactx.elements.ShortRF(rfvolt / mp, freq, phase, name=elem.get_name())
+    RFelem = impactx.elements.ShortRF(
+        V=rfvolt / mp, freq=freq, phase=phase, name=elem.get_name()
+    )
     if L == 0.0:
         # exactly 0 should be allowable for == comparison
         return RFelem
     else:
         halfL = L / 2
         if order == Order.linear:
-            d1 = impactx.elements.Drift(halfL, nslice=1, name=f"{elem.get_name()}_U")
-            d2 = impactx.elements.Drift(halfL, nslice=1, name=f"{elem.get_name()}_D")
+            d1 = impactx.elements.Drift(ds=halfL, nslice=1, name=f"{elem.get_name()}_U")
+            d2 = impactx.elements.Drift(ds=halfL, nslice=1, name=f"{elem.get_name()}_D")
         else:
             d1 = impactx.elements.ExactDrift(
-                halfL, nslice=1, name=f"{elem.get_name()}_U"
+                ds=halfL, nslice=1, name=f"{elem.get_name()}_U"
             )
             d2 = impactx.elements.ExactDrift(
-                halfL, nslice=1, name=f"{elem.get_name()}_D"
+                ds=halfL, nslice=1, name=f"{elem.get_name()}_D"
             )
 
         RFunit = [d1, RFelem, d2]
@@ -459,11 +465,11 @@ def cnv_kicker(elem, order):
     # thin kick
 
     if order == Order.linear:
-        d1 = impactx.elements.Drift(L / 2, nslice=1, name=f"{ename}_U")
-        d2 = impactx.elements.Drift(L / 2, nslice=1, name=f"{ename}_D")
+        d1 = impactx.elements.Drift(ds=L / 2, nslice=1, name=f"{ename}_U")
+        d2 = impactx.elements.Drift(ds=L / 2, nslice=1, name=f"{ename}_D")
     else:
-        d1 = impactx.elements.ExactDrift(L / 2, nslice=1, name=f"{ename}_U")
-        d2 = impactx.elements.ExactDrift(L / 2, nslice=1, name=f"{ename}_D")
+        d1 = impactx.elements.ExactDrift(ds=L / 2, nslice=1, name=f"{ename}_U")
+        d2 = impactx.elements.ExactDrift(ds=L / 2, nslice=1, name=f"{ename}_D")
 
     kickunit = [d1, kickelem, d2]
     return kickunit
@@ -519,7 +525,7 @@ def cnv_sextupole(elem, order):
 
     if order == Order.linear:
         # There is no linear Sextupole. Use a linear drift
-        sxelem = impactx.elements.Drift(L, name=nm)
+        sxelem = impactx.elements.Drift(ds=L, name=nm)
     else:
         sxelem = impactx.elements.ExactMultipole(
             ds=L,
@@ -547,7 +553,7 @@ def cnv_octupole(elem, order):
 
     if order == Order.linear:
         # There is no linear Octupole. Use a linear drift
-        ocelem = impactx.elements.Drift(L, name=nm)
+        ocelem = impactx.elements.Drift(ds=L, name=nm)
     else:
         ocelem = impactx.elements.ExactMultipole(
             ds=L,

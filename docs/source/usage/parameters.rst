@@ -366,6 +366,8 @@ This requires these additional parameters:
     :unit: m
 
     Horizontal / vertical period for repeated aperture masking (inactive by default).
+    The aperture is repeated by translation with this period, and copies may overlap.
+    A plane without a boundary is open across the whole period.
 
 .. pp:param:: <aperture_name>.shift_odd_x
     :type: ``boolean``
@@ -1400,7 +1402,7 @@ The first and last vertices must be identical. These parameters define the eleme
 
     Horizontal / vertical period for repeated aperture masking (inactive by default).
     The polygon is repeated by translation with this period and must lie inside one period around the origin:
-    ``|x| < repeat_x / 2`` and ``|y| < repeat_y / 2`` for all vertices.
+    ``|x| <= repeat_x / 2`` and ``|y| <= repeat_y / 2`` for all vertices.
 
 .. pp:param:: <polygon_aperture_name>.shift_odd_x
     :type: ``boolean``

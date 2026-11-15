@@ -203,11 +203,7 @@ namespace
                 std::optional<py::tuple> repeat;
                 if constexpr (elements::mixin::has_repeated_mask_v<Element>)
                 {
-                    auto const overridden = [&remaining](char const * key) {
-                        return remaining.contains(key);
-                    };
-                    if (overridden("repeat_x") || overridden("repeat_y") ||
-                        overridden("shift_odd_x"))
+                    if (!remaining.empty())
                     {
                         auto const value_of = [&remaining, &copied](char const * key) {
                             if (remaining.contains(key)) {

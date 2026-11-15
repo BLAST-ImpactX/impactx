@@ -16,6 +16,7 @@
 #include <AMReX_SIMD.H>
 
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -31,11 +32,16 @@ namespace impactx::elements::mixin
      * horizontally by ``repeat_x / 2``, for hexagonal/triangular patterns.
      *
      * A particle is translated by whole periods into the period cell centred on
-     * the origin, ``|x| < repeat_x / 2`` and ``|y| < repeat_y / 2``, @see to_period_cell,
-     * and compared against the one copy of the shape there.
-     * A shape that does not fit inside this cell would be cut at its edges, so an
-     * element registers how far its shape extends, @see set_shape_extent, and both
-     * its shape and the periods are validated against each other.
+     * the origin, @see to_period_cell, and compared against the one copy of the
+     * shape there. A shape that reaches past this cell, ``|x| > repeat_x / 2`` or
+     * ``|y| > repeat_y / 2``, would be cut at its edges, so an element registers how
+     * far its shape extends, @see set_shape_extent, and both its shape and the
+     * periods are validated against each other. Copies may touch.
+     *
+     * An element that handles overlapping copies itself does not register an extent,
+     * e.g., an Aperture: the copies of a centred rectangle or ellipse add nothing to the
+     * centred one within their own row or column, and of the shifted rows of
+     * shift_odd_x, only the nearest copy in the nearest row can, @see to_neighbour_row.
      */
     struct RepeatedMask
     {
@@ -185,7 +191,7 @@ namespace impactx::elements::mixin
             require_inside_cell("y", extent_y, repeat_y);
         }
 
-        /** Reject a shape that does not fit inside the period cell in one plane
+        /** Reject a shape that reaches past the period cell in one plane
          *
          * @param plane "x" or "y", used in the error message
          * @param extent largest distance of the shape from the origin in this plane [m]
@@ -199,11 +205,15 @@ namespace impactx::elements::mixin
         {
             using namespace amrex::literals; // for _prt
 
-            if (repeat > 0_prt && !(extent < 0.5_prt * repeat)) {
+            // a shape that touches the cell edge up to rounding is fine, e.g., 1.5 * 0.1e-3
+            // against 0.3e-3 / 2, which differ in the last bit
+            amrex::ParticleReal const touching = 0.5_prt * repeat
+                * (1_prt + 4_prt * std::numeric_limits<amrex::ParticleReal>::epsilon());
+            if (repeat > 0_prt && !(extent <= touching)) {
                 std::ostringstream msg;
                 msg << "RepeatedMask: the aperture shape reaches |" << plane << "| = " << extent
                     << " m, but a repeated shape must lie inside one period, |" << plane
-                    << "| < repeat_" << plane << " / 2 = " << 0.5_prt * repeat << " m";
+                    << "| <= repeat_" << plane << " / 2 = " << 0.5_prt * repeat << " m";
                 throw std::invalid_argument(msg.str());
             }
         }
@@ -252,6 +262,42 @@ namespace impactx::elements::mixin
                 : sx - m_repeat_x * floor((sx + 0.5_prt * m_repeat_x) * m_inv_repeat_x);
         }
 
+        /** The position relative to the nearest copy in the nearest shifted row
+         *
+         * For a convex shape symmetric about both axes, this is the only copy outside
+         * the period cell that can contain a position in it, and only if the shifted
+         * rows overlap, i.e., if the shape reaches past |y| = repeat_y / 2.
+         *
+         * @param[in] u horizontal position in the period cell [m], @see to_period_cell
+         * @param[in] v vertical position in the period cell [m]
+         * @param[out] un horizontal position relative to that copy [m]
+         * @param[out] vn vertical position relative to that copy [m]
+         */
+        template<typename T_Real>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void to_neighbour_row (
+            T_Real const & AMREX_RESTRICT u,
+            T_Real const & AMREX_RESTRICT v,
+            T_Real & AMREX_RESTRICT un,
+            T_Real & AMREX_RESTRICT vn
+        ) const
+        {
+            using namespace amrex::literals; // for _prt
+
+            // the copies of the neighbouring rows sit half a period to the side;
+            // take the row above for v >= 0 and the row below otherwise
+            amrex::ParticleReal const half_x = 0.5_prt * m_repeat_x;
+#ifdef AMREX_USE_SIMD
+            un = u - half_x;
+            amrex::simd::stdx::where(u < 0_prt, un) = u + half_x;
+            vn = v - m_repeat_y;
+            amrex::simd::stdx::where(v < 0_prt, vn) = v + m_repeat_y;
+#else
+            un = u < 0_prt ? u + half_x : u - half_x;
+            vn = v < 0_prt ? v + m_repeat_y : v - m_repeat_y;
+#endif
+        }
+
         //! horizontal period for repeated masking [m]
         amrex::ParticleReal m_repeat_x = DEFAULT_repeat_x;
         //! vertical period for repeated masking [m]
@@ -269,10 +315,10 @@ namespace impactx::elements::mixin
         amrex::ParticleReal m_inv_repeat_y = 0;
 
         //! largest horizontal distance |x| of the repeated shape from the origin [m];
-        //! zero if the shape is not limited to one period
+        //! zero if the element does not register its shape, @see set_shape_extent
         amrex::ParticleReal m_shape_extent_x = 0;
         //! largest vertical distance |y| of the repeated shape from the origin [m];
-        //! zero if the shape is not limited to one period
+        //! zero if the element does not register its shape, @see set_shape_extent
         amrex::ParticleReal m_shape_extent_y = 0;
     };
 

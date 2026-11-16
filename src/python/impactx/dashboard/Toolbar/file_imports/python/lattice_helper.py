@@ -928,9 +928,9 @@ class DashboardLatticeParser:
     A list or element that a loop, condition, function or other block, or a
     function call, may change, cannot be evaluated afterwards. A lattice that
     uses anything the dashboard cannot evaluate, or other changes of
-    sim.lattice, raise a ValueError instead of importing a wrong lattice.
-    Changes of element attributes after construction, e.g., quad.k = 2.0, are
-    not imported.
+    sim.lattice, raise a ValueError instead of importing a wrong lattice. So
+    do changes of element attributes after construction, e.g., quad.k = 2.0,
+    for an element of the lattice.
     """
 
     def __init__(self, content: str):
@@ -1316,7 +1316,7 @@ class DashboardLatticeParser:
                 self._cannot_follow(LATTICE, target, where)  # sim.lattice = [...]
             owner = self._evaluate(target.value)
             if isinstance(owner, _Element):
-                pass  # changes of element attributes are not imported
+                self._change_element(owner, target, where)
             elif isinstance(owner, (_Lattice, _Selection)):
                 self._cannot_follow(owner, target, where)
             else:
@@ -1405,11 +1405,21 @@ class DashboardLatticeParser:
             else target
         )
         if isinstance(container, _Element) and isinstance(target, ast.Attribute):
-            pass  # changes of element attributes are not imported
+            self._change_element(container, target, where)
         elif isinstance(target, ast.Attribute) and target.attr == "lattice":
             self._cannot_follow(LATTICE, statement, where)
         else:
             self._cannot_follow(container, statement, where)
+
+    def _change_element(self, element: _Element, target: ast.expr, where: str):
+        """
+        Marks an element whose attribute the script changes, e.g., quad.k = 2.0:
+        the dashboard imports only the arguments of its constructor.
+        """
+        element.unresolved = element.unresolved or (
+            f"'{self._source(target)}' {where} changes an element after its "
+            f"construction, which the dashboard does not import"
+        )
 
     def _delete(self, target: ast.expr) -> None:
         """
@@ -1441,7 +1451,7 @@ class DashboardLatticeParser:
         elif isinstance(target, ast.Attribute):
             owner = self._evaluate(target.value)
             if isinstance(owner, _Element):
-                pass  # changes of element attributes are not imported
+                self._change_element(owner, target, where)
             elif target.attr == "lattice":
                 self._cannot_follow(LATTICE, target, where)
             else:

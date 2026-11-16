@@ -114,16 +114,18 @@ def test_python_import_envelope(dashboard):
         ("mass_MeV", RefPart().set_species("proton").mass_MeV),
         ("bunch_charge_C", 1e-12),
         ("distribution_type", "Twiss"),
-        ("total_elements", 8),
+        ("total_elements", 9),
         ("total_length", "1.3m"),
     ]
     for param_name, expected_value in BEAM_PARAMETERS:
         dashboard.assert_state(param_name, expected_value)
 
-    marker = dashboard.get_state("selected_lattice_list")[0]
-    assert {"parameter_name": "name", "sim_input": "start"}.items() <= next(
-        p for p in marker["parameters"] if p["parameter_name"] == "name"
-    ).items()
+    lattice = dashboard.get_state("selected_lattice_list")
+    for index, name, value in ((0, "name", "start"), (1, "modify_ref_part", False)):
+        parameter = next(
+            p for p in lattice[index]["parameters"] if p["parameter_name"] == name
+        )
+        assert parameter["sim_input"] == value, parameter
 
     TWISS_PARAMETERS = {"emitt_x": 1e-6, "emitt_y": 2e-6, "alpha_x": -0.5}
     for i in range(TIMEOUT):

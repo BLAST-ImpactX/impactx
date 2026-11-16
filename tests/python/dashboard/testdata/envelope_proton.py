@@ -38,6 +38,7 @@ cell = [
     elements.Quad(name="q", ds=0.1, k=2.0),
 ]
 sim.lattice.append(elements.Marker("start"))  # name by position
+sim.lattice.append(elements.DipEdge(psi=0.0, rc=1.0, g=0.0, modify_ref_part=False))
 sim.lattice.append(elements.Drift(name="pre", ds=0.4))
 sim.lattice.extend(cell * 3)
 

@@ -92,6 +92,20 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
             "The dashboard does not support the lattice elements: "
             + ", ".join(unsupported_elements)
         )
+    for element in imported_lattice_data:
+        parameter_types = {
+            name: parameter_type
+            for name, _, parameter_type in state.listOfLatticeElementParametersAndDefault[
+                element["name"]
+            ]
+        }
+        for name, value in element["parameters"].items():
+            # the import gives the source code, e.g., False, for a checkbox
+            if parameter_types.get(name) == "bool" and value not in ("True", "False"):
+                raise ValueError(
+                    f"Cannot import {element['name']}({name}={value}): the "
+                    f"dashboard takes only True or False."
+                )
 
     # Update state inputs (simulation parameters, Space Charge, CSR, ISR)
     for input_name, input_value in imported_data.items():
@@ -141,6 +155,9 @@ def _populate_lattice_config_to_ui(parsed_data):
                 if parameter_info_name == parsed_param_name:
                     parameter_type = parameter_info["parameter_type"]
                     break
+
+            if parameter_type == "bool":
+                parsed_param_value = parsed_param_value == "True"
 
             if parameter_type:
                 ctrl.updateLatticeElementParameters(

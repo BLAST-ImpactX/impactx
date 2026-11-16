@@ -2801,7 +2801,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       maximum vertical coordinate in m; zero or less removes the vertical boundary
 
-.. py:class:: impactx.elements.PolygonAperture(*, vertices_x, vertices_y, min_radius2=0.0, repeat_x, repeat_y, shift_odd_x, action="transmit", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.PolygonAperture(*, vertices_x, vertices_y, min_radius2=0.0, repeat_x=0, repeat_y=0, shift_odd_x=False, action="transmit", dx=0, dy=0, rotation=0, name=None)
 
    This element defines a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
    and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.

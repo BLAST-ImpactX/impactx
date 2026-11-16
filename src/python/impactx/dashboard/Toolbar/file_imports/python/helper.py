@@ -123,14 +123,27 @@ class DashboardParserHelper:
         reference_dictionary["tracking_mode"] = DashboardParserHelper._tracking_mode(
             tree, reference_dictionary["tracking_mode"]
         )
+        # 2D space charge takes the beam current in A as the intensity
         intensity = (
             "beam_current_A"
-            if reference_dictionary["tracking_mode"] == "Envelope Tracking"
-            and reference_dictionary["space_charge"] == "2D"
+            if reference_dictionary["space_charge"] == "2D"
             else "bunch_charge_C"
         )
-        if intensity in unresolved_intensities:
+        tracks_beam = reference_dictionary["tracking_mode"] != "Reference Tracking"
+        if tracks_beam and intensity in unresolved_intensities:
             raise unresolved_intensities[intensity]
+        assigned = found | set(unresolved_intensities)
+        if (
+            tracks_beam
+            and intensity == "beam_current_A"
+            and "beam_current_A" not in assigned
+            and "bunch_charge_C" in assigned
+        ):
+            raise ValueError(
+                "Cannot import the beam intensity: with 2D space charge, ImpactX "
+                "takes a beam current, which the dashboard imports from "
+                "beam_current_A, but the script sets only bunch_charge_C."
+            )
 
         # the input field shows the kinetic energy that the simulation uses
         if "kin_energy_MeV" in found:

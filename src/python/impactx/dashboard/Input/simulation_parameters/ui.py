@@ -45,6 +45,8 @@ def on_tracking_mode_change(**kwargs) -> None:
     current_sc_list = ui_props.get("space_charge_list", [])
     if state.space_charge not in current_sc_list:
         state.space_charge = current_sc_list[0]
+    # e.g., 2D space charge needs the FFT solver for particle tracking only
+    errors_tracker.update_simulation_validation_status()
 
 
 class SimulationParameters(CardBase):

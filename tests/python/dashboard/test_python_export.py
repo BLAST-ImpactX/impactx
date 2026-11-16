@@ -56,3 +56,10 @@ def test_python_export(dashboard):
         dashboard,
         ["beam_current_A = 0.5", "sim.init_envelope(ref, distr, beam_current_A)"],
     )
+
+    # also with particle tracking
+    dashboard.set_input("tracking_mode", "Particle Tracking")
+    assert_exported(
+        dashboard,
+        ["beam_current_A = 0.5", "sim.add_particles(beam_current_A, distr, npart)"],
+    )

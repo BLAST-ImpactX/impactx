@@ -72,6 +72,16 @@ class ErrorsTracker:
                     if error:
                         error_details.append(f"{name}: {error}")
 
+            # ImpactX solves 2D space charge of particles with FFT on one level
+            if (
+                state.tracking_mode == "Particle Tracking"
+                and state.space_charge == "2D"
+            ):
+                if state.poisson_solver != "fft":
+                    error_details.append("Poisson Solver: 2D space charge needs fft")
+                if int(state.max_level) > 0:
+                    error_details.append("Max Level: 2D space charge needs 0")
+
             # Multigrid parameters
             if state.poisson_solver == "multigrid":
                 for name in [

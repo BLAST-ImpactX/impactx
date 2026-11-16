@@ -18,6 +18,9 @@ from ..validation import DashboardValidation, errors_tracker
 from .utils import SpaceChargeFunctions
 
 state.prob_relative = []
+
+# ImpactX solves 2D space charge of particles with FFT on one level
+PARTICLES_2D_JS = "tracking_mode === 'Particle Tracking' && space_charge === '2D'"
 state.prob_relative_fields = []
 
 
@@ -146,6 +149,10 @@ class SpaceChargeConfiguration(CardBase):
                     with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Poisson Solver",
+                            error_messages=(
+                                f"{PARTICLES_2D_JS} && poisson_solver !== 'fft' "
+                                "? ['2D space charge needs fft'] : []",
+                            ),
                         )
                     with vuetify.VCol(cols=4):
                         InputComponents.select(
@@ -154,6 +161,10 @@ class SpaceChargeConfiguration(CardBase):
                     with vuetify.VCol(cols=4):
                         InputComponents.select(
                             label="Max Level",
+                            error_messages=(
+                                f"{PARTICLES_2D_JS} && max_level > 0 "
+                                "? ['2D space charge needs 0'] : []",
+                            ),
                         )
                 for field in ["n_cell", "blocking_factor"]:
                     with vuetify.VRow(**self.ROW_STYLE):

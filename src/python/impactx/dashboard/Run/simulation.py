@@ -13,7 +13,7 @@ from ..Input.validation import DashboardValidation
 
 TRACKING_MODE_COMMANDS = {
     "Particle Tracking": """\
-sim.add_particles(bunch_charge_C, distr, npart)
+sim.add_particles({intensity}, distr, npart)
 sim.track_particles()""",
     "Envelope Tracking": """\
 sim.init_envelope(ref, distr, {intensity})

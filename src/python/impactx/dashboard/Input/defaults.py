@@ -34,7 +34,7 @@ TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
     "Particle Tracking": {
         "disable_space_charge": False,
         "disable_csr": False,
-        "space_charge_list": ["false", "3D"],
+        "space_charge_list": ["false", "2D", "3D"],
     },
 }
 
@@ -48,17 +48,17 @@ CONVERSION_FACTORS = {
     "TeV": 1.0e6,
 }
 
-# Envelope tracking with 2D space charge takes the beam current in A as its
-# intensity. All other modes take the bunch charge in C.
-USES_BEAM_CURRENT_JS = "tracking_mode === 'Envelope Tracking' && space_charge === '2D'"
+# 2D space charge takes the beam current in A as the beam intensity, all other
+# space charge models the bunch charge in C.
+USES_BEAM_CURRENT_JS = "space_charge === '2D'"
 
 
 def beam_intensity_name() -> str:
     """
-    Returns the name of the beam intensity input for the selected tracking mode
-    and space charge model: "beam_current_A" or "bunch_charge_C".
+    Returns the name of the beam intensity input for the selected space charge
+    model: "beam_current_A" or "bunch_charge_C".
     """
-    if state.tracking_mode == "Envelope Tracking" and state.space_charge == "2D":
+    if state.space_charge == "2D":
         return "beam_current_A"
     return "bunch_charge_C"
 

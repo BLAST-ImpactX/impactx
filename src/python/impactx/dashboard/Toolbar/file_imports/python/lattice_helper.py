@@ -1,4 +1,5 @@
 import ast
+import inspect
 import re
 from typing import Any, Dict, List, Optional
 
@@ -30,7 +31,24 @@ LATTICE_READ_METHODS = {
 # methods without effect on a selection, sim.lattice.select(...), or an element
 SELECTION_READ_METHODS = {"count_by_kind", "get_kinds", "has_kind", "isclose", "select"}
 ELEMENT_READ_METHODS = {"copy", "finalize", "has_name", "isclose", "push", "to_dict"}
-ELEMENT_READ_METHODS |= {"transfer_map"}
+ELEMENT_READ_METHODS |= {"rc", "transfer_map"}  # e.g., Sbend.rc(ref)
+ELEMENT_READ_METHODS |= {  # e.g., quad.__repr__() or quad.__eq__
+    "__dir__",
+    "__eq__",
+    "__format__",
+    "__ge__",
+    "__getstate__",
+    "__gt__",
+    "__hash__",
+    "__le__",
+    "__lt__",
+    "__ne__",
+    "__reduce__",
+    "__reduce_ex__",
+    "__repr__",
+    "__sizeof__",
+    "__str__",
+}
 
 # list methods without effect on the list
 LIST_READ_METHODS = {"copy", "count", "index"}
@@ -1364,6 +1382,26 @@ class DashboardLatticeParser:
             f"construction, which the dashboard does not import"
         )
 
+    def _take_element_attribute(self, element: _Element, node: ast.Attribute):
+        """
+        Marks an element whose method the script takes, e.g.,
+        set_k = quad.__setattr__ or flip = quad.reverse: the method may change
+        the element later. Its parameters, e.g., quad.k, other attributes that
+        are not methods, e.g., quad.__class__, and the methods that only read
+        it, e.g., quad.to_dict, do not.
+        """
+        element_class = getattr(impactx_elements, element.call.func.attr, None)
+        missing = object()
+        attribute = inspect.getattr_static(element_class, node.attr, missing)
+        if node.attr in ELEMENT_READ_METHODS or not (
+            attribute is missing or callable(attribute)
+        ):
+            return
+        element.unresolved = element.unresolved or (
+            f"'{self._source(node)}' in line {node.lineno} may change an element "
+            f"after its construction, which the dashboard does not import"
+        )
+
     def _delete(self, target: ast.expr) -> None:
         """
         Runs del on a name, an item or a slice.
@@ -1472,8 +1510,8 @@ class DashboardLatticeParser:
                 node.attr not in SELECTION_READ_METHODS
             ):
                 self._mark_unresolved(owner, reason)
-            elif isinstance(owner, _Element) and node.attr == "reverse":
-                self._mark_unresolved(owner, reason)
+            elif isinstance(owner, _Element):
+                self._take_element_attribute(owner, node)
             return _Unresolved(f"'{self._source(node)}' cannot be evaluated")
 
         if isinstance(node, ast.Subscript):

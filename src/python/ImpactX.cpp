@@ -272,14 +272,36 @@ void init_ImpactX (py::module& m)
             "second-order, time-symmetric Strang split (default: enabled) or to first order."
         )
         .def_property("csr",
-            [](ImpactX & /* ix */) {
-                return detail::get_or_throw<bool>("algo", "csr");
+            [](ImpactX & /* ix */) -> std::string {
+                return detail::get_or_throw<std::string>("algo", "csr");
             },
-            [](ImpactX & /* ix */, bool const enable) {
-                amrex::ParmParse pp_algo("algo");
-                pp_algo.add("csr", enable);
+            [](ImpactX & /* ix */, std::variant<bool, std::string> csr_v) {
+                if (std::holds_alternative<bool>(csr_v)) {
+                    amrex::ParmParse pp_algo("algo");
+                    if (std::get<bool>(csr_v)) {
+                        // TODO: boolean True is deprecated, remove some time after
+                        py::warnings::warn(
+                            "sim.csr = True is deprecated, please use space_charge = \"SteadyState\"",
+                            PyExc_DeprecationWarning,
+                            2
+                        );
+                        pp_algo.add("csr", std::string("SteadyState"));
+                    } else {
+                        // map boolean False to "false" / off
+                        pp_algo.add("csr", std::string("false"));
+                    }
+                }
+                else
+                {
+                    std::string const csr = std::get<std::string>(csr_v);
+                    if (csr != "false" && csr != "Ultrarelativistic" && csr != "SteadyState") {
+                        throw std::runtime_error("CSR model must be ultrarelativistic or steady-state but is: " + csr);
+                    }
+                    amrex::ParmParse pp_algo("algo");
+                    pp_algo.add("csr", csr);
+                }
             },
-            "Enable or disable Coherent Synchrotron Radiation (CSR) calculations (default: disabled)."
+            "The model to be used when calculating Coherent Synchrotron Radiation (CSR) effects. Either off, ultrarelativistic, or steady-state."
         )
         .def_property("csr_bins",
             [](ImpactX & /* ix */) {

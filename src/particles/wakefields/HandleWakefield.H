@@ -11,6 +11,7 @@
 #define HANDLE_WAKEFIELD_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "initialization/Algorithms.H"
 #include "ChargeBinning.H"
 #include "BendRadius.H"
 #include "ShortRangeWakeElement.H"
@@ -53,11 +54,9 @@ namespace impactx::particles::wakefields
 
         using namespace amrex::literals;
 
+        auto csr = get_csr_algo();
+
         amrex::ParmParse pp_algo("algo");
-
-        bool csr = false;
-        pp_algo.queryAdd("csr", csr);
-
         bool short_range_wakefields = false;
         pp_algo.queryAdd("short_range_wakefields", short_range_wakefields);
 
@@ -70,12 +69,8 @@ namespace impactx::particles::wakefields
             impactx::particles::wakefields::ShortRangeWakeElement(element_variant) : std::nullopt;
 
         // Which effect applies to this very element?
-        bool const apply_csr = csr && rc.has_value();
+        bool const apply_csr = !(csr == CSR_Algo::False) && rc.has_value();
         bool const apply_short_range_wake = short_range_wake.has_value();
-
-        // For testing only.  TODO: add user input
-        bool const apply_csr_ur = false;
-        bool const apply_csr_finite_gamma = apply_csr;
 
         // Enter loop if wakefields are turned on
         if (apply_csr || apply_short_range_wake)
@@ -165,7 +160,7 @@ namespace impactx::particles::wakefields
             // same length.
             amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield(num_edges, 0.0);
             if (amrex::ParallelDescriptor::IOProcessor()) {
-                if (apply_csr_ur){
+                if (csr == CSR_Algo::Ultrarelativistic){
                     // Slopes of the charge density at the bin edges, with zero charge density below
                     // bin_min: edge k lies between bin k-1 and bin k, edge 0 is the rising edge of bin 0
                     // The CSR wake function is the one between two elementary charges: the force
@@ -207,7 +202,7 @@ namespace impactx::particles::wakefields
                     // Call convolution function
                     convolved_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
                 }
-                if (apply_csr_finite_gamma){
+                if (csr == CSR_Algo::SteadyState){
                     // Construct wake function on 2N support: it only acts on trailing particles,
                     // so the upper half, for negative separations, stays zero
 

@@ -38,6 +38,24 @@ namespace impactx
     std::string
     to_string (SpaceChargeAlgo sca);
 
+    /** CSR: Implemented algorithms */
+    AMREX_ENUM(CSR_Algo,
+        False,    /**< Disabled: no csr calculation */
+        Ultrarelativistic,  /**< ultrarelativistic steady-state 1D CSR model */
+        SteadyState  /**< finite-gamma steady-state 1D CSR model */
+    );
+
+    /** Return the currently active csr algorithm */
+    CSR_Algo
+    get_csr_algo ();
+
+    /** A user-friendly string
+     *
+     * Returns a string that is similar to the spelling in user input options.
+     */
+    std::string
+    to_string (CSR_Algo csra);
+
 } // namespace impactx
 
 #endif // IMPACTX_ALGORITHMS_H

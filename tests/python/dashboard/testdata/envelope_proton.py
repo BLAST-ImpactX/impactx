@@ -2,7 +2,7 @@ from impactx import ImpactX, distribution, elements, twiss
 
 sim = ImpactX()
 
-sim.space_charge = "3D"
+sim.space_charge = True  # deprecated name of "3D"
 sim.particle_shape = 2
 
 sim.slice_step_diagnostics = True

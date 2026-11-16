@@ -113,7 +113,8 @@ class DashboardParserHelper:
                         break
 
                     if parameter_name == "space_charge" and isinstance(value, bool):
-                        value = str(value).lower()
+                        # ImpactX takes True as the deprecated name of "3D"
+                        value = "3D" if value else "false"
 
                     reference_dictionary[parameter_name] = value
                     found.add(parameter_name)

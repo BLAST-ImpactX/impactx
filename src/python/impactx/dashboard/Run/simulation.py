@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import state
+from ..Input.defaults import beam_intensity_name
 from ..Input.distribution.utils import DistributionFunctions
 
 TRACKING_MODE_COMMANDS = {
@@ -14,7 +15,7 @@ TRACKING_MODE_COMMANDS = {
 sim.add_particles(bunch_charge_C, distr, npart)
 sim.track_particles()""",
     "Envelope Tracking": """\
-sim.init_envelope(ref, distr)
+sim.init_envelope(ref, distr, {intensity})
 sim.track_envelope()""",
     "Reference Tracking": "sim.track_reference(ref)",
 }
@@ -100,7 +101,7 @@ sim.dynamic_size = {state.dynamic_size}
 sim.poisson_solver = '{state.poisson_solver}'
 sim.particle_shape = {state.particle_shape}
 sim.max_level = {state.max_level}
-sim.n_cell = {state.n_cell}
+sim.n_cell = [{state.n_cell_x}, {state.n_cell_y}, {state.n_cell_z}]
 sim.blocking_factor_x = [{state.blocking_factor_x}]
 sim.blocking_factor_y = [{state.blocking_factor_y}]
 sim.blocking_factor_z = [{state.blocking_factor_z}]
@@ -119,7 +120,7 @@ sim.mlmg_verbosity = {state.mlmg_verbosity}
 sim.csr = {state.csr}
 sim.csr_bins = {state.csr_bins}
 """
-        if not state.space_charge:
+        if state.space_charge == "false":
             content += f"""
 sim.particle_shape = {state.particle_shape}
 """
@@ -148,7 +149,9 @@ def build_tracking_commands() -> str:
     Read the user's choice from state.tracking_mode and
     return the corresponding ImpactX sim command block.
     """
-    return TRACKING_MODE_COMMANDS[state.tracking_mode]
+    return TRACKING_MODE_COMMANDS[state.tracking_mode].format(
+        intensity=beam_intensity_name()
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -174,6 +177,7 @@ def dashboard_sim_inputs(is_exporting=False) -> str:
     This function creates the template to export
     dashboard user inputs into a python script.
     """
+    intensity = beam_intensity_name()
     script = f"""
 from impactx import ImpactX, distribution, elements, twiss
 
@@ -186,7 +190,7 @@ sim.init_grids()
 
 # Initialize particle beam
 kin_energy_MeV = {state.kin_energy_MeV}
-bunch_charge_C = {state.bunch_charge_C}
+{intensity} = {getattr(state, intensity)}
 npart = {state.npart}
 
 pc = sim.particle_container()

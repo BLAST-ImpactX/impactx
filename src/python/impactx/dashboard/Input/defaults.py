@@ -48,6 +48,20 @@ CONVERSION_FACTORS = {
     "TeV": 1.0e6,
 }
 
+# Envelope tracking with 2D space charge takes the beam current in A as its
+# intensity. All other modes take the bunch charge in C.
+USES_BEAM_CURRENT_JS = "tracking_mode === 'Envelope Tracking' && space_charge === '2D'"
+
+
+def beam_intensity_name() -> str:
+    """
+    Returns the name of the beam intensity input for the selected tracking mode
+    and space charge model: "beam_current_A" or "bunch_charge_C".
+    """
+    if state.tracking_mode == "Envelope Tracking" and state.space_charge == "2D":
+        return "beam_current_A"
+    return "bunch_charge_C"
+
 
 class DashboardDefaults:
     """
@@ -78,6 +92,7 @@ class DashboardDefaults:
         "kin_energy_MeV": 2e3,
         "kin_energy_unit": "MeV",
         "bunch_charge_C": 1e-9,
+        "beam_current_A": 0.5,
     }
 
     DISTRIBUTION_PARAMETERS = {
@@ -157,6 +172,7 @@ class DashboardDefaults:
         "npart": "int",
         "kin_energy_on_ui": "float",
         "bunch_charge_C": "float",
+        "beam_current_A": "float",
         "mass_MeV": "float",
         "charge_qe": "int",
         "csr_bins": "int",
@@ -191,6 +207,7 @@ class DashboardDefaults:
     STEPS = {
         "mass_MeV": 0.1,
         "bunch_charge_C": 1e-11,
+        "beam_current_A": 0.01,
         "prob_relative": 0.1,
         "mlmg_relative_tolerance": 1e-12,
         "mlmg_absolute_tolerance": 1e-12,
@@ -203,6 +220,7 @@ class DashboardDefaults:
         "charge_qe": "qe",
         "mass_MeV": "MeV",
         "bunch_charge_C": "C",
+        "beam_current_A": "A",
         "mlmg_absolute_tolerance": "V/m",
         "beta": "m",
         "emitt": "m",

@@ -8,7 +8,11 @@ License: BSD-3-Clause-LBNL
 
 from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
-from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
+from ..defaults import (
+    CONVERSION_FACTORS,
+    TRACKING_MODE_PROPERTIES,
+    USES_BEAM_CURRENT_JS,
+)
 
 
 @state.change("kin_energy_unit")
@@ -103,7 +107,12 @@ class SimulationParameters(CardBase):
                             v_model_name="kin_energy_unit",
                         )
                 with vuetify.VRow(**self.ROW_STYLE):
-                    with vuetify.VCol(cols=12):
+                    with vuetify.VCol(cols=12, v_if=USES_BEAM_CURRENT_JS):
+                        InputComponents.text_field(
+                            label="Beam Current",
+                            v_model_name="beam_current_A",
+                        )
+                    with vuetify.VCol(cols=12, v_else=True):
                         InputComponents.text_field(
                             label="Bunch Charge",
                             v_model_name="bunch_charge_C",

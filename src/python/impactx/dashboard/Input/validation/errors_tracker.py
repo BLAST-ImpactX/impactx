@@ -7,6 +7,7 @@ License: BSD-3-Clause-LBNL
 """
 
 from ... import state
+from ..defaults import beam_intensity_name
 
 
 class ErrorsTracker:
@@ -36,7 +37,13 @@ class ErrorsTracker:
             error_details.append(f"Number of Particles: {state.npart_error_message}")
         if state.kin_energy_error_message:
             error_details.append(f"Kinetic Energy: {state.kin_energy_error_message}")
-        if state.bunch_charge_C_error_message:
+        # only the beam intensity input shown for the tracking mode can block a run
+        if beam_intensity_name() == "beam_current_A":
+            if state.beam_current_A_error_message:
+                error_details.append(
+                    f"Beam Current: {state.beam_current_A_error_message}"
+                )
+        elif state.bunch_charge_C_error_message:
             error_details.append(f"Bunch Charge: {state.bunch_charge_C_error_message}")
         if state.charge_qe_error_message:
             error_details.append(
@@ -55,7 +62,7 @@ class ErrorsTracker:
             error_details.append(f"CSR Bins: {state.csr_bins_error_message}")
 
         # Check for errors in Space Charge parameters
-        if state.space_charge:
+        if state.space_charge != "false":
             # n_cell parameters
             for direction in ["x", "y", "z"]:
                 n_cell_error = getattr(state, f"error_message_n_cell_{direction}")

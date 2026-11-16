@@ -19,7 +19,6 @@ from .utils import SpaceChargeFunctions
 
 state.prob_relative = []
 state.prob_relative_fields = []
-state.n_cell = []
 
 
 # -----------------------------------------------------------------------------

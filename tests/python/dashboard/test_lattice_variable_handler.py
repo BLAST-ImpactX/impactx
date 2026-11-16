@@ -171,3 +171,25 @@ def test_lattice_variable_handler(dashboard):
     assert dashboard.get_state("is_only_variable") is True, (
         "Expected state to be True after reset."
     )
+
+
+def test_lattice_variable_equal_elements(dashboard):
+    """
+    A variable shared by equal elements, e.g., identical drifts, updates all of them.
+    """
+    for _ in range(3):
+        dashboard.add_lattice_element("Drift")
+
+    dashboard.sb.click("#lattice_settings")
+    dashboard.set_input("variable_name_1", "L")
+    dashboard.set_input("variable_value_1", 0.125)
+
+    # bind in reverse order, so equal elements precede the bound element
+    for element in (3, 2, 1):
+        dashboard.set_input(f"ds{element}", "L")
+    for index in range(3):
+        assert_lattice_param_sim_input(dashboard, index, "ds", 0.125)
+
+    dashboard.set_input("variable_value_1", 0.375)
+    for index in range(3):
+        assert_lattice_param_sim_input(dashboard, index, "ds", 0.375)

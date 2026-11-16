@@ -130,12 +130,19 @@ class LatticeVariableHandler:
         Refresh lattice parameters whose UI input references dashboard variables.
         """
 
-        for lattice in list(state.lattice_elements_using_variables.values()):
-            try:
-                lattice_id = lattice["element_reference"]
-                lattice_index = state.selected_lattice_list.index(lattice_id)
-            except ValueError:
-                continue  # skip deleted elements
+        # Find elements by identity, not equality: equal elements, such as
+        # identical drifts, are separate entries in the lattice list.
+        element_indexes = {
+            id(element): index
+            for index, element in enumerate(state.selected_lattice_list)
+        }
+
+        bindings = state.lattice_elements_using_variables
+        for key, lattice in list(bindings.items()):
+            lattice_index = element_indexes.get(id(lattice["element_reference"]))
+            if lattice_index is None:
+                bindings.pop(key)  # the element was deleted
+                continue
 
             ctrl.updateLatticeElementParameters(
                 lattice_index,

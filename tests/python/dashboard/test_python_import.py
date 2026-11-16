@@ -10,6 +10,8 @@ import time
 
 import pytest
 
+from impactx import RefPart
+
 from .utils import APPROX_TOL, TIMEOUT
 
 
@@ -30,7 +32,7 @@ def test_python_import(dashboard):
         ("tracking_mode", "Particle Tracking"),
         ("space_charge", "false"),
         ("charge_qe", -1),
-        ("mass_MeV", 0.510998950),
+        ("mass_MeV", RefPart().set_species("electron").mass_MeV),
         ("npart", 10000),
         ("bunch_charge_C", 1e-9),
     ]

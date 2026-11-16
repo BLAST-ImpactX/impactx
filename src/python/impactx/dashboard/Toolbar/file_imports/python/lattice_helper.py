@@ -527,9 +527,8 @@ def check_script_functions(tree: ast.Module, source) -> None:
     first tracking call, and its code uses module-level variables, the lattice,
     the reference particle or tracking: the dashboard does not follow where
     and when such code runs. A direct call of a top-level function that is the
-    first tracking call, and a function stored as a hook, e.g.,
-    sim.hook["before_slice"] = f, which runs while the beam is tracked, are
-    allowed.
+    first tracking call is allowed. A hook, e.g., sim.hook["before_period"] = f,
+    raises: its code runs while the beam is tracked and may change the lattice.
 
     :param tree: The parsed ImpactX simulation file.
     :param source: Function that returns the source code of a node.
@@ -623,50 +622,6 @@ def check_script_functions(tree: ast.Module, source) -> None:
                 names.add(getattr(definition, "name", None))
                 changed = True
 
-    # hooks, e.g., sim.hook["before_slice"] = f, run only while the beam is tracked
-    impactx_names = {"ImpactX"} | {
-        alias.asname
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom)
-        for alias in node.names
-        if alias.name == "ImpactX" and alias.asname
-    }
-    simulation_targets = {
-        id(target)
-        for node in walk_with_definitions(tree)
-        if isinstance(node, (ast.Assign, ast.AnnAssign))
-        and isinstance(node.value, ast.Call)
-        and (
-            getattr(node.value.func, "id", None) in impactx_names
-            or getattr(node.value.func, "attr", None) == "ImpactX"
-        )
-        for target in (node.targets if isinstance(node, ast.Assign) else [node.target])
-    }
-    # names of the simulation, or a name a part of a script does not bind
-    simulation_names = {
-        name
-        for name, nodes in bindings.items()
-        if all(id(node) in simulation_targets for node in nodes)
-    }
-
-    def is_simulation(node: ast.AST) -> bool:
-        return isinstance(node, ast.Name) and (
-            node.id in simulation_names or node.id not in bindings
-        )
-
-    hook_assignments = [
-        node
-        for node in walk_outside_definitions(tree)
-        if isinstance(node, ast.Assign)
-        and len(node.targets) == 1
-        and isinstance(node.targets[0], ast.Subscript)
-        and isinstance(node.targets[0].value, ast.Attribute)
-        and node.targets[0].value.attr == "hook"
-        and is_simulation(node.targets[0].value.value)
-        and isinstance(node.value, ast.Name)
-    ]
-    hooks = {id(node.value) for node in hook_assignments}
-    hook_targets = {id(node.targets[0].value) for node in hook_assignments}
     outside_definitions = {id(node) for node in walk_outside_definitions(tree)}
 
     def defines_only(definition: ast.AST) -> bool:
@@ -690,6 +645,15 @@ def check_script_functions(tree: ast.Module, source) -> None:
             end is None or _position(node) < end or id(node) in inside_tracking
         )
 
+    # e.g., sim.hook["before_period"] = f, whose code runs while the beam is tracked
+    for node in walk_outside_definitions(tree):
+        if isinstance(node, ast.Attribute) and node.attr == "hook" and before_end(node):
+            raise ValueError(
+                f"Cannot import the lattice: '{source(node)}' in line "
+                f"{node.lineno} uses a hook, whose code runs while the beam is "
+                f"tracked, which the dashboard does not import."
+            )
+
     for node in walk_with_definitions(tree, class_bodies=True):
         if not before_end(node):
             continue
@@ -698,18 +662,6 @@ def check_script_functions(tree: ast.Module, source) -> None:
             isinstance(node, ast.Lambda) or not defines_only(node)
         ):
             used = node  # a lambda, or a decorated definition, may be stored
-        elif (
-            hooks
-            and isinstance(node, ast.Attribute)
-            and node.attr == "hook"
-            and id(node) not in hook_targets
-        ):
-            # e.g., sim.hook["before_period"](), which runs a hook now
-            raise ValueError(
-                f"Cannot import the lattice: '{source(node)}' in line "
-                f"{node.lineno} may run a hook before the first tracking call, "
-                f"which the dashboard does not follow."
-            )
         elif _is_tracking_call(node) and id(node) not in outside_definitions:
             raise ValueError(
                 f"Cannot import the lattice: '{source(node)}' in line "
@@ -727,7 +679,6 @@ def check_script_functions(tree: ast.Module, source) -> None:
             and isinstance(node.ctx, ast.Load)
             and node.id in names
             and not (tracking_call is not None and node is tracking_call.func)
-            and id(node) not in hooks
         ):
             used = node
         if used is not None:
@@ -1348,14 +1299,6 @@ class DashboardLatticeParser:
                         raise TypeError
                 except (IndexError, TypeError, ValueError):
                     self._cannot_follow(container, target, where)
-            elif (
-                isinstance(target.value, ast.Attribute)
-                and target.value.attr == "hook"
-                and isinstance(target.value.value, ast.Name)
-                and isinstance(self._variables.get(target.value.value.id), _Simulation)
-                and isinstance(value, _Function)
-            ):
-                pass  # a hook, e.g., sim.hook["before_period"] = f, runs while tracking
             else:
                 reason = f"the change of '{self._source(target)}' {where}"
                 self._mark_unresolved(container, reason)

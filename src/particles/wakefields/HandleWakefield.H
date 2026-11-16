@@ -195,7 +195,6 @@ namespace impactx::particles::wakefields
                             amrex::Real const s = static_cast<amrex::Real>(i - 2*num_edges) * bin_size;
                             // The sign on the argument of s is due to the fact that CSR acts from tail-to-head, so that s_source - s_observation < 0.
                             dptr_wake_function[i] = impactx::particles::wakefields::w_l_csr(-s, dR, bin_size);
-                            dptr_wake_function[i] = impactx::particles::wakefields::w_l_csr_caseB(s, dR, gamma, bin_size);
                         }
                     });
 
@@ -209,7 +208,6 @@ namespace impactx::particles::wakefields
                     // The wake function is per unit source charge and positive where it
                     // decelerates: the longitudinal force on a test particle of charge q is -q
                     // times its convolution with the deposited line density q w.
-                    amrex::Real const charge = particle_container.GetRefParticle().charge;
 
                     amrex::Gpu::DeviceVector<amrex::Real> wake_function(num_edges*2, 0.0);
                     amrex::Real *const dptr_wake_function = wake_function.data();

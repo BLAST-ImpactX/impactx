@@ -834,6 +834,20 @@ class _Inert(_Unresolved):
     """
 
 
+class _SelectedElement(_Unresolved):
+    """
+    An item of a selection, e.g., sim.lattice.select(kind="Quad")[0]: an
+    element of the lattice, but the dashboard cannot tell which one.
+    """
+
+
+class _SelectMethod(_Unresolved):
+    """
+    The method select of sim.lattice or of a selection, e.g.,
+    select = sim.lattice.select, which gives elements of the lattice.
+    """
+
+
 class _Lattice:
     """
     The value of sim.lattice.
@@ -1284,7 +1298,7 @@ class DashboardLatticeParser:
             if target.attr == "lattice":
                 self._cannot_follow(LATTICE, target, where)  # sim.lattice = [...]
             owner = self._evaluate(target.value)
-            if isinstance(owner, _Element):
+            if isinstance(owner, (_Element, _SelectedElement)):
                 self._change_element(owner, target, where)
             elif isinstance(owner, (_Lattice, _Selection)):
                 self._cannot_follow(owner, target, where)
@@ -1316,6 +1330,13 @@ class DashboardLatticeParser:
                     else:
                         raise TypeError
                 except (IndexError, TypeError, ValueError):
+                    if isinstance(value, (_Lattice, _Selection)):
+                        # e.g., cell[:] = sim.lattice.select(kind="Quad")
+                        raise ValueError(
+                            f"Cannot import the lattice: '{self._source(target)}' "
+                            f"{where} gets the lattice, a selection or their "
+                            f"elements, which is not supported."
+                        )
                     self._cannot_follow(container, target, where)
             else:
                 reason = f"the change of '{self._source(target)}' {where}"
@@ -1348,6 +1369,10 @@ class DashboardLatticeParser:
         value = self._evaluate(statement.value)
         where = f"in line {statement.lineno}"
 
+        if isinstance(value, (_Lattice, _Selection)):
+            # e.g., cell += sim.lattice.select(kind="Quad")
+            self._cannot_follow(value, statement, where)
+
         if isinstance(target, ast.Name):
             current = self._variables.get(target.id)
             result = self._binary_operation(statement.op, current, value, statement)
@@ -1365,41 +1390,64 @@ class DashboardLatticeParser:
             if isinstance(target, (ast.Attribute, ast.Subscript))
             else target
         )
-        if isinstance(container, _Element) and isinstance(target, ast.Attribute):
+        if isinstance(container, (_Element, _SelectedElement)) and isinstance(
+            target, ast.Attribute
+        ):
             self._change_element(container, target, where)
         elif isinstance(target, ast.Attribute) and target.attr == "lattice":
             self._cannot_follow(LATTICE, statement, where)
         else:
             self._cannot_follow(container, statement, where)
 
-    def _change_element(self, element: _Element, target: ast.expr, where: str):
+    def _mark_element(self, element: Any, reason: str) -> None:
+        """
+        Marks an element as changed after its construction. For an item of a
+        selection, e.g., sim.lattice.select(kind="Quad")[0], an element of the
+        lattice that the dashboard cannot tell, it marks the lattice.
+        """
+        if isinstance(element, _SelectedElement):
+            self._mark_unresolved(element, reason)
+        else:
+            element.unresolved = element.unresolved or reason
+
+    def _change_element(self, element: Any, target: ast.expr, where: str):
         """
         Marks an element whose attribute the script changes, e.g., quad.k = 2.0:
         the dashboard imports only the arguments of its constructor.
         """
-        element.unresolved = element.unresolved or (
+        self._mark_element(
+            element,
             f"'{self._source(target)}' {where} changes an element after its "
-            f"construction, which the dashboard does not import"
+            f"construction, which the dashboard does not import",
         )
 
-    def _take_element_attribute(self, element: _Element, node: ast.Attribute):
+    def _take_element_attribute(self, element: Any, node: ast.Attribute):
         """
         Marks an element whose method the script takes, e.g.,
         set_k = quad.__setattr__ or flip = quad.reverse: the method may change
         the element later. Its parameters, e.g., quad.k, other attributes that
         are not methods, e.g., quad.__class__, and the methods that only read
-        it, e.g., quad.to_dict, do not.
+        it, e.g., quad.to_dict, do not. For an item of a selection, whose class
+        the dashboard cannot tell, an attribute that some element class has as
+        a parameter, e.g., k, is one of its parameters.
         """
-        element_class = getattr(impactx_elements, element.call.func.attr, None)
+        if isinstance(element, _SelectedElement):
+            classes = [
+                c for c in vars(impactx_elements).values() if isinstance(c, type)
+            ]
+        else:
+            classes = [getattr(impactx_elements, element.call.func.attr, None)]
         missing = object()
-        attribute = inspect.getattr_static(element_class, node.attr, missing)
-        if node.attr in ELEMENT_READ_METHODS or not (
-            attribute is missing or callable(attribute)
+        attributes = [inspect.getattr_static(c, node.attr, missing) for c in classes]
+        if node.attr in ELEMENT_READ_METHODS or any(
+            attribute is not missing and not callable(attribute)
+            for attribute in attributes
         ):
             return
-        element.unresolved = element.unresolved or (
+        self._mark_element(
+            element,
             f"'{self._source(node)}' in line {node.lineno} may change an element "
-            f"after its construction, which the dashboard does not import"
+            f"after its construction, which the dashboard does not import",
         )
 
     def _delete(self, target: ast.expr) -> None:
@@ -1431,7 +1479,7 @@ class DashboardLatticeParser:
                 self._delete(item)
         elif isinstance(target, ast.Attribute):
             owner = self._evaluate(target.value)
-            if isinstance(owner, _Element):
+            if isinstance(owner, (_Element, _SelectedElement)):
                 self._change_element(owner, target, where)
             elif target.attr == "lattice":
                 self._cannot_follow(LATTICE, target, where)
@@ -1474,6 +1522,9 @@ class DashboardLatticeParser:
                         # e.g., [*b] of an unknown b: unknown items and length
                         unknown_length = f"'{self._source(item)}' cannot be evaluated"
                         values.append(_Unresolved(unknown_length))
+                        if isinstance(value, (_Lattice, _Selection)):
+                            # e.g., [*sim.lattice], elements of the lattice
+                            self._cannot_follow(value, item, f"in line {item.lineno}")
                 else:
                     values.append(self._evaluate(item))
             result = values if isinstance(node, ast.List) else tuple(values)
@@ -1510,8 +1561,10 @@ class DashboardLatticeParser:
                 node.attr not in SELECTION_READ_METHODS
             ):
                 self._mark_unresolved(owner, reason)
-            elif isinstance(owner, _Element):
+            elif isinstance(owner, (_Element, _SelectedElement)):
                 self._take_element_attribute(owner, node)
+            if isinstance(owner, (_Lattice, _Selection)) and node.attr == "select":
+                return _SelectMethod(f"'{self._source(node)}' cannot be evaluated")
             return _Unresolved(f"'{self._source(node)}' cannot be evaluated")
 
         if isinstance(node, ast.Subscript):
@@ -1696,10 +1749,16 @@ class DashboardLatticeParser:
 
     def _subscript(self, node: ast.Subscript) -> Any:
         """
-        Evaluates an item or a slice of a list, a tuple or sim.lattice.
+        Evaluates an item or a slice of a list, a tuple, sim.lattice or a
+        selection, e.g., sim.lattice.select(kind="Quad")[0].
         """
         container = self._evaluate(node.value)
         key = self._evaluate_key(node.slice)
+        if isinstance(container, _Selection):
+            if isinstance(node.slice, ast.Slice):
+                return _Selection()  # e.g., sim.lattice.select(kind="Quad")[0:2]
+            # e.g., sim.lattice.select(kind="Quad")[0], an element of the lattice
+            return _SelectedElement(f"'{self._source(node)}' cannot be evaluated")
         if isinstance(key, (list, tuple)) and not isinstance(container, KNOWN_OPERANDS):
             self._mark_operands([container, key], node)  # e.g., obj[cell]
         items = self._lattice if isinstance(container, _Lattice) else container
@@ -1779,6 +1838,24 @@ class DashboardLatticeParser:
             if isinstance(owner, list):
                 if keywords or any(isinstance(a, ast.Starred) for a in node.args):
                     if method not in LIST_READ_METHODS:
+                        for node_argument, argument in zip(node.args, arguments):
+                            starred = isinstance(node_argument, ast.Starred)
+                            items = (
+                                argument
+                                if starred and isinstance(argument, tuple)
+                                else (argument,)
+                            )
+                            if (
+                                starred
+                                and self._is_lattice_reference(node_argument.value)
+                            ) or any(
+                                isinstance(item, (_Lattice, _Selection))
+                                for item in items
+                            ):
+                                # e.g., cell.append(*sim.lattice), cell.extend(*[sel])
+                                self._cannot_follow(
+                                    LATTICE, node, f"in line {node.lineno}"
+                                )
                         self._cannot_follow(owner, node, f"in line {node.lineno}")
                     return _Unresolved(f"'{self._source(node)}' is not an element")
                 return self._list_method(node, owner, method, arguments)
@@ -1794,6 +1871,14 @@ class DashboardLatticeParser:
                 owner.unresolved = (
                     f"'{self._source(node)}' in line {node.lineno} cannot be followed"
                 )
+                return _Unresolved(f"'{self._source(node)}' cannot be evaluated")
+            if isinstance(owner, _SelectedElement):
+                if method not in ELEMENT_READ_METHODS:
+                    self._mark_element(
+                        owner,
+                        f"'{self._source(node)}' in line {node.lineno} cannot be "
+                        f"followed",
+                    )
                 return _Unresolved(f"'{self._source(node)}' cannot be evaluated")
 
             if (
@@ -1839,6 +1924,9 @@ class DashboardLatticeParser:
 
         if isinstance(callee, _SimulationClass):
             return self._new_simulation(node)
+        if isinstance(callee, _SelectMethod):
+            # e.g., select(kind="Quad") of select = sim.lattice.select
+            return _Selection()
 
         result = _Unresolved(f"'{self._source(node)}' cannot be evaluated")
         if isinstance(callee, _Function):
@@ -1962,6 +2050,10 @@ class DashboardLatticeParser:
             else:
                 raise TypeError
         except (IndexError, TypeError, ValueError):
+            for argument in arguments:
+                if isinstance(argument, (_Lattice, _Selection)):
+                    # e.g., cell.extend(sim.lattice.select(kind="Quad"))
+                    self._cannot_follow(argument, node, f"in line {node.lineno}")
             self._cannot_follow(values, node, f"in line {node.lineno}")
         return result
 
@@ -2051,7 +2143,10 @@ class DashboardLatticeParser:
                 self._call_function(
                     item if isinstance(item, _Function) else item.function
                 )
-            elif isinstance(item, (_Lattice, _Selection, _Simulation)):
+            elif isinstance(
+                item,
+                (_Lattice, _Selection, _SelectedElement, _SelectMethod, _Simulation),
+            ):
                 self._lattice_unresolved = self._lattice_unresolved or reason
                 for element in self._lattice:
                     mark(element)
@@ -2165,6 +2260,12 @@ class DashboardLatticeParser:
             elif isinstance(item, _Lattice):
                 for element in list(self._lattice):
                     expand(element, enclosing)
+            elif isinstance(item, _Selection):
+                raise ValueError(
+                    "Cannot import the lattice: it uses a selection, e.g., "
+                    "sim.lattice.select(kind=...), and the dashboard cannot tell "
+                    "which elements it holds."
+                )
             elif isinstance(item, (list, tuple)):
                 if id(item) in enclosing:
                     raise ValueError(

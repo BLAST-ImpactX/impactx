@@ -64,11 +64,20 @@ class DashboardParser:
 
         file_content = DashboardParserHelper.import_file_content(file, state)
 
-        lattice_parser = DashboardLatticeParser(file_content)
-        single_input_contents = DashboardParserHelper.parse_single_inputs(file_content)
-        list_input_contents = DashboardParserHelper.parse_list_inputs(file_content)
-        distribution_contents = DashboardParserHelper.parse_distribution(file_content)
-        lattice_contents = lattice_parser.parse()
+        try:
+            lattice_parser = DashboardLatticeParser(file_content)
+            single_input_contents = DashboardParserHelper.parse_single_inputs(
+                file_content
+            )
+            list_input_contents = DashboardParserHelper.parse_list_inputs(file_content)
+            distribution_contents = DashboardParserHelper.parse_distribution(
+                file_content
+            )
+            lattice_contents = lattice_parser.parse()
+        except RecursionError:
+            raise ValueError(
+                "Cannot import the file: its code is nested too deeply."
+            ) from None
 
         used_inputs = lattice_parser.extract_lattice_inputs(lattice_contents)
         variable_contents = DashboardParserHelper.parse_variables(

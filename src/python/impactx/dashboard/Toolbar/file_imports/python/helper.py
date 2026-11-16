@@ -7,7 +7,9 @@ License: BSD-3-Clause-LBNL
 """
 
 import ast
+import functools
 import re
+import tokenize
 from typing import Any
 
 from impactx import RefPart
@@ -742,6 +744,8 @@ class DashboardParserHelper:
 
         dictionary = {"distribution": {"name": "", "type": "", "parameters": {}}}
 
+        # e.g., a parenthesis in a comment does not end the arguments
+        content = DashboardParserHelper._without_comments(content)
         distribution_name = re.search(r"distribution\.(\w+)\(", content)
         distribution_type_twiss = re.search(r"twiss\((.*?)\)", content, re.DOTALL)
         distribution_type_quadratic = re.search(
@@ -750,10 +754,11 @@ class DashboardParserHelper:
         parameters = {}
 
         def extract_parameters(distribution_type):
-            # the value runs up to a comma, parenthesis, line end or comment,
+            # the value runs up to a comma, parenthesis or line end,
             # EX: alpha_x=-0.5, emitt_x=1.0e-6
-            arguments = re.sub(r"#[^\n]*", "", distribution_type.group(1))
-            parameter_pairs = re.findall(r"(\w+)\s*=\s*([^,\)\n]+)", arguments)
+            parameter_pairs = re.findall(
+                r"(\w+)\s*=\s*([^,\)\n]+)", distribution_type.group(1)
+            )
             return {name: value.strip() for name, value in parameter_pairs}
 
         if distribution_name:
@@ -781,6 +786,24 @@ class DashboardParserHelper:
         dictionary["distribution"]["parameters"] = parameters
 
         return dictionary
+
+    @staticmethod
+    def _without_comments(content: str) -> str:
+        """
+        Returns the content with spaces in place of its comments, so that all
+        other code keeps its position.
+
+        :param content: The content of the ImpactX simulation file.
+        """
+        # the line breaks of Python: a form feed does not end a line
+        lines = re.findall(r"[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$", content)
+        tokens = tokenize.generate_tokens(functools.partial(next, iter(lines), ""))
+        for token in tokens:
+            if token.type == tokenize.COMMENT:
+                (row, start), (_, end) = token.start, token.end
+                line = lines[row - 1]
+                lines[row - 1] = line[:start] + " " * (end - start) + line[end:]
+        return "".join(lines)
 
     @staticmethod
     def _positional_arguments(content: str, match: re.Match) -> dict:

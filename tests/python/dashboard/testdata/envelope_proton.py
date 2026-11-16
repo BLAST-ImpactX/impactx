@@ -20,7 +20,7 @@ ref.set_species("proton").set_kin_energy_MeV(kin_energy_MeV)
 
 distr = distribution.Waterbag(
     **twiss(
-        beta_x=1.0,
+        beta_x=1.0,  # see (1)
         beta_y=2.0,
         beta_t=3.0,
         emitt_x=1e-06,

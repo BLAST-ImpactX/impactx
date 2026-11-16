@@ -30,12 +30,15 @@ state.selected_distribution_parameters = {}
 state.distribution_type_disable = False
 
 
-def populate_distribution_parameters():
+def populate_distribution_parameters(keep_values: bool = False):
     """
-    Called when `state.distribution_type` changes.
+    Called when `state.distribution_type` or `state.distribution` changes.
     Populates distribution parameters based on the current `state.distribution`.
+
+    :param keep_values: Keep the current values of parameters with the same name.
     """
     params = {}
+    previous_params = state.selected_distribution_parameters if keep_values else {}
     is_twiss = state.distribution_type == "Twiss"
 
     # Gather necessary data
@@ -47,14 +50,15 @@ def populate_distribution_parameters():
 
     # Populate the UI
     for param_name, default_value, default_type in param_data:
+        value = previous_params.get(param_name, {}).get("value", default_value)
         error_message = DashboardValidation.validate(
-            param_name, default_value, category="distribution"
+            param_name, value, category="distribution"
         )
         units = DistributionFunctions.get_distribution_units(param_name)
         step = GeneralFunctions.get_default(param_name, "steps")
 
         params[param_name] = {
-            "value": default_value,
+            "value": value,
             "type": default_type,
             "error_message": error_message,
             "units": units,
@@ -84,6 +88,11 @@ def on_distribution_name_change(distribution, **kwargs):
 
         if state.distribution_type not in type_list_default:
             state.distribution_type = type_default
+        elif "distribution_type" not in state.modified_keys:
+            # The parameters depend on the distribution, e.g., only Gaussian has
+            # cuts. Keep the values of the others, unless an import sets them.
+            importing = getattr(state, "imported_distribution_parameters", None)
+            populate_distribution_parameters(keep_values=importing is None)
 
         state.distribution_type_disable = False
 

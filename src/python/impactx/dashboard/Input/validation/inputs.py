@@ -22,6 +22,7 @@ LIST_ERROR_MESSAGE = "Must be a list of numbers, e.g., [0.0, 1.5]"
 NON_ZERO_ERROR = "Must be non-zero"
 POSITIVE_ERROR = "Must be positive"
 NEGATIVE_ERROR = "Must be negative"
+NON_NEGATIVE_ERROR = "Must be non-negative"
 N_CELL_MULTIPLE_ERROR = "Must be a multiple of its blocking factor"
 PYTHON_IDENTIFIER_ERROR = "Must be a valid Python identifier"
 
@@ -187,7 +188,12 @@ class DashboardValidation:
         :return: List of error messages. Empty if all conditions are satisfied.
         """
 
-        lookup_name = "lambda" if "lambda" in input_name else input_name
+        if input_name.startswith("lambdaP"):
+            lookup_name = "lambdaP"  # e.g., lambdaPx
+        elif "lambda" in input_name:
+            lookup_name = "lambda"
+        else:
+            lookup_name = input_name
         additional_conditions = (
             GeneralFunctions.get_default(lookup_name, "validation_condition") or []
         )
@@ -200,6 +206,8 @@ class DashboardValidation:
                 errors.append(POSITIVE_ERROR)
             elif condition == "negative" and value >= 0:
                 errors.append(NEGATIVE_ERROR)
+            elif condition == "non_negative" and value < 0:
+                errors.append(NON_NEGATIVE_ERROR)
             elif condition == "greater_than_one" and value <= 1:
                 errors.append(GREATER_THAN_ONE_ERROR)
 

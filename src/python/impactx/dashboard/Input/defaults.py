@@ -191,6 +191,7 @@ class DashboardDefaults:
 
     VALIDATION_CONDITION = {
         "lambda": ["positive"],
+        "lambdaP": ["non_negative"],  # RMS momenta, zero for a cold beam
         "beta": ["positive"],
         "emitt": ["positive"],
         "charge_qe": ["non_zero"],

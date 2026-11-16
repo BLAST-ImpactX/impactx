@@ -6,16 +6,19 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
+import ast
 import keyword
 from typing import Union
 
 from ... import state
+from ..defaults_helper import EDITABLE_TYPES
 from ..utils import GeneralFunctions
 
-ALLOWED_INPUT_TYPES = {"int", "float", "str", "bool"}
+ALLOWED_INPUT_TYPES = EDITABLE_TYPES
 INT_ERROR_MESSAGE = "Must be an integer"
 FLOAT_ERROR_MESSAGE = "Must be a float"
 BOOL_ERROR_MESSAGE = "Must be a boolean: True or False"
+LIST_ERROR_MESSAGE = "Must be a list of numbers, e.g., [0.0, 1.5]"
 NON_ZERO_ERROR = "Must be non-zero"
 POSITIVE_ERROR = "Must be positive"
 NEGATIVE_ERROR = "Must be negative"
@@ -83,6 +86,11 @@ class DashboardValidation:
             if str(input_value).strip() in ("True", "False", "true", "false"):
                 return []
             return [BOOL_ERROR_MESSAGE]
+
+        if input_type == "list":
+            if DashboardValidation.is_number_list(input_value):
+                return []
+            return [LIST_ERROR_MESSAGE]
 
         numeric_input = GeneralFunctions.convert_to_numeric(input_value)
         type_errors = DashboardValidation._validate_type(numeric_input, input_type)
@@ -177,6 +185,24 @@ class DashboardValidation:
                 errors.append(GREATER_THAN_ONE_ERROR)
 
         return errors
+
+    @staticmethod
+    def is_number_list(user_input) -> bool:
+        """
+        Check if the user input is a list of numbers, e.g., '[0.0, 1.5]', that
+        the export can write as a keyword argument, e.g., k_normal=[0.0, 1.5].
+        """
+        try:
+            call = ast.parse(f"f(x={str(user_input).strip()})", mode="eval").body
+            if call.args or len(call.keywords) != 1:
+                return False  # e.g., '[0.0], ds=2' adds a keyword argument
+            argument = call.keywords[0].value
+            if not isinstance(argument, (ast.List, ast.Tuple)):
+                return False
+            value = ast.literal_eval(argument)
+        except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+            return False
+        return all(type(item) in (int, float) for item in value)
 
     @staticmethod
     def is_valid_input_name(user_input: str) -> bool:

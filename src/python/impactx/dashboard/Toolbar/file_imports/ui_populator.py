@@ -72,6 +72,17 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
     parsed_variables = imported_data["variables"]
     non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
+    # check before changing any input, so a failed import keeps the current inputs
+    unsupported_elements = sorted(
+        {element["name"] for element in imported_lattice_data}
+        - set(state.listOfLatticeElementParametersAndDefault)
+    )
+    if unsupported_elements:
+        raise ValueError(
+            "The dashboard does not support the lattice elements: "
+            + ", ".join(unsupported_elements)
+        )
+
     # Update state inputs (simulation parameters, Space Charge, CSR, ISR)
     for input_name, input_value in imported_data.items():
         if hasattr(state, input_name) and input_name not in non_state_inputs:

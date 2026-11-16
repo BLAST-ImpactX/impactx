@@ -111,6 +111,9 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
     for input_name, input_value in imported_data.items():
         if hasattr(state, input_name) and input_name not in non_state_inputs:
             setattr(state, input_name, input_value)
+    # the listener of the tracking mode resets the inputs it does not offer,
+    # e.g., space charge of reference tracking, also if the mode is the same
+    state.dirty("tracking_mode")
 
     _prepare_distribution_update(imported_distribution_data)
     _populate_lattice_config_to_ui(imported_lattice_data)

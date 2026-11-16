@@ -191,7 +191,8 @@ class DashboardParserHelper:
         never or more than once, e.g., in a loop, a condition or a conditional
         expression, raise a ValueError, as do calls on a particle the dashboard
         cannot tell. In a part of a script, a name it does not assign, e.g.,
-        ref, is the one of the beam.
+        ref, is the one of the beam. A script that tracks must set the mass and
+        charge of the tracked particle.
 
         :param tree: The parsed ImpactX simulation file.
         :return: Dictionary with the parsed 'mass_MeV' and 'charge_qe'.
@@ -461,6 +462,20 @@ class DashboardParserHelper:
                 values["charge_qe"] = reference.charge_qe
             else:
                 values[call.func.attr.removeprefix("set_")] = value
+
+        # RefPart() starts with mass and charge 0, which the dashboard does not
+        # take; a part of a script without tracking keeps the dashboard's values
+        missing = [
+            name
+            for name, key in (("mass", "mass_MeV"), ("charge", "charge_qe"))
+            if key not in values
+        ]
+        if method is not None and missing:
+            raise ValueError(
+                f"Cannot import the reference particle: the dashboard does not find "
+                f"where the script sets its {' and '.join(missing)}, e.g., with "
+                f'set_species("proton").'
+            )
 
         # the dashboard input for the charge is an integer
         charge_qe = values.get("charge_qe")

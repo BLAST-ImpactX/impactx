@@ -21,6 +21,12 @@ class DashboardParser:
     """
     Provides functionality to import ImpactX simulation files
     to the dashboard and auto-populate the UI with their configurations.
+
+    The import is only intended to support the Python scripts that the
+    dashboard exports, and select ImpactX examples with a limited script
+    structure, e.g., for tutorials on how to use the dashboard. Loading
+    arbitrary ImpactX Python scripts is generally unsupported: the import
+    raises, on a best-effort basis, an error for code that it cannot follow.
     """
 
     @staticmethod

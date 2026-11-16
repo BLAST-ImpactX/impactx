@@ -98,3 +98,50 @@ def test_python_import(dashboard):
             assert actual_value == pytest.approx(expected_value, **APPROX_TOL), (
                 f"{element_id}: expected {expected_value}, got {actual_value}"
             )
+
+
+def test_python_import_envelope(dashboard):
+    """
+    Imports a proton envelope with Twiss parameters and a repeated lattice cell
+    from 'testdata/envelope_proton.py' and runs it.
+    """
+    dashboard.load_example("testdata/envelope_proton.py", manual=True)
+
+    BEAM_PARAMETERS = [
+        ("tracking_mode", "Envelope Tracking"),
+        ("space_charge", "3D"),
+        ("charge_qe", 1),
+        ("mass_MeV", RefPart().set_species("proton").mass_MeV),
+        ("bunch_charge_C", 1e-12),
+        ("distribution_type", "Twiss"),
+        ("total_elements", 8),
+        ("total_length", "1.3m"),
+    ]
+    for param_name, expected_value in BEAM_PARAMETERS:
+        dashboard.assert_state(param_name, expected_value)
+
+    marker = dashboard.get_state("selected_lattice_list")[0]
+    assert {"parameter_name": "name", "sim_input": "start"}.items() <= next(
+        p for p in marker["parameters"] if p["parameter_name"] == "name"
+    ).items()
+
+    TWISS_PARAMETERS = {"emitt_x": 1e-6, "emitt_y": 2e-6, "alpha_x": -0.5}
+    for i in range(TIMEOUT):
+        parameters = dashboard.get_state("selected_distribution_parameters") or {}
+        values = {name: parameters.get(name, {}).get("value") for name in parameters}
+        if all(
+            isinstance(values.get(name), (int, float))
+            and values[name] == pytest.approx(expected, **APPROX_TOL)
+            for name, expected in TWISS_PARAMETERS.items()
+        ):
+            break
+        time.sleep(1)
+    else:
+        raise AssertionError(f"Twiss parameters {values} != {TWISS_PARAMETERS}")
+
+    dashboard.sb.click("#Run_route")
+    dashboard.sb.click("#run_simulation_button")
+    dashboard.assert_state("sim_progress_status", "Complete!")
+    assert not dashboard.get_state("import_file_error"), dashboard.get_state(
+        "import_file_error_message"
+    )

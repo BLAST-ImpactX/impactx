@@ -11,8 +11,10 @@ import re
 from typing import Any
 
 from impactx import RefPart
+from impactx import distribution as impactx_distribution
 
 from ....Input.defaults import DashboardDefaults
+from ....Input.defaults_helper import InputDefaultsHelper
 from .lattice_helper import (
     DEFINITIONS,
     TRACKING_MODES,
@@ -764,9 +766,72 @@ class DashboardParserHelper:
             dictionary["distribution"]["type"] = "Quadratic"
             parameters = extract_parameters(distribution_type_quadratic)
 
+        if distribution_name:
+            positional = DashboardParserHelper._positional_arguments(
+                content, distribution_name
+            )
+            for name in positional:
+                if name in parameters:
+                    raise ValueError(
+                        f"Cannot import distribution.{distribution_name.group(1)}"
+                        f"(...): multiple values for '{name}'."
+                    )
+            parameters = {**positional, **parameters}
+
         dictionary["distribution"]["parameters"] = parameters
 
         return dictionary
+
+    @staticmethod
+    def _positional_arguments(content: str, match: re.Match) -> dict:
+        """
+        Parses the positional arguments of the distribution call at a regex
+        match of ``distribution.<Name>(``, e.g.,
+        ``distribution.SpinvMF(0.4, 0.9, 0.1)``, named after its signature.
+
+        :param content: The content of the ImpactX simulation file.
+        :param match: The match of the distribution call.
+        :return: Dictionary of the parameter names and the source code of their values.
+        """
+        name = match.group(1)
+        line = content.count("\n", 0, match.start()) + 1
+        line_start = content.rfind("\n", 0, match.start()) + 1
+        # end of "distribution", also for impactx.distribution.<Name>(
+        end_column = len(content[line_start : match.start()].encode("utf-8")) + len(
+            "distribution"
+        )
+
+        calls = [
+            node
+            for node in ast.walk(ast.parse(content))
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == name
+            and (node.func.value.end_lineno, node.func.value.end_col_offset)
+            == (line, end_column)
+        ]
+        if not calls or not calls[0].args:
+            return {}  # e.g., a call in a comment
+        call = calls[0]
+
+        distribution_class = getattr(impactx_distribution, name, None)
+        positional = (
+            InputDefaultsHelper.positional_parameters(distribution_class)
+            if distribution_class is not None
+            else []
+        )
+        if len(call.args) > len(positional) or any(
+            isinstance(argument, ast.Starred) for argument in call.args
+        ):
+            raise ValueError(
+                f"Cannot import distribution.{name}(...): it takes at most "
+                f"{len(positional)} positional arguments."
+            )
+        return {
+            parameter_name: ast.get_source_segment(content, argument)
+            or ast.unparse(argument)
+            for parameter_name, argument in zip(positional, call.args)
+        }
 
     @staticmethod
     def parse_variables(content: str, used_vars: set) -> dict:

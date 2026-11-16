@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Optional
 
 from impactx import elements as impactx_elements
 
+from ....Input.defaults_helper import InputDefaultsHelper
+
 # methods of sim.lattice: followed by the dashboard, without effect on the
 # lattice, and everything else, which the dashboard cannot follow
 LATTICE_SUPPORTED_METHODS = {"append", "clear", "extend", "pop_back"}
@@ -914,8 +916,8 @@ class DashboardLatticeParser:
 
     The parser runs the top-level statements of the script in order, up to the
     first tracking call, e.g., sim.track_particles(), and follows like Python:
-        - element constructor calls with keyword arguments, e.g.,
-          elements.Drift(ds=1.0)
+        - element constructor calls, e.g., elements.Drift(ds=1.0) or
+          elements.BeamMonitor("monitor", backend="h5")
         - lists and tuples of elements, also nested, with * unpacking, + and
           repetition, e.g., cell * 3, indexing and slicing with integers
         - list methods, e.g., cell.append(), cell.reverse(), and assignments to
@@ -927,8 +929,8 @@ class DashboardLatticeParser:
     function call, may change, cannot be evaluated afterwards. A lattice that
     uses anything the dashboard cannot evaluate, or other changes of
     sim.lattice, raise a ValueError instead of importing a wrong lattice.
-    Positional arguments of elements and changes of element attributes after
-    construction, e.g., quad.k = 2.0, are not imported.
+    Changes of element attributes after construction, e.g., quad.k = 2.0, are
+    not imported.
     """
 
     def __init__(self, content: str):
@@ -965,7 +967,8 @@ class DashboardLatticeParser:
 
     def parse_element(self, element: _Element) -> Dict[str, Any]:
         """
-        Parses the name and the keyword arguments of an element constructor call.
+        Parses the name and the arguments of an element constructor call.
+        Positional arguments get their names from the signature of the element.
 
         EX:
             elements.Drift(name="d1", ds=1.0, nslice=ns)
@@ -977,16 +980,37 @@ class DashboardLatticeParser:
         :return: A dictionary with the element name and the source code of each argument.
         """
         call = element.call
+        name = call.func.attr
         parameters = {}
+
+        # e.g., elements.BeamMonitor("monitor", backend="h5")
+        element_class = getattr(impactx_elements, name, None)
+        if call.args and element_class is not None:
+            positional = InputDefaultsHelper.positional_parameters(element_class)
+            if len(call.args) > len(positional) or any(
+                isinstance(argument, ast.Starred) for argument in call.args
+            ):
+                raise ValueError(
+                    f"Cannot import '{self._source(call)}': {name} takes at most "
+                    f"{len(positional)} positional arguments."
+                )
+            for parameter_name, argument in zip(positional, call.args):
+                parameters[parameter_name] = self._argument_text(argument)
+
         for keyword in call.keywords:
             if keyword.arg is None:
                 raise ValueError(
                     f"Cannot import '{self._source(call)}': unpacking of "
                     f"arguments with ** is not supported."
                 )
+            if keyword.arg in parameters:
+                raise ValueError(
+                    f"Cannot import '{self._source(call)}': multiple values for "
+                    f"'{keyword.arg}'."
+                )
             parameters[keyword.arg] = self._argument_text(keyword.value)
 
-        return {"name": call.func.attr, "parameters": parameters}
+        return {"name": name, "parameters": parameters}
 
     def collect_lattice_elements(self) -> List[_Element]:
         """

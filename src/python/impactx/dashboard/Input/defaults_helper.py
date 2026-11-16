@@ -133,6 +133,30 @@ class InputDefaultsHelper:
         return docstrings
 
     @staticmethod
+    def positional_parameters(cls) -> List[str]:
+        """
+        Returns the names of the parameters that can be passed by position, in
+        order: those before the keyword-only marker * in the signature.
+
+        :param cls: The class, e.g., elements.BeamMonitor.
+        :return: A list of parameter names.
+        """
+        docstring = getattr(cls.__init__, "__doc__", None) or ""
+        signature = re.search(r"\((.*?)\)", docstring)
+        if signature is None:
+            return []
+
+        names = []
+        for parameter in signature.group(1).split(","):
+            parameter = parameter.strip()
+            if parameter == "*":
+                break
+            if parameter.startswith("self"):
+                continue
+            names.append(parameter.split(":", 1)[0].split("=", 1)[0].strip())
+        return names
+
+    @staticmethod
     def extract_parameters(docstring):
         """
         Parses specific information from docstrings.

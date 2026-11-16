@@ -184,7 +184,6 @@ namespace impactx::particles::wakefields
                     amrex::Gpu::DeviceVector<amrex::Real> wake_function(num_edges*2, 0.0);
                     amrex::Real *const dptr_wake_function = wake_function.data();
                     auto const dR = *rc;  // for NVCC capture; set, since CSR applies
-                    amrex::Real const gamma = particle_container.GetRefParticle().gamma();
                     amrex::ParallelFor(num_edges*2, [=] AMREX_GPU_DEVICE(int i) {
                         if (i < num_edges) {
                             amrex::Real const s = static_cast<amrex::Real>(i) * bin_size;

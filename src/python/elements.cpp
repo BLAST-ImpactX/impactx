@@ -662,6 +662,7 @@ void init_elements(py::module& m)
         )
         .def(py::init<std::string, std::string, std::string, int, bool, bool>(),
              py::arg("name"),
+             py::kw_only(),
              py::arg("backend") = diagnostics::BeamMonitor::DEFAULT_backend,
              py::arg("encoding") = diagnostics::BeamMonitor::DEFAULT_encoding,
              py::arg("period_sample_intervals") =
@@ -790,6 +791,7 @@ void init_elements(py::module& m)
                  Aperture::Action const a = amrex::getEnum<Aperture::Action>(action);
                  return new Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, s, a, dx, dy, rotation_degree, name);
              }),
+             py::kw_only(),
              py::arg("aperture_x"),
              py::arg("aperture_y"),
              py::arg("repeat_x") = Aperture::DEFAULT_repeat_x,
@@ -862,6 +864,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("dx") = ChrDrift::DEFAULT_dx,
              py::arg("dy") = ChrDrift::DEFAULT_dy,
@@ -908,6 +911,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k"),
              py::arg("unit") = ChrQuad::DEFAULT_unit,
@@ -966,6 +970,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k"),
              py::arg("unit") = ChrPlasmaLens::DEFAULT_unit,
@@ -1025,6 +1030,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("ez"),
              py::arg("bz"),
@@ -1087,6 +1093,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("kx"),
              py::arg("ky"),
@@ -1194,6 +1201,7 @@ void init_elements(py::module& m)
                 DipEdge::Location const fl = amrex::getEnum<DipEdge::Location>(location);
                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, modify_ref_part, dx, dy, rotation_degree, aperture_x, aperture_y, name);
             }),
+            py::kw_only(),
             py::arg("psi"),
             py::arg("rc"),
             py::arg("g"),
@@ -1335,6 +1343,7 @@ void init_elements(py::module& m)
                  QuadEdge::Location const fl = amrex::getEnum<QuadEdge::Location>(flag);
                  return new QuadEdge(k, unit, fl, dx, dy, rotation_degree, aperture_x, aperture_y, name);
              }),
+             py::kw_only(),
              py::arg("k"),
              py::arg("unit") = QuadEdge::DEFAULT_unit,
              py::arg("flag") = amrex::getEnumNameString(QuadEdge::DEFAULT_flag),
@@ -1383,6 +1392,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("dx") = Drift::DEFAULT_dx,
              py::arg("dy") = Drift::DEFAULT_dy,
@@ -1420,6 +1430,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("dx") = ExactDrift::DEFAULT_dx,
              py::arg("dy") = ExactDrift::DEFAULT_dy,
@@ -1499,6 +1510,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k_normal"),
              py::arg("k_skew"),
@@ -1606,6 +1618,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k_normal"),
              py::arg("k_skew"),
@@ -1685,6 +1698,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k"),
              py::arg("unit") = ExactQuad::DEFAULT_unit,
@@ -1782,6 +1796,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("phi"),
              py::arg("B") = ExactSbend::DEFAULT_B,
@@ -1858,6 +1873,7 @@ void init_elements(py::module& m)
                  Kicker::UnitSystem const u = Kicker::unit_from_name(unit);
                  return new Kicker(xkick, ykick, u, dx, dy, rotation_degree, aperture_x, aperture_y, name);
              }),
+             py::kw_only(),
              py::arg("xkick"),
              py::arg("ykick"),
              py::arg("unit") = Kicker::unit_name(Kicker::DEFAULT_unit),
@@ -1918,6 +1934,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("multipole"),
              py::arg("K_normal"),
              py::arg("K_skew"),
@@ -2022,6 +2039,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("knll"),
              py::arg("cnll"),
              py::arg("dx") = NonlinearLens::DEFAULT_dx,
@@ -2089,6 +2107,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("angle"),
              py::arg("dx") = PlaneXYRot::DEFAULT_dx,
              py::arg("dy") = PlaneXYRot::DEFAULT_dy,
@@ -2184,6 +2203,7 @@ void init_elements(py::module& m)
                      dx, dy, rotation_degree, name
                  );
              }),
+             py::kw_only(),
              py::arg("vertices_x"),
              py::arg("vertices_y"),
              py::arg("min_radius2") = PolygonAperture::DEFAULT_min_radius2,
@@ -2245,6 +2265,7 @@ void init_elements(py::module& m)
                      return Programmable(ds, includes_collective_effects, nslice, name);
                  }
              ),
+             py::kw_only(),
              py::arg("ds") = Programmable::DEFAULT_ds,
              py::arg("includes_collective_effects").noconvert() =
                  Programmable::DEFAULT_includes_collective_effects,
@@ -2331,6 +2352,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k"),
              py::arg("dx") = Quad::DEFAULT_dx,
@@ -2428,6 +2450,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("escale"),
              py::arg("freq"),
@@ -2516,6 +2539,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("rc"),
              py::arg("dx") = Sbend::DEFAULT_dx,
@@ -2568,6 +2592,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("rc"),
              py::arg("k"),
@@ -2625,6 +2650,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("V"),
              py::arg("k"),
              py::arg("dx") = Buncher::DEFAULT_dx,
@@ -2683,6 +2709,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("V"),
              py::arg("freq"),
              py::arg("phase") = ShortRF::DEFAULT_phase,
@@ -2778,6 +2805,7 @@ void init_elements(py::module& m)
                  int,
                  std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("bscale"),
              py::arg("cos_coefficients"),
@@ -2874,6 +2902,7 @@ void init_elements(py::module& m)
          >(),
              py::arg("distribution"),
              py::arg("openpmd_path"),
+             py::kw_only(),
              py::arg("active_once") = Source::DEFAULT_active_once,
              py::arg("load_ref_particle") = Source::DEFAULT_load_ref_particle,
              py::arg("load_step") = Source::DEFAULT_load_step,
@@ -2951,6 +2980,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("ks"),
              py::arg("dx") = Sol::DEFAULT_dx,
@@ -3015,6 +3045,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("phi_in"),
              py::arg("phi_out"),
              py::arg("name") = py::none(),
@@ -3109,6 +3140,7 @@ void init_elements(py::module& m)
                  int,
                  std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("gscale"),
              py::arg("cos_coefficients"),
@@ -3200,6 +3232,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("theta"),
              py::arg("rc"),
              py::arg("dx") = ThinDipole::DEFAULT_dx,
@@ -3266,6 +3299,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("k"),
              py::arg("taper"),
              py::arg("unit") = TaperedPL::DEFAULT_unit,
@@ -3330,6 +3364,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("R"),
              py::arg("ds") = LinearMap::DEFAULT_ds,
              py::arg("dx") = LinearMap::DEFAULT_dx,
@@ -3390,6 +3425,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("v"),
              py::arg("A"),
              py::arg("ds") = SpinMap::DEFAULT_ds,

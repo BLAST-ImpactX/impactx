@@ -68,7 +68,8 @@ def get_constructor_params(element_class):
     param_names = set()
     for p in params:
         name = p.split(":")[0].strip()
-        if name:
+        # the keyword-only marker is not a parameter
+        if name and name != "*":
             param_names.add(name)
 
     return param_names

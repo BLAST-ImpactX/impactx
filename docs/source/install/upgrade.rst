@@ -54,19 +54,28 @@ Previously, the sine of the reference deflection angle had an extra factor of :m
 This changes the reference trajectory, and the beam coordinates relative to it, downstream of such an edge.
 
 
-``Programmable``: ``nslice`` and ``name`` moved to the 3rd and 4th argument
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Elements and distributions take keyword arguments only
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-:py:class:`~impactx.elements.Programmable` takes the new ``includes_collective_effects`` as its
-2nd argument, so ``nslice`` and ``name`` moved back by one position.
+The constructors of all elements in ``impactx.elements`` and all distributions in ``impactx.distribution``
+take their arguments by keyword only.
+These arguments can still be passed by position:
 
-**What to check in your scripts:** a ``Programmable(...)`` call that passes ``nslice`` or
-``name`` by position raises a ``TypeError``. Pass them by keyword:
+- ``name`` of :py:class:`~impactx.elements.BeamMonitor` and ``Marker``,
+- ``distribution`` and ``openpmd_path`` of :py:class:`~impactx.elements.Source`,
+- ``mux``, ``muy`` and ``muz`` of :py:class:`~impactx.distribution.SpinvMF`.
+
+**What to check in your scripts:** a constructor call that passes any other value by position raises a ``TypeError``.
+This includes ``super().__init__(...)`` in a subclass.
+Name these arguments:
 
 .. code-block:: python
 
-   pge = elements.Programmable(0.5, 2)                # before
-   pge = elements.Programmable(ds=0.5, nslice=2)      # preferred by name, works as before
+   quad = elements.Quad(0.5, 1.2)                    # before
+   quad = elements.Quad(ds=0.5, k=1.2)               # now
+
+   pge = elements.Programmable(0.5, 2)               # before
+   pge = elements.Programmable(ds=0.5, nslice=2)     # now
 
 At fixed :math:`t`, the longitudinal attributes are named ``position_z`` and ``momentum_z``
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

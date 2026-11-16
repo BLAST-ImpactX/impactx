@@ -197,15 +197,17 @@ def test_programmable_includes_collective_effects_property():
     assert toggled.includes_collective_effects is True
     assert toggled == own
 
-    # positional order: ds, includes_collective_effects, nslice, name
-    positional = elements.Programmable(DS, True, 3, "p")
-    assert positional.includes_collective_effects is True
-    assert positional.nslice == 3
-    assert positional.name == "p"
+    # all constructor arguments together
+    configured = elements.Programmable(
+        ds=DS, includes_collective_effects=True, nslice=3, name="p"
+    )
+    assert configured.includes_collective_effects is True
+    assert configured.nslice == 3
+    assert configured.name == "p"
 
-    # a positional nslice from the previous argument order must not enable the flag
+    # an integer is not taken as the flag
     with pytest.raises(TypeError):
-        elements.Programmable(DS, 3)
+        elements.Programmable(ds=DS, includes_collective_effects=3)
 
     # the dict round-trips through the constructor
     kwargs = {k: v for k, v in own.to_dict().items() if k != "type"}

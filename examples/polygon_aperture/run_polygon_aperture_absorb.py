@@ -56,7 +56,9 @@ vertices_y = [
 ]
 mr2 = 2 * 0.5e-3**2
 
-aperture = elements.PolygonAperture(vertices_x, vertices_y, action="absorb")
+aperture = elements.PolygonAperture(
+    vertices_x=vertices_x, vertices_y=vertices_y, action="absorb"
+)
 
 print(aperture.to_dict())
 assert aperture.min_radius2 == 0.0

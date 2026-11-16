@@ -87,6 +87,7 @@ class BeamMonitor(mixin.Thin):
     def __init__(
         self,
         name: str,
+        *,
         backend: str = "default",
         encoding: str = "g",
         period_sample_intervals: typing.SupportsInt | typing.SupportsIndex = 1,
@@ -312,6 +313,7 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment, mixin.RepeatedMask):
         """
     def __init__(
         self,
+        *,
         aperture_x: typing.SupportsFloat | typing.SupportsIndex,
         aperture_y: typing.SupportsFloat | typing.SupportsIndex,
         repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -498,6 +500,7 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -653,6 +656,7 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
@@ -824,6 +828,7 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
@@ -995,6 +1000,7 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         ez: typing.SupportsFloat | typing.SupportsIndex,
         bz: typing.SupportsFloat | typing.SupportsIndex,
@@ -1166,6 +1172,7 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         kx: typing.SupportsFloat | typing.SupportsIndex,
         ky: typing.SupportsFloat | typing.SupportsIndex,
@@ -1345,6 +1352,7 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         psi: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
         g: typing.SupportsFloat | typing.SupportsIndex,
@@ -1610,6 +1618,7 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
         flag: str = "entry",
@@ -1780,6 +1789,7 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -1935,6 +1945,7 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -2090,6 +2101,7 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
@@ -2308,6 +2320,7 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
@@ -2526,6 +2539,7 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
@@ -2713,6 +2727,7 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         phi: typing.SupportsFloat | typing.SupportsIndex,
         B: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -2888,6 +2903,7 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         xkick: typing.SupportsFloat | typing.SupportsIndex,
         ykick: typing.SupportsFloat | typing.SupportsIndex,
         unit: str = "dimensionless",
@@ -3058,6 +3074,7 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         multipole: typing.SupportsInt | typing.SupportsIndex,
         K_normal: typing.SupportsFloat | typing.SupportsIndex,
         K_skew: typing.SupportsFloat | typing.SupportsIndex,
@@ -3525,6 +3542,7 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture
         """
     def __init__(
         self,
+        *,
         knll: typing.SupportsFloat | typing.SupportsIndex,
         cnll: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -3694,6 +3712,7 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         angle: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -3853,6 +3872,7 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment, mixin.RepeatedMa
         """
     def __init__(
         self,
+        *,
         vertices_x: collections.abc.Sequence[
             typing.SupportsFloat | typing.SupportsIndex
         ],
@@ -4072,6 +4092,7 @@ class Programmable(mixin.Named):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         includes_collective_effects: bool = False,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
@@ -4249,6 +4270,7 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -4436,7 +4458,7 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], z_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_x_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_y_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_z_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.RFCavity, *, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], z_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_x_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_y_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_z_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         An RF cavity.
         """
@@ -4664,6 +4686,7 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -4824,6 +4847,7 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
@@ -4995,6 +5019,7 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         V: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -5164,6 +5189,7 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         V: typing.SupportsFloat | typing.SupportsIndex,
         freq: typing.SupportsFloat | typing.SupportsIndex,
         phase: typing.SupportsFloat | typing.SupportsIndex = -90.0,
@@ -5360,7 +5386,7 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsInt | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, *, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsInt | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         A soft-edge solenoid.
         """
@@ -5590,6 +5616,7 @@ class Source(mixin.Named, mixin.Thin):
         self,
         distribution: str,
         openpmd_path: str,
+        *,
         active_once: bool = True,
         load_ref_particle: bool = True,
         load_step: typing.SupportsInt | typing.SupportsIndex | None = None,
@@ -5788,6 +5815,7 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         ks: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -5951,6 +5979,7 @@ class PRot(mixin.Named, mixin.Thin):
         """
     def __init__(
         self,
+        *,
         phi_in: typing.SupportsFloat | typing.SupportsIndex,
         phi_out: typing.SupportsFloat | typing.SupportsIndex,
         name: str | None = None,
@@ -6133,7 +6162,7 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, *, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         A soft-edge quadrupole.
         """
@@ -6347,6 +6376,7 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         theta: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -6509,6 +6539,7 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         k: typing.SupportsFloat | typing.SupportsIndex,
         taper: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
@@ -6692,6 +6723,7 @@ class LinearMap(mixin.Named, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
         ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
@@ -6876,6 +6908,7 @@ class SpinMap(mixin.Named, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
         A: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double,
         ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,

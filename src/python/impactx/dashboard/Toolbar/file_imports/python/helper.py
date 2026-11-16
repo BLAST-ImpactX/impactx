@@ -95,6 +95,8 @@ class DashboardParserHelper:
                 continue
             if parameter_name in ("mass_MeV", "charge_qe"):
                 continue  # see parse_reference_particle
+            if parameter_name in ("distribution", "distribution_type"):
+                continue  # see parse_distribution, e.g., not Source(distribution=)
 
             for pattern in parsing_patterns:
                 pattern_match = re.search(pattern.format(parameter_name), content)

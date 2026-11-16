@@ -221,14 +221,20 @@ class DashboardValidation:
         :param direction: One of 'x', 'y', or 'z' indicating which directional value to check.
         """
 
-        n_cell = GeneralFunctions.convert_to_numeric(
-            getattr(state, f"n_cell_{direction}", None)
-        )
-        blocking_factor = GeneralFunctions.convert_to_numeric(
-            getattr(state, f"blocking_factor_{direction}", None)
-        )
+        n_cell_name = f"n_cell_{direction}"
+        blocking_factor_name = f"blocking_factor_{direction}"
+        if DashboardValidation.validate(
+            n_cell_name, getattr(state, n_cell_name, None)
+        ) or DashboardValidation.validate(
+            blocking_factor_name, getattr(state, blocking_factor_name, None)
+        ):
+            return  # the inputs show their own errors, e.g., not an integer
 
-        if blocking_factor is None or blocking_factor == 0:
+        n_cell = GeneralFunctions.convert_to_numeric(getattr(state, n_cell_name))
+        blocking_factor = GeneralFunctions.convert_to_numeric(
+            getattr(state, blocking_factor_name)
+        )
+        if blocking_factor == 0:
             return
 
         if n_cell % blocking_factor != 0:

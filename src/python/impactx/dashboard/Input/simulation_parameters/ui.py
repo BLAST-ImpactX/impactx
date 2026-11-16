@@ -13,6 +13,7 @@ from ..defaults import (
     TRACKING_MODE_PROPERTIES,
     USES_BEAM_CURRENT_JS,
 )
+from ..validation import errors_tracker
 
 
 @state.change("kin_energy_unit")
@@ -21,6 +22,14 @@ def on_kin_energy_unit_change(kin_energy_unit, **kwargs) -> None:
         state.kin_energy_MeV = (
             state.kin_energy_on_ui * CONVERSION_FACTORS[kin_energy_unit]
         )
+
+
+@state.change("csr")
+def on_csr_change(**kwargs) -> None:
+    """
+    The CSR inputs block a run only while CSR is on.
+    """
+    errors_tracker.update_simulation_validation_status()
 
 
 @state.change("tracking_mode")

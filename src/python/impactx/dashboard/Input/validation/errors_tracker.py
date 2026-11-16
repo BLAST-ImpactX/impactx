@@ -35,8 +35,9 @@ class ErrorsTracker:
         # Check for errors in input card
         if state.npart_error_message:
             error_details.append(f"Number of Particles: {state.npart_error_message}")
-        if state.kin_energy_error_message:
-            error_details.append(f"Kinetic Energy: {state.kin_energy_error_message}")
+        kin_energy_error = getattr(state, "kin_energy_on_ui_error_message", None)
+        if kin_energy_error:
+            error_details.append(f"Kinetic Energy: {kin_energy_error}")
         # only the beam intensity input shown for the tracking mode can block a run
         if beam_intensity_name() == "beam_current_A":
             if state.beam_current_A_error_message:
@@ -58,26 +59,30 @@ class ErrorsTracker:
             error_details.append(f"Periods: {state.periods_error_message}")
 
         # Check for errors in CSR parameters
-        if state.csr_bins_error_message:
+        if state.csr and state.csr_bins_error_message:
             error_details.append(f"CSR Bins: {state.csr_bins_error_message}")
 
         # Check for errors in Space Charge parameters
         if state.space_charge != "false":
-            # n_cell parameters
-            for direction in ["x", "y", "z"]:
-                n_cell_error = getattr(state, f"error_message_n_cell_{direction}")
-                if n_cell_error:
-                    error_details.append(f"n_cell_{direction}: {n_cell_error}")
+            # grid parameters
+            for field in ["n_cell", "blocking_factor"]:
+                for direction in ["x", "y", "z"]:
+                    name = f"{field}_{direction}"
+                    error = getattr(state, f"{name}_error_message", None)
+                    if error:
+                        error_details.append(f"{name}: {error}")
 
-            # Blocking factor parameters
-            for direction in ["x", "y", "z"]:
-                blocking_factor_error = getattr(
-                    state, f"error_message_blocking_factor_{direction}"
-                )
-                if blocking_factor_error:
-                    error_details.append(
-                        f"blocking_factor_{direction}: {blocking_factor_error}"
-                    )
+            # Multigrid parameters
+            if state.poisson_solver == "multigrid":
+                for name in [
+                    "mlmg_relative_tolerance",
+                    "mlmg_absolute_tolerance",
+                    "mlmg_max_iters",
+                    "mlmg_verbosity",
+                ]:
+                    error = getattr(state, f"{name}_error_message", None)
+                    if error:
+                        error_details.append(f"{name}: {error}")
 
             # Prob Relative Fields
             for index, field in enumerate(state.prob_relative_fields):

@@ -76,8 +76,10 @@ SAFE_FUNCTIONS = {
 # built-in functions that run code from text or reach any variable by its name
 DYNAMIC_FUNCTIONS = {"__import__", "eval", "exec", "globals", "locals", "vars"}
 
-# attributes that reach any variable by its name, e.g., sys.modules
+# attributes that reach any variable by its name, e.g., sys.modules, or the
+# owner of a method, e.g., sim.lattice.count.__self__
 DYNAMIC_ATTRIBUTES = {"__dict__", "__globals__", "f_globals", "f_locals", "modules"}
+DYNAMIC_ATTRIBUTES |= {"__self__"}
 
 # functions that import a module, e.g., the script itself by __name__
 IMPORT_FUNCTIONS = {"__import__", "import_module", "reload", "run_module", "run_path"}
@@ -580,6 +582,14 @@ def check_script_functions(tree: ast.Module, source) -> None:
                 and node.id not in bindings
             )
             or (isinstance(node, ast.Attribute) and node.attr in DYNAMIC_ATTRIBUTES)
+            # e.g., getattr(method, "__self__")
+            or (
+                isinstance(node, ast.Call)
+                and getattr(node.func, "id", None) in ("getattr", "setattr", "delattr")
+                and len(node.args) >= 2
+                and isinstance(node.args[1], ast.Constant)
+                and node.args[1].value in DYNAMIC_ATTRIBUTES
+            )
             or (
                 isinstance(node, ast.Attribute)
                 and node.attr in DYNAMIC_FUNCTIONS
@@ -841,11 +851,16 @@ class _SelectedElement(_Unresolved):
     """
 
 
-class _SelectMethod(_Unresolved):
+class _LatticeMethod(_Unresolved):
     """
-    The method select of sim.lattice or of a selection, e.g.,
-    select = sim.lattice.select, which gives elements of the lattice.
+    A method of sim.lattice or of a selection taken as a value, e.g.,
+    select = sim.lattice.select: it gives elements of the lattice, and the
+    lattice stays reachable through it, e.g., by its __self__.
     """
+
+    def __init__(self, reason: str, name: str):
+        super().__init__(reason)
+        self.name = name
 
 
 class _Lattice:
@@ -1563,8 +1578,25 @@ class DashboardLatticeParser:
                 self._mark_unresolved(owner, reason)
             elif isinstance(owner, (_Element, _SelectedElement)):
                 self._take_element_attribute(owner, node)
-            if isinstance(owner, (_Lattice, _Selection)) and node.attr == "select":
-                return _SelectMethod(f"'{self._source(node)}' cannot be evaluated")
+            if isinstance(owner, (_Lattice, _Selection)):
+                owner_class = getattr(
+                    impactx_elements,
+                    "KnownElementsList"
+                    if isinstance(owner, _Lattice)
+                    else "FilteredElementsList",
+                    None,
+                )
+                missing = object()
+                attribute = inspect.getattr_static(owner_class, node.attr, missing)
+                if attribute is missing or callable(attribute):
+                    # e.g., select = sim.lattice.select, but not sim.lattice.generation
+                    return _LatticeMethod(
+                        f"'{self._source(node)}' cannot be evaluated", node.attr
+                    )
+            if isinstance(owner, _LatticeMethod):
+                if node.attr == "__call__":
+                    return owner  # e.g., select.__call__(kind="Quad")
+                self._mark_unresolved(owner, reason)  # e.g., count.__func__
             return _Unresolved(f"'{self._source(node)}' cannot be evaluated")
 
         if isinstance(node, ast.Subscript):
@@ -1829,6 +1861,15 @@ class DashboardLatticeParser:
                 self._call_function(
                     owner if isinstance(owner, _Function) else owner.function
                 )
+            if isinstance(owner, _LatticeMethod):
+                if method == "__call__":
+                    return self._call_lattice_method(owner, node)
+                # e.g., count.__reduce__() gives the lattice
+                self._mark_unresolved(
+                    owner,
+                    f"'{self._source(node)}' in line {node.lineno} cannot be followed",
+                )
+                return _Unresolved(f"'{self._source(node)}' cannot be evaluated")
             if isinstance(owner, _Selection):
                 if method in SELECTION_READ_METHODS:
                     if method == "select":
@@ -1924,9 +1965,8 @@ class DashboardLatticeParser:
 
         if isinstance(callee, _SimulationClass):
             return self._new_simulation(node)
-        if isinstance(callee, _SelectMethod):
-            # e.g., select(kind="Quad") of select = sim.lattice.select
-            return _Selection()
+        if isinstance(callee, _LatticeMethod):
+            return self._call_lattice_method(callee, node)
 
         result = _Unresolved(f"'{self._source(node)}' cannot be evaluated")
         if isinstance(callee, _Function):
@@ -1942,6 +1982,20 @@ class DashboardLatticeParser:
         for value in arguments + keywords:
             self._mark_unresolved(value, reason)
         return result
+
+    def _call_lattice_method(self, method: _LatticeMethod, node: ast.Call) -> Any:
+        """
+        Runs a stored method of sim.lattice or of a selection, e.g.,
+        select(kind="Quad") of select = sim.lattice.select.
+        """
+        if method.name == "select":
+            return _Selection()
+        if method.name not in LATTICE_READ_METHODS | SELECTION_READ_METHODS:
+            self._mark_unresolved(
+                method,
+                f"'{self._source(node)}' in line {node.lineno} cannot be followed",
+            )
+        return _Unresolved(f"'{self._source(node)}' is not an element")
 
     def _evaluate_argument(self, argument: ast.expr) -> Any:
         """
@@ -2145,7 +2199,7 @@ class DashboardLatticeParser:
                 )
             elif isinstance(
                 item,
-                (_Lattice, _Selection, _SelectedElement, _SelectMethod, _Simulation),
+                (_Lattice, _Selection, _SelectedElement, _LatticeMethod, _Simulation),
             ):
                 self._lattice_unresolved = self._lattice_unresolved or reason
                 for element in self._lattice:

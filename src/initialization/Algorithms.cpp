@@ -118,10 +118,10 @@ namespace impactx
             ablastr::warn_manager::WMRecordWarning(
                 "algo.csr",
                 "The option algo.csr = true is deprecated and will be removed in a future version of ImpactX. "
-                "Please use algo.csr = SteadyState instead.",
+                "Please use algo.csr = Ultrarelativistic instead.",
                 ablastr::warn_manager::WarnPriority::high
             );
-            return CSR_Algo::SteadyState;
+            return CSR_Algo::Ultrarelativistic;
         }
         if (csr == "0")
         {

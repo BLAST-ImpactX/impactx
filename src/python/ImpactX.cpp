@@ -281,11 +281,11 @@ void init_ImpactX (py::module& m)
                     if (std::get<bool>(csr_v)) {
                         // TODO: boolean True is deprecated, remove some time after
                         py::warnings::warn(
-                            "sim.csr = True is deprecated, please use space_charge = \"SteadyState\"",
+                            "sim.csr = True is deprecated, please use space_charge = \"Ultrarelativistic\"",
                             PyExc_DeprecationWarning,
                             2
                         );
-                        pp_algo.add("csr", std::string("SteadyState"));
+                        pp_algo.add("csr", std::string("Ultrarelativistic"));
                     } else {
                         // map boolean False to "false" / off
                         pp_algo.add("csr", std::string("false"));
@@ -295,7 +295,7 @@ void init_ImpactX (py::module& m)
                 {
                     std::string const csr = std::get<std::string>(csr_v);
                     if (csr != "false" && csr != "Ultrarelativistic" && csr != "SteadyState") {
-                        throw std::runtime_error("CSR model must be ultrarelativistic or steady-state but is: " + csr);
+                        throw std::runtime_error("CSR model must be false or ultrarelativistic or steady-state but is: " + csr);
                     }
                     amrex::ParmParse pp_algo("algo");
                     pp_algo.add("csr", csr);

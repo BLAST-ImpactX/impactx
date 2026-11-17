@@ -127,13 +127,12 @@ namespace impactx
             );
         }
 
-        bool csr = false;
-        pp_algo.query("csr", csr);
+        auto csr = get_csr_algo();
         if (verbose > 0)
         {
-            amrex::Print() << " CSR effects: " << csr << "\n";
+            amrex::Print() << " CSR effects: " << to_string(csr) << "\n";
         }
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!csr, "CSR effects are not yet implemented for envelope tracking.");
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!(csr == CSR_Algo::False), "CSR effects are not yet implemented for envelope tracking.");
 
         bool short_range_wakefields = false;
         pp_algo.query("short_range_wakefields", short_range_wakefields);

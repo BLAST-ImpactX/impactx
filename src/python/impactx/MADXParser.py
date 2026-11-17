@@ -2172,6 +2172,7 @@ class MADXParser:
         """
         # Parse sequence-level attributes (L=..., REFER=..., etc.)
         refer = "centre"  # MAD-X default
+        length = None
 
         while self._current().type == TokenType.COMMA:
             self._advance()
@@ -2186,9 +2187,22 @@ class MADXParser:
                         refer = self._advance().value.lower()
                     else:
                         self._parse_expression()  # consume unexpected form
+                elif attr_name == "l":
+                    length = self.context.evaluate(self._parse_expression())
                 else:
                     self._parse_expression()  # consume but discard
             # else: boolean flag, ignore
+
+        # MAD-X places elements by their entry or exit only for ENTRY and EXIT, else
+        # by their centre (mad_seq.c, enter_sequence), e.g., for the spelling CENTER.
+        # Any other value is likely a typo that would shift every element: an error.
+        if refer == "center":
+            refer = "centre"
+        if refer not in ("centre", "entry", "exit"):
+            raise self._error(
+                f"SEQUENCE '{name}': unknown REFER={refer}, use CENTRE, ENTRY or EXIT "
+                "(MAD-X would place the elements by their centre)."
+            )
 
         self._expect(TokenType.SEMICOLON)
 
@@ -2314,6 +2328,24 @@ class MADXParser:
 
             elements.append({"name": elem_name, "multiplier": 1, "reversed": False})
             cursor = center_pos + elem_len / 2.0
+
+        # MAD-X ends a sequence at its length L, with a drift from the last element
+        # (mad_seq.c: the $end marker at L in enter_sequence, and add_drifts)
+        if length is not None:
+            gap = length - cursor
+            if gap > 1e-15:
+                drift_name = f"_drift_{name}_{len(elements)}"
+                self.context.elements[drift_name] = Element(
+                    drift_name, "drift", {"l": gap}
+                )
+                elements.append(
+                    {"name": drift_name, "multiplier": 1, "reversed": False}
+                )
+            elif gap < -1e-10:
+                self._warn(
+                    f"SEQUENCE '{name}': elements extend {-gap:.6g} m beyond its "
+                    f"length L={length}"
+                )
 
         line = Line(name, elements)
         self.context.lines[name] = line
@@ -2851,11 +2883,21 @@ class MADXParser:
             OPTION, RBARC=true, THIN_FOC=false;
             OPTION, ECHO;
             OPTION, -WARN;
+            OPTION, -INFO -DEBUG;
+
+        As in MAD-X, options need no comma between them: its command scanner
+        (mad_cmdin.c, scan_in_cmd) skips commas instead of requiring them.
         """
         self._advance()  # skip 'option'
 
-        while self._current().type == TokenType.COMMA:
-            self._advance()
+        first = True
+        while self._current().type == TokenType.COMMA or (
+            not first
+            and self._current().type in (TokenType.MINUS, TokenType.IDENTIFIER)
+        ):
+            first = False
+            if self._current().type == TokenType.COMMA:
+                self._advance()
 
             negate = False
             if self._current().type == TokenType.MINUS:

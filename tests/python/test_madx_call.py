@@ -380,7 +380,7 @@ USE, SEQUENCE=CELL;
 
 
 def test_sequence_refer_and_drifts():
-    """Test SEQUENCE with REFER=ENTRY and automatic drift insertion."""
+    """Test SEQUENCE with REFER=ENTRY and automatic drift insertion, up to L."""
     parser = MADXParser()
     parser.parse_string(
         """\
@@ -396,12 +396,57 @@ USE, SEQUENCE=RING;
     )
     beamline = parser.getBeamline()
     types = [e["type"] for e in beamline]
-    # With REFER=ENTRY: QF entry at 0.0 (exit 0.5), gap 1.5, QD entry at 2.0 (exit 2.5)
-    # Expect: QF, drift(1.5m), QD
-    assert types == ["quadrupole", "drift", "quadrupole"]
+    # With REFER=ENTRY: QF entry at 0.0 (exit 0.5), gap 1.5, QD entry at 2.0 (exit 2.5),
+    # then a drift to L=4.0
+    # Expect: QF, drift(1.5m), QD, drift(1.5m)
+    assert types == ["quadrupole", "drift", "quadrupole", "drift"]
     assert beamline[0]["k1"] == 1.0
     assert beamline[2]["k1"] == -1.0
     assert abs(beamline[1]["l"] - 1.5) < 1e-12
+    assert abs(beamline[3]["l"] - 1.5) < 1e-12
+
+
+@pytest.mark.parametrize(
+    "refer, before",
+    [("CENTRE", 0.75), ("CENTER", 0.75), ("ENTRY", 1.0), ("EXIT", 0.5)],
+)
+def test_sequence_refer_matches_madx(refer, before):
+    """REFER as in MAD-X 5.09.03: CENTER is CENTRE, and a drift fills the sequence to L"""
+    parser = MADXParser()
+    parser.parse_string(
+        f"""\
+BEAM, PARTICLE=PROTON, ENERGY=2.0;
+QF: QUADRUPOLE, L=0.5, K1=0.1;
+RING: SEQUENCE, L=4.0, REFER={refer};
+    QF, AT=1.0;
+ENDSEQUENCE;
+USE, SEQUENCE=RING;
+"""
+    )
+    # the lengths of MAD-X's TWISS table: DRIFT_0, QF, DRIFT_1
+    lengths = [e["l"] for e in parser.getBeamline()]
+    assert lengths == pytest.approx([before, 0.5, 3.5 - before], abs=1e-12)
+
+
+def test_sequence_refer_typo_raises():
+    """An unknown REFER, which MAD-X reads as CENTRE, is likely a typo"""
+    with pytest.raises(MADXInputError, match="REFER=entery"):
+        MADXParser().parse_string(
+            "QF: QUADRUPOLE, L=0.5, K1=0.1;\n"
+            "RING: SEQUENCE, L=4.0, REFER=ENTERY;\nQF, AT=1.0;\nENDSEQUENCE;\n"
+        )
+
+
+def test_option_flags_without_commas():
+    """MAD-X reads options that follow each other without a comma"""
+    parser = MADXParser()
+    parser.parse_string("OPTION, -ECHO, WARN, -INFO -DEBUG, RBARC=FALSE THIN_FOC;\n")
+    assert parser.getOption("echo") == 0.0
+    assert parser.getOption("warn") == 1.0
+    assert parser.getOption("info") == 0.0
+    assert parser.getOption("debug") == 0.0
+    assert parser.getOption("rbarc") == 0.0
+    assert parser.getOption("thin_foc") == 1.0
 
 
 def test_multiple_beam_commands():

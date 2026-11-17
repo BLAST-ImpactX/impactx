@@ -68,6 +68,8 @@ macro(find_ablastr)
         set(WarpX_APP OFF CACHE BOOL "" FORCE)
         set(WarpX_LIB OFF CACHE BOOL "" FORCE)
         set(WarpX_QED OFF CACHE BOOL "" FORCE)
+        # in situ visualization: AMReX wraps the particle data in Conduit nodes
+        set(WarpX_ASCENT ${ImpactX_ASCENT} CACHE INTERNAL "" FORCE)
         set(WarpX_COMPUTE ${ImpactX_COMPUTE} CACHE INTERNAL "" FORCE)
         set(WarpX_SIMD ${ImpactX_SIMD} CACHE INTERNAL "" FORCE)
         set(WarpX_DIMS 3 CACHE INTERNAL "" FORCE)

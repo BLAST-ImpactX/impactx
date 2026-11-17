@@ -1163,7 +1163,7 @@ def _lattice_init(self, elements=None):
 
 def register_KnownElementsList_extension(kel):
     """KnownElementsList helper methods"""
-    from ..plot.Survey import plot_survey
+    from ..plot.Survey import plot_survey, survey
 
     # Construction from an iterable of elements; see _lattice_init.
     global _lattice_init_cxx
@@ -1174,6 +1174,7 @@ def register_KnownElementsList_extension(kel):
     kel.from_pals = from_pals
     kel.load_file = load_file
     kel.plot_survey = plot_survey
+    kel.survey = survey
 
     # Serialization methods
     kel.to_dicts = to_dicts

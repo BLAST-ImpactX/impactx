@@ -102,6 +102,14 @@ void init_Config (py::module& m)
                 gpu_backend,
                 "GPU backend ('CUDA', 'HIP' or 'SYCL'), None without GPU support"}},
 
+            {"have_ascent", {
+#ifdef AMREX_USE_ASCENT
+                true,
+#else
+                false,
+#endif
+                "Build supports Ascent in situ visualization"}},
+
             {"have_fft", {
 #ifdef ImpactX_USE_FFT
                 true,

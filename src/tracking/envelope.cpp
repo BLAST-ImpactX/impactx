@@ -132,7 +132,13 @@ namespace impactx
         {
             amrex::Print() << " CSR effects: " << to_string(csr) << "\n";
         }
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(!(csr == CSR_Algo::False), "CSR effects are not yet implemented for envelope tracking.");
+        if (csr != CSR_Algo::False)
+        {
+            throw std::runtime_error(
+                "CSR effects are not yet implemented for envelope tracking. "
+                "Please set the csr option to false."
+            );
+        }
 
         bool short_range_wakefields = false;
         pp_algo.query("short_range_wakefields", short_range_wakefields);

@@ -115,7 +115,7 @@ namespace impactx::particles::wakefields
         amrex::Real const argument = (zeta > 1000_rt) ? 2_rt / (3_rt * zeta) : -3_rt*zeta + radical;
         amrex::Real const cube_root = std::pow(argument, one_third);
         amrex::Real result = 2_rt * std::pow(2_rt,one_third) / cube_root - std::pow(2_rt,two_thirds) * cube_root;
-     
+
         return result;
      }
 

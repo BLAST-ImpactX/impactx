@@ -35,6 +35,9 @@ from .extensions.KnownElementsList import (
 from .extensions.ImpactXParticleContainer import (
     register_ImpactXParticleContainer_extension,
 )
+from .extensions.InSitu import (
+    register_InSitu_extension,
+)
 from .extensions.RFCavity import (
     register_RFCavity_extension,
 )
@@ -63,6 +66,9 @@ RefPart.load_file = read_beam  # noqa
 
 # Pure Python extensions to ImpactX types
 register_ImpactXParticleContainer_extension(impactx_pybind.ImpactXParticleContainer)
+register_InSitu_extension(
+    impactx_pybind.insitu, impactx_pybind.ImpactXParticleContainer
+)
 
 # Alternative constructors from raw field data
 register_RFCavity_extension(impactx_pybind.elements.RFCavity)

@@ -78,6 +78,28 @@ You can run the following script to visualize the beam evolution over time:
    FODO transversal beam width and phase space evolution
 
 
+In Situ Visualization
+---------------------
+
+The beam can also be visualized while it is tracked, with :ref:`Ascent <dataanalysis-insitu>`.
+This needs ImpactX built with ``-DImpactX_ASCENT=ON``.
+The following script animates the phase space projections, with one frame after each element, and renders the beam in 3D at the end.
+
+.. dropdown:: Script ``run_fodo_ascent.py``
+
+   .. literalinclude:: run_fodo_ascent.py
+      :language: python3
+      :caption: You can copy this file from ``examples/fodo/run_fodo_ascent.py``.
+
+We run the following script to check the visualization output:
+
+.. dropdown:: Script ``analysis_fodo_ascent.py``
+
+   .. literalinclude:: analysis_fodo_ascent.py
+      :language: python3
+      :caption: You can copy this file from ``examples/fodo/analysis_fodo_ascent.py``.
+
+
 .. _examples-fodo-envelope:
 
 FODO Cell Using Envelope Tracking

@@ -51,6 +51,7 @@ impactx_set_default_install_dirs()
 #
 include(CMakeDependentOption)
 option(ImpactX_APP           "Build the ImpactX executable application"     ON)
+option(ImpactX_ASCENT        "Ascent in situ visualization"                 OFF)
 option(ImpactX_FASTMATH      "Enable fast-math optimizations"               OFF)
 option(ImpactX_FFT           "FFT-based solvers (IGF Space Charge, CSR)"    OFF)
 option(ImpactX_MPI           "Multi-node support (message-passing)"         ON)

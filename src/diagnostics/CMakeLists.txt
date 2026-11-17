@@ -4,5 +4,6 @@ target_sources(lib
     DiagnosticOutput.cpp
     EmittanceInvariants.cpp
     FilePrefix.cpp
+    InSitu.cpp
     LinearMap.cpp
 )

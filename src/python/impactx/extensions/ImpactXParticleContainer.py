@@ -52,7 +52,6 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
 
     import matplotlib.pyplot as plt
     import numpy as np
-    from quantiphy import Quantity
 
     # Beam Characteristics
     rbc = self.beam_moments()
@@ -176,6 +175,45 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
             ],
         )
 
+    # Matplotlib canvas
+    fig = plt.figure(figsize=(16, 4), constrained_layout=True)
+    fig.canvas.manager.set_window_title("Phase Space")
+    _draw_phasespace(
+        fig,
+        rbc,
+        hist_label,
+        (xpx, x_edges, px_edges),
+        (ypy, y_edges, py_edges),
+        (tpt, t_edges, pt_edges),
+    )
+
+    return fig
+
+
+def _draw_phasespace(fig, rbc, hist_label, hist_x, hist_y, hist_t):
+    """
+    Draw the longitudinal and transverse phase space projections into a figure.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        An empty figure.
+    rbc : dict
+        The beam moments, e.g., from ``beam_moments()``.
+    hist_label : str
+        Label of the color bars.
+    hist_x, hist_y, hist_t : tuple
+        Per plane, the 2D histogram (rows along the position, columns along the
+        momentum), the bin edges of the position in mm and of the momentum in
+        mrad (in units of p0*c for t).
+    """
+    import numpy as np
+    from quantiphy import Quantity
+
+    xpx, x_edges, px_edges = hist_x
+    ypy, y_edges, py_edges = hist_y
+    tpt, t_edges, pt_edges = hist_t
+
     # histograms per axis
     x = np.sum(xpx, axis=1)
     px = np.sum(xpx, axis=0)
@@ -184,8 +222,8 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     t = np.sum(tpt, axis=1)
     pt = np.sum(tpt, axis=0)
 
-    # Matplotlib canvas: figure and plottable axes areas
-    fig, axes = plt.subplots(1, 3, figsize=(16, 4), constrained_layout=True)
+    # plottable axes areas
+    axes = fig.subplots(1, 3)
     (ax_xpx, ax_ypy, ax_tpt) = axes
 
     #   projected axes
@@ -255,7 +293,6 @@ def ix_pc_plot_mpl_phasespace(self, num_bins=50, root_rank=0):
     set_limits(t, pt, t_edges, pt_edges, ax_t, ax_pt, ax_tpt)
 
     # Annotations
-    fig.canvas.manager.set_window_title("Phase Space")
     ax_xpx.set_xlabel(r"$\Delta x$ [mm]")
     ax_xpx.set_ylabel(r"$\Delta p_x$ [mrad]")
     cbar_xpx.set_label(hist_label)

@@ -171,6 +171,13 @@ void init_impactxparticlecontainer(py::module& m)
              "Calculate beam moments at current ``s`` like the position and momentum moments of the particle "
              "distribution, as well as emittance and Twiss parameters."
         )
+        .def("covariance_matrix",
+             [](ImpactXParticleContainer const & pc) {
+                 return diagnostics::covariance_matrix(pc);
+             },
+             "Calculate the 6x6 covariance matrix of the phase space coordinates "
+             "x, px, y, py, t, pt at current ``s``, as used in envelope tracking."
+        )
         .def("beam_moments_history_list",
              [](ImpactXParticleContainer & pc) {
                  return pc.beam_moments_history();

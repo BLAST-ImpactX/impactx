@@ -212,7 +212,7 @@ namespace impactx::particles::wakefields
                     amrex::Real *const dptr_wake_function = wake_function.data();
                     auto const dR = *rc;  // for NVCC capture; set, since CSR applies
                     amrex::Real const gamma = particle_container.GetRefParticle().gamma();
-                    amrex::Real const charge_factor = particle_container.GetRefParticle().charge_qe() 
+                    amrex::Real const charge_factor = particle_container.GetRefParticle().charge_qe()
                                  / ablastr::constant::SI::q_e;
 
                     // Trapezoidal rule over each bin ahead of an edge: bin j lies between the

@@ -160,7 +160,7 @@ namespace impactx::particles::wakefields
             // same length.
             amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield(num_edges, 0.0);
             if (amrex::ParallelDescriptor::IOProcessor()) {
-                if (csr == CSR_Algo::Ultrarelativistic){
+                if (apply_csr && csr == CSR_Algo::Ultrarelativistic){
                     // Slopes of the charge density at the bin edges, with zero charge density below
                     // bin_min: edge k lies between bin k-1 and bin k, edge 0 is the rising edge of bin 0
                     // The CSR wake function is the one between two elementary charges: the force
@@ -200,7 +200,7 @@ namespace impactx::particles::wakefields
                     // Call convolution function
                     convolved_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
                 }
-                if (csr == CSR_Algo::SteadyState){
+                if (apply_csr && csr == CSR_Algo::SteadyState){
                     // Construct wake function on 2N support: it only acts on trailing particles,
                     // so the upper half, for negative separations, stays zero
 

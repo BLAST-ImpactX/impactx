@@ -115,22 +115,22 @@ namespace impactx
                [](unsigned char c){ return std::tolower(c); });
         if (csr == "1" || csr_lower == "true" || csr_lower == "on")
         {
-            ablastr::warn_manager::WMRecordWarning(
+            /* ablastr::warn_manager::WMRecordWarning(
                 "algo.csr",
                 "The option algo.csr = true is deprecated and will be removed in a future version of ImpactX. "
                 "Please use algo.csr = Ultrarelativistic instead.",
                 ablastr::warn_manager::WarnPriority::medium
-            );
+            ); */
             return CSR_Algo::Ultrarelativistic;
         }
         if (csr == "0")
         {
-            ablastr::warn_manager::WMRecordWarning(
+            /* ablastr::warn_manager::WMRecordWarning(
                 "algo.csr",
                 "The option algo.csr = 0 is deprecated and will be removed in a future version of ImpactX. "
                 "Please use algo.csr = false instead.",
                 ablastr::warn_manager::WarnPriority::medium
-            );
+            ); */
             return CSR_Algo::False;
         }
 

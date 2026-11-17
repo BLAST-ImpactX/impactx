@@ -100,9 +100,24 @@ namespace impactx::particles::wakefields
      * @param[in] zeta scaled separation between source and test particle [dimensionless]
      * @return root u
      */
+    AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     amrex::Real u_csr_root_caseB (
         amrex::Real zeta
-    );
+    )
+    {
+        using namespace amrex::literals;
+        using amrex::Math::powi;
+
+        amrex::Real const radical = std::sqrt(4_rt + 9_rt * powi<2>(zeta));
+        amrex::Real const one_third = 1_rt / 3_rt;
+        amrex::Real const two_thirds = 2_rt / 3_rt;
+        // Asymptotic expansion is used here for the case of large zeta, to avoid loss of precision resulting in NaN in the cube root.
+        amrex::Real const argument = (zeta > 1000_rt) ? 2_rt / (3_rt * zeta) : -3_rt*zeta + radical;
+        amrex::Real const cube_root = std::pow(argument, one_third);
+        amrex::Real result = 2_rt * std::pow(2_rt,one_third) / cube_root - std::pow(2_rt,two_thirds) * cube_root;
+     
+        return result;
+     }
 
     /** Interpolated User-Defined Wake Function
      *

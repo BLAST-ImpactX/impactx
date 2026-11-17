@@ -119,7 +119,7 @@ namespace impactx
                 "algo.csr",
                 "The option algo.csr = true is deprecated and will be removed in a future version of ImpactX. "
                 "Please use algo.csr = Ultrarelativistic instead.",
-                ablastr::warn_manager::WarnPriority::high
+                ablastr::warn_manager::WarnPriority::medium
             );
             return CSR_Algo::Ultrarelativistic;
         }
@@ -129,7 +129,7 @@ namespace impactx
                 "algo.csr",
                 "The option algo.csr = 0 is deprecated and will be removed in a future version of ImpactX. "
                 "Please use algo.csr = false instead.",
-                ablastr::warn_manager::WarnPriority::high
+                ablastr::warn_manager::WarnPriority::medium
             );
             return CSR_Algo::False;
         }

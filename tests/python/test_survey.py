@@ -549,3 +549,44 @@ def test_survey_wires_camera():
     # the whole cage, in the lab frame: wherever the camera is
     assert len(geometry._wires[1]) == num_cells
     sim.finalize()
+
+
+def test_element_color_palettes():
+    """FNAL Booster palette: dipoles blue, quadrupoles red, sextupoles yellow and
+    combined-function magnets green; other elements in other colors"""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import to_rgb
+
+    from impactx.plot.ElementColors import get_element_color, get_element_color_palette
+
+    def color(kind):
+        return to_rgb(get_element_color(kind, palette="fnal-booster"))
+
+    magnets = {
+        "tab:blue": ("Sbend", "ExactSbend", "ThinDipole"),
+        "tab:red": ("Quad", "ChrQuad", "ExactQuad", "SoftQuadrupole", "QuadEdge"),
+        "gold": ("Multipole", "ExactMultipole"),
+        "tab:green": ("CFbend", "ExactCFbend"),
+    }
+    for rgb, kinds in magnets.items():
+        for kind in kinds:
+            assert color(kind) == to_rgb(rgb), kind
+    taken = {to_rgb(rgb) for rgb in magnets}
+    for kind in ("ConstF", "ChrPlasmaLens", "SoftSolenoid", "TaperedPL", "RFCavity"):
+        assert color(kind) not in taken, kind
+
+    # plain color names for other plotting libraries
+    plain = get_element_color_palette("fnal-booster", plot_library="vuetify")
+    assert plain["Sbend"] == "blue"
+    assert plain["Multipole"] == "gold"
+    with pytest.raises(ValueError, match="Unknown palette"):
+        get_element_color("Quad", palette="slac-linac")
+
+    # the survey over s
+    sim = make_sim(0)
+    ax = pipes_lattice().plot_survey(sim.beam.ref, palette="fnal-booster")
+    plt.close(ax.figure)
+    sim.finalize()

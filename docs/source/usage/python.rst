@@ -1779,7 +1779,7 @@ This module provides elements and methods for the accelerator lattice.
       :param ax: A plotting area in matplotlib (called axes there).
       :param legend: Plot a legend if true.
       :param legend_ncols: Number of columns for lattice element types in the legend.
-      :param palette: Color palette of the elements.
+      :param palette: Color palette of the elements: ``"cern-lhc"``, or ``"fnal-booster"`` with dipoles blue, quadrupoles red, sextupoles (multipoles) yellow and combined-function magnets green.
       :param str projection: ``"s"``: the elements over s; ``"3D"``: rendered with Ascent.
       :param beam: for ``projection="3D"``, the particle beam, at a slice boundary of the lattice
       :param element: for ``projection="3D"``, the element of this lattice, or its index, that the beam is in or has just passed, see :py:meth:`survey`

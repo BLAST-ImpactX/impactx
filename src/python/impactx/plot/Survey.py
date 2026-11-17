@@ -343,7 +343,9 @@ def plot_survey(
     legend_ncols: int
         Number of columns for lattice element types in the legend.
     palette: string
-        Color palette.
+        Color palette of the elements: ``"cern-lhc"``, or ``"fnal-booster"`` with
+        dipoles blue, quadrupoles red, sextupoles (multipoles) yellow and
+        combined-function magnets green.
     projection : str
         ``"s"``: the elements over s. ``"3D"``: rendered with Ascent.
     beam : ImpactXParticleContainer, optional

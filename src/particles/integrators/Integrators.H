@@ -216,16 +216,19 @@ namespace impactx::integrators
     *  USPAS lecture notes, 2009.
     *
     * @param particle  Particle phase space data in a 6-vector
+    * @param state  Element-defined data passed to every map, e.g., to reuse values
+    *               from one map in the next
     * @param zin  Initial value of independent variable (z-location)
     * @param zout  Final value of independent variable (z-location)
     * @param nsteps  Number of integration steps
     * @param refpart  Reference particle data
     * @param element  Element defining the maps associated with H_1, H_2, H_3
     */
-    template <typename T_Real, typename T_Element>
+    template <typename T_Real, typename T_State, typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
     void symp2_integrate_split3_particle (
         amrex::SmallVector<T_Real, 6, 1> & particle,
+        T_State & state,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,
@@ -247,11 +250,11 @@ namespace impactx::integrators
         // loop over integration steps
         for(int j=0; j < nsteps; ++j)
         {
-            element.map1(tau1,particle,zeval,refpart);
-            element.map2(tau2,particle,zeval,refpart);
-            element.map3(tau3,particle,zeval,refpart);
-            element.map2(tau2,particle,zeval,refpart);
-            element.map1(tau1,particle,zeval,refpart);
+            element.map1(tau1,particle,state,zeval,refpart);
+            element.map2(tau2,particle,state,zeval,refpart);
+            element.map3(tau3,particle,state,zeval,refpart);
+            element.map2(tau2,particle,state,zeval,refpart);
+            element.map1(tau1,particle,state,zeval,refpart);
         }
     }
 

@@ -202,6 +202,19 @@ namespace impactx::elements
 
         }
 
+        /** Values that the integration maps share within the push of one particle
+         *
+         * No map changes pt, so delta1 is the same in all of them. The field is evaluated
+         * once per location: map1 updates it when it advances zeval, map2 and map3 read it.
+         */
+        template<typename T_Real>
+        struct PushState
+        {
+            T_Real delta1; //! particle momentum deviation delta + 1
+            amrex::ParticleReal bzp; //! z-derivative of the on-axis gradient profile at zeval
+            amrex::ParticleReal bzint; //! integral of the on-axis gradient profile at zeval
+        };
+
         /** This is a soft-edge quadrupole functor, so that a variable of this type can be used
          *  like a soft-edge quadrupole function.
          *
@@ -231,6 +244,8 @@ namespace impactx::elements
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using namespace std; // for cmath(float)
+            using amrex::Math::powi;
 
             // numerical integration parameters
             amrex::ParticleReal const s = refpart.s;
@@ -244,16 +259,28 @@ namespace impactx::elements
                 x, px, y, py, t, pt
             };
 
+            // values shared by the integration maps, with the field at zin
+            auto const [bz_in, bzp_in, bzpp_in, bzint_in] = ChrQuad_Bfield(zin);
+            amrex::ignore_unused(bz_in, bzpp_in);
+            PushState<T_Real> state{
+                sqrt(1_prt - 2_prt * pt / m_beta + powi<2>(pt)),
+                bzp_in,
+                bzint_in
+            };
+
             // convert from canonical to mechanical momenta
-            auto [Axin, Ayin] = vector_potential_transverse(particle(1),particle(3),zin);
+            auto [Axin, Ayin] = vector_potential_transverse(particle(1),particle(3),bzp_in);
             particle(2) -= Axin;
             particle(4) -= Ayin;
 
             // currently second-order integration is supported
-            integrators::symp2_integrate_split3_particle(particle,zin,zout,nsteps,refpart,*this);
+            integrators::symp2_integrate_split3_particle(
+                particle,state,zin,zout,nsteps,refpart,*this);
 
             // convert from mechanical to canonical momenta
-            auto [Axout, Ayout] = vector_potential_transverse(particle(1),particle(3),zout);
+            auto const [bz_out, bzp_out, bzpp_out, bzint_out] = ChrQuad_Bfield(zout);
+            amrex::ignore_unused(bz_out, bzpp_out, bzint_out);
+            auto [Axout, Ayout] = vector_potential_transverse(particle(1),particle(3),bzp_out);
             particle(2) += Axout;
             particle(4) += Ayout;
 
@@ -266,17 +293,21 @@ namespace impactx::elements
             pt = particle(6);
         }
 
+        /** Transverse components of the vector potential
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param bzp z-derivative of the on-axis gradient profile at the location of evaluation
+         * @return Ax, Ay
+         */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         std::tuple<T_Real, T_Real>
-        vector_potential_transverse (T_Real & x, T_Real & y, amrex::ParticleReal z) const
+        vector_potential_transverse (T_Real & x, T_Real & y, amrex::ParticleReal bzp) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
-
-            auto [bz, bzp, bzpp, bzint] = ChrQuad_Bfield(z);
-            amrex::ignore_unused(bz, bzpp);
 
             T_Real Ax = 0.25_prt * (powi<3>(x) - x*powi<2>(y)) * m_g * bzp;
             T_Real Ay = 0.25_prt * (powi<2>(x)*y - powi<3>(y)) * m_g * bzp;
@@ -291,13 +322,15 @@ namespace impactx::elements
          *
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
+         * @param[in,out] state delta1, and the field at zeval
          * @param[in,out] zeval Longitudinal on-axis location in m
-         * @param[in] refpart reference particle
+         * @param[in] refpart reference particle (unused)
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map1 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
+                   PushState<T_Real> & state,
                    amrex::ParticleReal & zeval,
                    [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
@@ -319,20 +352,22 @@ namespace impactx::elements
             T_Real tout = t;
             T_Real ptout = pt;
 
-            // compute particle momentum deviation delta + 1
-            T_Real const delta1 = sqrt(1_prt - 2_prt * pt / m_beta + powi<2>(pt));
+            // particle momentum deviation delta + 1
+            T_Real const delta1 = state.delta1;
 
             // compute the required quad field gradient values
 
             // at initial z location
-            auto [bz, bzp, bzpp, bzint] = ChrQuad_Bfield(zeval);
-            amrex::ignore_unused(bz, bzpp);
+            amrex::ParticleReal const bzp = state.bzp;
+            amrex::ParticleReal const bzint = state.bzint;
 
             zeval += tau;
 
             // at final z location
             auto [bz_f, bzp_f, bzpp_f, bzint_f] = ChrQuad_Bfield(zeval);
             amrex::ignore_unused(bz_f, bzpp_f);
+            state.bzp = bzp_f;
+            state.bzint = bzint_f;
 
             // map obtained from splitting of the paraxial Hamiltonian
 
@@ -363,14 +398,16 @@ namespace impactx::elements
          *
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
-         * @param[in,out] zeval Longitudinal on-axis location in m
-         * @param[in] refpart reference particle
+         * @param[in] state delta1, and the field at zeval
+         * @param zeval Longitudinal on-axis location in m (unused)
+         * @param[in] refpart reference particle (unused)
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map2 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   amrex::ParticleReal & zeval,
+                   PushState<T_Real> const & state,
+                   [[maybe_unused]] amrex::ParticleReal const & zeval,
                    [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -391,12 +428,11 @@ namespace impactx::elements
             T_Real tout = t;
             T_Real ptout = pt;
 
-            // compute particle momentum deviation delta + 1
-            T_Real const delta1 = sqrt(1_prt - 2_prt * pt / m_beta + powi<2>(pt));
+            // particle momentum deviation delta + 1
+            T_Real const delta1 = state.delta1;
 
-            // compute the required quad field gradient values
-            auto [bz, bzp, bzpp, bzint] = ChrQuad_Bfield(zeval);
-            amrex::ignore_unused(bz,bzint);
+            // the required quad field gradient values
+            amrex::ParticleReal const bzp = state.bzp;
 
             // map obtained from splitting of the paraxial Hamiltonian
             T_Real const Bzintx = 0.5_prt * powi<2>(x) * y * m_g * bzp;
@@ -418,8 +454,6 @@ namespace impactx::elements
             particle(4) = pyout;
             particle(5) = tout;
             particle(6) = ptout;
-
-            zeval += 0_prt;
         }
 
 
@@ -430,14 +464,16 @@ namespace impactx::elements
          *
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
-         * @param[in,out] zeval Longitudinal on-axis location in m
-         * @param[in] refpart reference particle
+         * @param[in] state delta1, and the field at zeval
+         * @param zeval Longitudinal on-axis location in m (unused)
+         * @param[in] refpart reference particle (unused)
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map3 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   amrex::ParticleReal & zeval,
+                   PushState<T_Real> const & state,
+                   [[maybe_unused]] amrex::ParticleReal const & zeval,
                    [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -458,12 +494,11 @@ namespace impactx::elements
             T_Real tout = t;
             T_Real ptout = pt;
 
-            // compute particle momentum deviation delta + 1
-            T_Real const delta1 = sqrt(1_prt - 2_prt * pt / m_beta + powi<2>(pt));
+            // particle momentum deviation delta + 1
+            T_Real const delta1 = state.delta1;
 
-            // compute the required quad field gradient values
-            auto [bz, bzp, bzpp, bzint] = ChrQuad_Bfield(zeval);
-            amrex::ignore_unused(bz,bzint);
+            // the required quad field gradient values
+            amrex::ParticleReal const bzp = state.bzp;
 
             // map obtained from splitting of the paraxial Hamiltonian
             T_Real const Bzinty = 0.5_prt * powi<2>(y) * x * m_g * bzp;
@@ -485,8 +520,6 @@ namespace impactx::elements
             particle(4) = pyout;
             particle(5) = tout;
             particle(6) = ptout;
-
-            zeval += 0_prt;
         }
 
 
@@ -559,6 +592,7 @@ namespace impactx::elements
         ChrQuad_Bfield (amrex::ParticleReal const zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
 
             // The coefficients were already resolved to the right execution space when
             // this pusher was prepared, so there is no host/device branch here and only
@@ -583,14 +617,17 @@ namespace impactx::elements
             bfieldint = z*bfield;
             for (int j=1; j < ncoef; ++j)
             {
-              bfield = bfield + cos_data[j] *std::cos(j * 2 * pi * z / zlen) +
-                      sin_data[j] *std::sin(j * 2 * pi * z / zlen);
-              bfieldp = bfieldp - j * 2 * pi * cos_data[j] *std::sin(j * 2 * pi * z / zlen) / zlen +
-                        j * 2 * pi * sin_data[j] *std::cos(j * 2 * pi * z / zlen) / zlen;
-              bfieldpp = bfieldpp - (j * 2 * pi / zlen) * (j * 2 * pi / zlen) * ( cos_data[j] *std::cos(j * 2 * pi * z / zlen) +
-                        - sin_data[j] *std::sin(j * 2 * pi * z / zlen) );
-              bfieldint = bfieldint + zlen * cos_data[j] *std::sin(j * 2 * pi * z / zlen) / (j * 2 * pi) -
-                          zlen * sin_data[j] *std::cos(j * 2 * pi * z / zlen) / (j * 2 * pi);
+                // all four sums use the cosine and sine of the same argument
+                auto const c = std::cos(j * 2 * pi * z / zlen);
+                auto const s = std::sin(j * 2 * pi * z / zlen);
+
+                bfield = bfield + cos_data[j] * c + sin_data[j] * s;
+                bfieldp = bfieldp - j * 2 * pi * cos_data[j] * s / zlen +
+                          j * 2 * pi * sin_data[j] * c / zlen;
+                bfieldpp = bfieldpp - powi<2>(j * 2 * pi / zlen) *
+                           (cos_data[j] * c - sin_data[j] * s);
+                bfieldint = bfieldint + zlen * cos_data[j] * s / (j * 2 * pi) -
+                            zlen * sin_data[j] * c / (j * 2 * pi);
             }
             return std::make_tuple(bfield, bfieldp, bfieldpp, bfieldint);
         }

@@ -1715,6 +1715,8 @@ describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coeffi
 ``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.  In this case, ``gscale``
 has units of inverse meters squared.
 
+Spin tracking in this element currently uses a model that is identical to the model used in ``quadrupole_softedge``.  A refinement of this model will be added.
+
 This element is defined via ``<quadrupole_softedge_chromatic_name>.type = quadrupole_softedge_chromatic`` and requires these additional parameters:
 
 .. pp:param:: <quadrupole_softedge_chromatic_name>.ds

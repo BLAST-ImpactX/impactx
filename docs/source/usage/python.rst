@@ -2869,6 +2869,8 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    When the latter is given, Fourier coefficients are computed automatically
    using :func:`impactx.fourier_coefficients`.
 
+   Spin tracking in this element currently uses a model that is identical to the model used in ``SoftQuadrupole``.  A refinement of this model will be added.
+
    The units used for the on-axis quadrupole gradient are the same as those used for the quadrupole strength ``k`` in the element Quad.  For example, if the values used to
    describe the on-axis profile (as specified in ``cos_coefficients``, ``sin_coefficients``, or ``gradient_on_axis``) attain a peak on-axis value of 1, then the parameter
    ``gscale``, which multiplies this profile, specifies the peak value of the quadrupole field gradient on-axis, divided by the magnetic rigidity.

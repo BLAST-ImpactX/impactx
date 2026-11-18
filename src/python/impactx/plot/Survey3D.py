@@ -75,6 +75,46 @@ def frames(df):
     return p, t, n, v
 
 
+def overview_axis(df):
+    """Direction in the x-z plane that points to the right in an overview of the lattice
+
+    This is the long axis of the orbit, along the net travel of the reference particle.
+    Without net travel along it, as in a ring, it follows the direction of motion at the
+    start of the lattice. Without a long axis, as in a ring of equal cells, it is that
+    direction of motion. The result depends on the orbit only, so that an overview stays
+    in place while the beam moves.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The survey of the lattice.
+
+    Returns
+    -------
+    numpy.ndarray
+        Unit vector (x, z).
+    """
+    import numpy as np
+
+    # relative: well above the roundoff of a survey, in single precision too
+    tolerance = 1.0e-3
+
+    p, t, _, _ = frames(df)
+    start = t[0, [0, 2]] / np.linalg.norm(t[0, [0, 2]])
+    xz = p[:, [0, 2]] - p[:, [0, 2]].mean(axis=0)
+    if np.allclose(xz, 0.0):
+        return start
+
+    singular, axes = np.linalg.svd(xz, full_matrices=False)[1:]
+    axis = axes[0] if singular[0] - singular[1] > tolerance * singular[0] else start
+
+    size = np.linalg.norm(xz, axis=1).max()
+    for forward in (axis @ (xz[-1] - xz[0]) / size, axis @ start, axis @ xz[0] / size):
+        if abs(forward) > tolerance:
+            return axis if forward > 0.0 else -axis
+    return axis
+
+
 def _closed(p, t, s):
     """Does the orbit close on itself, as in a ring?"""
     import numpy as np

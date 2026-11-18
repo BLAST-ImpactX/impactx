@@ -107,14 +107,13 @@ sim.lattice.extend([quad_lin])
 # run simulation
 sim.track_particles()
 
+# collective: gathers the particles of all ranks on the I/O rank
+io_rank = amr.ParallelDescriptor.IOProcessor()
+root_rank = amr.ParallelDescriptor.IOProcessorNumber()
 pc_lin_f = sim.particle_container()
-beam_lin_f = pc_lin_f.to_df()
-x_lin = beam_lin_f["position_x"].to_numpy()
-y_lin = beam_lin_f["position_y"].to_numpy()
-t_lin = beam_lin_f["position_t"].to_numpy()
-px_lin = beam_lin_f["momentum_x"].to_numpy()
-py_lin = beam_lin_f["momentum_y"].to_numpy()
-pt_lin = beam_lin_f["momentum_t"].to_numpy()
+beam_lin_f = pc_lin_f.to_df(local=False, root_rank=root_rank)
+if io_rank:
+    beam_lin_f = beam_lin_f.set_index("idcpu").sort_index()
 
 # set up second simulation
 sim.lattice.clear()
@@ -140,40 +139,43 @@ sim.lattice.extend([quad_chr])
 sim.track_particles()
 
 pc_chr_f = sim.particle_container()
-beam_chr_f = pc_chr_f.to_df()
-x_chr = beam_chr_f["position_x"].to_numpy()
-y_chr = beam_chr_f["position_y"].to_numpy()
-t_chr = beam_chr_f["position_t"].to_numpy()
-px_chr = beam_chr_f["momentum_x"].to_numpy()
-py_chr = beam_chr_f["momentum_y"].to_numpy()
-pt_chr = beam_chr_f["momentum_t"].to_numpy()
+beam_chr_f = pc_chr_f.to_df(local=False, root_rank=root_rank)
+if io_rank:
+    beam_chr_f = beam_chr_f.set_index("idcpu").sort_index()
 
 # clean shutdown
 sim.finalize()
 
-# norm of the difference in the final phase space 6-vector
-norm_phase_space_diff = np.sqrt(
-    (x_chr - x_lin) ** 2
-    + (px_chr - px_lin) ** 2
-    + (y_chr - y_lin) ** 2
-    + (py_chr - py_lin) ** 2
-    + (t_chr - t_lin) ** 2
-    + (pt_chr - pt_lin) ** 2
-)
+# analyze on the I/O rank, which holds all particles after the gather
+if io_rank:
+    # The particle ids of the second run continue after those of the first:
+    # compare the runs in id order (the order of scale_arr), not by id value.
+    phase_space = [
+        "position_x",
+        "momentum_x",
+        "position_y",
+        "momentum_y",
+        "position_t",
+        "momentum_t",
+    ]
+    diff = beam_chr_f[phase_space].to_numpy() - beam_lin_f[phase_space].to_numpy()
 
-m, b = np.polyfit(np.log(scale_arr), np.log(norm_phase_space_diff), deg=1)
-print(f"  slope={m}")
+    # norm of the difference in the final phase space 6-vector
+    norm_phase_space_diff = np.sqrt(np.sum(diff**2, axis=1))
 
-# Test for  quadratic scaling with initial phase space vector:
-rtol = 2.0e-2
-print(f"  rtol={rtol}")
-assert np.allclose(
-    [m],
-    [
-        2.0,
-    ],
-    rtol=rtol,
-)
+    m, b = np.polyfit(np.log(scale_arr), np.log(norm_phase_space_diff), deg=1)
+    print(f"  slope={m}")
+
+    # Test for  quadratic scaling with initial phase space vector:
+    rtol = 2.0e-2
+    print(f"  rtol={rtol}")
+    assert np.allclose(
+        [m],
+        [
+            2.0,
+        ],
+        rtol=rtol,
+    )
 
 # plt.plot(scale_arr, norm_phase_space_diff)
 

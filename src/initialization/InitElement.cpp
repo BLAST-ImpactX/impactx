@@ -397,7 +397,7 @@ namespace detail
             std::vector<amrex::ParticleReal> cos_coef = gz.default_cos_coef;
             std::vector<amrex::ParticleReal> sin_coef = gz.default_sin_coef;
             pp_element.getWithParser("gscale", gscale);
-            pp_element.queryAddWithParser("unit", unit);
+            pp_element.queryAddWithParser("units", unit);
             pp_element.queryAddWithParser("mapsteps", mapsteps);
             detail::queryAddResize(pp_element, "cos_coefficients", cos_coef);
             detail::queryAddResize(pp_element, "sin_coefficients", sin_coef);

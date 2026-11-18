@@ -11,7 +11,7 @@ However, ImpactX also supports several additional soft-edge element models.  The
 * **SoftQuadrupole** - soft-edge model of a quadrupole using on-axis field gradient data :math:`(z,\partial B_y(z)/\partial x)`
 * **ChrSoftQuadrupole** - chromatic (paraxial) soft-edge model of a quadrupole
 
-The latter is similar to **SoftQuadrupole**, except that the vector potential is expanded in :math:`(x,y)` through terms of degree 4, the Hamiltonian is expanded to second degree in the transverse mechanical momenta, while the nonlinear dependence on `p_t` (and therefore, energy) is retained.
+The latter is similar to **SoftQuadrupole**, except that the vector potential is expanded in :math:`(x,y)` through terms of degree 4, the Hamiltonian is expanded to second degree in the transverse mechanical momenta, while the nonlinear dependence on :math:`p_t` (and therefore, energy) is retained.
 
 For these elements, the user may specify the on-axis field or field gradient in one of two forms:
 

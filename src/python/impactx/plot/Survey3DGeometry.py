@@ -107,6 +107,17 @@ class Geometry:
     #: opaque elements: zero-length elements reach this far into the bore, relative to
     #: the element size: a collar, that does not share surfaces with its neighbors
     COLLAR = 0.04
+    #: opaque elements: thickness of zero-length elements, relative to the element size
+    THIN_OPAQUE = 0.2
+    #: opaque elements: zero-length elements that overlap along s cycle through variants,
+    #: so that their surfaces do not coincide: per variant, the relative decrease of their
+    #: thickness and collar and the relative increase of their width and height (from
+    #: the first one on), and, cut open, how far their cut lies above the one of the other
+    #: elements, relative to the element size
+    SLAB_VARIANTS = 4
+    SLAB_THINNER = 0.2
+    SLAB_WIDER = 0.05
+    SLAB_LIFT = 0.004
     #: an element reuses its mesh from the cache if its position and size changed by at
     #: most this much, relative to the element size, and its axes by at most this much
     CACHE_TOLERANCE = 1.0e-9
@@ -234,6 +245,11 @@ class Geometry:
                 self.THIN,
                 self.PIPE_WALL,
                 self.COLLAR,
+                self.THIN_OPAQUE,
+                self.SLAB_VARIANTS,
+                self.SLAB_THINNER,
+                self.SLAB_WIDER,
+                self.SLAB_LIFT,
                 self.LINER,
                 self.SEAM,
                 self.PINHOLE,
@@ -252,6 +268,8 @@ class Geometry:
             raise ValueError("survey 3D: the survey rows are not in lattice order.")
         first_rows = np.searchsorted(element, np.arange(len(lattice)), side="left")
         last_rows = np.searchsorted(element, np.arange(len(lattice)), side="right")
+        slab_s = None  # position of the last zero-length element
+        slab_variant = 0
         for index, el in enumerate(lattice):
             kind = _element_kind(el)
             # opaque elements with a bore: drifts are beam pipes
@@ -264,6 +282,7 @@ class Geometry:
             if kind in SKIP_KINDS and not pipe:
                 continue  # a zero-length drift
             rows = np.arange(first_rows[index], last_rows[index])
+            variant = 0
             if not zero_length:
                 # the row before the first slice is the entrance of the element
                 rows = _unique_positions(s, np.concatenate(([rows[0] - 1], rows)))
@@ -272,8 +291,23 @@ class Geometry:
             else:
                 # a zero-length element: a thin slab
                 r = rows[-1]
-                half = 0.5 * self.THIN * a
-                ends = np.array([p[r] - half * t[r], p[r] + half * t[r]])
+                thickness = self.THIN * a
+                lift = np.zeros(3)
+                if surfaces:
+                    # slabs that overlap differ: their surfaces must not coincide
+                    thickness = self.THIN_OPAQUE * a
+                    overlaps = slab_s is not None and s[r] - slab_s < thickness
+                    slab_variant = (
+                        (slab_variant + 1) % self.SLAB_VARIANTS if overlaps else 0
+                    )
+                    slab_s = s[r]
+                    variant = slab_variant
+                    thickness *= 1.0 - self.SLAB_THINNER * variant
+                    if cutaway:
+                        # above the common cut plane of all elements
+                        lift = (variant + 1) * self.SLAB_LIFT * a * v[r]
+                half = 0.5 * thickness
+                ends = lift + np.array([p[r] - half * t[r], p[r] + half * t[r]])
                 tt = np.array([t[r], t[r]])
                 nn = np.array([n[r], n[r]])
                 vv = np.array([v[r], v[r]])
@@ -283,13 +317,16 @@ class Geometry:
             hw, hh = (f * a for f in _cross_section(kind))
             hw = max(hw, radius + self.WALL * a)
             hh = max(hh, radius + self.WALL * a)
+            if zero_length and surfaces:
+                wider = 1.0 + self.SLAB_WIDER * (variant + 1)
+                hw, hh = wider * hw, wider * hh
             # the mesh: reused if position, axes, size and bore did not change
             lengths = np.concatenate((ends.ravel(), [radius, hw, hh]))
             axes = np.concatenate((tt.ravel(), nn.ravel(), vv.ravel()))
             cached = cache.get(index) if cache is not None else None
             if (
                 cached is not None
-                and cached[0] == (kind, pipe, zero_length)
+                and cached[0] == (kind, pipe, zero_length, variant)
                 and _unchanged(cached[1], lengths, self.CACHE_TOLERANCE * a)
                 and _unchanged(cached[2], axes, self.CACHE_TOLERANCE)
             ):
@@ -308,9 +345,11 @@ class Geometry:
                     surfaces=surfaces,
                     cutaway=cutaway,
                     zero_length=zero_length,
+                    variant=variant,
                 )
                 if cache is not None:
-                    cache[index] = ((kind, pipe, zero_length), lengths, axes, mesh)
+                    key = (kind, pipe, zero_length, variant)
+                    cache[index] = (key, lengths, axes, mesh)
             points, cells, lined, vertex_normals, wall, liner = mesh
             if liner > 0.0:
                 self._liner = liner
@@ -356,6 +395,7 @@ class Geometry:
         surfaces,
         cutaway,
         zero_length,
+        variant=0,
     ):
         """The mesh of an element: points, cells, lining and normal per point, the
         thinnest wall and the thickness of the lining (0 for none)"""
@@ -385,7 +425,7 @@ class Geometry:
             if bore is None:
                 radius = 0.0
             elif zero_length:
-                radius -= self.COLLAR * a
+                radius -= self.COLLAR * a * (1.0 - self.SLAB_THINNER * variant)
             points, cells, vertex_normals = _surface_patches(
                 ends,
                 tt,

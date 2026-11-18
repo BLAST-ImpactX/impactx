@@ -412,7 +412,8 @@ def test_survey_geometry_opaque():
     assert height.max() >= 0.99 * radius
     assert height.min() <= -0.99 * radius
     _, cut_height = local(cut._coords)
-    assert cut_height.max() <= 1.0e-9
+    # the cut of the zero-length element is a little above the others
+    assert cut_height.max() <= Geometry.SLAB_LIFT * a + 1.0e-9
     _, tunnel_height = local(tunnel._coords[~pipe])
     assert tunnel_height.max() >= 0.99 * radius
 
@@ -456,6 +457,44 @@ def test_survey_repeated_element():
         focused.survey(ref, element=drift)
     for index in (2, 4):
         focused.survey(ref, element=index)
+    sim.finalize()
+
+
+def test_survey_overlapping_slabs():
+    """Cut open zero-length elements that overlap have no coinciding surfaces"""
+    from impactx.plot.Survey3DGeometry import Geometry
+
+    sim = make_sim(0)
+    lattice = elements.KnownElementsList(
+        [
+            elements.Drift(name="d1", ds=0.5, nslice=2),
+            elements.Multipole(name="m", multipole=2, K_normal=0.0, K_skew=0.0),
+            elements.Kicker(name="k", xkick=0.0, ykick=0.0),
+            elements.Drift(name="d2", ds=0.5, nslice=2),
+        ]
+    )
+    a = 0.1
+    df = lattice.survey(sim.beam.ref)
+    g = Geometry(lattice, df, None, 0.0, 1.0, a, "cern-lhc", cutaway=True)
+
+    def extent(kind):
+        """Thickness along the straight orbit, full width, and height of the cut"""
+        points = g._coords[g._kinds == g.colors.index(g.legend[kind]) + 1]
+        size = points.max(axis=0) - points.min(axis=0)
+        return size[2], size[0], points[:, 1].max()
+
+    thin, wide, cut = (Geometry.THIN_OPAQUE, Geometry.SLAB_WIDER, Geometry.SLAB_LIFT)
+    half_width = 0.9 * a
+    expected = {
+        "Multipole": (thin * a, 2 * half_width * (1 + wide), cut * a),
+        "Kicker": (
+            thin * (1 - Geometry.SLAB_THINNER) * a,
+            2 * half_width * (1 + 2 * wide),
+            2 * cut * a,
+        ),
+    }
+    for kind, values in expected.items():
+        assert extent(kind) == pytest.approx(values, rel=1e-9), kind
     sim.finalize()
 
 

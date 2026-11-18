@@ -344,9 +344,9 @@ namespace impactx::elements
             amrex::ParticleReal y_scl = y / m_rc;
             amrex::ParticleReal ln_rho = std::log(rho);
 
-            // initialize the momentum kick
+            // initialize the momentum kick with the skew dipole (the normal dipole is in map 1)
             amrex::ParticleReal dpx = 0_prt;
-            amrex::ParticleReal dpy = 0_prt;
+            amrex::ParticleReal dpy = m_unit == 1 ? k_skew[0] / m_brho : k_skew[0];
 
             // loop over array of multipole coefficients
             for (int m = 1; m < m_ncoef; m++) {
@@ -363,10 +363,6 @@ namespace impactx::elements
 
                switch (n) {
 
-                  case 1:   // dipole-like contribution (not used - contributing to map 1)
-                     dpx += -rho * kn;
-                     dpy += ks;
-                     break;
                   case 2:   // quadrupole-like contribution
                      dpx += -rho*ln_rho*kn + y_scl*rho*ks;
                      dpy += y_scl*kn + 0.5_prt*(rho*rho - 1_prt)*ks;
@@ -385,7 +381,7 @@ namespace impactx::elements
                      dpx += -1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
                             + 3_prt*(-5_prt + 4_prt*powi<2>(rho) + powi<4>(rho))
                             +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
-                            +1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks;
+                            -1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks;
                      dpy += -1_prt/48_prt*y_scl*((-1_prt + rho*rho)*(4_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho)) + 12_prt*rho*rho*ln_rho)*kn
                             + 1_prt/192_prt*(3_prt + 8_prt*powi<4>(y_scl) + 12_prt*rho*rho
                             - 15_prt*powi<4>(rho) + 24_prt*y_scl*y_scl*(-1_prt + rho*rho)
@@ -507,7 +503,7 @@ namespace impactx::elements
                      By += -(-1_prt/192_prt*rho*(8_prt*powi<4>(y_scl) - 24_prt*powi<2>(y_scl)*(-1_prt + rho*rho)
                             + 3_prt*(-5_prt + 4_prt*powi<2>(rho) + powi<4>(rho))
                             +12_prt*(-1_prt + 4_prt*y_scl*y_scl - 2_prt*rho*rho)*ln_rho)*kn
-                            +1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks);
+                            -1_prt/12_prt*y_scl*rho*(3_prt*(-1_prt + rho*rho) + (2_prt*y_scl*y_scl - 3_prt*(1_prt + rho*rho))*ln_rho)*ks);
                      break;
                }
 

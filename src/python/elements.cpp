@@ -196,6 +196,27 @@ namespace
                 py::dict remaining;
                 for (auto const & item : overrides) { remaining[item.first] = item.second; }
 
+                // The periods of a repeated aperture mask are checked against its shape and
+                // against each other, so one assignment after the other could be refused
+                // on the way to a valid result. Lift the repetition of the copy first and
+                // set the final periods last, in one step: this checks the result only.
+                std::optional<py::tuple> repeat;
+                if constexpr (elements::mixin::has_repeated_mask_v<Element>)
+                {
+                    if (!remaining.empty())
+                    {
+                        auto const value_of = [&remaining, &copied](char const * key) {
+                            if (remaining.contains(key)) {
+                                return py::object(remaining.attr("pop")(key));
+                            }
+                            return py::object(copied.attr(key));
+                        };
+                        repeat = py::make_tuple(
+                            value_of("repeat_x"), value_of("repeat_y"), value_of("shift_odd_x"));
+                        copied.attr("set_repeat")(0.0, 0.0, false);
+                    }
+                }
+
                 // Parameters that only mean something as a pair are handed over together,
                 // the way the constructor takes them. Setting one and then the other would
                 // measure a new array against the one it is replacing.
@@ -255,6 +276,9 @@ namespace
                 {
                     py::setattr(copied, item.first, item.second);
                 }
+                if (repeat) {
+                    copied.attr("set_repeat")(*repeat.value());
+                }
                 return copied;
             },
             "Return a new element with the same configuration.\n\n"
@@ -266,7 +290,9 @@ namespace
             "    scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]\n\n"
             "Parameters that only mean something as a pair -- the cosine and sine\n"
             "coefficients, the normal and skew coefficients, the polygon vertices -- are\n"
-            "given together, as the constructor takes them."
+            "given together, as the constructor takes them. The periods of a repeated\n"
+            "aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set\n"
+            "together after all other parameters, so they are checked against the result."
         );
     }
 
@@ -443,6 +469,11 @@ namespace
             ret.insert(std::make_pair("aperture_x", el.aperture_x()));
             ret.insert(std::make_pair("aperture_y", el.aperture_y()));
         }
+        if constexpr (elements::mixin::has_repeated_mask_v<T_Element>) {
+            ret.insert(std::make_pair("repeat_x", el.repeat_x()));
+            ret.insert(std::make_pair("repeat_y", el.repeat_y()));
+            ret.insert(std::make_pair("shift_odd_x", el.shift_odd_x()));
+        }
 
         // properties specific to the element
         ((ret.insert(args)), ...);
@@ -553,6 +584,46 @@ void init_elements(py::module& m)
         )
     ;
 
+    py::class_<elements::mixin::RepeatedMask, py::smart_holder>(mx, "RepeatedMask")
+        .def_property("repeat_x",
+            [](elements::mixin::RepeatedMask & rm) { return rm.repeat_x(); },
+            [](elements::mixin::RepeatedMask & rm, amrex::ParticleReal repeat_x)
+            {
+                rm.set_repeat_x(repeat_x);
+            },
+            "horizontal period for repeated aperture masking in m; zero disables the repetition"
+        )
+        .def_property("repeat_y",
+            [](elements::mixin::RepeatedMask & rm) { return rm.repeat_y(); },
+            [](elements::mixin::RepeatedMask & rm, amrex::ParticleReal repeat_y)
+            {
+                rm.set_repeat_y(repeat_y);
+            },
+            "vertical period for repeated aperture masking in m; zero disables the repetition"
+        )
+        .def_property("shift_odd_x",
+            [](elements::mixin::RepeatedMask & rm) { return rm.shift_odd_x(); },
+            [](elements::mixin::RepeatedMask & rm, bool shift_odd_x)
+            {
+                rm.set_shift_odd_x(shift_odd_x);
+            },
+            "for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical "
+            "period by repeat_x / 2. Requires repeat_x and repeat_y. Use alignment offsets dx,dy "
+            "to move whole mask as needed."
+        )
+        .def("set_repeat",
+            [](elements::mixin::RepeatedMask & rm, amrex::ParticleReal repeat_x,
+               amrex::ParticleReal repeat_y, bool shift_odd_x)
+            {
+                rm.set_repeat(repeat_x, repeat_y, shift_odd_x);
+            },
+            py::arg("repeat_x"), py::arg("repeat_y"), py::arg("shift_odd_x"),
+            "Set the periods and the odd-row shift at once.\n\n"
+            "They are validated together and applied as one step, so a rejected update\n"
+            "leaves the element unchanged."
+        )
+    ;
+
     /* TODO
     py::class_<elements::mixin::LinearTransport>(mx, "LinearTransport")
         // type of map
@@ -591,6 +662,7 @@ void init_elements(py::module& m)
         )
         .def(py::init<std::string, std::string, std::string, int, bool, bool>(),
              py::arg("name"),
+             py::kw_only(),
              py::arg("backend") = diagnostics::BeamMonitor::DEFAULT_backend,
              py::arg("encoding") = diagnostics::BeamMonitor::DEFAULT_encoding,
              py::arg("period_sample_intervals") =
@@ -679,7 +751,7 @@ void init_elements(py::module& m)
 
     // beam optics
 
-    py::class_<Aperture, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment, py::smart_holder> py_Aperture(me, "Aperture");
+    py::class_<Aperture, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment, elements::mixin::RepeatedMask, py::smart_holder> py_Aperture(me, "Aperture");
     py_Aperture
         .def("__repr__",
              [](Aperture const & ap) {
@@ -697,10 +769,7 @@ void init_elements(py::module& m)
                     std::make_pair("shape", amrex::getEnumNameString(ap.m_shape)),
                     std::make_pair("action", amrex::getEnumNameString(ap.m_action)),
                     std::make_pair("aperture_x", ap.aperture_x()),
-                    std::make_pair("aperture_y", ap.aperture_y()),
-                    std::make_pair("repeat_x", ap.m_repeat_x),
-                    std::make_pair("repeat_y", ap.m_repeat_y),
-                    std::make_pair("shift_odd_x", ap.m_shift_odd_x)
+                    std::make_pair("aperture_y", ap.aperture_y())
                 );
             }
         )
@@ -722,6 +791,7 @@ void init_elements(py::module& m)
                  Aperture::Action const a = amrex::getEnum<Aperture::Action>(action);
                  return new Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, s, a, dx, dy, rotation_degree, name);
              }),
+             py::kw_only(),
              py::arg("aperture_x"),
              py::arg("aperture_y"),
              py::arg("repeat_x") = Aperture::DEFAULT_repeat_x,
@@ -767,22 +837,6 @@ void init_elements(py::module& m)
             [](Aperture & ap, amrex::ParticleReal aperture_y) { ap.set_aperture_y(aperture_y); },
             "maximum vertical coordinate in m; zero or less removes the vertical boundary"
         )
-        .def_property("repeat_x",
-            [](Aperture & ap) { return ap.m_repeat_x; },
-            [](Aperture & ap, amrex::ParticleReal repeat_x) { ap.m_repeat_x = repeat_x; },
-            "horizontal period for repeated aperture masking"
-        )
-        .def_property("repeat_y",
-            [](Aperture & ap) { return ap.m_repeat_y; },
-            [](Aperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
-            "vertical period for repeated aperture masking"
-        )
-        .def_property("shift_odd_x",
-            [](Aperture & ap) { return ap.m_shift_odd_x; },
-            [](Aperture & ap, bool shift_odd_x) { ap.m_shift_odd_x = shift_odd_x; },
-            "for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. "
-            "Use alignment offsets dx,dy to move whole mask as needed."
-        )
     ;
     register_push(py_Aperture);
     register_reverse(py_Aperture);
@@ -810,6 +864,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("dx") = ChrDrift::DEFAULT_dx,
              py::arg("dy") = ChrDrift::DEFAULT_dy,
@@ -856,6 +911,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k"),
              py::arg("unit") = ChrQuad::DEFAULT_unit,
@@ -914,6 +970,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k"),
              py::arg("unit") = ChrPlasmaLens::DEFAULT_unit,
@@ -973,6 +1030,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("ez"),
              py::arg("bz"),
@@ -1035,6 +1093,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("kx"),
              py::arg("ky"),
@@ -1142,6 +1201,7 @@ void init_elements(py::module& m)
                 DipEdge::Location const fl = amrex::getEnum<DipEdge::Location>(location);
                 return new DipEdge(psi, rc, g, R, K0, K1, K2, K3, K4, K5, K6, fm, fl, modify_ref_part, dx, dy, rotation_degree, aperture_x, aperture_y, name);
             }),
+            py::kw_only(),
             py::arg("psi"),
             py::arg("rc"),
             py::arg("g"),
@@ -1283,6 +1343,7 @@ void init_elements(py::module& m)
                  QuadEdge::Location const fl = amrex::getEnum<QuadEdge::Location>(flag);
                  return new QuadEdge(k, unit, fl, dx, dy, rotation_degree, aperture_x, aperture_y, name);
              }),
+             py::kw_only(),
              py::arg("k"),
              py::arg("unit") = QuadEdge::DEFAULT_unit,
              py::arg("flag") = amrex::getEnumNameString(QuadEdge::DEFAULT_flag),
@@ -1331,6 +1392,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("dx") = Drift::DEFAULT_dx,
              py::arg("dy") = Drift::DEFAULT_dy,
@@ -1368,6 +1430,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("dx") = ExactDrift::DEFAULT_dx,
              py::arg("dy") = ExactDrift::DEFAULT_dy,
@@ -1447,6 +1510,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k_normal"),
              py::arg("k_skew"),
@@ -1554,6 +1618,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k_normal"),
              py::arg("k_skew"),
@@ -1633,6 +1698,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k"),
              py::arg("unit") = ExactQuad::DEFAULT_unit,
@@ -1730,6 +1796,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("phi"),
              py::arg("B") = ExactSbend::DEFAULT_B,
@@ -1806,6 +1873,7 @@ void init_elements(py::module& m)
                  Kicker::UnitSystem const u = Kicker::unit_from_name(unit);
                  return new Kicker(xkick, ykick, u, dx, dy, rotation_degree, aperture_x, aperture_y, name);
              }),
+             py::kw_only(),
              py::arg("xkick"),
              py::arg("ykick"),
              py::arg("unit") = Kicker::unit_name(Kicker::DEFAULT_unit),
@@ -1866,6 +1934,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("multipole"),
              py::arg("K_normal"),
              py::arg("K_skew"),
@@ -1970,6 +2039,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("knll"),
              py::arg("cnll"),
              py::arg("dx") = NonlinearLens::DEFAULT_dx,
@@ -2037,6 +2107,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("angle"),
              py::arg("dx") = PlaneXYRot::DEFAULT_dx,
              py::arg("dy") = PlaneXYRot::DEFAULT_dy,
@@ -2063,7 +2134,7 @@ void init_elements(py::module& m)
     register_reverse(py_PlaneXYRot);
     register_copy(py_PlaneXYRot);
 
-    py::class_<PolygonAperture, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment, py::smart_holder> py_PolygonAperture(me, "PolygonAperture");
+    py::class_<PolygonAperture, elements::mixin::Named, elements::mixin::Thin, elements::mixin::Alignment, elements::mixin::RepeatedMask, py::smart_holder> py_PolygonAperture(me, "PolygonAperture");
     py_PolygonAperture
         .def("__repr__",
              [](PolygonAperture const & polygon_aperture) {
@@ -2108,10 +2179,7 @@ void init_elements(py::module& m)
                     std::make_pair("vertices_x", polygon_aperture.vertices_x()),
                     std::make_pair("vertices_y", polygon_aperture.vertices_y()),
                     std::make_pair("min_radius2", polygon_aperture.m_min_radius2),
-                    std::make_pair("action", polygon_aperture.action_name(polygon_aperture.m_action)),
-                    std::make_pair("repeat_x", polygon_aperture.m_repeat_x),
-                    std::make_pair("repeat_y", polygon_aperture.m_repeat_y),
-                    std::make_pair("shift_odd_x", polygon_aperture.m_shift_odd_x)
+                    std::make_pair("action", polygon_aperture.action_name(polygon_aperture.m_action))
                 );
             }
         )
@@ -2135,6 +2203,7 @@ void init_elements(py::module& m)
                      dx, dy, rotation_degree, name
                  );
              }),
+             py::kw_only(),
              py::arg("vertices_x"),
              py::arg("vertices_y"),
              py::arg("min_radius2") = PolygonAperture::DEFAULT_min_radius2,
@@ -2163,22 +2232,6 @@ void init_elements(py::module& m)
             [](PolygonAperture & pa) { return pa.m_min_radius2; },
             [](PolygonAperture & pa, amrex::ParticleReal mr2) { pa.m_min_radius2 = mr2; },
             "All particles with radius squared smaller than min_radius2 pass the aperture"
-        )
-        .def_property("repeat_x",
-            [](PolygonAperture & ap) { return ap.m_repeat_x; },
-            [](PolygonAperture & ap, amrex::ParticleReal repeat_x) { ap.m_repeat_x = repeat_x; },
-            "horizontal period for repeated aperture masking"
-        )
-        .def_property("repeat_y",
-            [](PolygonAperture & ap) { return ap.m_repeat_y; },
-            [](PolygonAperture & ap, amrex::ParticleReal repeat_y) { ap.m_repeat_y = repeat_y; },
-            "vertical period for repeated aperture masking"
-        )
-        .def_property("shift_odd_x",
-            [](PolygonAperture & ap) { return ap.m_shift_odd_x; },
-            [](PolygonAperture & ap, bool shift_odd_x) { ap.m_shift_odd_x = shift_odd_x; },
-            "for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. "
-            "Use alignment offsets dx,dy to move whole mask as needed."
         )
     ;
     register_push(py_PolygonAperture);
@@ -2212,6 +2265,7 @@ void init_elements(py::module& m)
                      return Programmable(ds, includes_collective_effects, nslice, name);
                  }
              ),
+             py::kw_only(),
              py::arg("ds") = Programmable::DEFAULT_ds,
              py::arg("includes_collective_effects").noconvert() =
                  Programmable::DEFAULT_includes_collective_effects,
@@ -2298,6 +2352,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("k"),
              py::arg("dx") = Quad::DEFAULT_dx,
@@ -2395,6 +2450,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("escale"),
              py::arg("freq"),
@@ -2483,6 +2539,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("rc"),
              py::arg("dx") = Sbend::DEFAULT_dx,
@@ -2535,6 +2592,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("rc"),
              py::arg("k"),
@@ -2592,6 +2650,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("V"),
              py::arg("k"),
              py::arg("dx") = Buncher::DEFAULT_dx,
@@ -2650,6 +2709,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("V"),
              py::arg("freq"),
              py::arg("phase") = ShortRF::DEFAULT_phase,
@@ -2745,6 +2805,7 @@ void init_elements(py::module& m)
                  int,
                  std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("bscale"),
              py::arg("cos_coefficients"),
@@ -2841,6 +2902,7 @@ void init_elements(py::module& m)
          >(),
              py::arg("distribution"),
              py::arg("openpmd_path"),
+             py::kw_only(),
              py::arg("active_once") = Source::DEFAULT_active_once,
              py::arg("load_ref_particle") = Source::DEFAULT_load_ref_particle,
              py::arg("load_step") = Source::DEFAULT_load_step,
@@ -2918,6 +2980,7 @@ void init_elements(py::module& m)
                 int,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("ks"),
              py::arg("dx") = Sol::DEFAULT_dx,
@@ -2982,6 +3045,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("phi_in"),
              py::arg("phi_out"),
              py::arg("name") = py::none(),
@@ -3076,6 +3140,7 @@ void init_elements(py::module& m)
                  int,
                  std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("ds"),
              py::arg("gscale"),
              py::arg("cos_coefficients"),
@@ -3280,6 +3345,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("theta"),
              py::arg("rc"),
              py::arg("dx") = ThinDipole::DEFAULT_dx,
@@ -3346,6 +3412,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("k"),
              py::arg("taper"),
              py::arg("unit") = TaperedPL::DEFAULT_unit,
@@ -3410,6 +3477,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("R"),
              py::arg("ds") = LinearMap::DEFAULT_ds,
              py::arg("dx") = LinearMap::DEFAULT_dx,
@@ -3470,6 +3538,7 @@ void init_elements(py::module& m)
                 amrex::ParticleReal,
                 std::optional<std::string>
              >(),
+             py::kw_only(),
              py::arg("v"),
              py::arg("A"),
              py::arg("ds") = SpinMap::DEFAULT_ds,

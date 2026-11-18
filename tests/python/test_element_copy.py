@@ -69,6 +69,33 @@ def test_overrides_apply_to_the_copy_only():
     assert rf.cos_coefficients == [2.0]
 
 
+def test_repeated_mask_overrides_apply_together():
+    """The periods of a copy are checked against its final polygon, in any order."""
+    vx = [-1.0e-4, 1.0e-4, 1.0e-4, -1.0e-4, -1.0e-4]
+    vy = [-1.0e-4, -1.0e-4, 1.0e-4, 1.0e-4, -1.0e-4]
+    pa = elements.PolygonAperture(vertices_x=vx, vertices_y=vy)
+
+    # shift_odd_x needs both periods, given after it here
+    staggered = pa.copy(shift_odd_x=True, repeat_x=1.0e-3, repeat_y=1.0e-3)
+    assert (staggered.repeat_x, staggered.repeat_y) == pytest.approx((1.0e-3, 1.0e-3))
+    assert staggered.shift_odd_x is True
+    assert (pa.repeat_x, pa.repeat_y, pa.shift_odd_x) == (0.0, 0.0, False)
+
+    # a larger polygon in a larger period: the new polygon does not fit the old period
+    vx10, vy10 = [10.0 * v for v in vx], [10.0 * v for v in vy]
+    large = staggered.copy(
+        repeat_x=4.0e-3, repeat_y=4.0e-3, vertices_x=vx10, vertices_y=vy10
+    )
+    assert (large.repeat_x, large.repeat_y) == pytest.approx((4.0e-3, 4.0e-3))
+    assert large.vertices_x == pytest.approx(vx10)
+    assert large.shift_odd_x is True
+
+    # all three at once on the element itself
+    pa.set_repeat(repeat_x=2.0e-3, repeat_y=1.0e-3, shift_odd_x=True)
+    assert (pa.repeat_x, pa.repeat_y) == pytest.approx((2.0e-3, 1.0e-3))
+    assert pa.shift_odd_x is True
+
+
 @pytest.mark.parametrize(
     "template",
     [

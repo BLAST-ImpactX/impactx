@@ -24,6 +24,7 @@ __all__: list[str] = [
 class Gaussian:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -54,6 +55,7 @@ class Gaussian:
 class Kurth4D:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -82,6 +84,7 @@ class Kurth4D:
 class Kurth6D:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -112,6 +115,7 @@ class Kurth6D:
 class KVdist:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -146,6 +150,7 @@ class Empty:
 class Semigaussian:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -173,6 +178,7 @@ class Semigaussian:
 class Thermal:
     def __init__(
         self,
+        *,
         k: typing.SupportsFloat | typing.SupportsIndex,
         kT: typing.SupportsFloat | typing.SupportsIndex,
         kT_halo: typing.SupportsFloat | typing.SupportsIndex,
@@ -199,6 +205,7 @@ class Thermal:
 class Triangle:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -229,6 +236,7 @@ class Triangle:
 class Waterbag:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,

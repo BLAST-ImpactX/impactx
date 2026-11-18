@@ -590,6 +590,81 @@ def test_survey_wires_camera():
     sim.finalize()
 
 
+def racetrack_lattice(gap=0.0, curvature=1.0):
+    """A ring of two 10 m straights and two arcs of 12 bends of 15 degrees
+
+    The second straight is longer by gap. The sign of curvature sets the sense of rotation.
+    """
+    rc = curvature / math.radians(15.0)
+    lattice = elements.KnownElementsList()
+    for length in (10.0, 10.0 + gap):
+        lattice.append(elements.Drift(name="straight", ds=length, nslice=4))
+        lattice.extend(
+            elements.Sbend(name="b", ds=1.0, rc=rc, nslice=2) for _ in range(12)
+        )
+    return lattice
+
+
+# the sign of the closing error of a ring must not matter
+@pytest.mark.parametrize("gap", [-1.0e-9, 1.0e-9])
+def test_survey_overview_camera_ring(gap):
+    """The overview of a ring stays in place while the beam goes around"""
+    from impactx.extensions.InSituSurvey3D import _Survey3D
+
+    sim = make_sim(0)
+    lattice = racetrack_lattice(gap)
+    ref = sim.beam.ref.copy()
+
+    def camera():
+        actions = _Survey3D(lattice, ref=ref, envelope=0.0).actions()
+        scenes = next(a["scenes"] for a in actions if a["action"] == "add_scenes")
+        return scenes["survey3d"]["renders"]["r1"]["camera"]
+
+    tolerance = 1.0e-3 if Config.precision == "SINGLE" else 1.0e-6
+    first = camera()
+    for element in lattice[:-1]:
+        for _ in range(element.nslice):
+            push(ref, element)
+        view = camera()
+        for key in ("position", "look_at", "up"):
+            assert view[key] == pytest.approx(first[key], abs=tolerance)
+    sim.finalize()
+
+
+@pytest.mark.parametrize("curvature", [1.0, -1.0])
+def test_survey_overview_axis(curvature):
+    """The direction to the right in the overview of a beamline and of rings"""
+    from impactx.plot.Survey3D import frames, overview_axis
+
+    sim = make_sim(0)
+
+    # a beamline: along its net travel
+    df = bends_lattice(3).survey(sim.beam.ref)
+    p, _, _, _ = frames(df)
+    axis = overview_axis(df)
+    assert np.linalg.norm(axis) == pytest.approx(1.0)
+    assert axis @ (p[-1] - p[0])[[0, 2]] > 0.0
+
+    # a ring: along its long axis, with the motion at its start
+    axis = overview_axis(racetrack_lattice(curvature=curvature).survey(sim.beam.ref))
+    assert axis == pytest.approx([0.0, 1.0], abs=0.01)  # the first straight is along z
+    sim.finalize()
+
+    # a circle has no long axis: the direction of motion at its start
+    angle = curvature * np.linspace(0.0, 2.0 * np.pi, 10001)
+    circle = pd.DataFrame(
+        {
+            "x": np.cos(angle),
+            "y": 0.0,
+            "z": np.sin(angle),
+            "px": -np.sin(angle),
+            "py": 0.0,
+            "pz": np.cos(angle),
+        }
+    )
+    assert overview_axis(circle) == pytest.approx([0.0, 1.0])
+
+
 def test_element_color_palettes():
     """FNAL Booster palette: dipoles blue, quadrupoles red, sextupoles yellow and
     combined-function magnets green; other elements in other colors"""

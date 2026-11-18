@@ -129,6 +129,7 @@ class _Survey3D(_Visualization):
             frames,
             look_from,
             orbit_position,
+            overview_axis,
             refined_lattice,
             smoothed_axes,
         )
@@ -179,7 +180,6 @@ class _Survey3D(_Visualization):
         survey = (
             envelope if refined is lattice else _survey(refined, ref, element=index)[0]
         )
-        orbit = survey[["x", "y", "z"]].to_numpy(dtype=np.float64)
 
         # magnification of the beam and the envelope: at its largest, the envelope
         # fills most of the bore of the elements, without an envelope 3 rms beam sizes
@@ -243,16 +243,7 @@ class _Survey3D(_Visualization):
         inside = False  # is the camera inside the lattice?
         if self.camera == "overview":
             # from above the side: the beam moves from left to right
-            xz = orbit[:, [0, 2]] - orbit[:, [0, 2]].mean(axis=0)
-            if np.allclose(xz, 0.0):
-                u = t[[0, 2]]
-            else:
-                u = np.linalg.svd(xz, full_matrices=False)[2][0]
-                travel = xz[-1] - xz[0]
-                if np.dot(u, travel) < 0.0 or (
-                    np.allclose(travel, 0.0) and np.dot(u, t[[0, 2]]) < 0.0
-                ):
-                    u = -u
+            u = overview_axis(survey)
             side = np.array([-u[1], 0.0, u[0]])
             elevation = np.radians(35.0)
             direction = np.cos(elevation) * side + np.sin(elevation) * up

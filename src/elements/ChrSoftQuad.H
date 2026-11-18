@@ -625,7 +625,7 @@ namespace impactx::elements
                 bfieldp = bfieldp - j * 2 * pi * cos_data[j] * s / zlen +
                           j * 2 * pi * sin_data[j] * c / zlen;
                 bfieldpp = bfieldpp - powi<2>(j * 2 * pi / zlen) *
-                           (cos_data[j] * c - sin_data[j] * s);
+                           (cos_data[j] * c + sin_data[j] * s);
                 bfieldint = bfieldint + zlen * cos_data[j] * s / (j * 2 * pi) -
                             zlen * sin_data[j] * c / (j * 2 * pi);
             }
@@ -819,8 +819,12 @@ namespace impactx::elements
         {
             require_array_pair(m_coefficients.cos, m_coefficients.sin,
                                "ChrSoftQuadrupole: cos and sin coefficient", 1);
-            if (m_mapsteps <= 0)
+            if (m_mapsteps <= 0) {
                 throw std::invalid_argument("ChrSoftQuadrupole: mapsteps must be > 0!");
+            }
+            if (m_ds == 0) {
+                throw std::invalid_argument("ChrSoftQuadrupole: ds must be nonzero!");
+            }
         }
 
         /** Push all particles */

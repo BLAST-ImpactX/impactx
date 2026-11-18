@@ -2858,11 +2858,11 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ChrSoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrSoftQuadrupole(ds, gscale, cos_coefficients, sin_coefficients, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, unit=0, mapsteps=10, nslice=1, name=None)
 
    A chromatic (paraxial) model of a soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
-The vector potential components A_x, A_y, and A_z are expanded in (x,y) through terms of degree 4, as reconstructed based on the user-supplied Fourier coefficients of the on-axis quadrupole gradient. Like other chromatic elements, a paraxial expansion of the Hamiltonian is made (to second degree in the transverse mechanical momenta). Tracking is performed using symplectic integration via a 3-term splitting of the Hamiltonian.
+   The vector potential components :math:`A_x`, :math:`A_y`, and :math:`A_z` are expanded in :math:`(x,y)` through terms of degree 4, as reconstructed based on the user-supplied Fourier coefficients of the on-axis quadrupole gradient. Like other chromatic elements, a paraxial expansion of the Hamiltonian is made (to second degree in the transverse mechanical momenta). Tracking is performed using symplectic integration via a 3-term splitting of the Hamiltonian.
 
    Provide **either** pre-computed Fourier coefficients (``cos_coefficients``, ``sin_coefficients``)
    **or** raw on-axis field/gradient data (``z``, ``gradient_on_axis``, ``ncoef``), not both.

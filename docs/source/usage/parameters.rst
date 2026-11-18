@@ -1747,7 +1747,7 @@ This element is defined via ``<quadrupole_softedge_chromatic_name>.type = quadru
     Default is a tanh fringe field model from `MaryLie 3.0 <http://www.physics.umd.edu/dsat/docs/MaryLieMan.pdf>`__.
 
 .. pp:param:: <quadrupole_softedge_chromatic_name>.dx/dy
-    :link_aliases: <quadrupole_softedge_name>.dx <quadrupole_softedge_name>.dy
+    :link_aliases: <quadrupole_softedge_chromatic_name>.dx <quadrupole_softedge_chromatic_name>.dy
     :type: ``float``
     :unit: m
 
@@ -1760,7 +1760,7 @@ This element is defined via ``<quadrupole_softedge_chromatic_name>.type = quadru
     Rotation error in the transverse plane.
 
 .. pp:param:: <quadrupole_softedge_chromatic_name>.aperture_x/y
-    :link_aliases: <quadrupole_softedge_name>.aperture_x <quadrupole_softedge_name>.aperture_y
+    :link_aliases: <quadrupole_softedge_chromatic_name>.aperture_x <quadrupole_softedge_chromatic_name>.aperture_y
     :type: ``float``
     :unit: m
 
@@ -1772,7 +1772,7 @@ This element is defined via ``<quadrupole_softedge_chromatic_name>.type = quadru
 
     Number of integration steps per slice used for map and reference particle push in applied fields.
 
-.. pp:param:: <quadrupole_softedge_chromatic_name>.unit
+.. pp:param:: <quadrupole_softedge_chromatic_name>.units
     :type: ``integer``
     :default: ``0``
 

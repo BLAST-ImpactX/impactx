@@ -110,7 +110,7 @@ Scaling Test for a Chromatic Soft-Edge Quadrupole
 
 This example tests for consistency between the (paraxial) ``ChrSoftQuad`` and (linear) ``SoftQuad`` models of a soft-edge quadrupole.
 
-The quadrupole on-axis gradient and reference kinetic energy are taken from the example :ref:`<-quadrupole-softedge>`.
+The quadrupole on-axis gradient and reference kinetic energy are taken from the example :ref:`examples-quadrupole-softedge`.
 
 Several distinct initial conditions are chosen with increasing distance from the origin in phase space.
 
@@ -133,7 +133,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
    .. tab-item:: Python: Script
 
-       .. literalinclude:: run_quadrupole_softedge.py
+       .. literalinclude:: run_quadrupole_softedge_chromatic.py
           :language: python3
           :caption: You can copy this file from ``examples/quadrupole_softedge/run_quadrupole_softedge_chromatic.py``.
 

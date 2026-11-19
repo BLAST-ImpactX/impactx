@@ -611,6 +611,10 @@ namespace impactx::elements
             amrex::ParticleReal bfieldp = 0.0;
             amrex::ParticleReal bfieldpp = 0.0;
             amrex::ParticleReal bfieldint = 0.0;
+            //   The integration accumulates zeval step by step, and round-off can put an
+            //   evaluation at an end of the profile a few ulp outside of it: evaluate at
+            //   the end itself, so that the field, its slope and its integral are
+            //   continuous in zeval.
             amrex::ParticleReal const z = amrex::Clamp(zeval - zmid, -zmid, zmid);
 
             bfield = 0.5_prt*cos_data[0];

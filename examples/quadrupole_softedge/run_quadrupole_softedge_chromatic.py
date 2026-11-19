@@ -168,6 +168,9 @@ if io_rank:
 
     # Test for  quadratic scaling with initial phase space vector:
     rtol = 2.0e-2
+    is_double = beam_chr_f["position_x"].dtype == np.float64
+    if not is_double:
+       rtol = 0.3
     print(f"  rtol={rtol}")
     assert np.allclose(
         [m],

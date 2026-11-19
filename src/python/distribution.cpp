@@ -36,6 +36,7 @@ void init_distribution(py::module& m)
                 amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -57,6 +58,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
          >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -78,6 +80,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -100,6 +103,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -126,6 +130,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -141,6 +146,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("k"), py::arg("kT"), py::arg("kT_halo"),
              py::arg("normalize"), py::arg("normalize_halo"),
              py::arg("halo")=0.0,
@@ -165,6 +171,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -187,6 +194,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,

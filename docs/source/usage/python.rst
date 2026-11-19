@@ -995,7 +995,7 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
 
 .. autofunction:: impactx.fourier_coefficients
 
-.. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
+.. py:class:: impactx.distribution.Gaussian(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
 
    A 6D Gaussian distribution, optionally with truncation.
    The user may specify an independent cutoff in each phase plane (x,px), (y,py), and (t,pt).
@@ -1026,19 +1026,19 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
    :param cutY: number of sigma at which to cut the distribution in (y,py) (dimensionless); 0 means no cut
    :param cutT: number of sigma at which to cut the distribution in (t,pt) (dimensionless); 0 means no cut
 
-.. py:class:: impactx.distribution.Kurth4D(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Kurth4D(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 4D Kurth distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
 
-.. py:class:: impactx.distribution.Kurth6D(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Kurth6D(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Kurth distribution.
 
    R. Kurth, Quarterly of Applied Mathematics vol. 32, pp. 325-329 (1978)
    C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)
 
-.. py:class:: impactx.distribution.KVdist(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.KVdist(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A K-V distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
@@ -1047,22 +1047,22 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
 
    This distribution sets all values to zero.
 
-.. py:class:: impactx.distribution.Semigaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Semigaussian(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
 
-.. py:class:: impactx.distribution.Triangle(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Triangle(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A triangle distribution for laser-plasma acceleration related applications.
 
    A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).
    The transverse distribution is a 4D waterbag.
 
-.. py:class:: impactx.distribution.Waterbag(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Waterbag(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Waterbag distribution.
 
-.. py:class:: impactx.distribution.Thermal(k, kT, kT_halo, normalize, normalize_halo, halo=0.0)
+.. py:class:: impactx.distribution.Thermal(*, k, kT, kT_halo, normalize, normalize_halo, halo=0.0)
 
    A 6D stationary thermal or bithermal distribution.
 
@@ -1282,7 +1282,7 @@ This module provides elements and methods for the accelerator lattice.
       the same at every floor.
       Their *length*, however, is carried by drifts that the reader adds around
       that kick, and those follow ``min_model`` like any other drift.
-      A finite-length ``RFCAVITY`` is a thin kick model, for example, becomes
+      A finite-length ``RFCAVITY``, for example, becomes
       ``ExactDrift`` + ``ShortRF`` + ``ExactDrift`` at ``min_model="exact"``.
       The same applies to the drifts emitted for ``COLLIMATOR``, ``INSTRUMENT``,
       ``PLACEHOLDER`` and for a ``MONITOR`` with ``L > 0``.
@@ -1933,7 +1933,7 @@ Bounding both planes gives an iris of the element's shape: an ellipse for the be
 rectangle or an ellipse for the ``Aperture`` collimator, depending on its ``shape``.
 The aperture is disabled entirely only if both planes are zero or less, which is the default.
 
-.. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.CFbend(*, ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.
 
@@ -1951,7 +1951,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ConstF(ds, kx, ky, kt, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ConstF(*, ds, kx, ky, kt, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A linear Constant Focusing element.
 
@@ -1979,7 +1979,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.DipEdge(*, psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
@@ -2039,7 +2039,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Drift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Drift(*, ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift.
 
@@ -2052,7 +2052,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ChrDrift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrDrift(*, ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift with chromatic effects included.  The Hamiltonian is expanded
    through second order in the transverse variables (x,px,y,py), with the exact pt
@@ -2067,7 +2067,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactDrift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactDrift(*, ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift using the exact nonlinear transfer map.
 
@@ -2080,7 +2080,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Kicker(xkick, ykick, unit="dimensionless", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.Kicker(*, xkick, ykick, unit="dimensionless", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A thin transverse kicker.
 
@@ -2094,7 +2094,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.LinearMap(R, ds=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.LinearMap(*, R, ds=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A custom, linear transport matrix.
 
@@ -2124,7 +2124,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
       Model it as several shorter elements to resolve collective effects along
       its length.
 
-.. py:class:: impactx.elements.Multipole(multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.Multipole(*, multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A general thin multipole element.
 
@@ -2139,7 +2139,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactCFbend(*, ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (m=5).
@@ -2187,7 +2187,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
       number of integration steps per slice used for symplectic integration
 
 
-.. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactMultipole(*, ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order m=12.
@@ -2232,7 +2232,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    This element does nothing.
 
-.. py:class:: impactx.elements.NonlinearLens(knll, cnll, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.NonlinearLens(*, knll, cnll, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    Single short segment of the nonlinear magnetic insert element.
 
@@ -2250,7 +2250,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.BeamMonitor(name, backend="default", encoding="g", period_sample_intervals=1, particles=True, beam_moments=True)
+.. py:class:: impactx.elements.BeamMonitor(name, *, backend="default", encoding="g", period_sample_intervals=1, particles=True, beam_moments=True)
 
    A beam monitor, writing all beam particles at fixed ``s`` to openPMD files.
 
@@ -2307,7 +2307,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
 
-.. py:class:: impactx.elements.Source(distribution, openpmd_path, active_once=True, load_ref_particle=True, load_step=None, load_step_index=None, name=None)
+.. py:class:: impactx.elements.Source(distribution, openpmd_path, *, active_once=True, load_ref_particle=True, load_step=None, load_step_index=None, name=None)
 
    A particle source.
    Currently, this only supports openPMD files from our :py:class:`impactx.elements.BeamMonitor`
@@ -2360,7 +2360,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
 
-.. py:class:: impactx.elements.Programmable(ds=0.0, includes_collective_effects=False, nslice=1, name=None)
+.. py:class:: impactx.elements.Programmable(*, ds=0.0, includes_collective_effects=False, nslice=1, name=None)
 
    A programmable beam optics element.
 
@@ -2433,7 +2433,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
          This function is called for the reference particle as it passes through the element.
          The reference particle is updated *before* the beam particles are pushed.
 
-.. py:class:: impactx.elements.Quad(ds, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Quad(*, ds, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A Quadrupole magnet.
 
@@ -2450,7 +2450,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ChrQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrQuad(*, ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A Quadrupole magnet, with chromatic effects included.  The Hamiltonian is expanded
    through second order in the transverse variables (x,px,y,py), with the exact pt
@@ -2479,7 +2479,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       unit specification for quad strength
 
-.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactQuad(*, ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
@@ -2522,7 +2522,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       number of integration steps per slice used for symplectic integration
 
-.. py:class:: impactx.elements.QuadEdge(k, unit=0, flag="entry", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.QuadEdge(*, k, unit=0, flag="entry", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    Hard-edge nonlinear fringe field map for a Quadrupole.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing
    the effect of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq
@@ -2542,7 +2542,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrPlasmaLens(*, ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An active cylindrically symmetric plasma lens, with chromatic effects included.
    The Hamiltonian is expanded through second order in the transverse variables
@@ -2569,7 +2569,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       unit specification for plasma lens focusing strength
 
-.. py:class:: impactx.elements.ChrAcc(ds, ez, bz, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrAcc(*, ds, ez, bz, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    Acceleration in a uniform field Ez, with a uniform solenoidal field Bz.
 
@@ -2597,7 +2597,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, z_data=None, wake_x_data=None, wake_y_data=None, wake_z_data=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(*, ds, escale, freq, phase, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, z_data=None, wake_x_data=None, wake_y_data=None, wake_z_data=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -2635,7 +2635,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Sbend(ds, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Sbend(*, ds, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal sector bend.
 
@@ -2649,7 +2649,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactSbend(ds, phi, B=0.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactSbend(*, ds, phi, B=0.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal sector bend using the exact nonlinear map.  The model consists of a uniform bending field B_y with a hard edge.  Pole faces are
    normal to the entry and exit velocity of the reference particle.
@@ -2670,7 +2670,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Buncher(V, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.Buncher(*, V, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A short RF cavity element at zero crossing for bunching (MaryLie model).
 
@@ -2683,7 +2683,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ShortRF(V, freq, phase=-90.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.ShortRF(*, V, freq, phase=-90.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A short RF cavity element (MAD-X model).
 
@@ -2697,7 +2697,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftSolenoid(*, ds, bscale, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A soft-edge solenoid.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -2731,7 +2731,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Sol(ds, ks, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Sol(*, ds, ks, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal hard-edge Solenoid magnet.
 
@@ -2745,7 +2745,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.PRot(phi_in, phi_out, name=None)
+.. py:class:: impactx.elements.PRot(*, phi_in, phi_out, name=None)
 
    Exact map for a pole-face rotation in the x-z plane.
 
@@ -2753,7 +2753,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param phi_out: angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.PlaneXYRot(angle, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.PlaneXYRot(*, angle, dx=0, dy=0, rotation=0, name=None)
 
    Map for a transverse rotation in the x-y plane (i.e., about the reference velocity vector).
 
@@ -2763,7 +2763,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, repeat_x=0, repeat_y=0, shift_odd_x=False, shape="rectangular", action="transmit", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.Aperture(*, aperture_x, aperture_y, repeat_x=0, repeat_y=0, shift_odd_x=False, shape="rectangular", action="transmit", dx=0, dy=0, rotation=0, name=None)
 
    A thin collimator element, applying a transverse aperture boundary.
 
@@ -2775,8 +2775,8 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    :param aperture_x: horizontal half-aperture (rectangular or elliptical) in m; zero or less disables the horizontal boundary
    :param aperture_y: vertical half-aperture (rectangular or elliptical) in m; zero or less disables the vertical boundary
-   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
-   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter); the aperture is repeated by translation, and copies may overlap
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter); the aperture is repeated by translation, and copies may overlap
    :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Requires repeat_x and repeat_y. Use alignment offsets dx,dy to move whole mask as needed.
    :param shape: aperture boundary shape: ``"rectangular"`` (default) or ``"elliptical"``
    :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
@@ -2801,7 +2801,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       maximum vertical coordinate in m; zero or less removes the vertical boundary
 
-.. py:class:: impactx.elements.PolygonAperture(vertices_x, vertices_y, min_radius2=0.0, repeat_x, repeat_y, shift_odd_x, action="transmit", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.PolygonAperture(*, vertices_x, vertices_y, min_radius2=0.0, repeat_x=0, repeat_y=0, shift_odd_x=False, action="transmit", dx=0, dy=0, rotation=0, name=None)
 
    This element defines a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
    and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
@@ -2810,8 +2810,8 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param vertices_x: sequence of aperture boundary :math:`x` coordinates in m
    :param vertices_y: sequence of aperture boundary :math:`y` coordinates in m
    :param min_radius2: radius-squared of a circle fully inscribed by the polygon aperture (default 0) (meters-squared)
-   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter); the polygon is repeated by translation and must lie inside one period, ``|x| < repeat_x / 2`` for all vertices
-   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter); the polygon is repeated by translation and must lie inside one period, ``|y| < repeat_y / 2`` for all vertices
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter); the polygon is repeated by translation and must lie inside one period, ``|x| <= repeat_x / 2`` for all vertices
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter); the polygon is repeated by translation and must lie inside one period, ``|y| <= repeat_y / 2`` for all vertices
    :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Requires repeat_x and repeat_y. Use alignment offsets dx,dy to move whole mask as needed.
    :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m
@@ -2825,7 +2825,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
       aperture type (transmit, absorb)
 
-.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftQuadrupole(*, ds, gscale, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -2858,7 +2858,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SpinMap(v, A, ds=0, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.SpinMap(*, v, A, ds=0, dx=0, dy=0, rotation=0, name=None)
 
    A custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.  Spin maps are specified in the Lie-algebraic form:
 
@@ -2893,7 +2893,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
       Model it as several shorter elements to resolve collective effects along
       its length.
 
-.. py:class:: impactx.elements.ThinDipole(theta, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.ThinDipole(*, theta, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A general thin dipole element.
 
@@ -2910,7 +2910,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    * G. Ripken and F. Schmidt, Thin-Lens Formalism for Tracking, CERN/SL/95-12 (AP), 1995.
 
-.. py:class:: impactx.elements.TaperedPL(k, taper, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.TaperedPL(*, k, taper, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A thin nonlinear plasma lens with transverse (horizontal) taper
 

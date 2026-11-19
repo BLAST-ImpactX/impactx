@@ -198,10 +198,16 @@ class Token:
     __dataclass_fields__: typing.ClassVar[dict]
     __dataclass_params__: typing.ClassVar[dataclasses._DataclassParams]
     __hash__: typing.ClassVar[None] = None
-    __match_args__: typing.ClassVar[tuple] = ("type", "value", "line", "column")
+    __match_args__: typing.ClassVar[tuple] = ("type", "value", "line", "column", "file")
+    file = None
     def __eq__(self, other): ...
     def __init__(
-        self, type: TokenType, value: typing.Any, line: int, column: int
+        self,
+        type: TokenType,
+        value: typing.Any,
+        line: int,
+        column: int,
+        file: str | None = None,
     ) -> None: ...
     def __replace__(self, **changes): ...
     def __repr__(self): ...
@@ -218,7 +224,12 @@ class MADXLexer:
     - Identifiers
     - Operators and delimiters
     """
-    def __init__(self, text: str, file: str | None = None): ...
+    def __init__(self, text: str, file: str | None = None, line: int = 1):
+        """
+        :param text: MAD-X input
+        :param file: file name of the input, for messages
+        :param line: line number of the first line of ``text`` in ``file``
+        """
     def _advance(self) -> str | None:
         """
         Advance position and return the character.
@@ -383,14 +394,21 @@ class MADXExpressionParser:
     Parser for MAD-X expressions.
 
     Implements operator precedence:
-    1. ^ (exponentiation, left associative)
-    2. + - (sign, applies to the whole power: -a^b^c is -((a^b)^c))
+    1. ^ (exponentiation)
+    2. + - (sign, applies to the whole power: -a^b is -(a^b))
     3. * / (multiplication, division)
     4. + - (addition, subtraction)
 
-    Beyond MAD-X, which rejects it, the right operand of a binary operator can
-    carry its own sign: a*-b, a--b, a^-b. The sign of an exponent binds to that
-    exponent only: a^-b^c is (a^(-b))^c.
+    A sign is accepted at the start of an operand: at the start of an expression,
+    a list element, a function argument or a comparison operand, and after an
+    opening parenthesis. MAD-X does not evaluate the following forms as written,
+    so they raise a MADXInputError that asks for parentheses:
+
+    - a sign directly after an operator or another sign, as in a*-b, a^-b, a--b
+      or --a: MAD-X rejects these outside of parentheses and computes another
+      value inside of them, e.g., (3*-2) is -2;
+    - a chained power, a^b^c: MAD-X evaluates it from the left, (a^b)^c, unlike
+      the usual a^(b^c).
     """
 
     FUNCTIONS: typing.ClassVar[dict]
@@ -411,17 +429,13 @@ class MADXExpressionParser:
         """
         Parse additive expression (+ -).
         """
-    def _parse_exponent(self) -> Expression:
-        """
-        Parse the right operand of ^, which can carry a sign (a^-b).
-        """
     def _parse_multiplicative(self) -> Expression:
         """
         Parse multiplicative expression (* /).
         """
     def _parse_power(self) -> Expression:
         """
-        Parse power expression (^), left associative.
+        Parse power expression (^) with a single exponent.
         """
     def _parse_primary(self) -> Expression:
         """
@@ -434,6 +448,14 @@ class MADXExpressionParser:
     def _peek(self, offset: int = 0) -> Token:
         """
         Look ahead at token.
+        """
+    def _reject_sign(self, op: Token, leading: bool = False):
+        """
+        Raise if a sign directly follows the operator or leading sign ``op``.
+        """
+    def _signed_operand_is_power(self) -> bool:
+        """
+        Whether the operand after the current sign is a power, as in -b^c.
         """
     def parse_expression(self) -> Expression:
         """
@@ -773,6 +795,13 @@ class MADXParser:
         """
         Expect one of the given token types.
         """
+    def _expression_parser(self, start: int, end: int) -> MADXExpressionParser:
+        """
+        Create an expression parser for the tokens in [start, end).
+
+        Its end of input has the line and file of the last token of the range,
+        or of the token at ``end`` for an empty range.
+        """
     def _flatten_line(self, line_name: str) -> list[str]:
         """
         Recursively flatten a line definition to element names.
@@ -1049,6 +1078,17 @@ class MADXParser:
         """
         Return top-level LINE/SEQUENCE definitions not referenced by other lines.
         """
+    def _skip_condition(self, *stops: TokenType):
+        """
+        Skip condition tokens without evaluating them.
+
+        Stops before a token of a type in ``stops`` outside of parentheses, or
+        before the closing parenthesis of the condition.
+        """
+    def _skip_if_condition(self):
+        """
+        Skip a condition, ( logical_expr ), without evaluating it.
+        """
     def _skip_semicolons(self):
         """
         Skip any semicolons.
@@ -1056,6 +1096,10 @@ class MADXParser:
     def _skip_until_semicolon(self):
         """
         Skip tokens until semicolon or EOF.
+        """
+    def _token_file(self) -> str | None:
+        """
+        File of the current token, e.g., of a macro body, else the current file.
         """
     def _try_parse_comparison_op(self) -> str | None:
         """

@@ -371,11 +371,17 @@ namespace impactx::elements
             amrex::ignore_unused(ezint);
 
             // Update spin-orbit coupling matrix here
-            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
-            amrex::ParticleReal cos_term = std::cos(k*t+phi);
-            amrex::ParticleReal sin_term = std::sin(k*t+phi);
-            dA(1,3) = E0 * tau / 2_prt * (k * ez * (G*pt - 1_prt) * sin_term / std::sqrt(1_prt + powi<2>(pt)) + cos_term * (G + 1_prt/(1_prt - pt)) * ezp);
-            dA(1,4) = E0 * tau / std::sqrt(1_prt + powi<2>(pt)) * cos_term * (G + 1_prt/(1_prt - pt));
+            //   Thomas-BMT precession, linear in (x, px, y, py), at the midpoint of the
+            //   step in z and t. px and py are canonical momenta: the kinetic momentum
+            //   is py - L*y, with L as in map2.
+            amrex::ParticleReal const G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal const tmid = 0.5_prt * (t + refpart.t);
+            amrex::ParticleReal const cos_term = std::cos(k*tmid+phi);
+            amrex::ParticleReal const sin_term = std::sin(k*tmid+phi);
+            amrex::ParticleReal const L = E0*ezp * sin_term/(2_prt*k);
+            dA(1,4) = E0 * tau / betgam * ez * cos_term * (G + 1_prt/(1_prt - pt));
+            dA(1,3) = E0 * tau / 2_prt * (k * ez * (G*pt - 1_prt) * sin_term / betgam
+                      + cos_term * (G + 1_prt/(1_prt - pt)) * ezp) - L * dA(1,4);
             dA(2,1) = -dA(1,3);
             dA(2,2) = -dA(1,4);
 

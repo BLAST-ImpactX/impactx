@@ -26,8 +26,6 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 
-#include <cmath>
-
 namespace impactx::elements
 {
     struct ApertureGPU
@@ -73,9 +71,13 @@ namespace impactx::elements
          * @param action specify action of domain (transmit/absorb)
          * @param aperture_x horizontal half-aperture (m), zero or less disables the horizontal boundary
          * @param aperture_y vertical half-aperture (m), zero or less disables the vertical boundary
-         * @param repeat_x horizontal period for repeated masking, optional (m)
-         * @param repeat_y vertical period for repeated masking, optional (m)
-         * @param shift_odd_x for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+         * @param repeat_x horizontal period for repeated masking, optional (m),
+         *                 @see mixin::RepeatedMask
+         * @param repeat_y vertical period for repeated masking, optional (m),
+         *                 @see mixin::RepeatedMask
+         * @param shift_odd_x for hexagonal/triangular mask patterns: horizontal shift of every
+         *                    2nd (odd) vertical period by repeat_x / 2. Requires repeat_x and
+         *                    repeat_y. Use alignment offsets dx,dy to move whole mask as needed.
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -143,60 +145,66 @@ namespace impactx::elements
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
-            using namespace amrex::literals; // for _rt and _prt
-            namespace stdx = amrex::simd::stdx;
-            using amrex::Math::powi;
-            using std::fmod;
-            using std::abs;
-            using VBool = decltype(x>0_prt);
-
-            // define intermediate variables
-            amrex::ParticleReal const dx = m_repeat_x * 0.5_prt;
-            amrex::ParticleReal const dy = m_repeat_y * 0.5_prt;
-
-            // shift every 2nd row by half of m_repeat_x
-            T_Real sx = x;
-            T_Real const sy = y;
-            VBool const shift_x = m_shift_odd_x == false ? VBool{false} : fmod(floor((y+dy)/m_repeat_y), 2) != T_Real{0};
-#ifdef AMREX_USE_SIMD
-            amrex::simd::stdx::where(shift_x, sx) += dx;
-#else
-            sx += shift_x ? dx : 0_prt;
-#endif
-
-            // if the aperture is periodic, shift sx,sy coordinates to the fundamental domain
-            T_Real u = (m_repeat_x == 0_prt) ? sx : (fmod(abs(sx)+dx, m_repeat_x)-dx);
-            T_Real v = (m_repeat_y == 0_prt) ? sy : (fmod(abs(sy)+dy, m_repeat_y)-dy);
-
-            // scale horizontal and vertical coordinates
-            // performance optimization: we intentionally store the inverse of
-            //   the aperture, so we can do a quick multiplication (instead of a
-            //   costly division) here.
-            u = u * m_inv_aperture_x;
-            v = v * m_inv_aperture_y;
+            // if the aperture is periodic, translate the coordinates by whole periods
+            // into the period cell around the origin
+            T_Real u, v;
+            to_period_cell(x, y, u, v);
 
             // compare against the aperture boundary
-            VBool inside_aperture;
+            auto inside_aperture = inside_shape(u, v);
 
-            switch (m_shape)
-            {
-                case Shape::rectangular:  // default
-                    inside_aperture = (powi<2>(u) <= 1_prt && powi<2>(v) <= 1_prt);
-                    break;
-
-                case Shape::elliptical:
-                    inside_aperture = (powi<2>(u) + powi<2>(v) <= 1_prt);
-                    break;
-
-                default:
-                    inside_aperture = VBool{true};
-                    break;
+            // overlapping shifted rows: the nearest copy of the nearest shifted row
+            // can contain the position, too; rectangle and ellipse are convex and
+            // symmetric about both axes, so no other copy can, @see mixin::RepeatedMask
+            if (shifted_rows_overlap()) {
+                T_Real un, vn;
+                to_neighbour_row(u, v, un, vn);
+                inside_aperture = inside_aperture || inside_shape(un, vn);
             }
 
             // For transmit (default): invalidate if outside aperture
             // For absorb: invalidate if inside aperture
             auto const invalid_mask = m_action == Action::transmit ? !inside_aperture : inside_aperture;
             amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(invalid_mask);
+        }
+
+        /** Is a position inside the aperture shape centred on the origin?
+         *
+         * @param u horizontal position [m]
+         * @param v vertical position [m]
+         * @return true inside the boundary
+         */
+        template<typename T_Real>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        auto inside_shape (T_Real const & u, T_Real const & v) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+            using VBool = decltype(u>0_prt);
+
+            // scale horizontal and vertical coordinates
+            // performance optimization: we intentionally store the inverse of
+            //   the aperture, so we can do a quick multiplication (instead of a
+            //   costly division) here.
+            T_Real const su = u * m_inv_aperture_x;
+            T_Real const sv = v * m_inv_aperture_y;
+
+            VBool inside;
+            switch (m_shape)
+            {
+                case Shape::rectangular:  // default
+                    inside = (powi<2>(su) <= 1_prt && powi<2>(sv) <= 1_prt);
+                    break;
+
+                case Shape::elliptical:
+                    inside = (powi<2>(su) + powi<2>(sv) <= 1_prt);
+                    break;
+
+                default:
+                    inside = VBool{true};
+                    break;
+            }
+            return inside;
         }
 
         /** This pushes the reference particle. */
@@ -316,6 +324,25 @@ namespace impactx::elements
             // performance optimization: we intentionally store the inverse of
             //   the aperture, @see m_inv_aperture_y
             m_inv_aperture_y = aperture_y > 0_prt ? 1_prt / aperture_y : 0_prt;
+        }
+
+        /** Can the shifted rows overlap?
+         *
+         * With shift_odd_x and aperture_y > repeat_y / 2, a position in the period cell can
+         * also lie in the nearest copy of the nearest shifted row,
+         * \see mixin::RepeatedMask::to_neighbour_row. A plane without a vertical boundary
+         * is open across its whole period instead and does not reach into the next row.
+         *
+         * @return true if the shifted rows overlap
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        bool shifted_rows_overlap () const
+        {
+            using namespace amrex::literals; // for _prt
+
+            // aperture_y > repeat_y / 2, with the stored inverse of aperture_y
+            return m_shift_odd_x && m_inv_aperture_y > 0_prt
+                && m_inv_aperture_y * m_repeat_y < 2_prt;
         }
 
         Shape m_shape; //! aperture type (rectangular, elliptical)

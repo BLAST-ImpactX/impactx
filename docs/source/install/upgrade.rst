@@ -54,19 +54,28 @@ Previously, the sine of the reference deflection angle had an extra factor of :m
 This changes the reference trajectory, and the beam coordinates relative to it, downstream of such an edge.
 
 
-``Programmable``: ``nslice`` and ``name`` moved to the 3rd and 4th argument
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Elements and distributions take keyword arguments only
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-:py:class:`~impactx.elements.Programmable` takes the new ``includes_collective_effects`` as its
-2nd argument, so ``nslice`` and ``name`` moved back by one position.
+The constructors of all elements in ``impactx.elements`` and all distributions in ``impactx.distribution``
+take their arguments by keyword only.
+These arguments can still be passed by position:
 
-**What to check in your scripts:** a ``Programmable(...)`` call that passes ``nslice`` or
-``name`` by position raises a ``TypeError``. Pass them by keyword:
+- ``name`` of :py:class:`~impactx.elements.BeamMonitor` and ``Marker``,
+- ``distribution`` and ``openpmd_path`` of :py:class:`~impactx.elements.Source`,
+- ``mux``, ``muy`` and ``muz`` of :py:class:`~impactx.distribution.SpinvMF`.
+
+**What to check in your scripts:** a constructor call that passes any other value by position raises a ``TypeError``.
+This includes ``super().__init__(...)`` in a subclass.
+Name these arguments:
 
 .. code-block:: python
 
-   pge = elements.Programmable(0.5, 2)                # before
-   pge = elements.Programmable(ds=0.5, nslice=2)      # preferred by name, works as before
+   quad = elements.Quad(0.5, 1.2)                    # before
+   quad = elements.Quad(ds=0.5, k=1.2)               # now
+
+   pge = elements.Programmable(0.5, 2)               # before
+   pge = elements.Programmable(ds=0.5, nslice=2)     # now
 
 At fixed :math:`t`, the longitudinal attributes are named ``position_z`` and ``momentum_z``
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -199,23 +208,27 @@ coordinates, now raise an error, e.g., a ``RuntimeError`` in ``sim.add_particles
 - ``halo > 0`` with ``normalize_halo = 0``: for a beam without a halo, set ``halo = 0``.
 - ``halo < 1`` with ``normalize = 0``: for a beam without a core, set ``halo = 1``.
 
-MAD-X files: evaluation of ``^``
-""""""""""""""""""""""""""""""""
+MAD-X files: powers and signs
+"""""""""""""""""""""""""""""
 
 :py:meth:`KnownElementsList.load_file <impactx.elements.KnownElementsList.load_file>` and
-:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate powers in MAD-X files as MAD-X does: ``a^b^c`` is
-``(a^b)^c``, and ``-a^b`` is ``-(a^b)``.
+:py:meth:`RefPart.load_file <impactx.RefPart.load_file>` now evaluate a sign before a power in MAD-X files as MAD-X does:
+``-a^b`` is ``-(a^b)``.
+A chained power, ``a^b^c``, a sign directly after an operator, as in ``a*-b`` or ``a^-b``, and two signs in a row,
+``--a``, now raise a ``MADXInputError``, because MAD-X rejects them or evaluates them differently from the usual rules.
 
-**What to check in your MAD-X files:** more than one ``^`` in an expression, and a sign directly before a power. A
-subtraction, ``a-b^2``, is not affected. To keep the previous meaning, add parentheses:
+**What to check in your MAD-X files:** a sign directly before a power, more than one ``^`` in an expression, and a sign
+directly after an operator or another sign. A subtraction, ``a-b^2``, is not affected. To keep the previous values, add
+parentheses:
 
 .. code-block:: text
 
-   k = a^(b^c);  ! previously a^b^c:  2^3^2 was 512, now 64
-   k = (-a)^b;   ! previously -a^b:   -2^2 was 4, now -4
-
-ImpactX also accepts a sign directly after an operator, as in ``a*-b^2`` or ``a^-b^c``, which MAD-X does not support: write
-these with parentheses. Their values change as well, e.g., ``2^-3^2`` was 512 and is now 0.015625, and ``2^((-3)^2)`` is 512.
+   k = (-a)^b;      ! previously -a^b:   -2^2 was 4, now -4
+   k = a^(b^c);     ! previously a^b^c,  now an error
+   k = a*(-b);      ! previously a*-b,   now an error
+   k = a*(-b)^c;    ! previously a*-b^c, now an error
+   k = a^((-b)^c);  ! previously a^-b^c, now an error
+   k = -(-a);       ! previously --a,    now an error
 
 ``Hminus``: gyromagnetic anomaly follows the shielded proton moment
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -237,6 +250,20 @@ To compare with earlier results, set the previous value:
 With ``repeat_x`` or ``repeat_y``, :py:class:`~impactx.elements.PolygonAperture` now repeats the polygon by translation with that period.
 Previously, it reflected negative coordinates, which mirrored polygons that are not symmetric about :math:`x = 0` or :math:`y = 0`.
 This changes the results of periodic polygon apertures with such polygons.
+
+``Aperture``: overlapping shifted rows act as their union
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+With ``shift_odd_x`` and ``aperture_y > repeat_y / 2``, the shifted rows of :py:class:`~impactx.elements.Aperture` overlap.
+The aperture now acts as the union of all rows; previously, each row was cut at its edges.
+
+**What to check in your scripts and inputs files:** ``shift_odd_x`` with ``aperture_y > repeat_y / 2``.
+For the ``rectangular`` shape, a plane without a boundary, ``aperture_y = 0``, gives the previous result; the ``elliptical`` shape has no exact replacement:
+
+.. code-block:: python
+
+   Aperture(aperture_x=0.1e-3, aperture_y=0.7e-3, repeat_x=1.0e-3, repeat_y=1.0e-3, shift_odd_x=True)  # before
+   Aperture(aperture_x=0.1e-3, aperture_y=0.0, repeat_x=1.0e-3, repeat_y=1.0e-3, shift_odd_x=True)  # now
 
 New in this release
 """""""""""""""""""

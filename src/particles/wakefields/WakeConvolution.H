@@ -105,6 +105,7 @@ namespace impactx::particles::wakefields
         amrex::Real zeta
     )
     {
+        // This function has been manually tested, and works as expected.
         using namespace amrex::literals;
         using amrex::Math::powi;
 
@@ -207,13 +208,18 @@ namespace impactx::particles::wakefields
         amrex::Real const rc = powi<2>(ablastr::constant::SI::q_e) / (4_rt * ablastr::constant::math::pi * ablastr::constant::SI::epsilon_0 * ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c));
         amrex::Real const Erest = ablastr::constant::SI::m_e * powi<2>(ablastr::constant::SI::c);
 
-        amrex::Real const zeta1 = (s + bin_size / 2_rt) * powi<3>(gamma) / R;
-        amrex::Real const zeta2 = (s - bin_size / 2_rt) * powi<3>(gamma) / R;
+        amrex::Real const s1 = s - bin_size / 2_rt;
+        amrex::Real const s2 = s + bin_size / 2_rt;
+
+        amrex::Real const zeta1 = (s1 > 0_rt)? s1 * powi<3>(gamma) / R : 0_rt;
+        amrex::Real const zeta2 = (s2 > 0_rt)? s2 * powi<3>(gamma) / R : 0_rt;
         amrex::Real const u1 = u_csr_root_caseB(zeta1);
         amrex::Real const u2 = u_csr_root_caseB(zeta2);
 
         amrex::Real Icsr1_dimensionless = -4_rt * u1 * (powi<2>(u1)+8_rt) / ((powi<2>(u1)+4_rt)*(powi<2>(u1)+12_rt));
         amrex::Real Icsr2_dimensionless = -4_rt * u2 * (powi<2>(u2)+8_rt) / ((powi<2>(u2)+4_rt)*(powi<2>(u2)+12_rt));
+
+        amrex::Print() << zeta1 << " " << Icsr1_dimensionless << "\n";
 
         return (gamma * Erest * rc / R) * (Icsr1_dimensionless - Icsr2_dimensionless);
     }

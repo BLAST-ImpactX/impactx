@@ -219,8 +219,8 @@ namespace impactx::particles::wakefields
                     // separations (k-j-1) * bin_size and (k-j) * bin_size from edge k. A bin at or
                     // behind an edge does not act on it, so the first value stays zero.
                     amrex::ParallelFor(num_edges - 1, [=] AMREX_GPU_DEVICE(int i) {
-                        amrex::Real const s_near = static_cast<amrex::Real>(i) * bin_size;
-                        amrex::Real const s_far = static_cast<amrex::Real>(i + 1) * bin_size;
+                        amrex::Real const s_near = -static_cast<amrex::Real>(i) * bin_size;
+                        amrex::Real const s_far = -static_cast<amrex::Real>(i + 1) * bin_size;
                         dptr_wake_function[i + 1] = 0.5_rt * charge_factor / bin_size * (
                             w_l_csr_caseB(s_near, dR, gamma, bin_size) +
                             w_l_csr_caseB(s_far, dR, gamma, bin_size));

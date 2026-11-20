@@ -267,6 +267,8 @@ class _Survey3D(_Visualization):
                 ]
             )
             camera = look_from(corners, direction, up, width / height, self.FOV)
+            # corners of the lattice behind the camera: see add_anchor
+            geometry.add_anchor(camera["position"])
         elif self.camera == "racecar":
             # on the orbit behind the bunch, a little above and to the side of it,
             # looking down the beam pipe ahead. The view follows the orbit between

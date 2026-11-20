@@ -219,8 +219,6 @@ namespace impactx::particles::wakefields
         amrex::Real Icsr1_dimensionless = -4_rt * u1 * (powi<2>(u1)+8_rt) / ((powi<2>(u1)+4_rt)*(powi<2>(u1)+12_rt));
         amrex::Real Icsr2_dimensionless = -4_rt * u2 * (powi<2>(u2)+8_rt) / ((powi<2>(u2)+4_rt)*(powi<2>(u2)+12_rt));
 
-        amrex::Print() << zeta1 << " " << Icsr1_dimensionless << "\n";
-
         return (gamma * Erest * rc / R) * (Icsr1_dimensionless - Icsr2_dimensionless);
     }
 

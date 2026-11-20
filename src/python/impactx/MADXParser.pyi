@@ -1008,6 +1008,10 @@ class MADXParser:
             OPTION, RBARC=true, THIN_FOC=false;
             OPTION, ECHO;
             OPTION, -WARN;
+            OPTION, -INFO -DEBUG;
+
+        As in MAD-X, options need no comma between them: its command scanner
+        (mad_cmdin.c, scan_in_cmd) skips commas instead of requiring them.
         """
     def _parse_resbeam_command(self):
         """

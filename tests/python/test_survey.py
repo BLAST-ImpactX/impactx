@@ -631,6 +631,34 @@ def test_survey_overview_camera_ring(gap):
     sim.finalize()
 
 
+@pytest.mark.parametrize("camera", ["beam", "racecar"])
+def test_survey_camera_inside_bounds(camera):
+    """Close to the beam, the camera is inside the bounds of the ray traced surfaces and
+    wires, so that Viskores traces all pixels, also with corners of the bounds behind
+    the camera"""
+    from impactx.extensions.InSituSurvey3D import _Survey3D
+    from impactx.plot.Survey3D import SURVEY_TOPOLOGY, WIRES_TOPOLOGY
+
+    sim = make_sim(0)
+    vis = _Survey3D(
+        racetrack_lattice(),
+        ref=sim.beam.ref,
+        envelope=0.0,
+        camera=camera,
+        element_size=0.1,
+        cutaway=True,
+    )
+    actions = vis.actions()
+    scenes = next(a["scenes"] for a in actions if a["action"] == "add_scenes")
+    position = scenes["survey3d"]["renders"]["r1"]["camera"]["position"]
+    mesh = vis.geometry()
+    for topology in (SURVEY_TOPOLOGY, WIRES_TOPOLOGY):
+        coords = mesh["coordsets"][f"{topology}_coords"]["values"]
+        for axis, p in zip("xyz", position):
+            assert coords[axis].min() <= p <= coords[axis].max()
+    sim.finalize()
+
+
 @pytest.mark.parametrize("curvature", [1.0, -1.0])
 def test_survey_overview_axis(curvature):
     """The direction to the right in the overview of a beamline and of rings"""

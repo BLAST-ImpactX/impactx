@@ -433,8 +433,8 @@ class _Survey3D(_Visualization):
             legend.append((rf"envelope ({n_sigma:g}$\sigma$)", ENVELOPE_COLOR))
         note = None
         if num_particles > 0 or geometry.has_envelope:
-            note = f"beam magnified: transverse ×{m_perp:.3g}" + (
-                f", longitudinal ×{m_long:.3g}" if num_particles > 0 else ""
+            note = rf"beam magnified: transverse $\times${m_perp:.3g}" + (
+                rf", longitudinal $\times${m_long:.3g}" if num_particles > 0 else ""
             )
         self._meta = {
             "legend": legend,

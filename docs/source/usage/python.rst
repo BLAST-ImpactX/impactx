@@ -1568,7 +1568,7 @@ This module provides elements and methods for the accelerator lattice.
          the special ``"type"`` key for cross-variant comparisons.
       :rtype: bool
 
-   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
+   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc")
 
       Plot over s of all elements in the KnownElementsList.
 
@@ -1580,6 +1580,7 @@ This module provides elements and methods for the accelerator lattice.
       :param ax: A plotting area in matplotlib (called axes there).
       :param legend: Plot a legend if true.
       :param legend_ncols: Number of columns for lattice element types in the legend.
+      :param palette: Color palette of the elements: ``"cern-lhc"``, or ``"fnal-booster"`` with dipoles blue, quadrupoles red, sextupoles (multipoles) yellow and combined-function magnets green.
 
 .. py:class:: impactx.elements.FilteredElementsList
 

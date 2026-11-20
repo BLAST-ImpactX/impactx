@@ -1,182 +1,79 @@
-"""
-Test that analytic Gaussian space-charge models center their field
-at the bunch centroid (and not on the reference axis).
+#!/usr/bin/env python3
+#
+# Copyright 2022-2026 The ImpactX Community
+#
+# Authors: Nilanjan Banerjee, Axel Huebl, Chad Mitchell
+# License: BSD-3-Clause-LBNL
+#
+# -*- coding: utf-8 -*-
 
-The test compares the space charge kicks computed when the bunch
-is initialized with zero centroid to the space charge kicks
-computed when there is a global centroid offset.
+import numpy as np
+import pytest
 
-This test was contributed by N. Banerjee.
+from impactx import Config, ImpactX, elements
 
-"""
-
-from multiprocessing import Process, Queue  # Child processes
-
-import numpy as np  # Arrays
-from scipy.constants import c, e, m_p  # Useful constants
-
-from impactx import ImpactX, elements  # ImpactX interface
-
-Mass = m_p * c * c * 1e-6 / e  # MeV, proton
-KineticEnergy = 2.5  # MeV
-SigmaX = 2.0e-3  # rms sizes of the round beam (m)
-SigmaT = 0.1  # rms length (m)
-Charge = 1e-10  # Beam charge (C)i
-Displacement = 1e-3  # Beam dispacement from reference orbit (m)
-NCells = 64  # PIC grid size for comparison
-NParticles = 10000  # Number of macro-particles
-KickLength = 0.1  # m, the drift of test
-Seed = 20260915  # Random number seed for beam
-Models = ["Gauss2p5D", "Gauss3D", "2p5D"]  # SC Models to test
+# a long proton bunch: Gauss2p5D assumes sigma_perp < beta*gamma*sigma_t
+NUM_PARTICLES = 1000
+SIGMA_X, SIGMA_Y, SIGMA_T = 1.0e-3, 2.0e-3, 1.0e-2  # rms bunch size in m
+SHIFT = (2.0e-3, -1.0e-3, 5.0e-3)  # bunch offset from the reference particle in m
 
 
-# Utilities
-def beam(npart: int, displacement: float):
+def _kicks(model, shift):
+    """Momenta after one space-charge kick on a bunch at rest
+
+    Every call creates the same macroparticles, translated as a whole by shift = (x, y, t).
     """
-    A round Gaussian beam with displacement from reference axis.
-
-    Parameters
-    ----------
-    npart: int
-        Particles.
-
-    displacement: float
-        Offset of the whole beam in x (m).
-
-    Returns
-    -------
-    x, y, t, px, py, pt: np.ndarray
-    """
-    rng = np.random.default_rng(Seed)
-    x = rng.normal(0.0, SigmaX, npart)
-    y = rng.normal(0.0, SigmaX, npart)
-    t = rng.normal(0.0, SigmaT, npart)
-    px = np.zeros(npart)
-    py = np.zeros(npart)
-    pt = np.zeros(npart)
-    # Remove the sampling offset, so that the displacement is exact
-    for a in (x, y, t, px, py):
-        a -= a.mean()
-    return x + displacement, y, t, px, py, pt
-
-
-def coordinates(sim):
-    """
-    Coords x, y, px, py in the order of particle ids.
-
-    Parameters
-    ----------
-    sim: impactx.ImpactX
-
-    Returns
-    -------
-    x, y, px, py: np.ndarray
-    """
-    df = sim.beam.to_df()
-    order = np.argsort(df["idcpu"].to_numpy())
-    return tuple(
-        df[name].to_numpy()[order]
-        for name in ("position_x", "position_y", "momentum_x", "momentum_y")
-    )
-
-
-def worker(q: Queue, model: str, displacement: float):
-    """
-    Run the test case and return results.
-
-    Parameters
-    ----------
-    q: Queue
-          Queue object to transfer field data back into the host process
-
-    model: str
-        The space-charge model.
-
-    displacement: float
-        Offset of the beam in x (m).
-
-    Returns
-    -------
-    None
-    """
-    # Setup impactx run
     sim = ImpactX()
-    sim.verbose = 0
-    sim.tiny_profiler = False
+
+    sim.particle_shape = 2
+    sim.space_charge = model
     sim.diagnostics = False
     sim.slice_step_diagnostics = False
-    sim.particle_shape = 2
-    assert model in Models, f"Models must be one of {Models}"
-    sim.space_charge = model
-    if model == "2p5D":
-        sim.n_cell = [NCells, NCells, NCells]
-        sim.poisson_solver = "fft"
-    sim.init_grids()
-    # Setup beam
-    sim.beam.ref.set_charge_qe(1.0).set_mass_MeV(Mass).set_kin_energy_MeV(KineticEnergy)
-    x, y, t, px, py, pt = beam(NParticles, displacement)
-    weights = np.full(NParticles, Charge / e / NParticles)
-    sim.beam.add_n_particles(x, y, t, px, py, pt, sim.beam.ref.qm_ratio_SI, w=weights)
-    x0, y0, px0, py0 = coordinates(sim)  # Properly ordered coords
-    # Track beam through drift
-    sim.lattice.append(elements.Drift(ds=KickLength, nslice=1))
-    sim.track_particles()
-    x1, y1, px1, py1 = coordinates(sim)
-    # Send back results
-    q.put({"x0": x0, "y0": y0, "dpx": px1 - px0, "dpy": py1 - py0})
 
+    try:
+        sim.init_grids()
 
-def _checkmodel(model: str):
-    """
-    Run a test case with the requested model and print results.
+        ref = sim.beam.ref
+        ref.set_charge_qe(1.0).set_mass_MeV(938.27208816).set_kin_energy_MeV(250.0)
+        qm_eev = ref.charge_qe / (ref.mass_MeV * 1.0e6)
 
-    model: str
-        The space-charge model.
-
-    Returns
-    -------
-    None
-    """
-    # First run 2 simulations
-    sim_data_queue = Queue()  # Queue to shuttle data
-    data = []  # Empty list to collect data
-    for displacement in [0.0, Displacement]:
-        # Simulation process
-        sim_process = Process(target=worker, args=(sim_data_queue, model, displacement))
-        sim_process.start()  # Start the simulation process
-        data.append(sim_data_queue.get())  # Import the data through the queue
-        sim_process.join()  # End the child process
-    centered = data[0]
-    moved = data[1]
-    # Now analyze and print results
-    rms = np.sqrt(np.mean(centered["dpx"] ** 2 + centered["dpy"] ** 2))
-    mean_kick = moved["dpx"].mean()
-    difference = np.sqrt(
-        np.mean(
-            (moved["dpx"] - centered["dpx"]) ** 2
-            + (moved["dpy"] - centered["dpy"]) ** 2
+        rng = np.random.default_rng(seed=42)
+        x = rng.normal(0.0, SIGMA_X, NUM_PARTICLES) + shift[0]
+        y = rng.normal(0.0, SIGMA_Y, NUM_PARTICLES) + shift[1]
+        t = rng.normal(0.0, SIGMA_T, NUM_PARTICLES) + shift[2]
+        zeros = np.zeros_like(x)
+        sim.beam.add_n_particles(
+            x, y, t, zeros, zeros, zeros, qm_eev, bunch_charge=1.0e-9
         )
-    )
-    print(
-        "%-10s %14.4e %14.4f %16.4f" % (model, rms, mean_kick / rms, difference / rms)
-    )
-    return difference / rms
+
+        # one slice: a single space-charge kick, between two drift halves that keep the momenta
+        sim.lattice.append(elements.Drift(name="drift", ds=1.0, nslice=1))
+        sim.track_particles()
+
+        # the same particle order in every run
+        df = sim.beam.to_df(local=True).reset_index(drop=True).sort_values("idcpu")
+        momenta = ["momentum_x", "momentum_y", "momentum_t"]
+        return {p: df[p].to_numpy().astype(np.float64) for p in momenta}
+    finally:
+        sim.finalize()
 
 
-def test_models():
+@pytest.mark.parametrize("model", ["Gauss3D", "Gauss2p5D"])
+def test_gauss_space_charge_follows_the_bunch(model):
+    """The analytic Gaussian space-charge fields are centered on the bunch centroid
+
+    A bunch that is offset from the reference particle receives the same kicks as the
+    same bunch on the reference orbit: there is no coherent self-kick.
     """
-    Run a test case with the requested model and print results.
-    """
+    centered = _kicks(model, shift=(0.0, 0.0, 0.0))
+    shifted = _kicks(model, shift=SHIFT)
 
-    print(
-        f"Test: one space-charge kick in a {KickLength:.2f} m drift, {NParticles} particles,"
-        f" beam of {Charge:.2e} C displaced by {Displacement / SigmaX:.2f} sigma_x"
-    )
-    print(
-        "%-10s %14s %14s %16s"
-        % ("model", "rms kick", "mean kick/rms", "invariance/rms")
-    )
-    atol = 1.0e-6
-    for model in Models:
-        difference_kick_rms = _checkmodel(model)
-        np.testing.assert_allclose([difference_kick_rms], 0.0, atol=atol)
+    # relative to the rms kick; in single precision, the Gauss2p5D line density
+    # (binned and interpolated in t) amplifies the rounding of the shifted positions
+    rtol = 1.0e-3 if Config.precision == "SINGLE" else 1.0e-10
+    for p, kick in centered.items():
+        rms = np.sqrt(np.mean(kick**2))
+        assert rms > 0.0, f"{model}: no {p} kick"
+        np.testing.assert_allclose(
+            shifted[p], kick, rtol=0.0, atol=rtol * rms, err_msg=f"{model}: {p}"
+        )

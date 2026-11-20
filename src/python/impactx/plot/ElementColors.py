@@ -16,8 +16,11 @@ def get_element_color_palette(palette="cern-lhc", plot_library="mpl"):
     Parameters
     ----------
     palette : str
-        ``"cern-lhc"``, or ``"fnal-booster"``: dipoles blue, quadrupoles red, sextupoles
-        (multipoles) yellow and combined-function magnets green.
+        ``"cern-lhc"``;
+        ``"fnal-booster"``: dipoles blue, quadrupoles red, sextupoles (multipoles) yellow
+        and combined-function magnets green;
+        or ``"fnal-iota"``: dipoles blue, quadrupoles green, sextupoles (multipoles) yellow,
+        nonlinear lenses red and RF cavities tan.
     plot_library : str
         ``"mpl"`` for matplotlib colors, else plain color names.
     """
@@ -57,6 +60,31 @@ def get_element_color_palette(palette="cern-lhc", plot_library="mpl"):
             "TaperedPL": "tab:cyan",
             "RFCavity": "tab:brown",
             "ShortRF": "tab:brown",
+            "Buncher": "tab:purple",
+            "Aperture": "black",
+            "Kicker": "tab:pink",
+            "other": "tab:gray",
+        },
+        # the Fermilab IOTA ring
+        "fnal-iota": {
+            # dipoles
+            "Sbend": "tab:blue",
+            "ThinDipole": "tab:blue",
+            # quadrupoles
+            "Quad": "tab:green",
+            # sextupoles
+            "Multipole": "gold",
+            # the nonlinear insert
+            "NonlinearLens": "tab:red",
+            # RF cavity
+            "RFCavity": "tan",
+            "ShortRF": "tan",
+            # other elements: colors that differ from the magnets above
+            "CFbend": "tab:orange",
+            "ConstF": "tab:cyan",
+            "ChrPlasmaLens": "tab:cyan",
+            "SoftSolenoid": "tab:cyan",
+            "TaperedPL": "tab:cyan",
             "Buncher": "tab:purple",
             "Aperture": "black",
             "Kicker": "tab:pink",

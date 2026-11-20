@@ -26,6 +26,7 @@ void init_elements(py::module&);
 void init_flatten_rho(py::module& m);
 void init_ImpactX(py::module&);
 void init_impactxparticlecontainer(py::module&);
+void init_insitu(py::module&);
 void init_refparticle(py::module&);
 void init_transformation(py::module&);
 void init_wakeconvolution(py::module& m);
@@ -44,6 +45,7 @@ PYBIND11_MODULE(impactx_pybind, m) {
                ImpactX
                distribution
                elements
+               insitu
     )pbdoc";
 
     // note: order from parent to child classes
@@ -54,6 +56,7 @@ PYBIND11_MODULE(impactx_pybind, m) {
     init_transformation(m);
     init_wakeconvolution(m);
     init_ImpactX(m);
+    init_insitu(m);
     init_Config(m);
     init_flatten_rho(m);
 

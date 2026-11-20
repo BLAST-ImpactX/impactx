@@ -31,6 +31,7 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -139,7 +140,10 @@ namespace
 } // anonymous namespace
 
     std::unordered_map<std::string, amrex::ParticleReal>
-    reduced_beam_characteristics (ImpactXParticleContainer const & pc)
+    reduced_beam_characteristics (
+        ImpactXParticleContainer const & pc,
+        CovarianceMatrix * covariance
+    )
     {
         BL_PROFILE("impactx::diagnostics::reduced_beam_characteristics(pc)");
 
@@ -568,7 +572,54 @@ namespace
             }
         }
 
+        // covariance matrix of x, px, y, py, t, pt
+        if (covariance != nullptr)
+        {
+            if (!has_weight) {
+                throw std::runtime_error(
+                    "covariance_matrix: the beam has no particle weight, its moments are undefined.");
+            }
+            if (!ref_is_initialized) {
+                throw std::runtime_error(
+                    "covariance_matrix: the reference particle is not initialized.");
+            }
+            auto const set = [&](int i, int j, amrex::ParticleReal value)
+            {
+                (*covariance)(i, j) = value;
+                (*covariance)(j, i) = value;
+            };
+            set(1, 1, x_ms);
+            set(1, 2, xpx);
+            set(1, 3, xy);
+            set(1, 4, xpy);
+            set(1, 5, xt);
+            set(1, 6, xpt);
+            set(2, 2, px_ms);
+            set(2, 3, pxy);
+            set(2, 4, pxpy);
+            set(2, 5, pxt);
+            set(2, 6, pxpt);
+            set(3, 3, y_ms);
+            set(3, 4, ypy);
+            set(3, 5, yt);
+            set(3, 6, ypt);
+            set(4, 4, py_ms);
+            set(4, 5, pyt);
+            set(4, 6, pypt);
+            set(5, 5, t_ms);
+            set(5, 6, tpt);
+            set(6, 6, pt_ms);
+        }
+
         return data;
+    }
+
+    CovarianceMatrix
+    covariance_matrix (ImpactXParticleContainer const & pc)
+    {
+        CovarianceMatrix covariance;
+        reduced_beam_characteristics(pc, &covariance);
+        return covariance;
     }
 
     std::unordered_map<std::string, amrex::ParticleReal>

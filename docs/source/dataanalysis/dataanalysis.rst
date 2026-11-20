@@ -172,3 +172,62 @@ When steering ImpactX from Python, one can at any point visualize the beam phase
    :alt: In situ visualization of the beam phase space projections.
 
    In situ visualization of the beam phase space projections.
+
+
+.. _dataanalysis-insitu:
+
+In Situ Visualization with Ascent
+---------------------------------
+
+With `Ascent <https://ascent.readthedocs.io>`__, ImpactX visualizes the particle beam while it is tracked, over all MPI ranks.
+ImpactX passes the particle arrays to Ascent without copies.
+This needs ImpactX built with ``-DImpactX_ASCENT=ON``.
+
+The beam is shown in its coordinates relative to the reference particle at fixed :math:`s`.
+Two presets cover common views:
+
+* ``"beam3d"``: Ascent renders the particles in :math:`x`, :math:`y` and :math:`t`, colored by a particle component, e.g., ``momentum_t``.
+* ``"phasespace"``: Ascent sums the charge per bin of the phase space projections; the figure is the one of ``plot_phasespace()``.
+
+A single view, as a matplotlib figure:
+
+.. code-block:: python
+
+   import matplotlib.pyplot as plt
+
+   fig = sim.beam.plot_ascent("beam3d", color="momentum_t")
+
+   # note: figure data available on MPI rank zero
+   if fig is not None:
+       fig.savefig("beam3d.png")
+       plt.show()
+
+An animation while the beam is tracked, with one frame after each lattice element:
+
+.. code-block:: python
+
+   from impactx import insitu
+
+   anim = insitu.Animation("phasespace", num_bins=64)
+   sim.hook["after_element"] = anim
+
+   sim.track_particles()
+
+   anim.save("phasespace.gif", fps=4)  # or .mp4, .html, or a directory of PNG images
+   anim.show()  # in a window
+   anim  # in Jupyter: an interactive animation
+
+Instead of a preset, own `Ascent actions <https://ascent.readthedocs.io/en/latest/Actions/index.html>`__ can be passed as ``actions=[...]``, e.g., starting from :py:func:`impactx.insitu.ascent_actions`.
+See :ref:`usage-python-insitu` for all options and :ref:`examples-fodo` for an example.
+
+.. note::
+
+   On GPUs, Ascent 0.9.6 renders the ``"beam3d"`` images on the GPU.
+   It reads particles in managed memory (``amrex.the_arena_is_managed = 1``) in place.
+   For particles in device memory, the default of ImpactX, Ascent copies the particle components that it renders, on the GPU, for each image.
+
+   Ascent bins on the host (CPU), on a single thread.
+   On GPUs, the ``"phasespace"`` preset needs the particles in managed memory, and the binned particle components move to the host and back for each frame.
+   For large beams, :py:meth:`~impactx.ParticleContainer.plot_phasespace` is faster.
+
+   Ascent keeps the results of the ``"phasespace"`` binnings of all frames in memory, about :math:`3 \times 8` bytes per bin and frame.

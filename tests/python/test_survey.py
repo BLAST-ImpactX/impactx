@@ -631,6 +631,25 @@ def test_survey_overview_camera_ring(gap):
     sim.finalize()
 
 
+@pytest.mark.parametrize("camera", ["overview", "beam"])
+@pytest.mark.parametrize("ring", [False, True])
+def test_survey_camera_beam_to_the_right(camera, ring):
+    """The beam moves to the right in the overview and in the close-up"""
+    from impactx.extensions.InSituSurvey3D import _Survey3D
+
+    sim = make_sim(0)
+    lattice = racetrack_lattice() if ring else bends_lattice(3)
+    ref = sim.beam.ref
+    actions = _Survey3D(lattice, ref=ref, envelope=0.0, camera=camera).actions()
+    scenes = next(a["scenes"] for a in actions if a["action"] == "add_scenes")
+    view = scenes["survey3d"]["renders"]["r1"]["camera"]
+    forward = np.subtract(view["look_at"], view["position"])
+    right = np.cross(forward, view["up"])
+    motion = np.array([ref.px, ref.py, ref.pz])
+    assert right @ motion > 0.5 * np.linalg.norm(right) * np.linalg.norm(motion)
+    sim.finalize()
+
+
 @pytest.mark.parametrize("camera", ["beam", "racecar"])
 def test_survey_camera_inside_bounds(camera):
     """Close to the beam, the camera is inside the bounds of the ray traced surfaces and

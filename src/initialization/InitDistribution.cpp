@@ -80,7 +80,7 @@ namespace impactx
         if (distribution_types_from_beam_ellipse.find(base_dist_type) != distribution_types_from_beam_ellipse.end())
         {
             amrex::ParticleReal sigx, sigy, sigt, sigpx, sigpy, sigpt;
-            amrex::ParticleReal muxpx = 0.0, muypy = 0.0, mutpt = 0.0;
+            double muxpx = 0.0, muypy = 0.0, mutpt = 0.0;
             amrex::ParticleReal meanx = 0.0, meany = 0.0, meant = 0.0;
             amrex::ParticleReal meanpx = 0.0, meanpy = 0.0, meanpt = 0.0;
             amrex::ParticleReal dispx = 0.0, disppx = 0.0, dispy = 0.0, disppy = 0.0;
@@ -248,19 +248,19 @@ namespace impactx
                 }
 
                 // use distribution inputs to populate a 6x6 covariance matrix
-                amrex::ParticleReal denom_x = 1.0_prt - muxpx*muxpx;
+                amrex::ParticleReal denom_x = distribution.m_rootX * distribution.m_rootX;
                 cv(1,1) = lambdaX*lambdaX / denom_x;
                 cv(1,2) = -lambdaX*lambdaPx*muxpx / denom_x;
                 cv(2,1) = cv(1,2);
                 cv(2,2) = lambdaPx*lambdaPx / denom_x;
 
-                amrex::ParticleReal denom_y = 1.0_prt - muypy*muypy;
+                amrex::ParticleReal denom_y = distribution.m_rootY * distribution.m_rootY;
                 cv(3,3) = lambdaY*lambdaY / denom_y;
                 cv(3,4) = -lambdaY*lambdaPy*muypy / denom_y;
                 cv(4,3) = cv(3,4);
                 cv(4,4) = lambdaPy*lambdaPy / denom_y;
 
-                amrex::ParticleReal denom_t = 1.0_prt - mutpt*mutpt;
+                amrex::ParticleReal denom_t = distribution.m_rootT * distribution.m_rootT;
                 cv(5,5) = lambdaT*lambdaT / denom_t;
                 cv(5,6) = -lambdaT*lambdaPt*mutpt / denom_t;
                 cv(6,5) = cv(5,6);
@@ -438,7 +438,7 @@ namespace impactx
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& sigx, amrex::ParticleReal& sigy, amrex::ParticleReal& sigt,
         amrex::ParticleReal& sigpx, amrex::ParticleReal& sigpy, amrex::ParticleReal& sigpt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        double& muxpx, double& muypy, double& mutpt,
         amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
         amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
         amrex::ParticleReal& dispx, amrex::ParticleReal& disppx,
@@ -448,10 +448,11 @@ namespace impactx
         using namespace amrex::literals; // for _rt and _prt
         using amrex::Math::powi;
 
-        // Values to be read from input
-        amrex::ParticleReal betax, betay, betat, emittx, emitty, emittt;
+        // Values to be read from input, in double since the correlations are ill-conditioned
+        // for a large alpha
+        double betax, betay, betat, emittx, emitty, emittt;
         // If alpha is zero the bunch is in focus
-        amrex::ParticleReal alphax = 0.0, alphay = 0.0, alphat = 0.0;
+        double alphax = 0.0, alphay = 0.0, alphat = 0.0;
 
         // Reading the input Twiss parameters
         pp_dist.queryWithParser("alphaX", alphax);
@@ -474,31 +475,34 @@ namespace impactx
         pp_dist.queryWithParser("dispY", dispy);
         pp_dist.queryWithParser("dispPy", disppy);
 
-        if (betax <= 0.0_prt || betay <= 0.0_prt || betat <= 0.0_prt) {
+        if (betax <= 0.0 || betay <= 0.0 || betat <= 0.0) {
             throw std::runtime_error("Input Error: The beta function values need to be non-zero positive values in all dimensions.");
         }
 
-        if (emittx <= 0.0_prt || emitty <= 0.0_prt || emittt <= 0.0_prt) {
+        if (emittx <= 0.0 || emitty <= 0.0 || emittt <= 0.0) {
             throw std::runtime_error("Input Error: Emittance values need to be non-zero positive values in all dimensions.");
         }
 
-        std::array<amrex::ParticleReal, 3> const alphas = {alphax, alphay, alphat};
-        std::array<amrex::ParticleReal, 3> const betas = {betax, betay, betat};
-        std::array<amrex::ParticleReal, 3> const emittances = {emittx, emitty, emittt};
+        std::array<double, 3> const alphas = {alphax, alphay, alphat};
+        std::array<double, 3> const betas = {betax, betay, betat};
+        std::array<double, 3> const emittances = {emittx, emitty, emittt};
 
         // calculate Twiss / Courant-Snyder gammas
-        amrex::Vector<amrex::ParticleReal> gammas;
-        for (size_t i = 0; i < alphas.size(); i++)
-            gammas.push_back((1.0_prt + powi<2>(alphas.at(i))) / betas.at(i));
+        amrex::Vector<double> gammas;
+        for (size_t i = 0; i < alphas.size(); i++) {
+            gammas.push_back((1.0 + powi<2>(alphas.at(i))) / betas.at(i));
+        }
 
         amrex::Vector<amrex::ParticleReal> lambdas_pos;
         amrex::Vector<amrex::ParticleReal> lambdas_mom;
-        amrex::Vector<amrex::ParticleReal> correlations;
+        amrex::Vector<double> correlations;
 
         // calculate intersections of phase space ellipse with coordinate axes and the correlation factors
         for (size_t k = 0; k < betas.size(); k++){
-            lambdas_pos.push_back(std::sqrt(emittances.at(k)/gammas.at(k)));
-            lambdas_mom.push_back(std::sqrt(emittances.at(k)/betas.at(k)));
+            lambdas_pos.push_back(static_cast<amrex::ParticleReal>(
+                std::sqrt(emittances.at(k)/gammas.at(k))));
+            lambdas_mom.push_back(static_cast<amrex::ParticleReal>(
+                std::sqrt(emittances.at(k)/betas.at(k))));
 
             correlations.push_back(alphas.at(k) / std::sqrt(betas.at(k) * gammas.at(k)));
         }
@@ -518,7 +522,7 @@ namespace impactx
         amrex::ParmParse const & pp_dist,
         amrex::ParticleReal& sigx, amrex::ParticleReal& sigy, amrex::ParticleReal& sigt,
         amrex::ParticleReal& sigpx, amrex::ParticleReal& sigpy, amrex::ParticleReal& sigpt,
-        amrex::ParticleReal& muxpx, amrex::ParticleReal& muypy, amrex::ParticleReal& mutpt,
+        double& muxpx, double& muypy, double& mutpt,
         amrex::ParticleReal& meanx, amrex::ParticleReal& meany, amrex::ParticleReal& meant,
         amrex::ParticleReal& meanpx, amrex::ParticleReal& meanpy, amrex::ParticleReal& meanpt,
         amrex::ParticleReal& dispx, amrex::ParticleReal& disppx,

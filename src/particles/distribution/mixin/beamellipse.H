@@ -15,6 +15,7 @@
 #include <AMReX_REAL.H>
 
 #include <cmath>
+#include <stdexcept>
 
 
 namespace impactx::distribution::mixin
@@ -31,7 +32,8 @@ namespace impactx::distribution::mixin
          * @param lambdax,lambday,lambdat phase space axis intercepts (position);
          *                                for zero correlation, these are the related RMS sizes (in meters)
          * @param lambdapx,lambdapy,lambdapt phase space axis intercepts (momentum)
-         * @param muxpx,muypy,mutpt correlation length-momentum
+         * @param muxpx,muypy,mutpt correlation length-momentum, with a magnitude below 1; a double,
+         *                          because the sizes of a beam depend on 1 - mu^2
          * @param meanx,meany,meant offsets of the mean (centroid) positions from those of the reference particle
          * @param meanpx,meanpy,meanpt offsets of the mean (centroid) momenta from those of the reference particle
          * @param dispx,disppx,dispy,disppy dispersion and its derivative in horizontal and vertical directions
@@ -43,9 +45,9 @@ namespace impactx::distribution::mixin
             amrex::ParticleReal lambdapx,
             amrex::ParticleReal lambdapy,
             amrex::ParticleReal lambdapt,
-            amrex::ParticleReal muxpx,
-            amrex::ParticleReal muypy,
-            amrex::ParticleReal mutpt,
+            double muxpx,
+            double muypy,
+            double mutpt,
             amrex::ParticleReal meanx,
             amrex::ParticleReal meany,
             amrex::ParticleReal meant,
@@ -58,15 +60,15 @@ namespace impactx::distribution::mixin
             amrex::ParticleReal disppy
         )
         : m_lambdaX(lambdax), m_lambdaY(lambday), m_lambdaT(lambdat), m_lambdaPx(lambdapx), m_lambdaPy(lambdapy),
-          m_lambdaPt(lambdapt), m_muxpx(muxpx), m_muypy(muypy), m_mutpt(mutpt), m_meanx(meanx), m_meany(meany),
+          m_lambdaPt(lambdapt),
+          m_muxpx(static_cast<amrex::ParticleReal>(muxpx)),
+          m_muypy(static_cast<amrex::ParticleReal>(muypy)),
+          m_mutpt(static_cast<amrex::ParticleReal>(mutpt)),
+          m_meanx(meanx), m_meany(meany),
           m_meant(meant), m_meanpx(meanpx), m_meanpy(meanpy), m_meanpt(meanpt), m_dispx(dispx), m_disppx(disppx),
-          m_dispy(dispy), m_disppy(disppy)
+          m_dispy(dispy), m_disppy(disppy),
+          m_rootX(root(muxpx)), m_rootY(root(muypy)), m_rootT(root(mutpt))
         {
-            using namespace amrex::literals;
-
-            m_rootX = std::sqrt(1.0_prt-m_muxpx*m_muxpx);
-            m_rootY = std::sqrt(1.0_prt-m_muypy*m_muypy);
-            m_rootT = std::sqrt(1.0_prt-m_mutpt*m_mutpt);
         }
 
         /** Transform a particle from zero mean and an identity covariance matrix to the beam ellipse
@@ -126,10 +128,30 @@ namespace impactx::distribution::mixin
         amrex::ParticleReal m_meanpx, m_meanpy, m_meanpt;  //! momentum coordinates of centroid offset
         amrex::ParticleReal m_dispx, m_disppx, m_dispy, m_disppy;  //! dispersion and its derivative
 
-    private:
         // constants that are independent of the individually sampled particle,
         // computed from the parameters above in the constructor
         amrex::ParticleReal m_rootX, m_rootY, m_rootT;  //! sqrt(1 - mu^2) of each phase plane
+
+    private:
+        /** sqrt(1 - mu^2) of a phase plane
+         *
+         * 1 - mu^2 amplifies a relative error in mu by its condition number,
+         * 2 mu^2 / (1 - mu^2), so mu must be double even in a single-precision build. The
+         * factored form also avoids rounding mu^2: near |mu| = 1, 1 - |mu| is exact.
+         * The result itself fits every precision.
+         *
+         * @param mu correlation length-momentum
+         * @return sqrt(1 - mu^2)
+         */
+        static amrex::ParticleReal root (double mu)
+        {
+            if (std::abs(mu) >= 1.0) {
+                throw std::runtime_error(
+                    "Input Error: The magnitude of a correlation (muxpx, muypy, mutpt) "
+                    "must be below 1.");
+            }
+            return static_cast<amrex::ParticleReal>(std::sqrt((1.0 - mu) * (1.0 + mu)));
+        }
     };
 
 } // namespace impactx::distribution::mixin

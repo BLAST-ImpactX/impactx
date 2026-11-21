@@ -204,7 +204,7 @@ For **all** except the ``thermal`` distribution, the phase space ellipse is spec
        :unit: dimensionless
        :default: ``0``
 
-       Correlation X-Px / Y-Py / T-Pt.
+       Correlation X-Px / Y-Py / T-Pt, with a magnitude below 1.
 
 #. **Courant-Snyder (Twiss)** parameters.
    To enable input via Courant-Snyder (Twiss) parameters, add the suffix ``from_twiss`` to the name of the distribution.

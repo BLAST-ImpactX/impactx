@@ -271,6 +271,61 @@ void init_ImpactX (py::module& m)
             "Compose the collective effect kicks and the element transport in a "
             "second-order, time-symmetric Strang split (default: enabled) or to first order."
         )
+        .def_property("sort_intervals",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo", "sort_intervals");
+            },
+            [](ImpactX & /* ix */, int const sort_intervals) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("sort_intervals", sort_intervals);
+            },
+            "Sort particles before charge deposition every this many slice steps; "
+            "do not sort if <= 0 (default: 4 for the CUDA and HIP backends, otherwise -1)."
+        )
+        .def_property("sort_particles_for_deposition",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "sort_particles_for_deposition");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("sort_particles_for_deposition", enable);
+            },
+            "Sort particles by cell (x -> y -> z -> ppc) for deposition (``True``) or in "
+            "bins of ``sort_bin_size`` cells (``False``). ``True`` is only available for "
+            "CUDA and HIP, where it is the default; otherwise ``False``."
+        )
+        .def_property("sort_idx_type",
+            [](ImpactX & /* ix */) {
+                amrex::ParmParse const pp_algo("algo");
+                std::vector<int> idx_type;
+                if (!pp_algo.queryarr("sort_idx_type", idx_type)) {
+                    throw std::runtime_error("algo.sort_idx_type is not set yet");
+                }
+                return idx_type;
+            },
+            [](ImpactX & /* ix */, std::vector<int> const & idx_type) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.addarr("sort_idx_type", idx_type);
+            },
+            "Grid type per direction used to sort particles for deposition: "
+            "0 cell-centered, 1 nodal, 2 in between (default: [0, 0, 0])."
+        )
+        .def_property("sort_bin_size",
+            [](ImpactX & /* ix */) {
+                amrex::ParmParse const pp_algo("algo");
+                std::vector<int> bin_size;
+                if (!pp_algo.queryarr("sort_bin_size", bin_size)) {
+                    throw std::runtime_error("algo.sort_bin_size is not set yet");
+                }
+                return bin_size;
+            },
+            [](ImpactX & /* ix */, std::vector<int> const & bin_size) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.addarr("sort_bin_size", bin_size);
+            },
+            "Size of the sorting bins, in cells per direction, used if "
+            "``sort_particles_for_deposition`` is ``False`` (default: [1, 1, 1])."
+        )
         .def_property("csr",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("algo", "csr");

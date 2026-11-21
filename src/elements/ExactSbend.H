@@ -20,6 +20,7 @@
 #include "mixin/spintransport.H"
 #include "mixin/synchrotronradiation.H"
 #include "mixin/nofinalize.H"
+#include "helper/ExactDriftSlopes.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -112,7 +113,6 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
@@ -131,7 +131,6 @@ namespace impactx::elements
 
             // access reference particle values to find relativistic factors
             m_ibeta = 1_prt / refpart.beta();
-            m_ibetagam2 = 1_prt / powi<2>(refpart.beta_gamma());
 
             // gyromagnetic constant (used during spin push)
             m_gyro = refpart.gyromagnetic_anomaly;
@@ -181,20 +180,15 @@ namespace impactx::elements
 
             // treat the special case of zero field
             if (m_phi==0_prt && m_B==0_prt) {
-               // compute the radical in the denominator (= pz):
-               T_Real const inv_pzden = 1_prt / sqrt(
-                   powi<2>(pt - m_ibeta) -
-                   m_ibetagam2 -
-                   powi<2>(px) -
-                   powi<2>(py)
-               );
+               // slopes of the exact drift
+               auto const drift = exact_drift_slopes(px, py, pt, m_ibeta);
 
                // advance position and momentum (exact drift)
-               x = xout + m_slice_ds * px * inv_pzden;
+               x = xout + m_slice_ds * px * drift.inv_pz;
                // pxout = px;
-               y = yout + m_slice_ds * py * inv_pzden;
+               y = yout + m_slice_ds * py * drift.inv_pz;
                // pyout = py;
-               t = tout - m_slice_ds * (m_ibeta + (pt - m_ibeta) * inv_pzden);
+               t = tout + m_slice_ds * drift.dt_ds;
                // ptout = pt;
 
                // assign updated momenta
@@ -452,7 +446,7 @@ namespace impactx::elements
       private:
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
-        amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_ibetagam2, m_rc, m_sin_phi, m_cos_phi;
+        amrex::ParticleReal m_slice_ds, m_slice_phi, m_ibeta, m_rc, m_sin_phi, m_cos_phi;
         amrex::ParticleReal m_gyro, m_beta, m_beta_gamma;
 
     };

@@ -253,10 +253,11 @@ class _Survey3D(_Visualization):
         elif self.camera == "beam":
             # close to the beam, from above its side and a little behind: shows
             # the horizontal and the longitudinal extent. The camera follows the
-            # orbit averaged over a few elements, so that it turns steadily.
+            # orbit averaged over a few elements, so that it turns steadily. It is
+            # on the -x side, as the overview camera: the beam moves to the right.
             tc, nc, vc = smoothed_axes(survey, ref.s, sigma)
             azimuth, elevation = np.radians(20.0), np.radians(55.0)
-            horizontal = np.cos(azimuth) * nc - np.sin(azimuth) * tc
+            horizontal = -np.cos(azimuth) * nc - np.sin(azimuth) * tc
             direction = np.cos(elevation) * horizontal + np.sin(elevation) * vc
             corners = np.array(
                 [

@@ -126,6 +126,18 @@ Adding, removing or moving elements afterwards makes it stale, and using it then
 take a new one with :py:meth:`~impactx.elements.KnownElementsList.select`.
 Changing an element's own parameters moves nothing and leaves a selection usable.
 
+To change a parameter on many elements at once, use
+:py:meth:`~impactx.elements.KnownElementsList.set`, on the whole lattice or on a selection.
+Elements only carry the parameters they support, so select by what can be set, or pass
+``skip=True``:
+
+.. code-block:: python
+
+   sim.lattice.set(nslice=8, skip=True)                               # thick elements only
+   sim.lattice.select(has="int_order").set(int_order=6, mapsteps=6)  # exact integrators
+
+A value or a parameter that any element rejects leaves all of them unchanged.
+
 .. _usage-howto-lattice-manipulation-scan:
 
 One Lattice per Run

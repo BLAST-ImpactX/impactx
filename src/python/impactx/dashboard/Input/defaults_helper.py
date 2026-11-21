@@ -12,6 +12,9 @@ from typing import Callable, Dict, List, Type
 
 from impactx.distribution_input_helpers import twiss
 
+# parameter types that the dashboard can edit; "list" is a list of numbers
+EDITABLE_TYPES = {"int", "float", "str", "bool", "list"}
+
 
 class InputDefaultsHelper:
     """
@@ -130,6 +133,30 @@ class InputDefaultsHelper:
         return docstrings
 
     @staticmethod
+    def positional_parameters(cls) -> List[str]:
+        """
+        Returns the names of the parameters that can be passed by position, in
+        order: those before the keyword-only marker * in the signature.
+
+        :param cls: The class, e.g., elements.BeamMonitor.
+        :return: A list of parameter names.
+        """
+        docstring = getattr(cls.__init__, "__doc__", None) or ""
+        signature = re.search(r"\((.*?)\)", docstring)
+        if signature is None:
+            return []
+
+        names = []
+        for parameter in signature.group(1).split(","):
+            parameter = parameter.strip()
+            if parameter == "*":
+                break
+            if parameter.startswith("self"):
+                continue
+            names.append(parameter.split(":", 1)[0].split("=", 1)[0].strip())
+        return names
+
+    @staticmethod
     def extract_parameters(docstring):
         """
         Parses specific information from docstrings.
@@ -181,6 +208,10 @@ class InputDefaultsHelper:
                 parameter_type = "int"
             elif parameter_type == "str | None":
                 parameter_type = "str"
+            elif parameter_type.startswith(
+                ("collections.abc.Sequence[typing.SupportsFloat", "Sequence[float")
+            ):
+                parameter_type = "list"
 
             parameters.append((name, default, parameter_type))
 
@@ -191,6 +222,7 @@ class InputDefaultsHelper:
         """
         Given a module name, outputs a dictionary of class names and their parameters.
         Keys are class names, and values are lists of parameter information (name, default value, type).
+        Classes with a parameter that the dashboard cannot edit, e.g., a matrix, are left out.
         :param module_name: The module to inspect.
         :return: A dictionary with class names as keys and parameter information as values.
         """
@@ -202,7 +234,10 @@ class InputDefaultsHelper:
 
         for class_name, docstring in docstrings.items():
             parameters = InputDefaultsHelper.extract_parameters(docstring)
-            result[class_name] = parameters
+            if all(
+                parameter_type in EDITABLE_TYPES for _, _, parameter_type in parameters
+            ):
+                result[class_name] = parameters
 
         return result
 

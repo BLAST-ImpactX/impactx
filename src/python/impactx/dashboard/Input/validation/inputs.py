@@ -6,19 +6,23 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
+import ast
 import keyword
 from typing import Union
 
 from ... import state
+from ..defaults_helper import EDITABLE_TYPES
 from ..utils import GeneralFunctions
 
-ALLOWED_INPUT_TYPES = {"int", "float", "str", "bool"}
+ALLOWED_INPUT_TYPES = EDITABLE_TYPES
 INT_ERROR_MESSAGE = "Must be an integer"
 FLOAT_ERROR_MESSAGE = "Must be a float"
 BOOL_ERROR_MESSAGE = "Must be a boolean: True or False"
+LIST_ERROR_MESSAGE = "Must be a list of numbers, e.g., [0.0, 1.5]"
 NON_ZERO_ERROR = "Must be non-zero"
 POSITIVE_ERROR = "Must be positive"
 NEGATIVE_ERROR = "Must be negative"
+NON_NEGATIVE_ERROR = "Must be non-negative"
 N_CELL_MULTIPLE_ERROR = "Must be a multiple of its blocking factor"
 PYTHON_IDENTIFIER_ERROR = "Must be a valid Python identifier"
 
@@ -52,11 +56,26 @@ class DashboardValidation:
             setattr(state, validation_name, error_message)
 
     @staticmethod
+    def is_blank(input_value) -> bool:
+        """
+        Check whether a value was left blank by the user.
+
+        The literal ``"None"`` counts as blank as well: it is the signature
+        default that :meth:`InputDefaultsHelper.extract_parameters` reports for
+        an optional parameter.
+
+        :param input_value: The value to check.
+        :return: True if the value carries no user input.
+        """
+        return input_value is None or str(input_value).strip() in ("", "None")
+
+    @staticmethod
     def validate(
         input_name: str,
         input_value: Union[float, int],
         category: str | None = None,
         parameter_type: str | None = None,
+        optional: bool = False,
     ) -> list[str]:
         """
         Validates the input value against its default type and any additional conditions.
@@ -65,8 +84,12 @@ class DashboardValidation:
         :param input_value: The value to validate.
         :param category: The category of validation (e.g., 'distribution', 'lattice').
         :param parameter_type: The explicit type to use ('int', 'float', 'str', 'bool'). If provided, overrides type lookup.
+        :param optional: If True, a blank value is accepted and the parameter is left at its default.
         :return: A list of error messages. An empty list if there are no errors.
         """
+        if optional and DashboardValidation.is_blank(input_value):
+            return []
+
         input_type = DashboardValidation._get_input_type(
             input_name, category, parameter_type
         )
@@ -83,6 +106,11 @@ class DashboardValidation:
             if str(input_value).strip() in ("True", "False", "true", "false"):
                 return []
             return [BOOL_ERROR_MESSAGE]
+
+        if input_type == "list":
+            if DashboardValidation.is_number_list(input_value):
+                return []
+            return [LIST_ERROR_MESSAGE]
 
         numeric_input = GeneralFunctions.convert_to_numeric(input_value)
         type_errors = DashboardValidation._validate_type(numeric_input, input_type)
@@ -160,7 +188,12 @@ class DashboardValidation:
         :return: List of error messages. Empty if all conditions are satisfied.
         """
 
-        lookup_name = "lambda" if "lambda" in input_name else input_name
+        if input_name.startswith("lambdaP"):
+            lookup_name = "lambdaP"  # e.g., lambdaPx
+        elif "lambda" in input_name:
+            lookup_name = "lambda"
+        else:
+            lookup_name = input_name
         additional_conditions = (
             GeneralFunctions.get_default(lookup_name, "validation_condition") or []
         )
@@ -173,10 +206,30 @@ class DashboardValidation:
                 errors.append(POSITIVE_ERROR)
             elif condition == "negative" and value >= 0:
                 errors.append(NEGATIVE_ERROR)
+            elif condition == "non_negative" and value < 0:
+                errors.append(NON_NEGATIVE_ERROR)
             elif condition == "greater_than_one" and value <= 1:
                 errors.append(GREATER_THAN_ONE_ERROR)
 
         return errors
+
+    @staticmethod
+    def is_number_list(user_input) -> bool:
+        """
+        Check if the user input is a list of numbers, e.g., '[0.0, 1.5]', that
+        the export can write as a keyword argument, e.g., k_normal=[0.0, 1.5].
+        """
+        try:
+            call = ast.parse(f"f(x={str(user_input).strip()})", mode="eval").body
+            if call.args or len(call.keywords) != 1:
+                return False  # e.g., '[0.0], ds=2' adds a keyword argument
+            argument = call.keywords[0].value
+            if not isinstance(argument, (ast.List, ast.Tuple)):
+                return False
+            value = ast.literal_eval(argument)
+        except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+            return False
+        return all(type(item) in (int, float) for item in value)
 
     @staticmethod
     def is_valid_input_name(user_input: str) -> bool:
@@ -195,14 +248,20 @@ class DashboardValidation:
         :param direction: One of 'x', 'y', or 'z' indicating which directional value to check.
         """
 
-        n_cell = GeneralFunctions.convert_to_numeric(
-            getattr(state, f"n_cell_{direction}", None)
-        )
-        blocking_factor = GeneralFunctions.convert_to_numeric(
-            getattr(state, f"blocking_factor_{direction}", None)
-        )
+        n_cell_name = f"n_cell_{direction}"
+        blocking_factor_name = f"blocking_factor_{direction}"
+        if DashboardValidation.validate(
+            n_cell_name, getattr(state, n_cell_name, None)
+        ) or DashboardValidation.validate(
+            blocking_factor_name, getattr(state, blocking_factor_name, None)
+        ):
+            return  # the inputs show their own errors, e.g., not an integer
 
-        if blocking_factor is None or blocking_factor == 0:
+        n_cell = GeneralFunctions.convert_to_numeric(getattr(state, n_cell_name))
+        blocking_factor = GeneralFunctions.convert_to_numeric(
+            getattr(state, blocking_factor_name)
+        )
+        if blocking_factor == 0:
             return
 
         if n_cell % blocking_factor != 0:

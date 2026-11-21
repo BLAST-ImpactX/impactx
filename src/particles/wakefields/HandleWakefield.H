@@ -89,7 +89,8 @@ namespace impactx::particles::wakefields
                 throw std::runtime_error("algo.csr_bins must be at least 2");
             }
 
-            int wake_bins = 150;
+            // By default, set this equal to the number of CSR bins.
+            int wake_bins = csr_bins;
             pp_algo.queryAddWithParser("wake_bins", wake_bins);
             if (apply_short_range_wake && wake_bins < 2) {
                 throw std::runtime_error("algo.wake_bins must be at least 2");
@@ -122,7 +123,7 @@ namespace impactx::particles::wakefields
             // Set parameters for charge deposition
             bool const is_unity_particle_weight = false; // Only true if w = 1
 
-            int const num_bins = apply_csr ? csr_bins : wake_bins;  // Set resolution
+            int const num_bins = wake_bins;  // Set resolution
             amrex::Real const bin_min = t_min;
             amrex::Real const bin_max = t_max;
             amrex::Real const bin_size = (bin_max - bin_min) / (num_bins - 1);  // number of evaluation points
@@ -159,6 +160,8 @@ namespace impactx::particles::wakefields
             // Pre-size on every rank to the (global) wake length.  On the IO
             // processor this is overwritten by the convolution result of the
             // same length.
+            amrex::Gpu::DeviceVector<amrex::Real> convolved_csr_wakefield(num_edges, 0.0);
+            amrex::Gpu::DeviceVector<amrex::Real> convolved_sr_wakefield(num_edges, 0.0);
             amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield(num_edges, 0.0);
             if (amrex::ParallelDescriptor::IOProcessor()) {
                 if (apply_csr){
@@ -199,7 +202,7 @@ namespace impactx::particles::wakefields
                     });
 
                     // Call convolution function
-                    convolved_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
+                    convolved_csr_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
                 }
                 if (apply_short_range_wake){
                     // Construct wake function on 2N support: it only acts on trailing particles,
@@ -230,9 +233,17 @@ namespace impactx::particles::wakefields
                     });
 
                     // Call convolution function
-                    convolved_wakefield = impactx::particles::wakefields::convolve_fft(charge_distribution, wake_function, bin_size);
+                    convolved_sr_wakefield = impactx::particles::wakefields::convolve_fft(charge_distribution, wake_function, bin_size);
                 }
 
+                // Combine CSR and short-range wakefield contributions.
+                amrex::Real *const dptr_csr_wakefield = convolved_csr_wakefield.data();
+                amrex::Real *const dptr_sr_wakefield = convolved_sr_wakefield.data();
+                amrex::Real *const dptr_wakefield = convolved_wakefield.data();
+                amrex::ParallelFor(num_edges, [=] AMREX_GPU_DEVICE(int i) noexcept {
+                    // Total wakefield, including CSR and short-range wake contributions:
+                    dptr_wakefield[i] = dptr_csr_wakefield[i] + dptr_sr_wakefield[i];
+                });
             }
 
             // Broadcast the global wakefield from the IO processor (which alone

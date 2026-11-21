@@ -2,7 +2,7 @@
 #
 # Copyright 2022-2026 The ImpactX Community
 #
-# Authors: Axel Huebl
+# Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
 # -*- coding: utf-8 -*-
@@ -13,8 +13,7 @@ import numpy as np
 import pytest
 
 import amrex.space3d as amr
-import impactx
-from impactx import ImpactX, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
 
 # configure the test
 verbose = True
@@ -269,7 +268,7 @@ def test_xopt():
 
 if __name__ == "__main__":
     # Call MPI_Init and MPI_Finalize only once:
-    if impactx.Config.have_mpi:
+    if Config.have_mpi:
         from mpi4py import MPI  # noqa
 
     test_xopt()

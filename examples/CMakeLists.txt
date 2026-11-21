@@ -2317,5 +2317,4 @@ add_impactx_test(csr-kick-finite-gamma-uniform.py
     ON    # ImpactX MPI-parallel
     examples/wake_csr_kick/analysis_csr_kick_finite_gamma_uniform.py
     OFF  # no plot script yet
-) 
-
+)

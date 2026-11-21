@@ -8,7 +8,6 @@
 import numpy as np
 import openpmd_api as io
 import scipy.constants as sc
-import scipy.special as sp
 
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
@@ -59,13 +58,13 @@ zi_scaled = zi / sigmaz
 
 # Predicted momentum kick, from C. Mitchell, J. Qiang, and P. Emma, Phys. Rev. Accel. Beams 16, 060703 (2013), eqs. (C5-C7).
 Lb = sigmaz * np.sqrt(12.0)
-zeta = (zi+Lb/2)*gamma**3/radius
-term1 = 3.0*zeta + np.sqrt(4.0+9.0*zeta**2)
-term1_rt = term1**(1.0/3.0)
-u = 2.0*2.0**(1.0/3.0)/term1_rt + 2.0**(2.0/3.0)*term1_rt
-ICSR_dimensionless = -4.0*u*(u**2 + 8.0)/((u**2+4.0)*(u**2+12.0))
+zeta = (zi + Lb / 2) * gamma**3 / radius
+term1 = 3.0 * zeta + np.sqrt(4.0 + 9.0 * zeta**2)
+term1_rt = term1 ** (1.0 / 3.0)
+u = 2.0 * 2.0 ** (1.0 / 3.0) / term1_rt + 2.0 ** (2.0 / 3.0) * term1_rt
+ICSR_dimensionless = -4.0 * u * (u**2 + 8.0) / ((u**2 + 4.0) * (u**2 + 12.0))
 ICSR = ICSR_dimensionless * gamma * r_e * me_eV / radius
-wake = Nb/Lb * ICSR
+wake = Nb / Lb * ICSR
 
 dE_predicted = wake * L / p0_eVc
 pt_predicted = -dE_predicted

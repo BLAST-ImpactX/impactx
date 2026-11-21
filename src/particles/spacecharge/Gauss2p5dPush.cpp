@@ -161,6 +161,10 @@ namespace impactx::particles::spacecharge
         amrex::ParticleReal const charge = pc.GetRefParticle().charge;
 
         std::unordered_map<std::string, amrex::ParticleReal> const rbc = diagnostics::reduced_beam_characteristics(pc);
+        // get position of the transverse beam centroid
+        // Mean of the particle positions (unit: meter)
+        amrex::ParticleReal const meanx = rbc.at("mean_x");
+        amrex::ParticleReal const meany = rbc.at("mean_y");
         // get RMS sigma of beam
         // Standard deviation of the particle positions (speed of light times time delay for t) (unit: meter)
         amrex::ParticleReal const sigx = rbc.at("sig_x");
@@ -265,10 +269,12 @@ namespace impactx::particles::spacecharge
 
                 // gather to each particle and push momentum
                 amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
+                    // transverse positions relative to the bunch centroid
+                    amrex::ParticleReal const x = part_x[i] - meanx;
+                    amrex::ParticleReal const y = part_y[i] - meany;
+
                     // access SoA Real data
-                    amrex::ParticleReal & AMREX_RESTRICT x = part_x[i];
-                    amrex::ParticleReal & AMREX_RESTRICT y = part_y[i];
-                    amrex::ParticleReal & AMREX_RESTRICT z = part_z[i];
+                    amrex::ParticleReal const & AMREX_RESTRICT z = part_z[i];
                     amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
                     amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
                     amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];

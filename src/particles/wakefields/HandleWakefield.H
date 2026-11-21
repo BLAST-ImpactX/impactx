@@ -45,7 +45,7 @@ namespace impactx::particles::wakefields
         impactx::ImpactXParticleContainer& particle_container,
         T_Element const& element_variant,
         amrex::Real slice_ds,
-        bool print_wakefield = true
+        bool print_wakefield = false
     )
     {
         if (slice_ds == 0.0) { return; }
@@ -218,13 +218,6 @@ namespace impactx::particles::wakefields
                     // Trapezoidal rule over each bin ahead of an edge: bin j lies between the
                     // separations (k-j-1) * bin_size and (k-j) * bin_size from edge k. A bin at or
                     // behind an edge does not act on it, so the first value stays zero.
-                    /* amrex::ParallelFor(num_edges - 1, [=] AMREX_GPU_DEVICE(int i) {
-                        amrex::Real const s_near = -static_cast<amrex::Real>(i) * bin_size;
-                        amrex::Real const s_far = -static_cast<amrex::Real>(i + 1) * bin_size;
-                        dptr_wake_function[i + 1] = 0.5_rt * charge_factor / bin_size * (
-                            w_l_csr_caseB(s_near, dR, gamma, bin_size) +
-                            w_l_csr_caseB(s_far, dR, gamma, bin_size));
-                    }); */
                     amrex::ParallelFor(num_edges, [=] AMREX_GPU_DEVICE(int d) {
                         amrex::Real const s_center = (static_cast<amrex::Real>(d) + 0.5_rt) * bin_size;
                         int const fft_index = (d == 0) ? 0 : 2 * num_edges - d;

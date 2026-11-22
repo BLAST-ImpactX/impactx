@@ -7335,9 +7335,11 @@ class KnownElementsList:
         legend_ncols: int
             Number of columns for lattice element types in the legend.
         palette: string
-            Color palette of the elements: ``"cern-lhc"``, or ``"fnal-booster"`` with
-            dipoles blue, quadrupoles red, sextupoles (multipoles) yellow and
-            combined-function magnets green.
+            Color palette of the elements: ``"cern-lhc"``;
+            ``"fnal-booster"`` with dipoles blue, quadrupoles red, sextupoles (multipoles)
+            yellow and combined-function magnets green;
+            or ``"fnal-iota"`` with dipoles blue, quadrupoles green, sextupoles (multipoles)
+            yellow, nonlinear lenses red and RF cavities tan.
 
         Returns
         -------

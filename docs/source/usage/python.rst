@@ -1580,7 +1580,7 @@ This module provides elements and methods for the accelerator lattice.
       :param ax: A plotting area in matplotlib (called axes there).
       :param legend: Plot a legend if true.
       :param legend_ncols: Number of columns for lattice element types in the legend.
-      :param palette: Color palette of the elements: ``"cern-lhc"``, or ``"fnal-booster"`` with dipoles blue, quadrupoles red, sextupoles (multipoles) yellow and combined-function magnets green.
+      :param palette: Color palette of the elements: ``"cern-lhc"``; ``"fnal-booster"`` with dipoles blue, quadrupoles red, sextupoles (multipoles) yellow and combined-function magnets green; or ``"fnal-iota"`` with dipoles blue, quadrupoles green, sextupoles (multipoles) yellow, nonlinear lenses red and RF cavities tan.
 
 .. py:class:: impactx.elements.FilteredElementsList
 

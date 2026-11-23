@@ -1832,7 +1832,9 @@ migrating existing Synergia workflows.
    <https://github.com/BLAST-ImpactX/impactx/issues/1584>`__.  Use the primary
    :py:meth:`impactx.elements.KnownElementsList.load_file` importer for new and
    general-purpose MAD-X workflows, and validate converted lattices carefully
-   when using synmadx for migration.
+   when using synmadx for migration. The synmadx reader may interpret
+   undocumented syntax and non-conforming inputs differently than
+   either MAD-X or the primary lattice importer.
 
 .. note::
 

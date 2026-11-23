@@ -250,6 +250,7 @@ def cnv_rbend(elem, order):
             rc=radius_of_curvature,
             g=2 * hgap,
             K2=fint,
+            location="entry",
             model=de_model,
             name=nm + "_usedge",
             rotation=rot,
@@ -261,10 +262,11 @@ def cnv_rbend(elem, order):
             rc=radius_of_curvature,
             g=2 * hgap,
             K2=fint,
+            location="exit",
             model=de_model,
             name=nm + "_dsedge",
             rotation=rot,
-        )
+        ) 
 
     if elem.get_double_attribute("h1", 0.0) != 0.0:
         print("h1 attribute not supported for sbend in ImpactX")
@@ -691,8 +693,8 @@ def unroll_impactx_lattice(lattice):
         edict = _filter_kwargs(edict)
 
         # skipping BeamMonitors for now. They seem to cause trouble
-        if etype == "BeamMonitor":
-            continue
+        # if etype == "BeamMonitor":
+        #     continue
 
         for pname in edict:
             # the name parameter is a string and must be enclosed in quotes,
@@ -700,11 +702,14 @@ def unroll_impactx_lattice(lattice):
             # Also location and model parameters on the DipEdge element
             if not firstparm:
                 output_elem = output_elem + ", "
-            if pname == "name" and edict.get(pname) is None:
+            # if the parameter has value None, output it that way
+            if edict.get(pname) is None:
                 output_elem = output_elem + f"{pname}=None"
-            elif pname == "name" or pname == "location" or pname == "model":
+            # in general if the type of the parameter is a string enclose it in quotes
+            elif type(edict.get(pname)) == str:
                 output_elem = output_elem + f'{pname}="{edict.get(pname)}"'
             else:
+                # just output the parameter and value using the default repr
                 output_elem = output_elem + f"{pname}={edict.get(pname)}"
             firstparm = False
         # close out this element

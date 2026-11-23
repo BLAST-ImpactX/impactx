@@ -2197,7 +2197,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
 
    dipole, quadrupole, sextupole, octupole, etc...
 
-   (Note: A nonzero dipole normal or skew coefficient results in a kick to the beam particles, but the reference particle is not deflected.)        
+   (Note: A nonzero dipole normal or skew coefficient results in a kick to the beam particles, but the reference particle is not deflected.)
 
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
    Here H_1 is the nonlinear Hamiltonian for a drift (including the kinematic square root),

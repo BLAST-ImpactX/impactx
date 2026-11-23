@@ -212,9 +212,9 @@ Collective Effects & Overall Simulation Parameters
 
      * ``False`` (default): CSR effects are not calculated.
 
-     * ``Ultrarelativistic``: CSR effects are calculated using the ultrarelativistic steady-state 1D wakefield model.                                                        
+     * ``Ultrarelativistic``: CSR effects are calculated using the ultrarelativistic steady-state 1D wakefield model.
 
-     * ``SteadyState``: CSR effects are calculated using the finite-gamma steady-state 1D wakefield model.                                                             
+     * ``SteadyState``: CSR effects are calculated using the finite-gamma steady-state 1D wakefield model.
 
       .. note::
 

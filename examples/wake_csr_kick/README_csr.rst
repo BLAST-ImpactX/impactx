@@ -162,5 +162,3 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_csr_kick_finite_gamma_uniform.py
       :language: python3
       :caption: You can copy this file from ``examples/wake_csr_kick/analysis_csr_kick_finite_gamma_uniform.py``.
-
-

@@ -203,7 +203,7 @@ Collective Effects & Overall Simulation Parameters
 
       The physical model of Coherent Synchroton Radiation (CSR) used.
 
-      Currently, the CSR implmentation is based on the 1D wakefield models presented in:
+      Currently, the CSR implementation is based on the 1D wakefield models presented in:
       `E. L. Saldin et al, NIMA 398, p. 373-394 (1997), DOI:10.1016/S0168-9002(97)00822-X <https://doi.org/10.1016/S0168-9002(97)00822-X>`__.
       The user may select between the ultrarelativistic steady-state wakefield model (eq. 19) or the finite-gamma steady-state wakefield model (eq. 32).
       Transient wakefield effects are not yet supported.

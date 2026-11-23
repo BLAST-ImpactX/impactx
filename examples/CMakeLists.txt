@@ -2311,7 +2311,7 @@ add_impactx_test(csr-kick-finite-gamma-gaussian.py
     OFF  # no plot script yet
 )
 
-# Test of CSR kick Using Finite-Gamma Steady-State Model (Gaussian) ###########
+# Test of CSR kick Using Finite-Gamma Steady-State Model (Uniform) ###########
 add_impactx_test(csr-kick-finite-gamma-uniform.py
     examples/wake_csr_kick/run_csr_kick_finite_gamma_uniform.py
     ON    # ImpactX MPI-parallel

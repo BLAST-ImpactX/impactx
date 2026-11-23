@@ -201,12 +201,20 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr
 
-      Enable (``True``) or disable (``False``) Coherent Synchrotron Radiation (CSR) calculations (default: ``False``).
+      The physical model of Coherent Synchroton Radiation (CSR) used.
 
-      Whether to calculate Coherent Synchrotron Radiation (CSR) effects (default: disabled).
+      Currently, the CSR implmentation is based on the 1D wakefield models presented in:
+      `E. L. Saldin et al, NIMA 398, p. 373-394 (1997), DOI:10.1016/S0168-9002(97)00822-X <https://doi.org/10.1016/S0168-9002(97)00822-X>`__.
+      The user may select between the ultrarelativistic steady-state wakefield model (eq. 19) or the finite-gamma steady-state wakefield model (eq. 32).
+      Transient wakefield effects are not yet supported.
 
-      Currently, this is the 1D ultrarelativistic steady-state wakefield model (eq. 19 of
-      `E. L. Saldin et al, NIMA 398, p. 373-394 (1997), DOI:10.1016/S0168-9002(97)00822-X <https://doi.org/10.1016/S0168-9002(97)00822-X>`__).
+     Options:
+
+     * ``False`` (default): CSR effects are not calculated.
+
+     * ``Ultrarelativistic``: CSR effects are calculated using the ultrarelativistic steady-state 1D wakefield model.                                                        
+
+     * ``SteadyState``: CSR effects are calculated using the finite-gamma steady-state 1D wakefield model.                                                             
 
       .. note::
 

@@ -16,7 +16,6 @@
 #include <AMReX_REAL.H>          // for ParticleReal
 #include <AMReX_SmallMatrix.H>   // for SmallVector
 
-#include <stdexcept>
 
 namespace impactx::integrators
 {
@@ -527,7 +526,7 @@ namespace impactx::integrators
 
 
    /** Applying a map on the extended phase space, for use within
-    *  semiexplicit_integrator_step.  Additional documentation to be added.
+    *  semiexplicit_integrator_step.
     *
     *
     * @param tau Step size
@@ -535,7 +534,7 @@ namespace impactx::integrators
     * @param particle2 Particle phase space data in a 6-vector
     * @param element Element defining the two maps associated with H_1 and H_2
     * @param zeval Evaluation point in s
-    * @param int_order Order used for symplectic integration (2 or 4)
+    * @param int_order Order used for symplectic integration (2, 4 or 6)
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -618,9 +617,6 @@ namespace impactx::integrators
            element.map(tau3,particle1,particle2,zeval1,zeval2);
            element.map(tau2,particle2,particle1,zeval2,zeval1);
            element.map(tau1,particle1,particle2,zeval1,zeval2);
-    } else {
-              // throw std::runtime_error("Symplectic integrator: order must be 2, 4, or 6.");
-
         }
 
     }
@@ -637,7 +633,7 @@ namespace impactx::integrators
     * @param tau Size of the step
     * @param element Element defining the two maps associated with H_1 and H_2
     * @param zeval Evaluation point in s
-    * @param int_order Order used for symplectic integration (2 or 4)
+    * @param int_order Order used for symplectic integration (2, 4 or 6)
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -654,7 +650,6 @@ namespace impactx::integrators
         // Parameters defining the implicit iteration loop
         amrex::ParticleReal const tolerance = 1.0e-12_prt;
         int max_iterations = 100;
-        int count = 0;
 
         // Initialize the perturbation vector
         amrex::SmallVector<amrex::ParticleReal, 6, 1> perturbation{};
@@ -688,28 +683,19 @@ namespace impactx::integrators
               particle = particle_copy1;
               break;
            }
-           count = count + 1;
        }
-
-       // A statement for debugging:
-       // amrex::Print() << "Number of iterations required: " << count << "\n";
-
     }
 
-   /** A second-order symplectic integrator based on a Hamiltonian
-    *  splitting H = H_1 + H_2.  This is a generalization of the second-
-    *  order leapfrog algorithm.  For a detailed overview:
-    *
-    *  E. Hairer et al, Geometric Numerical Integration:  Structure-
-    *  Preserving Algorithms for Ordinary Differential Equations,
-    *  2nd ed, Springer, Berlin, 2006.
+   /** Integrate a non-separable Hamiltonian from zin to zout in nsteps
+    *  steps of the semiexplicit symplectic integrator,
+    *  @see semiexplicit_integrator_step.
     *
     * @param particle Particle phase space data in a 6-vector
     * @param zin Initial value of independent variable (z-location)
     * @param zout Final value of independent variable (z-location)
-    * @param int_order Order used for symplectic integration (2 or 4)
+    * @param int_order Order used for symplectic integration (2, 4 or 6)
     * @param nsteps Number of integration steps
-    * @param element Element defining the two maps associated with H_1 and H_2
+    * @param element Element defining the map on the extended phase space
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE

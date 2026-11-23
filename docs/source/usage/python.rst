@@ -2543,8 +2543,7 @@ The aperture is disabled entirely only if both planes are zero or less, which is
    :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.MagnetostaticVectorPotential(ds, unit=0, ax="0", ay="0", daxdx="0", daxdy="0", daydx="0", daydy="0", dazdx="0", dazdy="0", dx=0, dy=0, rotation=0, aperture_x=0,
-aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.MagnetostaticVectorPotential(*, ds, unit=0, ax="0", ay="0", daxdx="0", daxdy="0", daydx="0", daydy="0", dazdx="0", dazdy="0", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    Symplectic integration in a user-defined magnetostatic vector potential, using the exact Hamiltonian, which includes all
    nonlinear kinematic effects.  Integration is performed with respect to a Cartesian coordinate system local to the body of
@@ -2553,12 +2552,15 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic integrators for non-separable Hamiltonian systems,"
    Math. Comput. 92, pp. 251-281 (2022), `DOI:10.1090/mcom/3778 <https://doi.org/10.1090/mcom/3778>`__
 
-   This element requires these additional parameters:
+   The vector potential and its transverse derivatives are formulas of ``x``, ``y`` and ``z`` in the Cartesian frame local to the element (see :ref:`running-cpp-parameters-parser`).
+   Here, ``z`` is measured from the center of the element: it runs from ``-ds/2`` at the entrance to ``ds/2`` at the exit.
+   A formula is checked for syntax when it is set.
+   The reference particle moves on a straight line through the element.
 
    :param ds: Segment length in m.
-   :param unit: specification of units for the vector potential and its derivatives
-              0 (default) normalize all quantities by the magnetic rigidity
-              1 provide all quantities in SI units
+   :param unit: specification of units for the vector potential and its derivatives:
+              ``0`` (default) normalizes all quantities by the magnetic rigidity,
+              ``1`` takes all quantities in SI units
    :param ax: formula for horizontal component of vector potential (dimensionless, if unit = 0 OR in T-m if unit = 1)
    :param ay: formula for vertical component of vector potential (dimensionless, if unit = 0 OR in T-m if unit = 1)
    :param daxdx: formula for x-derivative of A_x component (in 1/meter, if unit = 0 OR in T if unit = 1)
@@ -2579,7 +2581,18 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    .. py:property:: unit
 
-      unit specification for quad strength
+      unit specification for the vector potential: ``0`` (normalized by the magnetic rigidity) or ``1`` (SI units)
+
+   .. py:property:: ax
+                    ay
+                    daxdx
+                    daxdy
+                    daydx
+                    daydy
+                    dazdx
+                    dazdy
+
+      formulas of the vector potential and its transverse derivatives
 
    .. py:property:: int_order
 

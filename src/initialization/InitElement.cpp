@@ -525,45 +525,34 @@ element_name) );
         } else if (element_type == "magnetostatic_vector_potential")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
-            auto a = detail::query_alignment(pp_element);
-            auto b = detail::query_aperture(pp_element);
+            auto a = detail::query_alignment<MagnetostaticVectorPotential>(pp_element);
+            auto b = detail::query_aperture<MagnetostaticVectorPotential>(pp_element);
 
-            int unit = 0;
-            int int_order = 2;
-            int mapsteps = mapsteps_default;
+            int unit = MagnetostaticVectorPotential::DEFAULT_unit;
+            int int_order = MagnetostaticVectorPotential::DEFAULT_int_order;
+            int mapsteps = MagnetostaticVectorPotential::DEFAULT_mapsteps;
             pp_element.queryAddWithParser("unit", unit);
-
-            std::string ax = "0";
-            std::string ay = "0";
-            std::string daxdx = "0";
-            std::string daxdy = "0";
-            std::string daydx = "0";
-            std::string daydy = "0";
-            std::string dazdx = "0";
-            std::string dazdy = "0";
-            pp_element.query("A_x(x,y,z)", ax);
-            pp_element.query("A_y(x,y,z)", ay);
-            pp_element.query("dA_x/dx(x,y,z)", daxdx);
-            pp_element.query("dA_x/dy(x,y,z)", daxdy);
-            pp_element.query("dA_y/dx(x,y,z)", daydx);
-            pp_element.query("dA_y/dy(x,y,z)", daydy);
-            pp_element.query("dA_z/dx(x,y,z)", dazdx);
-            pp_element.query("dA_z/dy(x,y,z)", dazdy);
-
             pp_element.queryAddWithParser("int_order", int_order);
             pp_element.queryAddWithParser("mapsteps", mapsteps);
+
+            // formulas of (x,y,z): read the whole line, so that spaces do not cut them short
+            auto const formula = [&pp_element](char const * key) {
+                std::string f = "0";
+                pp_element.queryline(key, f);
+                return f;
+            };
 
             m_lattice.emplace_back(MagnetostaticVectorPotential(
                 ds,
                 unit,
-                ax,
-                ay,
-                daxdx,
-                daxdy,
-                daydx,
-                daydy,
-                dazdx,
-                dazdy,
+                formula("A_x(x,y,z)"),
+                formula("A_y(x,y,z)"),
+                formula("dA_x/dx(x,y,z)"),
+                formula("dA_x/dy(x,y,z)"),
+                formula("dA_y/dx(x,y,z)"),
+                formula("dA_y/dy(x,y,z)"),
+                formula("dA_z/dx(x,y,z)"),
+                formula("dA_z/dy(x,y,z)"),
                 a["dx"],
                 a["dy"],
                 a["rotation_degree"],

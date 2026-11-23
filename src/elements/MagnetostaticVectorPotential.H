@@ -11,22 +11,24 @@
 #define IMPACTX_MAGNETOSTATIC_VECTOR_POTENTIAL_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "particles/integrators/Integrators.H"
+#include "helper/TrackedParser.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
-#include "mixin/dynamicdata.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
 
 #include <AMReX_Extension.H>
+#include <AMReX_Math.H>
 #include <AMReX_Parser.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
 #include <AMReX_Vector.H>
 
 #include <cmath>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -34,32 +36,15 @@
 
 namespace impactx::elements
 {
-    /** Host-side parsers and device-callable executors for the user-defined
-     *  vector-potential components and their transverse derivatives.
+    /** The prepared, resource-free pusher for a user-defined magnetostatic vector potential.
      *
-     * The amrex::Parser is host-only; the corresponding amrex::ParserExecutor
-     * is device-callable. We keep both: host-side parsers live in this struct
-     * and the executors are obtained on demand in compute_constants().
-     *
-     * Host data persists across simulations; the executors are released when
-     * AMReX shuts down.
+     * This is what a particle-push kernel is handed. It owns nothing: the user-defined
+     * formulas reach it as compiled, non-owning executors, prepared by
+     * @see MagnetostaticVectorPotentialGPU::make_particle_pusher for the lifetime of one
+     * element slice.
      */
-    struct MagnetostaticVectorPotentialParsers
-    {
-        amrex::Parser ax;
-        amrex::Parser ay;
-        amrex::Parser daxdx;
-        amrex::Parser daxdy;
-        amrex::Parser daydx;
-        amrex::Parser daydy;
-        amrex::Parser dazdx;
-        amrex::Parser dazdy;
-    };
-
-    struct MagnetostaticVectorPotential
-    : public mixin::Named,
-      public mixin::BeamOptic<MagnetostaticVectorPotential>,
-      public mixin::LinearTransport<MagnetostaticVectorPotential>,
+    struct MagnetostaticVectorPotentialPusher
+    : public mixin::ParticlePush<MagnetostaticVectorPotentialPusher>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture
@@ -67,32 +52,16 @@ namespace impactx::elements
         static constexpr auto type = "MagnetostaticVectorPotential";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        using DynamicData = mixin::GPUDataRegistry<MagnetostaticVectorPotentialParsers>;
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr int DEFAULT_int_order = 2;
+        static constexpr int DEFAULT_mapsteps = 10;
 
-        /** Symplectic integration in a user-defined magnetostatic vector
-         *  potential, using the exact Hamiltonian, which includes all
-         *  nonlinear kinematic effects.  Integration is performed with
-         *  respect to a Cartesian coordinate system local to the body of
-         *  the element.  A symmetric, semi-explicit symplectic integration
-         *  scheme is used, based on:
-         *
-         *  B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic
-         *  integrators for non-separable Hamiltonian systems,"
-         *  Math. Comput. 92, pp. 251-281 (2022),
-         *  https://doi.org/10.1090/mcom/3778
+        /** The particle-facing configuration of a user-defined magnetostatic vector potential
          *
          * @param ds Segment length in m.
          * @param unit  Unit specification for the vector potential
          *           unit = 0 dimensionless (default)
          *           unit = 1 SI units of T-m
-         * @param str_ax function string for A_x(x,y,z)
-         * @param str_ay function string for A_y(x,y,z)
-         * @param str_daxdx function string for dA_x/dx(x,y,z)
-         * @param str_daxdy function string for dA_x/dy(x,y,z)
-         * @param str_daydx function string for dA_y/dx(x,y,z)
-         * @param str_daydy function string for dA_y/dy(x,y,z)
-         * @param str_dazdx function string for dA_z/dx(x,y,z)
-         * @param str_dazdy function string for dA_z/dy(x,y,z)
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
@@ -102,50 +71,24 @@ namespace impactx::elements
          * @param mapsteps number of integration steps per slice used for
          *        particle push in the applied fields
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        MagnetostaticVectorPotential (
+        MagnetostaticVectorPotentialPusher (
             amrex::ParticleReal ds,
             int unit,
-            std::string const & str_ax = "0",
-            std::string const & str_ay = "0",
-            std::string const & str_daxdx = "0",
-            std::string const & str_daxdy = "0",
-            std::string const & str_daydx = "0",
-            std::string const & str_daydy = "0",
-            std::string const & str_dazdx = "0",
-            std::string const & str_dazdy = "0",
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int int_order = 2,
-            int mapsteps = 10,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx,
+            amrex::ParticleReal dy,
+            amrex::ParticleReal rotation_degree,
+            amrex::ParticleReal aperture_x,
+            amrex::ParticleReal aperture_y,
+            int int_order,
+            int mapsteps,
+            int nslice
         )
-        : Named(std::move(name)),
-          Thick(ds, nslice),
-          Alignment(dx, dy, rotation_degree),
-          PipeAperture(aperture_x, aperture_y),
-          m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps),
-          m_id(DynamicData::allocate_id())
+          : Thick(ds, nslice),
+            Alignment(dx, dy, rotation_degree),
+            PipeAperture(aperture_x, aperture_y),
+            m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps)
         {
-            // variables of the user-defined functions
-            amrex::Vector<std::string> const varnames = {"x", "y", "z"};
-
-            // build host parsers
-            amrex::ParmParse const pp;
-            auto & parsers = DynamicData::emplace(m_id);
-            parsers.ax    = pp.makeParser(str_ax,    varnames);
-            parsers.ay    = pp.makeParser(str_ay,    varnames);
-            parsers.daxdx = pp.makeParser(str_daxdx, varnames);
-            parsers.daxdy = pp.makeParser(str_daxdy, varnames);
-            parsers.daydx = pp.makeParser(str_daydx, varnames);
-            parsers.daydy = pp.makeParser(str_daydy, varnames);
-            parsers.dazdx = pp.makeParser(str_dazdx, varnames);
-            parsers.dazdy = pp.makeParser(str_dazdy, varnames);
         }
 
         /** Reverse the element (negate ds)
@@ -156,8 +99,8 @@ namespace impactx::elements
          */
         void reverse () { Thick::reverse(); }
 
-        /** Push all particles */
-        using BeamOptic::operator();
+        /** Push all particles on a tile */
+        using mixin::ParticlePush<MagnetostaticVectorPotentialPusher>::operator();
 
         /** Compute and cache the constants for the push.
          *
@@ -179,23 +122,12 @@ namespace impactx::elements
 
             // normalize the vector potential if SI units are specified
             m_scale = m_unit == 1 ? 1_prt / refpart.rigidity_Tm() : 1_prt;
-
-            // compile device-callable executors (cached across calls)
-            constexpr int num_vars = 3;
-            auto const & parsers = *DynamicData::get(m_id);
-            m_dfunc_ax    = parsers.ax.compile<num_vars>();
-            m_dfunc_ay    = parsers.ay.compile<num_vars>();
-            m_dfunc_daxdx = parsers.daxdx.compile<num_vars>();
-            m_dfunc_daxdy = parsers.daxdy.compile<num_vars>();
-            m_dfunc_daydx = parsers.daydx.compile<num_vars>();
-            m_dfunc_daydy = parsers.daydy.compile<num_vars>();
-            m_dfunc_dazdx = parsers.dazdx.compile<num_vars>();
-            m_dfunc_dazdy = parsers.dazdy.compile<num_vars>();
         }
 
         /** Push a single particle through this element.
          *
-         * The @see compute_constants method must be called before pushing particles through this operator.
+         * The pusher must be prepared through ``make_particle_pusher`` on the owning element
+         * before particles are pushed through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -203,7 +135,7 @@ namespace impactx::elements
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
-         * @param idcpu particle global index
+         * @param idcpu particle global index (unused)
          * @param refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -214,21 +146,16 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT px,
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
-            uint64_t & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] uint64_t const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
-            // coordinates within the element
+            // longitudinal coordinate z within the element, measured from its center:
+            // the reference particle was already advanced through this slice
             amrex::ParticleReal const s = refpart.s - m_slice_ds;
-            amrex::ParticleReal const sedge = refpart.sedge;
-
-            // numerical integration parameters
-            amrex::ParticleReal const zin = s - sedge - m_ds/2_prt;
+            amrex::ParticleReal const zin = s - refpart.sedge - m_ds/2_prt;
             amrex::ParticleReal const zout = zin + m_slice_ds;
             int const nsteps = m_mapsteps;
 
@@ -237,7 +164,7 @@ namespace impactx::elements
                 x, px, y, py, t, pt
             };
 
-            // call integrator to advance through slice (int_order = 2, 4 or 6, otherwise default 2)
+            // call integrator to advance through slice
             integrators::symp_integrate_semiexplicit(particle, zin, zout, m_int_order, nsteps, *this);
 
             // assign updated values
@@ -247,12 +174,6 @@ namespace impactx::elements
             py = particle(4);
             t  = particle(5);
             pt = particle(6);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes two copies of the particle coordinates in the
@@ -314,9 +235,9 @@ namespace impactx::elements
          * @param px horizontal momentum
          * @param y vertical coordinate in m
          * @param py vertical momentum
-         * @param t temporal coordinate in m
+         * @param t temporal coordinate in m (unused)
          * @param pt temporal momentum (energy deviation)
-         * @param zeval lattice position in m
+         * @param zeval longitudinal position in m, measured from the element center
          * @returns tuple containing derivatives of the Hamiltonian
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -332,14 +253,14 @@ namespace impactx::elements
             amrex::ParticleReal const z = zeval;
 
             // Evaluate the vector potential and its derivatives in the local frame
-            auto const ax    = m_dfunc_ax(x, y, z)    * m_scale;
-            auto const ay    = m_dfunc_ay(x, y, z)    * m_scale;
-            auto const daxdx = m_dfunc_daxdx(x, y, z) * m_scale;
-            auto const daxdy = m_dfunc_daxdy(x, y, z) * m_scale;
-            auto const daydx = m_dfunc_daydx(x, y, z) * m_scale;
-            auto const daydy = m_dfunc_daydy(x, y, z) * m_scale;
-            auto const dazdx = m_dfunc_dazdx(x, y, z) * m_scale;
-            auto const dazdy = m_dfunc_dazdy(x, y, z) * m_scale;
+            auto const ax    = m_ax(x, y, z)    * m_scale;
+            auto const ay    = m_ay(x, y, z)    * m_scale;
+            auto const daxdx = m_daxdx(x, y, z) * m_scale;
+            auto const daxdy = m_daxdy(x, y, z) * m_scale;
+            auto const daydx = m_daydx(x, y, z) * m_scale;
+            auto const daydy = m_daydy(x, y, z) * m_scale;
+            auto const dazdx = m_dazdx(x, y, z) * m_scale;
+            auto const dazdy = m_dazdy(x, y, z) * m_scale;
 
             // Rectilinear magnetostatic element: pz is the radical appearing
             // in the Hamiltonian.
@@ -360,11 +281,161 @@ namespace impactx::elements
             return std::make_tuple(dHdx, dHdpx, dHdy, dHdpy, dHdt, dHdpt);
         }
 
+        int m_unit; //! unit specification for the vector potential
+        int m_int_order; //! order used for the symplectic integration (2, 4 or 6)
+        int m_mapsteps; //! number of integration steps per slice
+
+        /** Formulas compiled for this pusher's execution space; non-owning
+         *
+         * Valid for the slice they were prepared for.
+         */
+        amrex::ParserExecutor<3> m_ax;     //! A_x(x,y,z)
+        amrex::ParserExecutor<3> m_ay;     //! A_y(x,y,z)
+        amrex::ParserExecutor<3> m_daxdx;  //! dA_x/dx(x,y,z)
+        amrex::ParserExecutor<3> m_daxdy;  //! dA_x/dy(x,y,z)
+        amrex::ParserExecutor<3> m_daydx;  //! dA_y/dx(x,y,z)
+        amrex::ParserExecutor<3> m_daydy;  //! dA_y/dy(x,y,z)
+        amrex::ParserExecutor<3> m_dazdx;  //! dA_z/dx(x,y,z)
+        amrex::ParserExecutor<3> m_dazdy;  //! dA_z/dy(x,y,z)
+
+      private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_slice_ds; //! m_ds / nslice()
+        amrex::ParticleReal m_ibeta;    //! 1 / beta
+        amrex::ParticleReal m_scale;    //! scale factor defining vector-potential units
+    };
+
+    /** User-defined formulas of the vector potential and its transverse derivatives
+     *
+     * Functions of (x, y, z) in the element-local frame, where z is measured from
+     * the element center.
+     */
+    struct VectorPotentialFormulas
+    {
+        TrackedParser<3> ax;     //!< A_x(x,y,z)
+        TrackedParser<3> ay;     //!< A_y(x,y,z)
+        TrackedParser<3> daxdx;  //!< dA_x/dx(x,y,z)
+        TrackedParser<3> daxdy;  //!< dA_x/dy(x,y,z)
+        TrackedParser<3> daydx;  //!< dA_y/dx(x,y,z)
+        TrackedParser<3> daydy;  //!< dA_y/dy(x,y,z)
+        TrackedParser<3> dazdx;  //!< dA_z/dx(x,y,z)
+        TrackedParser<3> dazdy;  //!< dA_z/dy(x,y,z)
+    };
+
+    /** A user-defined magnetostatic vector potential: the canonical element that owns its formulas.
+     *
+     * The reference-particle push, serialization and finalization run here on the host.
+     * Particle pushes run against @see MagnetostaticVectorPotentialPusher.
+     */
+    struct MagnetostaticVectorPotentialGPU
+    : public mixin::BeamOptic<MagnetostaticVectorPotentialGPU>,
+      public mixin::LinearTransport<MagnetostaticVectorPotentialGPU, false>,
+      public MagnetostaticVectorPotentialPusher
+    {
+        /** Symplectic integration in a user-defined magnetostatic vector
+         *  potential, using the exact Hamiltonian, which includes all
+         *  nonlinear kinematic effects.  Integration is performed with
+         *  respect to a Cartesian coordinate system local to the body of
+         *  the element.  A symmetric, semi-explicit symplectic integration
+         *  scheme is used, based on:
+         *
+         *  B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic
+         *  integrators for non-separable Hamiltonian systems,"
+         *  Math. Comput. 92, pp. 251-281 (2022),
+         *  https://doi.org/10.1090/mcom/3778
+         *
+         * The formulas are functions of (x, y, z) in the element-local frame,
+         * where z is measured from the element center.
+         *
+         * @param ds Segment length in m.
+         * @param unit  Unit specification for the vector potential
+         *           unit = 0 dimensionless (default)
+         *           unit = 1 SI units of T-m
+         * @param str_ax function string for A_x(x,y,z)
+         * @param str_ay function string for A_y(x,y,z)
+         * @param str_daxdx function string for dA_x/dx(x,y,z)
+         * @param str_daxdy function string for dA_x/dy(x,y,z)
+         * @param str_daydx function string for dA_y/dx(x,y,z)
+         * @param str_daydy function string for dA_y/dy(x,y,z)
+         * @param str_dazdx function string for dA_z/dx(x,y,z)
+         * @param str_dazdy function string for dA_z/dy(x,y,z)
+         * @param dx horizontal translation error in m
+         * @param dy vertical translation error in m
+         * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
+         * @param int_order order used for symplectic integration (2, 4 or 6)
+         * @param mapsteps number of integration steps per slice used for
+         *        particle push in the applied fields
+         * @param nslice number of slices used for the application of space charge
+         */
+        MagnetostaticVectorPotentialGPU (
+            amrex::ParticleReal ds,
+            int unit = DEFAULT_unit,
+            std::string str_ax = "0",
+            std::string str_ay = "0",
+            std::string str_daxdx = "0",
+            std::string str_daxdy = "0",
+            std::string str_daydx = "0",
+            std::string str_daydy = "0",
+            std::string str_dazdx = "0",
+            std::string str_dazdy = "0",
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int int_order = DEFAULT_int_order,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice
+        )
+          : MagnetostaticVectorPotentialPusher(ds, unit, dx, dy, rotation_degree,
+                                               aperture_x, aperture_y, int_order, mapsteps, nslice),
+            m_potential{
+                {std::move(str_ax),    variables()},
+                {std::move(str_ay),    variables()},
+                {std::move(str_daxdx), variables()},
+                {std::move(str_daxdy), variables()},
+                {std::move(str_daydx), variables()},
+                {std::move(str_daydy), variables()},
+                {std::move(str_dazdx), variables()},
+                {std::move(str_dazdy), variables()}
+            }
+        {
+            check(m_unit, m_int_order, m_mapsteps);
+        }
+
+        /** Reject an integration setup the element cannot run with
+         *
+         * @param unit unit specification for the vector potential (0 or 1)
+         * @param int_order order used for symplectic integration (2, 4 or 6)
+         * @param mapsteps number of integration steps per slice (> 0)
+         */
+        static void check (int unit, int int_order, int mapsteps)
+        {
+            if (unit != 0 && unit != 1)
+                throw std::invalid_argument("MagnetostaticVectorPotential: unit must be 0 or 1.");
+            if (int_order != 2 && int_order != 4 && int_order != 6)
+                throw std::invalid_argument("MagnetostaticVectorPotential: The order used for symplectic integration must be 2, 4 or 6.");
+            if (mapsteps <= 0)
+                throw std::invalid_argument("MagnetostaticVectorPotential: mapsteps must be > 0!");
+        }
+
+        /** The variables of the user-defined formulas */
+        static amrex::Vector<std::string> variables () { return {"x", "y", "z"}; }
+
+        /** Push all particles */
+        using mixin::BeamOptic<MagnetostaticVectorPotentialGPU>::operator();
+
+        /** This pushes the covariance matrix. */
+        using mixin::LinearTransport<MagnetostaticVectorPotentialGPU, false>::operator();
+
         /** This pushes the reference particle.
          *
          * @param[in,out] refpart reference particle
          */
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
         void operator() (RefPart & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -397,58 +468,50 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
-        /** This pushes the covariance matrix. */
-        using LinearTransport::operator();
-
-        /** Close and deallocate all parser handles.
+        /** Prepare the pusher for one element slice
          *
-         * The amrex::Parser instances we own depend on AMReX runtime state, so
-         * we must drop them before AMReX::Finalize() tears that state down.
+         * Compiles the formulas on first use in an AMReX session.
+         *
+         * @param refpart reference particle, already advanced for this slice
+         * @return a resource-free pusher holding compiled views of the formulas
          */
-        void
-        finalize ()
+        [[nodiscard]] MagnetostaticVectorPotentialPusher make_particle_pusher (RefPart const & refpart) const
         {
-            DynamicData::registry().erase(m_id);
+            MagnetostaticVectorPotentialPusher pusher = *this;
+            pusher.compute_constants(refpart);
+            pusher.m_ax    = m_potential.ax.executor();
+            pusher.m_ay    = m_potential.ay.executor();
+            pusher.m_daxdx = m_potential.daxdx.executor();
+            pusher.m_daxdy = m_potential.daxdy.executor();
+            pusher.m_daydx = m_potential.daydx.executor();
+            pusher.m_daydy = m_potential.daydy.executor();
+            pusher.m_dazdx = m_potential.dazdx.executor();
+            pusher.m_dazdy = m_potential.dazdy.executor();
+            return pusher;
         }
 
-        /** This function returns the linear transport map.
-         *
-         * @returns 6x6 transport matrix
-         */
-        AMREX_GPU_HOST AMREX_FORCE_INLINE
-        Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        /** Release the compiled formulas; the formulas themselves survive for reuse */
+        void finalize ()
         {
-            throw std::runtime_error(std::string(type) + ": Envelope tracking is not yet implemented!");
-            return Map6x6::Identity();
+            m_potential.ax.release();
+            m_potential.ay.release();
+            m_potential.daxdx.release();
+            m_potential.daxdy.release();
+            m_potential.daydx.release();
+            m_potential.daydy.release();
+            m_potential.dazdx.release();
+            m_potential.dazdy.release();
         }
 
-        int m_unit; //! unit specification for the vector potential
-        int m_int_order; //! order used for the symplectic integration (2, 4 or 6)
-        int m_mapsteps; //! number of integration steps per slice
-        int m_id; //! unique element id used for the parser data lookup
-
-        // device-callable executors (cached after first compile_constants() call)
-        amrex::ParserExecutor<3> m_dfunc_ax;     //! A_x(x,y,z)
-        amrex::ParserExecutor<3> m_dfunc_ay;     //! A_y(x,y,z)
-        amrex::ParserExecutor<3> m_dfunc_daxdx;  //! dA_x/dx(x,y,z)
-        amrex::ParserExecutor<3> m_dfunc_daxdy;  //! dA_x/dy(x,y,z)
-        amrex::ParserExecutor<3> m_dfunc_daydx;  //! dA_y/dx(x,y,z)
-        amrex::ParserExecutor<3> m_dfunc_daydy;  //! dA_y/dy(x,y,z)
-        amrex::ParserExecutor<3> m_dfunc_dazdx;  //! dA_z/dx(x,y,z)
-        amrex::ParserExecutor<3> m_dfunc_dazdy;  //! dA_z/dy(x,y,z)
-
-      private:
-        // constants that are independent of the individually tracked particle,
-        // see: compute_constants() to refresh
-        amrex::ParticleReal m_slice_ds; //! m_ds / nslice()
-        amrex::ParticleReal m_ibeta;    //! 1 / beta
-        amrex::ParticleReal m_scale;    //! scale factor defining vector-potential units
+        //! the formulas this element owns, compiled on demand
+        VectorPotentialFormulas m_potential;
     };
+
+    /** MagnetostaticVectorPotential: GPU state plus common host-only metadata */
+    using MagnetostaticVectorPotential = Element<MagnetostaticVectorPotentialGPU>;
 
 } // namespace impactx::elements
 
-IMPACTX_GPUDATA_EXTERN(impactx::elements::MagnetostaticVectorPotential)
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::MagnetostaticVectorPotential)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::MagnetostaticVectorPotentialGPU)
 
 #endif // IMPACTX_MAGNETOSTATIC_VECTOR_POTENTIAL_H

@@ -20,7 +20,7 @@ beam.lambdaPt = 2.4415943602685364584e-3
 # Beamline: lattice elements and segments
 ###############################################################################
 lattice.elements = monitor constf1 monitor
-lattice.nslice = 50
+lattice.nslice = 12
 #lattice.nslice = 60 # optional for increased precision
 
 monitor.type = beam_monitor
@@ -42,4 +42,5 @@ algo.poisson_solver = "multigrid"
 
 amr.n_cell = 48 48 40
 #amr.n_cell = 72 72 64  # optional for increased precision
+amr.max_grid_size = 72  # one box per process: this example runs on a single process
 geometry.prob_relative = 3.0

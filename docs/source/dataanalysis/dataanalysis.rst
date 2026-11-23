@@ -36,11 +36,12 @@ Reference particle:
 * ``x_ref`` horizontal position x, in meters
 * ``y_ref`` vertical position y, in meters
 * ``z_ref`` longitudinal position z, in meters
-* ``t_ref`` clock time * c in meters
+* ``t_ref`` clock time * c, in meters
 * ``px_ref`` momentum in x, normalized to mass*c, :math:`p_x = \gamma \beta_x`
 * ``py_ref`` momentum in y, normalized to mass*c, :math:`p_y = \gamma \beta_y`
 * ``pz_ref`` momentum in z, normalized to mass*c, :math:`p_z = \gamma \beta_z`
 * ``pt_ref`` energy, normalized by rest energy, :math:`p_t = -\gamma`
+* ``gyromagnetic_anomaly_ref`` `anomalous magnetic moment <https://en.wikipedia.org/wiki/Anomalous_magnetic_dipole_moment>`__, unitless
 * ``mass_ref`` reference rest mass, in kg
 * ``charge_ref`` reference charge, in C
 
@@ -60,6 +61,29 @@ Example to print the integrated orbit path length ``s`` at each beam monitor pos
        print(f"step {k_i:>3}: s_ref={s_ref}")
 
 
+.. _dataanalysis-python-inmemory:
+
+In-Memory Python Access
+-----------------------
+
+In addition to the file-based openPMD output above, ImpactX can be steered from a Python script
+and the beam particles, the reference particle, and the space-charge fields can be inspected or
+modified **live** during a run. This is the right approach for custom in-situ diagnostics,
+turn-by-turn feedback, AI/ML coupling, or any analysis that you don't want to round-trip through (slow) filesystem disks.
+
+* :ref:`usage-howto-python-extend`: the overall pattern, plus the callback surfaces
+  (``sim.hook[...]`` and the :py:class:`~impactx.elements.Programmable` element).
+  For analysis, prefer ``sim.hook[...]`` with ``sim.beam``: the ``Programmable``
+  element hands you particles in per-tile chunks and is intended for custom
+  particle pushes, not observation.
+* :ref:`usage-howto-python-particle-data`: accessing ``sim.beam`` as a pandas DataFrame
+  (via :py:meth:`~impactx.ParticleContainer.to_df`) or iterating over particle tiles for
+  high-performance access.
+* :ref:`usage-howto-python-field-data`: accessing the space-charge fields
+  (:py:meth:`~impactx.ImpactX.rho`, :py:meth:`~impactx.ImpactX.phi`,
+  :py:meth:`~impactx.ImpactX.space_charge_field`) and their lifetime caveats.
+
+
 .. _dataanalysis-beam-characteristics:
 
 Reduced Beam Characteristics
@@ -71,12 +95,14 @@ For computing beam moments (as elsewhere), positions and momenta are given as de
 
 The reduced beam characteristics are stored with the output of the beam monitor element.
 They are also calculated before, after, and during each step of the simulation.
-If ``diag.slice_step_diagnostics`` is enabled, they will also be calculated during each slice of each beamline element.
+If :pp:param:`diag.slice_step_diagnostics` is enabled, they will also be calculated during each slice of each beamline element.
 
 The code writes out the values in an ASCII file prefixed ``reduced_beam_characteristics`` containing the follow columns:
 
 * ``step``
     Iteration within the simulation
+* ``period``
+    Current period (turn or cycle) for periodic lattices (unit: dimensionless)
 * ``s``
     Reference particle coordinate ``s`` (unit: meter)
 * ``mean/min/max_x``, ``mean/min/max_y``, ``mean/min/max_t``
@@ -109,6 +135,12 @@ The code writes out the values in an ASCII file prefixed ``reduced_beam_characte
 * ``sigma_sx``, ``sigma_sy``, ``sigma_sz``
     Standard deviation of the three spin components (unit: dimensionless).  This diagnostic is written only if spin tracking is on (algo.spin = True).
 
+Quantities that a beam does not define are written as ``nan``.
+The ``step``, ``period`` and ``s`` columns describe the position in the lattice and are always written.
+The Courant-Snyder (Twiss) ``alpha`` and ``beta`` of a plane are ratios to its rms emittance, and are undefined wherever that emittance vanishes: for a single particle, for a cold plane, or longitudinally for a beam without energy spread.
+For zero-weight test beams, added with a bunch charge of zero, there is no total weight to normalize by: every weighted moment is undefined and ``charge_C`` is zero, while the unweighted ``min`` and ``max`` still report the extent of the beam.
+For a simulation whose beam is loaded in a :py:class:`~impactx.elements.Source` element instead of prior to tracking, the beam is empty until that element is reached: every diagnostic before it reports ``nan`` for all moments, minima and maxima included, and zero for ``charge_C``.
+
 
 .. _dataanalysis-plot:
 
@@ -136,7 +168,7 @@ When steering ImpactX from Python, one can at any point visualize the beam phase
        fig.savefig("phase_space.png")
        plt.show()
 
-.. figure:: https://user-images.githubusercontent.com/1353258/295041638-8410ba76-9bd2-4dae-9810-5ec9f33dd372.png
+.. figure:: phase_space.png
    :alt: In situ visualization of the beam phase space projections.
 
    In situ visualization of the beam phase space projections.

@@ -502,3 +502,223 @@ The analysis can be run using the following script:
    .. literalinclude:: analysis_exact_sbend_spin_scaling.py
       :language: python3
       :caption: You can copy this file from ``examples/spin_tracking/analysis_exact_sbend_spin_scaling.py``.
+
+
+.. _examples-exact-cfbend-spin-scaling:
+
+Scaling Test of Spin in an Exact Combined Function Bend
+=======================================================
+
+This example tests the propagation of spin through the :py:class:`~impactx.elements.ExactCFbend` element.
+
+The :py:class:`~impactx.elements.ExactCFbend` element incorporates the full nonlinear phase space dependence appearing in both the Hamiltonian and the Thomas-BMT equations for tracking.
+
+A small number of initial conditions are tracked, with increasing distance from the phase space design point.
+
+The final spin variables are compared against those obtained by tracking using the Sbend element, which treats both orbit and spin variables to first order in the phase space variables.
+
+In this test, a scaling exponent is extracted when comparing the vector-norm of difference in final spin with the vector-norm of the initial phase space vector.  This exponent should be 2 (in the limit of small deviation).
+
+
+
+Run
+---
+
+This example can be run as:
+
+* **Python** script: ``python3 run_cfbend_spin_scaling.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_cfbend_spin_scaling.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_cfbend_spin_scaling.py``.
+
+Analyze
+-------
+
+The analysis can be run using the following script:
+
+.. dropdown:: Script ``analysis_cfbend_spin_scaling.py``
+
+   .. literalinclude:: analysis_cfbend_spin_scaling.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_cfbend_spin_scaling.py``.
+
+
+.. _examples-reversibility-quad-fringe-spin:
+
+Reversibility Test for Spin in a Quadrupole with Fringe Fields
+==============================================================
+
+This example tests the reversibility of particle spin and orbit tracking through a quadrupole with nonlinear entry and exit fringe fields.
+
+Particle are tracked forward through a quadrupole with fringe fields, and then backward through the same physical fields.
+
+In this test, the initial and final values of all six phase space variables, as well as the three spin variables, must coincide.
+
+.. note::
+
+   Because the exact inverse of the quadrupole fringe field map is not yet implemented, the test will pass only if a large tolerance value is specified.
+   This value will be tightened once the exact inverse is implemented, and the test input modified accordingly.
+
+
+Run
+---
+
+This example can be run as:
+
+* **Python** script: ``python3 run_reversibility_quad_fringe_spin.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_reversibility_quad_fringe_spin.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_reversibility_quad_fringe_spin.py``.
+
+
+
+Analyze
+-------
+
+The analysis can be run using:
+
+
+.. dropdown:: Script ``analysis_reversibility_quad_fringe_spin.py``
+
+   .. literalinclude:: analysis_reversibility_quad_fringe_spin.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_reversibility_quad_fringe_spin.py``.
+
+
+.. _examples-chracc-depol:
+
+Spin Depolarization in a Uniform Accelerating Field
+===================================================
+
+This example tests the spin dynamics in a uniform longitudinal electric field, with chromatic effects included, using the :py:class:`~impactx.elements.ChrAcc` element.
+
+In this test, the beam has zero initial horizontal momentum spread and zero energy spread.  Under these conditions, the vertical and longitudinal components of the
+polarization vector decay according to a simple expression, which is determined by the initial vertical momentum spread and the initial and final relativistic gamma.
+
+The final spin polarization vector must agree with the predicted final spin polarization vector, to within a small tolerance.
+
+Run
+---
+
+The examples can be run as:
+
+* **Python** script: ``python3 run_chracc_depolarization.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_chracc_depolarization.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_chracc_depolarization.py``.
+
+Analyze
+-------
+
+The analysis can be run using:
+
+.. dropdown:: Script ``analysis_chracc_depolarization.py``
+
+   .. literalinclude:: analysis_chracc_depolarization.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_chracc_depolarization.py``.
+
+
+.. _examples-chracc-depol-eb:
+
+Spin Depolarization in a Uniform Accelerating + Magnetic Field
+==============================================================
+
+This example tests the spin dynamics in a uniform longitudinal electric + magnetic field, with chromatic effects included, using the :py:class:`~impactx.elements.ChrAcc` element.
+
+In this test, the beam is rotationally symmetric about the z-axis (X-Y isotropic).  Under these conditions, the evolution of the beam polarization vector can be
+expressed analytically in closed form.
+
+The final spin polarization vector must agree with the predicted final spin polarization vector, to within a small tolerance.
+
+Run
+---
+
+The examples can be run as:
+
+* **Python** script: ``python3 run_chracc_depolarization_EB.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_chracc_depolarization_EB.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_chracc_depolarization_EB.py``.
+
+Analyze
+-------
+
+The analysis can be run using:
+
+.. dropdown:: Script ``analysis_chracc_depolarization_EB.py``
+
+   .. literalinclude:: analysis_chracc_depolarization_EB.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_chracc_depolarization_EB.py``.
+
+
+
+
+.. _examples-chracc-sol-spin:
+
+Comparing Spin Tracking Models in a Uniform Solenoid Field
+============================================================
+
+This example tests the spin dynamics in a uniform longitudinal magnetic field, with chromatic effects included, using the :py:class:`~impactx.elements.ChrAcc` element.
+
+In this test, the beam is tracked through an element of type :py:class:`~impactx.elements.ChrAcc`, with zero electric field, and then tracked backward through an element of type :py:class:`~impactx.elements.Sol` (a linear solenoid) with equivalent parameters.
+Due to the s-reversibility of the solenoid orbit and spin maps, the final phase space coordinates and spin variables should nearly coincide with their initial values, with changes resulting from nonlinear chromatic effects.
+
+This test computes the norm of the change in the spin polarization vector, which must be zero to within a small tolerance.
+
+Run
+---
+
+The examples can be run as:
+
+* **Python** script: ``python3 run_chracc_sol.py``
+
+For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+
+.. tab-set::
+
+   .. tab-item:: Python: Script
+
+       .. literalinclude:: run_chracc_sol.py
+          :language: python3
+          :caption: You can copy this file from ``examples/spin_tracking/run_chracc_sol.py``.
+
+Analyze
+-------
+
+The analysis can be run using:
+
+.. dropdown:: Script ``analysis_chracc_sol.py``
+
+   .. literalinclude:: analysis_chracc_sol.py
+      :language: python3
+      :caption: You can copy this file from ``examples/spin_tracking/analysis_chracc_sol.py``.

@@ -11,13 +11,15 @@ from __future__ import annotations
 import math as math
 import os as os
 import re as re
-import weakref as weakref
 
 import impactx.impactx_pybind.elements
-from impactx.impactx_pybind import elements
+from impactx.element_models import tier_of_class, validate_model
+from impactx.impactx_pybind import Config, elements
 from impactx.impactx_pybind.elements import FilteredElementsList
 
 __all__: list[str] = [
+    "Config",
+    "DRIFT_MODEL_CLASSES",
     "FILTERED_ELEMENTS_LIST_INVALID_MSG",
     "FilteredElementsList",
     "count_by_kind",
@@ -32,9 +34,10 @@ __all__: list[str] = [
     "re",
     "register_KnownElementsList_extension",
     "select",
+    "tier_of_class",
     "to_dicts",
     "to_py",
-    "weakref",
+    "validate_model",
 ]
 
 def _check_element_match(element, kind, name):
@@ -50,22 +53,13 @@ def _check_element_match(element, kind, name):
         bool: True if element matches any criteria (OR logic)
     """
 
-def _clone_element(template):
-    """
-    Deep-clone a lattice element via ``to_dict`` (pybind elements are not copy.copy-able).
-    """
-
-def _commit_lattice_rebuild(original, new_elements) -> None:
-    """
-    Replace lattice contents with ``new_elements`` and invalidate all FilteredElementsList views.
-    """
-
 def _drift_class_for_replace_with_drifts(model: str, old_el) -> type:
     """
     Map ``model`` and ``old_el`` to the Drift / ChrDrift / ExactDrift class to insert.
 
-    For ``model=="match"``, the class follows ``_model_key_from_element_typename``; otherwise
-    ``model`` must already be validated against ``_DRIFT_MODEL_CLASSES``.
+    For ``model=="match"``, the class follows the replaced element's own tier (see
+    ``impactx.element_models.tier_of_class``). Otherwise ``model`` must already be
+    validated against :data:`impactx.element_models.MODEL_TIERS`.
     """
 
 def _element_from_dict(d: dict):
@@ -83,18 +77,45 @@ def _element_from_dict(d: dict):
         AttributeError: If element type is not found in elements module
     """
 
+def _element_kind(element):
+    """
+    The element kind, which a Python subclass keeps.
+
+    Args:
+        element: The element to inspect
+
+    Returns:
+        str: the name of the element type this is a kind of, e.g. ``"Drift"``
+    """
+
+def _element_to_dict(element) -> dict:
+    """
+    Serialize an element to a dict that its constructor can consume again.
+
+    Applies the radians/degrees work-around for the element types whose
+    ``to_dict()`` disagrees with their constructor.
+    """
+
 def _filter_kwargs(d: dict) -> dict:
     """
     Filter a to_dict() result into valid constructor kwargs.
 
-    Removes 'type' (not a constructor argument) and 'ds' when zero
-    (thin elements don't accept ds).
+    Removes 'type' (not a constructor argument) and, for thin elements, 'ds':
+    ``to_dict()`` reports ``ds = 0.0`` for thin elements (subclasses of
+    ``elements.mixin.Thin``, such as ``Marker`` and ``Aperture``), but their
+    constructors take no ``ds``, while all other elements require it, even when it
+    is zero.
 
     Args:
-        d: Dictionary from element.to_dict()
+        d: Dictionary from element.to_dict(), must include 'type' key
 
     Returns:
         dict: Filtered dictionary suitable for element constructor
+
+    Raises:
+        KeyError: If 'type' key is missing
+        AttributeError: If element type is not found in elements module
+        ValueError: If a thin element has a nonzero 'ds'
     """
 
 def _format_value(v):
@@ -104,11 +125,6 @@ def _format_value(v):
     Converts AMReX SmallMatrix objects to lists.
     Returns a tuple of (formatted_value, matrix_dims) where matrix_dims
     is (rows, cols) from the SmallMatrix type, or None otherwise.
-    """
-
-def _invalidate_all_registered_views(lattice) -> None:
-    """
-    Mark every registered FilteredElementsList for this lattice as invalid.
     """
 
 def _is_regex_pattern(pattern: str) -> bool:
@@ -128,6 +144,18 @@ def _lattice_eq(self, other):
     reflected-equality fallback applies. Mutable containers are
     deliberately unhashable (``__hash__ = None``), matching the Python
     ``list`` convention.
+    """
+
+def _lattice_init(self, elements=None):
+    """
+    Create a lattice, optionally filled with elements.
+
+    ``elements`` is a single element or any iterable of elements: a list, another
+    lattice, a selection, a generator. The elements are shared, not copied, so the
+    caller keeps handles to the very elements the lattice holds. Constructing goes
+    through ``extend`` for exactly that reason: the C++ constructor cannot see the
+    object being constructed, and so cannot record which Python objects own the
+    elements.
     """
 
 def _lattice_isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -194,19 +222,9 @@ def _matches_string(text: str, string_pattern: str) -> bool:
     Check if text matches a string pattern (exact match or regex).
     """
 
-def _model_key_from_element_typename(type_name: str) -> str:
-    """
-    Return the drift-model key for an element class name (linear / paraxial / exact).
-    """
-
 def _rad2deg(radians: float) -> float:
     """
     Convert radians to degrees.
-    """
-
-def _registry_for(lattice):
-    """
-    Return the WeakSet of FilteredElementsList instances for this lattice.
     """
 
 def _validate_select_parameters(kind, name):
@@ -265,9 +283,11 @@ def from_dicts(self, dicts: list[dict]):
         when loading such elements.
     """
 
-def from_pals(self, pals_beamline, nslice=1):
+def from_pals(self, pals_beamline, nslice=1, *, min_model="linear"):
     """
-    Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
+    Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) object.
+
+    ``min_model`` is the element model floor, see :py:func:`load_file`.
 
     https://github.com/campa-consortium/pals-python
     """
@@ -294,9 +314,16 @@ def has_kind(self, kind_pattern) -> bool:
         bool: True if at least one element of the specified kind exists.
     """
 
-def load_file(self, filename, nslice=1):
+def load_file(self, filename, nslice=1, *, min_model="linear"):
     """
     Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+    ``min_model`` raises the lower gate of the element model selection: the reader
+    still picks the cheapest ImpactX element that represents the imported element,
+    but never one below the requested tier (``"linear"``, ``"paraxial"`` or
+    ``"exact"``). Where a tier is not implemented for an element family, the next
+    higher one is used. Where no model reaches the requested tier at all, as for a
+    solenoid, which has no exact model, a warning is emitted.
 
     .. warning::
 
@@ -476,10 +503,10 @@ def to_py(self) -> str:
             # lattice = get_lattice()
     """
 
-FILTERED_ELEMENTS_LIST_INVALID_MSG: str = "This lattice selection is no longer valid because the lattice was modified; call select() again on the lattice."
-_DRIFT_MODEL_CLASSES: dict = {
+DRIFT_MODEL_CLASSES: dict = {
     "linear": impactx.impactx_pybind.elements.Drift,
     "paraxial": impactx.impactx_pybind.elements.ChrDrift,
     "exact": impactx.impactx_pybind.elements.ExactDrift,
 }
-_filtered_views_by_lattice: weakref.WeakKeyDictionary
+FILTERED_ELEMENTS_LIST_INVALID_MSG: str = "This lattice selection is no longer valid because the lattice was modified; call select() again on the lattice."
+_DEGREE_ELEMENTS: tuple = ("ExactSbend", "PlaneXYRot", "PRot", "ThinDipole")

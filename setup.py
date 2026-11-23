@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2021-2023 The ImpactX Community
+# Copyright 2022-2026 The ImpactX Community
 #
 # Authors: Axel Huebl
 # License: BSD-3-Clause-LBNL
@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+import sysconfig
 
 from setuptools import Extension, setup
 from setuptools.command.build import build
@@ -61,14 +62,14 @@ class CMakeBuild(build_ext):
             out = subprocess.check_output(["cmake", "--version"])
         except OSError:
             raise RuntimeError(
-                "CMake 3.24.0+ must be installed to build the following "
+                "CMake 3.25.0+ must be installed to build the following "
                 + "extensions: "
                 + ", ".join(e.name for e in self.extensions)
             )
 
         cmake_version = parse(re.search(r"version\s*([\d.]+)", out.decode()).group(1))
-        if cmake_version < parse("3.24.0"):
-            raise RuntimeError("CMake >= 3.24.0 is required")
+        if cmake_version < parse("3.25.0"):
+            raise RuntimeError("CMake >= 3.25.0 is required")
 
         for ext in self.extensions:
             self.build_extension(ext)
@@ -80,14 +81,34 @@ class CMakeBuild(build_ext):
             extdir += os.path.sep
 
         pyv = sys.version_info
-        cmake_args = [
-            # Python: use the calling interpreter in CMake
-            # https://cmake.org/cmake/help/latest/module/FindPython.html#hints
-            # https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-version-selection
-            f"-DPython_ROOT_DIR={sys.prefix}",
-            f"-DPython_FIND_VERSION={pyv.major}.{pyv.minor}.{pyv.micro}",
-            "-DPython_FIND_VERSION_EXACT=TRUE",
-            "-DPython_FIND_STRATEGY=LOCATION",
+        # cross-compiling (e.g. Pyodide)? host & target Python differ
+        emscripten = sysconfig.get_platform().startswith("emscripten")
+        cmake_args = []
+        # FindPython: pin to the calling interpreter unless the caller
+        # overrides via IMPACTX_CMAKE_Python_*. Cross builds keep these host
+        # hints (to resolve the interpreter/library for Development.Module),
+        # but override the target headers (below) and relax the exact-version
+        # match. See:
+        #   https://cmake.org/cmake/help/latest/module/FindPython.html#hints
+        #   https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-version-selection
+        if emscripten or not any(
+            k.startswith("IMPACTX_CMAKE_Python_") for k in os.environ
+        ):
+            cmake_args += [
+                f"-DPython_ROOT_DIR={sys.prefix}",
+                f"-DPython_FIND_VERSION={pyv.major}.{pyv.minor}.{pyv.micro}",
+                "-DPython_FIND_VERSION_EXACT=" + ("FALSE" if emscripten else "TRUE"),
+                "-DPython_FIND_STRATEGY=LOCATION",
+            ]
+            # Free-threaded (PEP 703) gil_disabled is OFF by default
+            #   https://cmake.org/cmake/help/latest/module/FindPython.html#variable:Python_FIND_ABI
+            if sysconfig.get_config_var("Py_GIL_DISABLED"):
+                cmake_args.append("-DPython_FIND_ABI=OFF;OFF;OFF;ON")
+        if emscripten:
+            cmake_args += [
+                "-DPython_INCLUDE_DIR=" + sysconfig.get_config_var("INCLUDEPY")
+            ]
+        cmake_args += [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + os.path.join(extdir, "impactx"),
             "-DCMAKE_VERBOSE_MAKEFILE=ON",
             "-DCMAKE_PYTHON_OUTPUT_DIRECTORY=" + extdir,
@@ -102,6 +123,7 @@ class CMakeBuild(build_ext):
             ## dependency control (developers & package managers)
             "-DImpactX_amrex_internal=" + ImpactX_amrex_internal,
             "-DImpactX_pyamrex_internal=" + ImpactX_pyamrex_internal,
+            "-DImpactX_openpmd_internal=" + ImpactX_openpmd_internal,
             # PEP-440 conformant version from package
             "-DpyImpactX_VERSION_INFO=" + self.distribution.get_version(),
             #        see PICSAR and openPMD below
@@ -126,6 +148,12 @@ class CMakeBuild(build_ext):
             cmake_args.append("-DImpactX_amrex_branch=" + ImpactX_amrex_branch)
         if ImpactX_pyamrex_branch:
             cmake_args.append("-DImpactX_pyamrex_branch=" + ImpactX_pyamrex_branch)
+        if ImpactX_openpmd_src:
+            cmake_args.append("-DImpactX_openpmd_src=" + ImpactX_openpmd_src)
+        if ImpactX_openpmd_repo:
+            cmake_args.append("-DImpactX_openpmd_repo=" + ImpactX_openpmd_repo)
+        if ImpactX_openpmd_branch:
+            cmake_args.append("-DImpactX_openpmd_branch=" + ImpactX_openpmd_branch)
 
         if CMAKE_INTERPROCEDURAL_OPTIMIZATION is not None:
             cmake_args.append(
@@ -150,7 +178,10 @@ class CMakeBuild(build_ext):
                     cfg.upper(), os.path.join(extdir, "impactx")
                 ),
             ]
-            if sys.maxsize > 2**32:
+            generator_platform = os.environ.get("CMAKE_GENERATOR_PLATFORM")
+            if generator_platform:
+                cmake_args += ["-A", generator_platform]
+            elif sys.maxsize > 2**32:
                 cmake_args += ["-A", "x64"]
         else:
             cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
@@ -203,6 +234,11 @@ ImpactX_pyamrex_internal = os.environ.get("IMPACTX_PYAMREX_INTERNAL", "ON")
 ImpactX_pyamrex_repo = os.environ.get("IMPACTX_PYAMREX_REPO")
 ImpactX_pyamrex_branch = os.environ.get("IMPACTX_PYAMREX_BRANCH")
 
+ImpactX_openpmd_src = os.environ.get("IMPACTX_OPENPMD_SRC")
+ImpactX_openpmd_internal = os.environ.get("IMPACTX_OPENPMD_INTERNAL", "ON")
+ImpactX_openpmd_repo = os.environ.get("IMPACTX_OPENPMD_REPO")
+ImpactX_openpmd_branch = os.environ.get("IMPACTX_OPENPMD_BRANCH")
+
 # extra CMake arguments
 extra_cmake_args = []
 for k, v in os.environ.items():
@@ -242,7 +278,7 @@ with open("./requirements.txt") as f:
 setup(
     name="impactx",
     # note PEP-440 syntax: x.y.zaN but x.y.z.devN
-    version="26.04",
+    version="26.10",
     packages=["impactx"],
     # Python sources:
     package_dir={"": "src/python"},

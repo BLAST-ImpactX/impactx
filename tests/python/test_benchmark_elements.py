@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2025 The ImpactX Community
+# Copyright 2022-2026 The ImpactX Community
 #
 # Authors: Axel Huebl
 # License: BSD-3-Clause-LBNL
@@ -126,6 +126,7 @@ def pc_setup(sim):
     return (beam,), {}
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Aperture(benchmark, sim):
     el = elements.Aperture(
         name="collimator", aperture_x=4.0e-5, aperture_y=4.0e-5, shape="rectangular"
@@ -133,6 +134,23 @@ def test_Aperture(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_Aperture_periodic(benchmark, sim):
+    # pepperpot with staggered rows, spanning several periods of the ~3.2e-5 m rms
+    # beam size of the sim fixture: exercises the fold into the period cell
+    el = elements.Aperture(
+        name="pepperpot",
+        aperture_x=1.0e-5,
+        aperture_y=1.0e-5,
+        repeat_x=4.0e-5,
+        repeat_y=4.0e-5,
+        shift_odd_x=True,
+        shape="rectangular",
+    )
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Buncher(benchmark, sim):
     el = elements.Buncher(name="shortrf1", V=0.01, k=15.0)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -164,6 +182,7 @@ def test_ChrQuad(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrAcc(benchmark, sim):
     el = elements.ChrAcc(
         name="acc", ds=1.8, ez=10871.950994502130424, bz=1.0e-12, nslice=nslice
@@ -177,6 +196,7 @@ def test_ConstF(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_DipEdge(benchmark, sim):
     rc = 10.3462283686195526  # bend radius (meters)
     psi = 0.048345620280243  # pole face rotation angle (radians)
@@ -196,11 +216,27 @@ def test_Drift(benchmark, sim):
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_ExactCFbend(benchmark, sim):
+    el = elements.ExactCFbend(
+        name="cfbend1",
+        ds=1.0,
+        k_normal=[0.1, 1.0, -2.0],
+        k_skew=[0.0, -0.5, 1.4],
+        unit=0,
+        int_order=2,
+        mapsteps=mapsteps,
+        nslice=nslice,
+    )
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactDrift(benchmark, sim):
     el = elements.ExactDrift(name="drift1", ds=0.25, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactMultipole(benchmark, sim):
     el = elements.ExactMultipole(
         name="quad1",
@@ -214,6 +250,7 @@ def test_ExactMultipole(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactQuad(benchmark, sim):
     el = elements.ExactQuad(
         name="quad1",
@@ -226,16 +263,19 @@ def test_ExactQuad(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactSbend(benchmark, sim):
     el = elements.ExactSbend(name="bend", ds=1.0, phi=10.0, B=0.0, nslice=nslice)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Kicker(benchmark, sim):
     el = elements.Kicker(name="kick1", xkick=2.0e-3, ykick=0.0, unit="dimensionless")
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+# Note: has no spin support; see SpinMap
 def test_LinearMap(benchmark, sim):
     R1 = Map6x6.identity()
 
@@ -252,6 +292,7 @@ def test_LinearMap(benchmark, sim):
 #    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Multipole(benchmark, sim):
     el = elements.Multipole(
         name="thin_octupole", multipole=4, K_normal=65.0, K_skew=6.0
@@ -259,13 +300,38 @@ def test_Multipole(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_NonlinearLens(benchmark, sim):
     el = elements.NonlinearLens(name="nllens", knll=4.0e-6, cnll=0.01)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_PlaneXYRot(benchmark, sim):
     el = elements.PlaneXYRot(name="rotation1", angle=90.0)
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_PolygonAperture(benchmark, sim):
+    # cross-shaped polygon, scaled from examples/polygon_aperture to the
+    # ~3.2e-5 m rms beam size of the sim fixture; min_radius2=0 so that
+    # every particle exercises the full polygon winding computation
+    vertices_x = [
+        float(u)
+        for u in "2e-5 2e-5 -2e-5 -2e-5 -6e-5 -6e-5 -2e-5 -2e-5 2e-5 2e-5 6e-5 6e-5 2e-5".split()
+    ]
+    vertices_y = [
+        float(u)
+        for u in "2e-5 6e-5 6e-5 2e-5 2e-5 -2e-5 -2e-5 -6e-5 -6e-5 -2e-5 -2e-5 2e-5 2e-5".split()
+    ]
+    el = elements.PolygonAperture(
+        name="collimator2",
+        vertices_x=vertices_x,
+        vertices_y=vertices_y,
+        min_radius2=0.0,
+        action="transmit",
+    )
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
@@ -274,6 +340,7 @@ def test_PlaneXYRot(benchmark, sim):
 #    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_PRot(benchmark, sim):
     el = elements.PRot(name="rotation1", phi_in=0.0, phi_out=-5.0)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
@@ -293,6 +360,7 @@ def test_Quad(benchmark, sim):
 #     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_RFCavity(benchmark, sim):
     el = elements.RFCavity(
         name="rf",
@@ -366,11 +434,13 @@ def test_Sbend(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ShortRF(benchmark, sim):
     el = elements.ShortRF(name="shortrf1", V=1000.0, freq=1.3e9, phase=-89.5)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_SoftQuadrupole(benchmark, sim):
     el = elements.SoftQuadrupole(
         name="quad1",
@@ -384,6 +454,7 @@ def test_SoftQuadrupole(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_SoftSolenoid(benchmark, sim):
     el = elements.SoftSolenoid(
         name="sol1",
@@ -491,6 +562,7 @@ def test_TaperedPL(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ThinDipole(benchmark, sim):
     el = elements.ThinDipole(name="kick", theta=0.45, rc=1.0)
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)

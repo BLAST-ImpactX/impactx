@@ -16,7 +16,18 @@ import inspect
 import pytest
 
 import amrex.space3d as amr
-from impactx import elements
+from impactx import Config, elements
+
+# amrex Real SmallMatrix precision suffix matching the build
+_REAL = "float" if Config.precision == "SINGLE" else "double"
+
+# Perturbation sized to the build precision: large enough that == distinguishes the
+# values, yet within _CLOSE_RTOL so isclose() is True (sub-epsilon at double, ~1e-5 at
+# single). _PERT_CUSTOM stays below the explicit rtol=1e-6 used in test_isclose_custom_rtol.
+if Config.precision == "SINGLE":
+    _PERT, _CLOSE_RTOL, _PERT_CUSTOM = 1e-5, 1e-3, 5e-7
+else:
+    _PERT, _CLOSE_RTOL, _PERT_CUSTOM = 1e-15, 1e-12, 1e-9
 
 # ----------------------------------------------------------------------
 # Basic equality and hash
@@ -73,8 +84,8 @@ def test_dict_key_usage():
 
 def test_isclose_accepts_small_perturbation():
     a = elements.Drift(ds=1.0, name="d1")
-    b = elements.Drift(ds=1.0 + 1e-15, name="d1")
-    assert a.isclose(b)
+    b = elements.Drift(ds=1.0 + _PERT, name="d1")
+    assert a.isclose(b, rtol=_CLOSE_RTOL)
     assert not (a == b)
 
 
@@ -86,7 +97,7 @@ def test_isclose_rejects_large_perturbation():
 
 def test_isclose_custom_rtol():
     a = elements.Drift(ds=1.0)
-    b = elements.Drift(ds=1.0 + 1e-9)
+    b = elements.Drift(ds=1.0 + _PERT_CUSTOM)
     # default rtol=1e-12 rejects this
     assert not a.isclose(b)
     # loosened rtol accepts it
@@ -141,8 +152,8 @@ def test_eq_list_of_floats():
 
 def test_isclose_list_of_floats_perturbed():
     a = _make_rfcavity([1.0, 2.0, 3.0], [0.0, 0.1, 0.2])
-    b = _make_rfcavity([1.0, 2.0, 3.0 + 1e-15], [0.0, 0.1, 0.2])
-    assert a.isclose(b)
+    b = _make_rfcavity([1.0, 2.0, 3.0 + _PERT], [0.0, 0.1, 0.2])
+    assert a.isclose(b, rtol=_CLOSE_RTOL)
     assert not (a == b)
 
 
@@ -165,7 +176,7 @@ def test_isclose_list_length_mismatch():
 
 
 def test_eq_linearmap_same_matrix():
-    R = amr.SmallMatrix_6x6_F_SI1_double.identity()
+    R = getattr(amr, f"SmallMatrix_6x6_F_SI1_{_REAL}").identity()
     a = elements.LinearMap(R=R, ds=0.5, name="lm")
     b = elements.LinearMap(R=R, ds=0.5, name="lm")
     assert a == b
@@ -173,13 +184,13 @@ def test_eq_linearmap_same_matrix():
 
 
 def test_isclose_linearmap_perturbed_matrix():
-    R1 = amr.SmallMatrix_6x6_F_SI1_double.identity()
-    R2 = amr.SmallMatrix_6x6_F_SI1_double.identity()
+    R1 = getattr(amr, f"SmallMatrix_6x6_F_SI1_{_REAL}").identity()
+    R2 = getattr(amr, f"SmallMatrix_6x6_F_SI1_{_REAL}").identity()
     # SmallMatrix_..._SI1_... uses 1-based indexing.
-    R2[1, 1] = 1.0 + 1e-15
+    R2[1, 1] = 1.0 + _PERT
     a = elements.LinearMap(R=R1, ds=0.5, name="lm")
     b = elements.LinearMap(R=R2, ds=0.5, name="lm")
-    assert a.isclose(b)
+    assert a.isclose(b, rtol=_CLOSE_RTOL)
     assert not (a == b)
 
 
@@ -340,10 +351,10 @@ def test_lattice_eq_foreign_type():
 def test_lattice_isclose_with_perturbation():
     a = _build_lattice()
     b = elements.KnownElementsList()
-    b.append(elements.Drift(ds=1.0 + 1e-15, name="d1"))
-    b.append(elements.Quad(ds=0.3 + 1e-15, k=2.5, name="q1"))
+    b.append(elements.Drift(ds=1.0 + _PERT, name="d1"))
+    b.append(elements.Quad(ds=0.3 + _PERT, k=2.5, name="q1"))
     b.append(elements.Drift(ds=2.0, name="d2"))
-    assert a.isclose(b)
+    assert a.isclose(b, rtol=_CLOSE_RTOL)
     assert not (a == b)
 
 

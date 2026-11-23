@@ -129,8 +129,8 @@ namespace
      *  deduplication set is maintained per call.
      *
      *  Uses the same per-element advance / linear-map evaluation
-     *  convention as the envelope tracker in
-     *  @c src/tracking/envelope.cpp , so the resulting linear optics
+     *  convention as the lattice traversal in
+     *  @c src/tracking/common.H , so the resulting linear optics
      *  is consistent with the tracker for edge-sensitive elements
      *  such as @c RFCavity, @c SoftQuad, and @c SoftSol.
      *
@@ -150,12 +150,17 @@ namespace
     template <typename F_OnElementExit = NoopElementExit>
     Map6x6
     walk_lattice (
-        std::list<elements::KnownElements> const & lattice,
+        Lattice const & lattice,
         RefPart const & ref_part_init,
         OnMissingLinearMap on_missing,
         F_OnElementExit && on_element_exit = NoopElementExit{}
     )
     {
+        // A reference push can run a user callback (Programmable), and that callback can
+        // reach the very lattice this loop is walking. Appending would reallocate the
+        // storage under the iterator below, so refuse structural edits for the walk.
+        Lattice::TraversalGuard const traversal(lattice);
+
         // private copy of the reference particle
         RefPart ref = ref_part_init;
         Map6x6 M_cum = Map6x6::Identity();
@@ -163,12 +168,13 @@ namespace
         // warn only once per element type
         std::set<std::string> warned_types;
 
-        // The element loop mirrors src/tracking/envelope.cpp
+        // The element loop mirrors the lattice traversal in src/tracking/common.H,
+        // without its period loop and collective-effect slices
         for (auto const & element_variant : lattice)
         {
-            ref.sedge = ref.s;
+            ref.set_edge();
 
-            std::visit([&](auto && element)
+            elements::visit([&](auto && element)
             {
                 using E = std::decay_t<decltype(element)>;
 
@@ -192,7 +198,7 @@ namespace
 
     std::vector<MapTraceEntry>
     map_trace (
-        std::list<elements::KnownElements> const & lattice,
+        Lattice const & lattice,
         RefPart const & ref_part_init,
         OnMissingLinearMap on_missing
     )
@@ -231,7 +237,7 @@ namespace
 
     Map6x6
     linear_map (
-        std::list<elements::KnownElements> const & lattice,
+        Lattice const & lattice,
         RefPart const & ref_part_init,
         OnMissingLinearMap on_missing
     )

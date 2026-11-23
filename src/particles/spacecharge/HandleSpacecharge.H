@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -22,6 +22,8 @@ namespace impactx::particles::spacecharge
 {
     /** Function to handle space charge including charge deposition, Poisson solve,
      * field calculation, interpolation, and particle push.
+     *
+     * Returns immediately if slice_ds is zero.
      *
      * @param[in,out] amr_data AMR data like particle container and fields
      * @param[in] ResizeMesh function to call to resize the mesh

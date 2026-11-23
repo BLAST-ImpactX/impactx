@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -13,6 +13,7 @@ import pandas as pd
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
 initial = series.iterations[1].particles["beam"].to_df()
+is_double = initial["position_x"].dtype == np.float64
 beam_final = series.iterations[last_step].particles["beam"]
 final = beam_final.to_df()
 
@@ -56,7 +57,7 @@ print(error_pyi)
 print(error_ti)
 print(error_pti)
 
-atol = 1.0e-13
+atol = 1.0e-13 if is_double else 1.0e-9
 print(f"  atol={atol}")
 
 assert np.allclose(
@@ -80,7 +81,7 @@ print(error_pxf / pxf_max)
 print(error_yf / yf_max)
 print(error_pyf / pyf_max)
 
-atol = 1.0e-7
+atol = 1.0e-7 if is_double else 1.0e-6
 print(f"  tol={atol}")
 
 assert np.allclose(
@@ -101,6 +102,11 @@ print(error_tf)
 print(error_ptf)
 
 atol = 1.0e-13
+if not is_double:
+    # FIXME: in single precision, the final t deviates by 3.5e-8 from the reference,
+    # which itself is below 7.6e-12
+    # https://github.com/BLAST-ImpactX/impactx/issues/1683
+    atol = 1.0e-7
 print(f"  atol={atol}")
 
 assert np.allclose(

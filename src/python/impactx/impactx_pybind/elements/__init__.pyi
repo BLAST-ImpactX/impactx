@@ -87,14 +87,36 @@ class BeamMonitor(mixin.Thin):
     def __init__(
         self,
         name: str,
+        *,
         backend: str = "default",
         encoding: str = "g",
         period_sample_intervals: typing.SupportsInt | typing.SupportsIndex = 1,
+        particles: bool = True,
+        beam_moments: bool = True,
     ) -> None:
         """
         This element writes the particle beam out to openPMD data.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -170,6 +192,26 @@ class BeamMonitor(mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def alpha(self) -> float:
         """
@@ -183,6 +225,13 @@ class BeamMonitor(mixin.Thin):
         """
         openPMD file backend (e.g. default, bp4, h5)
         """
+    @property
+    def beam_moments(self) -> bool:
+        """
+        Output the beam moments (reduced beam characteristics) as openPMD attributes (default: True)
+        """
+    @beam_moments.setter
+    def beam_moments(self, arg1: bool) -> None: ...
     @property
     def beta(self) -> float:
         """
@@ -213,10 +262,17 @@ class BeamMonitor(mixin.Thin):
     @property
     def nonlinear_lens_invariants(self) -> bool:
         """
-        Compute and output the invariants H and I within the nonlinear magnetic insert element
+        Compute and output the invariants H and I within the nonlinear magnetic insert element. Requires particles=True.
         """
     @nonlinear_lens_invariants.setter
     def nonlinear_lens_invariants(self, arg1: bool) -> None: ...
+    @property
+    def particles(self) -> bool:
+        """
+        Output the individual particles of the beam (default: True)
+        """
+    @particles.setter
+    def particles(self, arg1: bool) -> None: ...
     @property
     def period_sample_intervals(self) -> int:
         """
@@ -230,7 +286,7 @@ class BeamMonitor(mixin.Thin):
     @tn.setter
     def tn(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
+class Aperture(mixin.Named, mixin.Thin, mixin.Alignment, mixin.RepeatedMask):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -257,22 +313,42 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         aperture_x: typing.SupportsFloat | typing.SupportsIndex,
         aperture_y: typing.SupportsFloat | typing.SupportsIndex,
-        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         shift_odd_x: bool = False,
         shape: str = "rectangular",
         action: str = "transmit",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A short collimator element applying a transverse aperture boundary.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -348,6 +424,26 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def action(self) -> str:
         """
@@ -358,31 +454,17 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
     @property
     def aperture_x(self) -> float:
         """
-        maximum horizontal coordinate
+        maximum horizontal coordinate in m; zero or less removes the horizontal boundary
         """
     @aperture_x.setter
     def aperture_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def aperture_y(self) -> float:
         """
-        maximum vertical coordinate
+        maximum vertical coordinate in m; zero or less removes the vertical boundary
         """
     @aperture_y.setter
     def aperture_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def repeat_x(self) -> float:
-        """
-        horizontal period for repeated aperture masking
-        """
-    @repeat_x.setter
-    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def repeat_y(self) -> float:
-        """
-        vertical period for repeated aperture masking
-        """
-    @repeat_y.setter
-    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
     def shape(self) -> str:
         """
@@ -390,13 +472,6 @@ class Aperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     @shape.setter
     def shape(self, arg1: str) -> None: ...
-    @property
-    def shift_odd_x(self) -> bool:
-        """
-        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
-        """
-    @shift_odd_x.setter
-    def shift_odd_x(self, arg1: bool) -> None: ...
 
 class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -425,12 +500,13 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -438,6 +514,25 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Drift with chromatic effects included.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -513,6 +608,26 @@ class ChrDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -541,14 +656,15 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -556,6 +672,25 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Quadrupole magnet with chromatic effects included.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -631,6 +766,26 @@ class ChrQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -673,14 +828,15 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -688,6 +844,25 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         An active Plasma Lens with chromatic effects included.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -763,6 +938,26 @@ class ChrPlasmaLens(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertur
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -805,14 +1000,15 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         ez: typing.SupportsFloat | typing.SupportsIndex,
         bz: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -820,6 +1016,25 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         A region of Uniform Acceleration, with chromatic effects included.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -895,6 +1110,26 @@ class ChrAcc(mixin.Named, mixin.Thick, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def bz(self) -> float:
         """
@@ -937,15 +1172,16 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         kx: typing.SupportsFloat | typing.SupportsIndex,
         ky: typing.SupportsFloat | typing.SupportsIndex,
         kt: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -953,6 +1189,25 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A linear Constant Focusing element.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -1028,6 +1283,26 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def kt(self) -> float:
         """
@@ -1050,7 +1325,7 @@ class ConstF(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     @ky.setter
     def ky(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
+class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -1077,29 +1352,51 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         psi: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
         g: typing.SupportsFloat | typing.SupportsIndex,
-        R: typing.SupportsFloat | typing.SupportsIndex = 1,
+        R: typing.SupportsFloat | typing.SupportsIndex = 1.0,
         K0: typing.SupportsFloat | typing.SupportsIndex = 1.6449340668482264,
-        K1: typing.SupportsFloat | typing.SupportsIndex = 0,
+        K1: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         K2: typing.SupportsFloat | typing.SupportsIndex = 1.0,
         K3: typing.SupportsFloat | typing.SupportsIndex = 0.16666666666666666,
-        K4: typing.SupportsFloat | typing.SupportsIndex = 0,
-        K5: typing.SupportsFloat | typing.SupportsIndex = 0,
-        K6: typing.SupportsFloat | typing.SupportsIndex = 0,
-        model: str = "linear",
+        K4: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        K5: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        K6: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        model: str = "linear_slac75",
         location: str = "entry",
         modify_ref_part: bool = False,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         Edge focusing associated with bend entry or exit.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -1175,6 +1472,26 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def K0(self) -> float:
         """
@@ -1248,7 +1565,7 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     @property
     def model(self) -> str:
         """
-        Fringe field model (linear or nonlinear)
+        Fringe field model
         """
     @model.setter
     def model(self, arg1: str) -> None: ...
@@ -1274,7 +1591,7 @@ class DipEdge(mixin.Named, mixin.Thin, mixin.Alignment):
     @rc.setter
     def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
+class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -1301,18 +1618,40 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
         flag: str = "entry",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A thin quadrupole fringe field element. Flag must be "entry" or "exit".
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -1388,6 +1727,26 @@ class QuadEdge(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -1430,12 +1789,13 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1443,6 +1803,25 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A drift.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -1518,6 +1897,26 @@ class Drift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -1546,12 +1945,13 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1559,6 +1959,25 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Drift using the exact nonlinear map.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -1634,6 +2053,26 @@ class ExactDrift(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -1662,17 +2101,18 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         int_order: typing.SupportsInt | typing.SupportsIndex = 2,
-        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 10,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1680,6 +2120,25 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         A thick Multipole magnet using the exact nonlinear Hamiltonian.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -1738,6 +2197,17 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         Reverse the element in-place so that pushing particles through
         it reverses the effect of the original element.
         """
+    def set_coefficients(
+        self,
+        k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None:
+        """
+        Replace both arrays at once.
+
+        They are validated together and applied as one step, so a rejected update
+        leaves the element unchanged.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1755,6 +2225,26 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def int_order(self) -> int:
         """
@@ -1762,6 +2252,32 @@ class ExactMultipole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         """
     @int_order.setter
     def int_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def k_normal(self) -> list[float]:
+        """
+        normal multipole coefficients, up to order m=12
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @k_normal.setter
+    def k_normal(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
+    @property
+    def k_skew(self) -> list[float]:
+        """
+        skew multipole coefficients, up to order m=12
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @k_skew.setter
+    def k_skew(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
     @property
     def mapsteps(self) -> int:
         """
@@ -1804,17 +2320,18 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         int_order: typing.SupportsInt | typing.SupportsIndex = 2,
-        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 10,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1822,6 +2339,25 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         A thick combined function bending magnet using the exact nonlinear Hamiltonian.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -1880,6 +2416,17 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         Reverse the element in-place so that pushing particles through
         it reverses the effect of the original element.
         """
+    def set_coefficients(
+        self,
+        k_normal: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        k_skew: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None:
+        """
+        Replace both arrays at once.
+
+        They are validated together and applied as one step, so a rejected update
+        leaves the element unchanged.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -1897,6 +2444,26 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def int_order(self) -> int:
         """
@@ -1904,6 +2471,32 @@ class ExactCFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture)
         """
     @int_order.setter
     def int_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def k_normal(self) -> list[float]:
+        """
+        normal multipole coefficients, up to decapole order (m=5)
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @k_normal.setter
+    def k_normal(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
+    @property
+    def k_skew(self) -> list[float]:
+        """
+        skew multipole coefficients, up to decapole order (m=5)
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @k_skew.setter
+    def k_skew(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
     @property
     def mapsteps(self) -> int:
         """
@@ -1946,16 +2539,17 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         int_order: typing.SupportsInt | typing.SupportsIndex = 2,
-        mapsteps: typing.SupportsInt | typing.SupportsIndex = 5,
+        mapsteps: typing.SupportsInt | typing.SupportsIndex = 10,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -1963,6 +2557,25 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Quadrupole magnet using the exact nonlinear Hamiltonian.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -2038,6 +2651,26 @@ class ExactQuad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def int_order(self) -> int:
         """
@@ -2094,14 +2727,15 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         phi: typing.SupportsFloat | typing.SupportsIndex,
         B: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -2109,6 +2743,25 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         An ideal sector bend using the exact nonlinear map.  When B = 0, the reference bending radius is defined by r0 = length / (angle in rad), corresponding to a magnetic field of B = rigidity / r0; otherwise the reference bending radius is defined by r0 = rigidity / B.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -2188,6 +2841,26 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def B(self) -> float:
         """
@@ -2203,7 +2876,7 @@ class ExactSbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     @phi.setter
     def phi(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
+class Kicker(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -2230,18 +2903,40 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         xkick: typing.SupportsFloat | typing.SupportsIndex,
         ykick: typing.SupportsFloat | typing.SupportsIndex,
         unit: str = "dimensionless",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A thin transverse kicker element. Kicks are for unit "dimensionless" or in "T-m".
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -2317,6 +3012,26 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def xkick(self) -> float:
         """
@@ -2332,7 +3047,7 @@ class Kicker(mixin.Named, mixin.Thin, mixin.Alignment):
     @ykick.setter
     def ykick(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
+class Multipole(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -2359,18 +3074,40 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         multipole: typing.SupportsInt | typing.SupportsIndex,
         K_normal: typing.SupportsFloat | typing.SupportsIndex,
         K_skew: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A general thin multipole element.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -2446,6 +3183,26 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def K_normal(self) -> float:
         """
@@ -2463,7 +3220,7 @@ class Multipole(mixin.Named, mixin.Thin, mixin.Alignment):
     @property
     def multipole(self) -> int:
         """
-        index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
+        index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc., up to m=13)
         """
     @multipole.setter
     def multipole(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
@@ -2498,6 +3255,25 @@ class Empty(mixin.Named, mixin.Thin):
         This element does nothing.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -2573,6 +3349,26 @@ class Empty(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class Marker(mixin.Named, mixin.Thin):
     def __eq__(self, other):
@@ -2604,6 +3400,25 @@ class Marker(mixin.Named, mixin.Thin):
         This named element does nothing.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -2679,8 +3494,28 @@ class Marker(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
 
-class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
+
+class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -2707,17 +3542,39 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         knll: typing.SupportsFloat | typing.SupportsIndex,
         cnll: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         Single short segment of the nonlinear magnetic insert element.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -2793,6 +3650,26 @@ class NonlinearLens(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def cnll(self) -> float:
         """
@@ -2835,16 +3712,36 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         angle: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A rotation in the x-y plane.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -2920,6 +3817,26 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def angle(self) -> float:
         """
@@ -2928,7 +3845,7 @@ class PlaneXYRot(mixin.Named, mixin.Thin, mixin.Alignment):
     @angle.setter
     def angle(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
+class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment, mixin.RepeatedMask):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -2955,6 +3872,7 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         vertices_x: collections.abc.Sequence[
             typing.SupportsFloat | typing.SupportsIndex
         ],
@@ -2962,19 +3880,38 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
             typing.SupportsFloat | typing.SupportsIndex
         ],
         min_radius2: typing.SupportsFloat | typing.SupportsIndex = 0.0,
-        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        repeat_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        repeat_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         shift_odd_x: bool = False,
         action: str = "transmit",
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A short collimator element described by a polygon with vertices given by their x and y coordinates.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -3033,6 +3970,21 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         Reverse the element in-place so that pushing particles through
         it reverses the effect of the original element.
         """
+    def set_vertices(
+        self,
+        vertices_x: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+        vertices_y: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+    ) -> None:
+        """
+        Replace both arrays at once.
+
+        They are validated together and applied as one step, so a rejected update
+        leaves the element unchanged.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -3050,6 +4002,26 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def action(self) -> str:
         """
@@ -3067,26 +4039,31 @@ class PolygonAperture(mixin.Named, mixin.Thin, mixin.Alignment):
         self, arg1: typing.SupportsFloat | typing.SupportsIndex
     ) -> None: ...
     @property
-    def repeat_x(self) -> float:
+    def vertices_x(self) -> list[float]:
         """
-        horizontal period for repeated aperture masking
+        horizontal vertex coordinates in m
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_vertices()``.
         """
-    @repeat_x.setter
-    def repeat_x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @vertices_x.setter
+    def vertices_x(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
     @property
-    def repeat_y(self) -> float:
+    def vertices_y(self) -> list[float]:
         """
-        vertical period for repeated aperture masking
+        vertical vertex coordinates in m
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_vertices()``.
         """
-    @repeat_y.setter
-    def repeat_y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
-    @property
-    def shift_odd_x(self) -> bool:
-        """
-        for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
-        """
-    @shift_odd_x.setter
-    def shift_odd_x(self, arg1: bool) -> None: ...
+    @vertices_y.setter
+    def vertices_y(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
 
 class Programmable(mixin.Named):
     def __eq__(self, other):
@@ -3115,7 +4092,9 @@ class Programmable(mixin.Named):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        includes_collective_effects: bool = False,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -3123,6 +4102,25 @@ class Programmable(mixin.Named):
         A programmable beam optics element.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
         Tolerant equality for lattice elements.
@@ -3195,6 +4193,13 @@ class Programmable(mixin.Named):
     @ds.setter
     def ds(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
+    def includes_collective_effects(self) -> bool:
+        """
+        the push hooks already model collective effects over the length of this element: if True, no additional space charge, wakefield, CSR or ISR kicks are applied by ImpactX, default=False
+        """
+    @includes_collective_effects.setter
+    def includes_collective_effects(self, arg1: bool) -> None: ...
+    @property
     def nslice(self) -> int: ...
     @nslice.setter
     def nslice(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
@@ -3216,12 +4221,7 @@ class Programmable(mixin.Named):
     def push(
         self,
         arg1: collections.abc.Callable[
-            [
-                impactx.impactx_pybind.ImpactXParticleContainer,
-                typing.SupportsInt | typing.SupportsIndex,
-                typing.SupportsInt | typing.SupportsIndex,
-            ],
-            None,
+            [impactx.impactx_pybind.ImpactXParticleContainer, int, int], None
         ],
     ) -> None: ...
     @property
@@ -3270,13 +4270,14 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -3284,6 +4285,25 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         A Quadrupole magnet.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -3359,6 +4379,26 @@ class Quad(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -3404,6 +4444,10 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         z=None,
         field_on_axis=None,
         ncoef=None,
+        z_data=None,
+        wake_x_data=None,
+        wake_y_data=None,
+        wake_z_data=None,
         dx=0,
         dy=0,
         rotation=0,
@@ -3414,11 +4458,30 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.RFCavity, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.RFCavity, *, ds: typing.SupportsFloat | typing.SupportsIndex, escale: typing.SupportsFloat | typing.SupportsIndex, freq: typing.SupportsFloat | typing.SupportsIndex, phase: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], z_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_x_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_y_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, wake_z_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex] | None = None, dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         An RF cavity.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -3477,6 +4540,21 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         Reverse the element in-place so that pushing particles through
         it reverses the effect of the original element.
         """
+    def set_coefficients(
+        self,
+        cos_coefficients: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+        sin_coefficients: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+    ) -> None:
+        """
+        Replace both arrays at once.
+
+        They are validated together and applied as one step, so a rejected update
+        leaves the element unchanged.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -3494,6 +4572,39 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
+    @property
+    def cos_coefficients(self) -> list[float]:
+        """
+        cosine coefficients in the Fourier expansion of the on-axis RF electric field
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @cos_coefficients.setter
+    def cos_coefficients(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
     @property
     def escale(self) -> float:
         """
@@ -3509,6 +4620,11 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     @freq.setter
     def freq(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized transport map around the reference particle (valid after a reference-particle push)
+        """
+    @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
@@ -3522,6 +4638,26 @@ class RFCavity(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     @phase.setter
     def phase(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
+    @property
+    def sin_coefficients(self) -> list[float]:
+        """
+        sine coefficients in the Fourier expansion of the on-axis RF electric field
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @sin_coefficients.setter
+    def sin_coefficients(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
+    @property
+    def spin_coupling(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        linearized spin-orbit coupling matrix (valid after a reference-particle push)
+        """
 
 class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -3550,13 +4686,14 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -3564,6 +4701,25 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         An ideal sector bend.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -3643,6 +4799,26 @@ class Sbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
 
 class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
@@ -3671,14 +4847,15 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -3686,6 +4863,25 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         An ideal combined function bend (sector bend with quadrupole component).
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -3761,6 +4957,26 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -3776,7 +4992,7 @@ class CFbend(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
     @rc.setter
     def rc(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
+class Buncher(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -3803,17 +5019,39 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         V: typing.SupportsFloat | typing.SupportsIndex,
         k: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A short linear RF cavity element at zero-crossing for bunching.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -3889,6 +5127,26 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def V(self) -> float:
         """
@@ -3904,7 +5162,7 @@ class Buncher(mixin.Named, mixin.Thin, mixin.Alignment):
     @k.setter
     def k(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
+class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -3931,18 +5189,40 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         V: typing.SupportsFloat | typing.SupportsIndex,
         freq: typing.SupportsFloat | typing.SupportsIndex,
         phase: typing.SupportsFloat | typing.SupportsIndex = -90.0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A short RF cavity element.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4018,6 +5298,26 @@ class ShortRF(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def V(self) -> float:
         """
@@ -4086,11 +5386,30 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsFloat | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.SoftSolenoid, *, ds: typing.SupportsFloat | typing.SupportsIndex, bscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], unit: typing.SupportsInt | typing.SupportsIndex = 0, dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         A soft-edge solenoid.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4149,6 +5468,21 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         Reverse the element in-place so that pushing particles through
         it reverses the effect of the original element.
         """
+    def set_coefficients(
+        self,
+        cos_coefficients: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+        sin_coefficients: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+    ) -> None:
+        """
+        Replace both arrays at once.
+
+        They are validated together and applied as one step, so a rejected update
+        leaves the element unchanged.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -4166,6 +5500,26 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def bscale(self) -> float:
         """
@@ -4174,12 +5528,57 @@ class SoftSolenoid(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture
     @bscale.setter
     def bscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
+    def cos_coefficients(self) -> list[float]:
+        """
+        cosine coefficients in the Fourier expansion of the on-axis magnetic field Bz
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @cos_coefficients.setter
+    def cos_coefficients(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
+    @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized transport map around the reference particle (valid after a reference-particle push)
+        """
+    @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
         """
     @mapsteps.setter
     def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def sin_coefficients(self) -> list[float]:
+        """
+        sine coefficients in the Fourier expansion of the on-axis magnetic field Bz
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @sin_coefficients.setter
+    def sin_coefficients(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
+    @property
+    def spin_coupling(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        linearized spin-orbit coupling matrix (valid after a reference-particle push)
+        """
+    @property
+    def spin_rotation_vector(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
+        """
+        reference spin rotation vector (valid after a reference-particle push)
+        """
     @property
     def unit(self) -> int:
         """
@@ -4217,13 +5616,36 @@ class Source(mixin.Named, mixin.Thin):
         self,
         distribution: str,
         openpmd_path: str,
+        *,
         active_once: bool = True,
+        load_ref_particle: bool = True,
+        load_step: typing.SupportsInt | typing.SupportsIndex | None = None,
+        load_step_index: typing.SupportsInt | typing.SupportsIndex | None = None,
         name: str | None = None,
     ) -> None:
         """
         A particle source.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4299,6 +5721,26 @@ class Source(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def active_once(self) -> bool:
         """
@@ -4313,6 +5755,31 @@ class Source(mixin.Named, mixin.Thin):
         """
     @distribution.setter
     def distribution(self, arg1: str) -> None: ...
+    @property
+    def load_ref_particle(self) -> bool:
+        """
+        Restore the reference particle from the species metadata of the openPMD file (particle tracking only).
+        """
+    @load_ref_particle.setter
+    def load_ref_particle(self, arg1: bool) -> None: ...
+    @property
+    def load_step(self) -> int | None:
+        """
+        Which step (iteration) to load from the openPMD series: the ImpactX step at which the beam monitor wrote the beam, which is stored as the openPMD iteration in the file. Set at most one of load_step and load_step_index; if neither is set, the last step in the file is loaded.
+        """
+    @load_step.setter
+    def load_step(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex | None
+    ) -> None: ...
+    @property
+    def load_step_index(self) -> int | None:
+        """
+        Which step (iteration) to load from the openPMD series, by position in the file: 0 is the first step and -1 the last, counting back from it as in Python (-2 is the second to last step). Set at most one of load_step and load_step_index; if neither is set, the last step in the file is loaded.
+        """
+    @load_step_index.setter
+    def load_step_index(
+        self, arg1: typing.SupportsInt | typing.SupportsIndex | None
+    ) -> None: ...
     @property
     def series_name(self) -> str:
         """
@@ -4348,13 +5815,14 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         """
     def __init__(
         self,
+        *,
         ds: typing.SupportsFloat | typing.SupportsIndex,
         ks: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0,
-        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         nslice: typing.SupportsInt | typing.SupportsIndex = 1,
         name: str | None = None,
     ) -> None:
@@ -4362,6 +5830,25 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         An ideal hard-edge Solenoid magnet.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4437,6 +5924,26 @@ class Sol(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeAperture):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def ks(self) -> float:
         """
@@ -4472,6 +5979,7 @@ class PRot(mixin.Named, mixin.Thin):
         """
     def __init__(
         self,
+        *,
         phi_in: typing.SupportsFloat | typing.SupportsIndex,
         phi_out: typing.SupportsFloat | typing.SupportsIndex,
         name: str | None = None,
@@ -4480,6 +5988,25 @@ class PRot(mixin.Named, mixin.Thin):
         An exact pole-face rotation in the x-z plane. Both angles are in degrees.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4555,6 +6082,26 @@ class PRot(mixin.Named, mixin.Thin):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def phi_in(self) -> float:
         """
@@ -4615,11 +6162,30 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         name=None,
     ):
         """
-        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0, dy: typing.SupportsFloat | typing.SupportsIndex = 0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
+        __init__(self: impactx.impactx_pybind.elements.SoftQuadrupole, *, ds: typing.SupportsFloat | typing.SupportsIndex, gscale: typing.SupportsFloat | typing.SupportsIndex, cos_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], sin_coefficients: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], dx: typing.SupportsFloat | typing.SupportsIndex = 0.0, dy: typing.SupportsFloat | typing.SupportsIndex = 0.0, rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0, aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0, mapsteps: typing.SupportsInt | typing.SupportsIndex = 10, nslice: typing.SupportsInt | typing.SupportsIndex = 1, name: str | None = None) -> None
 
         A soft-edge quadrupole.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4678,6 +6244,21 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         Reverse the element in-place so that pushing particles through
         it reverses the effect of the original element.
         """
+    def set_coefficients(
+        self,
+        cos_coefficients: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+        sin_coefficients: collections.abc.Sequence[
+            typing.SupportsFloat | typing.SupportsIndex
+        ],
+    ) -> None:
+        """
+        Replace both arrays at once.
+
+        They are validated together and applied as one step, so a rejected update
+        leaves the element unchanged.
+        """
     def to_dict(
         self,
     ) -> dict[
@@ -4695,6 +6276,39 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
+    @property
+    def cos_coefficients(self) -> list[float]:
+        """
+        cosine coefficients in the Fourier expansion of the on-axis field gradient
+
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @cos_coefficients.setter
+    def cos_coefficients(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
     @property
     def gscale(self) -> float:
         """
@@ -4703,14 +6317,39 @@ class SoftQuadrupole(mixin.Named, mixin.Thick, mixin.Alignment, mixin.PipeApertu
     @gscale.setter
     def gscale(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
+    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        linearized transport map around the reference particle (valid after a reference-particle push)
+        """
+    @property
     def mapsteps(self) -> int:
         """
         number of integration steps per slice used for map and reference particle push in applied fields
         """
     @mapsteps.setter
     def mapsteps(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def sin_coefficients(self) -> list[float]:
+        """
+        sine coefficients in the Fourier expansion of the on-axis field gradient
 
-class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
+        Both arrays are always the same length. To change the length, set both at
+        once with ``set_coefficients()``.
+        """
+    @sin_coefficients.setter
+    def sin_coefficients(
+        self,
+        arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+    ) -> None: ...
+    @property
+    def spin_coupling(
+        self,
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
+        """
+        linearized spin-orbit coupling matrix (valid after a reference-particle push)
+        """
+
+class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -4737,17 +6376,39 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         theta: typing.SupportsFloat | typing.SupportsIndex,
         rc: typing.SupportsFloat | typing.SupportsIndex,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         A thin kick model of a dipole bend.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4823,6 +6484,26 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def theta(self) -> float:
         """
@@ -4831,7 +6512,7 @@ class ThinDipole(mixin.Named, mixin.Thin, mixin.Alignment):
     @theta.setter
     def theta(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
-class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
+class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -4858,12 +6539,15 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         k: typing.SupportsFloat | typing.SupportsIndex,
         taper: typing.SupportsFloat | typing.SupportsIndex,
         unit: typing.SupportsInt | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
@@ -4876,6 +6560,25 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
                      where :math:`g` is the (linear) field gradient in T/m and :math:`D_x` is the targeted horizontal dispersion in m.
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -4951,6 +6654,26 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def k(self) -> float:
         """
@@ -4973,7 +6696,7 @@ class TaperedPL(mixin.Named, mixin.Thin, mixin.Alignment):
     @unit.setter
     def unit(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
-class LinearMap(mixin.Named, mixin.Alignment):
+class LinearMap(mixin.Named, mixin.Alignment, mixin.PipeAperture):
     def __eq__(self, other):
         """
         Value-based equality.
@@ -5000,17 +6723,39 @@ class LinearMap(mixin.Named, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         R: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_x: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        aperture_y: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         (A user-provided linear map, represented as a 6x6 transport matrix.)
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -5086,6 +6831,26 @@ class LinearMap(mixin.Named, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def R(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
         """
@@ -5143,18 +6908,38 @@ class SpinMap(mixin.Named, mixin.Alignment):
         """
     def __init__(
         self,
+        *,
         v: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double,
         A: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double,
-        ds: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dx: typing.SupportsFloat | typing.SupportsIndex = 0,
-        dy: typing.SupportsFloat | typing.SupportsIndex = 0,
-        rotation: typing.SupportsFloat | typing.SupportsIndex = 0,
+        ds: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dx: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        dy: typing.SupportsFloat | typing.SupportsIndex = 0.0,
+        rotation: typing.SupportsFloat | typing.SupportsIndex = 0.0,
         name: str | None = None,
     ) -> None:
         """
         (A user-provided spin map, represented as a 3-vector and a 3x6 coupling matrix.)
         """
     def __repr__(self) -> str: ...
+    def copy(self, **kwargs) -> typing.Any:
+        """
+        Return a new element with the same configuration.
+
+        ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())``
+        places a separate element.
+
+        Keyword arguments give the copy a different value for a parameter, which is
+        how one element supplies the values for many::
+
+            cavities = [rf.copy(name=f"rf{i}") for i in range(1, 5)]
+            scan = [quad.copy(k=k) for k in (0.8, 0.9, 1.0)]
+
+        Parameters that only mean something as a pair -- the cosine and sine
+        coefficients, the normal and skew coefficients, the polygon vertices -- are
+        given together, as the constructor takes them. The periods of a repeated
+        aperture mask -- ``repeat_x``, ``repeat_y`` and ``shift_odd_x`` -- are set
+        together after all other parameters, so they are checked against the result.
+        """
     def finalize(self) -> None: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
         """
@@ -5230,6 +7015,26 @@ class SpinMap(mixin.Named, mixin.Alignment):
         | amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
         | None,
     ]: ...
+    def transfer_map(
+        self, ref: impactx.impactx_pybind.RefPart
+    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
+        """
+        Return this element's 6x6 linear transport map for the given
+        reference particle.
+
+        Phase-space ordering in the returned matrix is (x, px, y, py, t, pt).
+        For an element with ``nslice`` > 1 this is the map of a single
+        ``ds/nslice`` slice (the building block that the lattice transfer
+        map composes). Raises for an element whose linear transport map is
+        not implemented.
+
+        Uses the same convention as ``KnownElementsList.transfer_map``: the
+        reference particle is advanced through one slice first, and the map
+        is evaluated at that post-advance reference state. The reference
+        particle you pass in is copied and left unmodified.
+
+        :param ref: reference particle at the element entrance
+        """
     @property
     def A(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
         """
@@ -5262,6 +7067,19 @@ class SpinMap(mixin.Named, mixin.Alignment):
     ) -> None: ...
 
 class KnownElementsList:
+    def __contains__(self, element: typing.Any) -> bool: ...
+    @typing.overload
+    def __delitem__(self, slice: slice) -> None:
+        """
+        Remove the selected elements.
+        """
+    @typing.overload
+    def __delitem__(self, index: typing.SupportsInt | typing.SupportsIndex) -> None:
+        """
+        Remove the element at a position.
+
+        An element that also sits at other positions keeps those.
+        """
     def __eq__(self, other):
         """
         Element-wise equality with any iterable of elements.
@@ -5275,187 +7093,68 @@ class KnownElementsList:
         deliberately unhashable (``__hash__ = None``), matching the Python
         ``list`` convention.
         """
+    @typing.overload
     def __getitem__(
-        self, arg0: typing.SupportsInt | typing.SupportsIndex
-    ) -> (
-        Empty
-        | Aperture
-        | Buncher
-        | CFbend
-        | ChrAcc
-        | ChrDrift
-        | ChrPlasmaLens
-        | ChrQuad
-        | ConstF
-        | BeamMonitor
-        | DipEdge
-        | Drift
-        | ExactCFbend
-        | ExactDrift
-        | ExactMultipole
-        | ExactQuad
-        | ExactSbend
-        | Kicker
-        | LinearMap
-        | Marker
-        | Multipole
-        | NonlinearLens
-        | PlaneXYRot
-        | PolygonAperture
-        | Programmable
-        | PRot
-        | Quad
-        | QuadEdge
-        | RFCavity
-        | Sbend
-        | ShortRF
-        | SoftSolenoid
-        | SoftQuadrupole
-        | Sol
-        | Source
-        | SpinMap
-        | TaperedPL
-        | ThinDipole
-    ): ...
+        self, index: typing.SupportsInt | typing.SupportsIndex
+    ) -> typing.Any:
+        """
+        Return the element at a position.
+        """
     @typing.overload
-    def __init__(self) -> None: ...
-    @typing.overload
-    def __init__(
-        self,
-        arg0: Empty
-        | Aperture
-        | Buncher
-        | CFbend
-        | ChrAcc
-        | ChrDrift
-        | ChrPlasmaLens
-        | ChrQuad
-        | ConstF
-        | BeamMonitor
-        | DipEdge
-        | Drift
-        | ExactCFbend
-        | ExactDrift
-        | ExactMultipole
-        | ExactQuad
-        | ExactSbend
-        | Kicker
-        | LinearMap
-        | Marker
-        | Multipole
-        | NonlinearLens
-        | PlaneXYRot
-        | PolygonAperture
-        | Programmable
-        | PRot
-        | Quad
-        | QuadEdge
-        | RFCavity
-        | Sbend
-        | ShortRF
-        | SoftSolenoid
-        | SoftQuadrupole
-        | Sol
-        | Source
-        | SpinMap
-        | TaperedPL
-        | ThinDipole,
-    ) -> None: ...
-    @typing.overload
-    def __init__(self, arg0: list) -> None: ...
-    def __iter__(
-        self,
-    ) -> collections.abc.Iterator[
-        Empty
-        | Aperture
-        | Buncher
-        | CFbend
-        | ChrAcc
-        | ChrDrift
-        | ChrPlasmaLens
-        | ChrQuad
-        | ConstF
-        | BeamMonitor
-        | DipEdge
-        | Drift
-        | ExactCFbend
-        | ExactDrift
-        | ExactMultipole
-        | ExactQuad
-        | ExactSbend
-        | Kicker
-        | LinearMap
-        | Marker
-        | Multipole
-        | NonlinearLens
-        | PlaneXYRot
-        | PolygonAperture
-        | Programmable
-        | PRot
-        | Quad
-        | QuadEdge
-        | RFCavity
-        | Sbend
-        | ShortRF
-        | SoftSolenoid
-        | SoftQuadrupole
-        | Sol
-        | Source
-        | SpinMap
-        | TaperedPL
-        | ThinDipole
-    ]: ...
+    def __getitem__(self, slice: slice) -> typing.Any:
+        """
+        Return a new lattice holding the selected elements.
+        """
+    def __init__(self, elements=None):
+        """
+        Create a lattice, optionally filled with elements.
+
+        ``elements`` is a single element or any iterable of elements: a list, another
+        lattice, a selection, a generator. The elements are shared, not copied, so the
+        caller keeps handles to the very elements the lattice holds. Constructing goes
+        through ``extend`` for exactly that reason: the C++ constructor cannot see the
+        object being constructed, and so cannot record which Python objects own the
+        elements.
+        """
+    def __iter__(self) -> typing.Any:
+        """
+        Iterate over the elements of the lattice.
+        """
     def __len__(self) -> int:
         """
         The length of the list.
         """
-    def append(
-        self,
-        arg0: Empty
-        | Aperture
-        | Buncher
-        | CFbend
-        | ChrAcc
-        | ChrDrift
-        | ChrPlasmaLens
-        | ChrQuad
-        | ConstF
-        | BeamMonitor
-        | DipEdge
-        | Drift
-        | ExactCFbend
-        | ExactDrift
-        | ExactMultipole
-        | ExactQuad
-        | ExactSbend
-        | Kicker
-        | LinearMap
-        | Marker
-        | Multipole
-        | NonlinearLens
-        | PlaneXYRot
-        | PolygonAperture
-        | Programmable
-        | PRot
-        | Quad
-        | QuadEdge
-        | RFCavity
-        | Sbend
-        | ShortRF
-        | SoftSolenoid
-        | SoftQuadrupole
-        | Sol
-        | Source
-        | SpinMap
-        | TaperedPL
-        | ThinDipole,
+    def __reversed__(self) -> typing.Any:
+        """
+        Iterate over the elements from the end.
+        """
+    @typing.overload
+    def __setitem__(
+        self, index: typing.SupportsInt | typing.SupportsIndex, element: typing.Any
     ) -> None:
         """
-        Add a single element to the list.
+        Replace the element at a position.
+        """
+    @typing.overload
+    def __setitem__(self, slice: slice, elements: collections.abc.Iterable) -> None:
+        """
+        Replace the selected elements.
+        """
+    def append(self, element: typing.Any) -> None:
+        """
+        Add an element to the end of the lattice.
+
+        The lattice holds this element, so changing it afterwards changes what is
+        tracked. Adding the same element twice places it at two positions. For two
+        independent elements, add ``element.copy()`` or construct a second one.
         """
     def clear(self) -> None:
         """
-        Clear the list to become empty.
+        Remove all elements from the lattice.
+        """
+    def count(self, element: typing.Any) -> int:
+        """
+        Return how many positions this element occupies.
         """
     def count_by_kind(self, kind_pattern) -> int:
         """
@@ -5470,15 +7169,9 @@ class KnownElementsList:
         Returns:
             int: Number of elements of the specified kind.
         """
-    @typing.overload
-    def extend(self, arg0: KnownElementsList) -> KnownElementsList:
+    def extend(self, elements: collections.abc.Iterable) -> typing.Any:
         """
-        Add a list of elements to the list.
-        """
-    @typing.overload
-    def extend(self, arg0: list) -> KnownElementsList:
-        """
-        Add a list of elements to the list.
+        Add several elements to the lattice.
         """
     def from_dicts(self, dicts: list[dict]):
         """
@@ -5509,9 +7202,11 @@ class KnownElementsList:
             :func:`impactx.extensions.matrix_hook` as a JSON object_hook
             when loading such elements.
         """
-    def from_pals(self, pals_beamline, nslice=1):
+    def from_pals(self, pals_beamline, nslice=1, *, min_model="linear"):
         """
-        Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python BeamLine.
+        Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) object.
+
+        ``min_model`` is the element model floor, see :py:func:`load_file`.
 
         https://github.com/campa-consortium/pals-python
         """
@@ -5534,6 +7229,16 @@ class KnownElementsList:
 
         Returns:
             bool: True if at least one element of the specified kind exists.
+        """
+    def index(self, element: typing.Any) -> int:
+        """
+        Return the first position holding this element.
+        """
+    def insert(
+        self, index: typing.SupportsInt | typing.SupportsIndex, element: typing.Any
+    ) -> None:
+        """
+        Insert an element before a position.
         """
     def is_empty(self) -> bool: ...
     def isclose(self, other, *, rtol=1e-12, atol=0.0, ignore_attributes=None):
@@ -5558,9 +7263,16 @@ class KnownElementsList:
             variants (e.g., ``Drift`` vs ``ExactDrift``). Forwarded to each
             element's ``isclose``.
         """
-    def load_file(self, filename, nslice=1):
+    def load_file(self, filename, nslice=1, *, min_model="linear"):
         """
         Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+        ``min_model`` raises the lower gate of the element model selection: the reader
+        still picks the cheapest ImpactX element that represents the imported element,
+        but never one below the requested tier (``"linear"``, ``"paraxial"`` or
+        ``"exact"``). Where a tier is not implemented for an element family, the next
+        higher one is used. Where no model reaches the requested tier at all, as for a
+        solenoid, which has no exact model, a warning is emitted.
 
         .. warning::
 
@@ -5623,15 +7335,23 @@ class KnownElementsList:
         legend_ncols: int
             Number of columns for lattice element types in the legend.
         palette: string
-            Color palette.
+            Color palette of the elements: ``"cern-lhc"``;
+            ``"fnal-booster"`` with dipoles blue, quadrupoles red, sextupoles (multipoles)
+            yellow and combined-function magnets green;
+            or ``"fnal-iota"`` with dipoles blue, quadrupoles green, sextupoles (multipoles)
+            yellow, nonlinear lenses red and RF cavities tan.
 
         Returns
         -------
         Either populates the matplotlib axes in ax or creates a new axes containing the plot.
         """
-    def pop_back(self) -> None:
+    def pop_back(self) -> typing.Any:
         """
-        Return and remove the last element of the list.
+        Remove and return the last element of the lattice.
+        """
+    def remove(self, element: typing.Any) -> None:
+        """
+        Remove the first occurrence of this element.
         """
     def select(self, *, kind=None, name=None) -> FilteredElementsList:
         """
@@ -5819,6 +7539,18 @@ class KnownElementsList:
         :param order: So far, only the calculation of linear transfer maps is supported.
         :param fallback_identity_map: For elements with an undefined transfer map in the lattice, assume the identity matrix.
         """
+    @property
+    def generation(self) -> int:
+        """
+        How often the sequence of elements changed.
+
+        Counts structural edits only: changing a parameter on an element that is
+        already in the lattice does not move anything and does not change this.
+        A view that remembers positions compares this to notice they went stale.
+
+        Compare it for equality, not by how far it moved: one call can edit the
+        sequence in several steps, as deleting a selection does.
+        """
 
 class FilteredElementsList:
     """
@@ -5852,7 +7584,7 @@ class FilteredElementsList:
     def __str__(self): ...
     def _require_valid(self) -> None:
         """
-        Raise if this view was invalidated after a lattice mutation.
+        Raise if the lattice changed after this view was taken.
         """
     def count_by_kind(self, kind_pattern) -> int:
         """

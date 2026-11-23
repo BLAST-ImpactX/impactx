@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -117,13 +117,21 @@ namespace impactx::particles::spacecharge
 
         amrex::ParticleReal const charge = pc.GetRefParticle().charge;
 
+        // preparation to access the required beam moments
+        std::unordered_map<std::string, amrex::ParticleReal> const rbc = diagnostics::reduced_beam_characteristics(pc);
+        amrex::ParticleReal const bchchg = rbc.at("charge_C");
+
+        // get position of the beam centroid
+        // Mean of the particle positions (speed of light times time delay for t) (unit: meter)
+        amrex::ParticleReal const meanx = rbc.at("mean_x");
+        amrex::ParticleReal const meany = rbc.at("mean_y");
+        amrex::ParticleReal const meanz = rbc.at("mean_t");
+
         // get RMS sigma of beam
         // Standard deviation of the particle positions (speed of light times time delay for t) (unit: meter)
-        std::unordered_map<std::string, amrex::ParticleReal> const rbc = diagnostics::reduced_beam_characteristics(pc);
         amrex::ParticleReal const sigx = rbc.at("sig_x");
         amrex::ParticleReal const sigy = rbc.at("sig_y");
         amrex::ParticleReal const sigz = rbc.at("sig_t");
-        amrex::ParticleReal const bchchg = rbc.at("charge_C");
 
         // physical constants and reference quantities
         amrex::ParticleReal const c0_SI = 2.99792458e8_prt;  // TODO move out
@@ -171,10 +179,12 @@ namespace impactx::particles::spacecharge
 
                 // gather to each particle and push momentum
                 amrex::ParallelFor(np, [=] AMREX_GPU_DEVICE (int i) {
+                    // positions relative to the bunch centroid
+                    amrex::ParticleReal const x = part_x[i] - meanx;
+                    amrex::ParticleReal const y = part_y[i] - meany;
+                    amrex::ParticleReal const z = part_z[i] - meanz;
+
                     // access SoA Real data
-                    amrex::ParticleReal const & AMREX_RESTRICT x = part_x[i];
-                    amrex::ParticleReal const & AMREX_RESTRICT y = part_y[i];
-                    amrex::ParticleReal const & AMREX_RESTRICT z = part_z[i];
                     amrex::ParticleReal & AMREX_RESTRICT px = part_px[i];
                     amrex::ParticleReal & AMREX_RESTRICT py = part_py[i];
                     amrex::ParticleReal & AMREX_RESTRICT pz = part_pz[i];

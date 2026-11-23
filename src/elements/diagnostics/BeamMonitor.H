@@ -1,10 +1,10 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
  * This file is part of ImpactX.
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 #ifndef IMPACTX_ELEMENTS_DIAGS_BEAMMONITOR_H
@@ -35,7 +35,7 @@ namespace detail
 
         ImpactXParticleCounter (ParticleContainer & pc);
 
-        unsigned long GetTotalNumParticles () { return m_Total; }
+        unsigned long long GetTotalNumParticles () { return m_Total; }
 
         std::vector<unsigned long long> m_ParticleOffsetAtRank;
         std::vector<unsigned long long> m_ParticleSizeAtRank;
@@ -46,7 +46,7 @@ namespace detail
         * @param[out] offset particle offset over all, mpi-global amrex fabs
         * @param[out] sum number of all particles from all amrex fabs
         */
-        void GetParticleOffsetOfProcessor (const long &numParticles,
+        void GetParticleOffsetOfProcessor (amrex::Long const &numParticles,
                                            unsigned long long &offset,
                                            unsigned long long &sum) const;
 
@@ -72,6 +72,12 @@ namespace detail
         using PType = typename ImpactXParticleContainer::ParticleType;
         using PinnedContainer = typename ImpactXParticleContainer::ContainerLike<amrex::PolymorphicArenaAllocator>;
 
+        static constexpr char const * DEFAULT_backend = "default";
+        static constexpr char const * DEFAULT_encoding = "g";
+        static constexpr int DEFAULT_period_sample_intervals = 1;
+        static constexpr bool DEFAULT_particles = true;
+        static constexpr bool DEFAULT_beam_moments = true;
+
         /** This element writes the particle beam out to openPMD data.
          *
          * Elements with the same series name are identical.
@@ -80,13 +86,39 @@ namespace detail
          * @param backend file format backend for openPMD, e.g., "bp5", "bp4", or "h5"
          * @param encoding openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
          * @param period_sample_intervals for periodic lattice, only output every Nth period (turn)
+         * @param particles output the individual particles of the beam (default: true)
+         * @param beam_moments output the beam moments (reduced beam characteristics) as attributes (default: true)
          */
-        BeamMonitor (std::string series_name, std::string backend="default", std::string encoding="g", int period_sample_intervals=1);
+        BeamMonitor (
+            std::string series_name,
+            std::string backend = DEFAULT_backend,
+            std::string encoding = DEFAULT_encoding,
+            int period_sample_intervals = DEFAULT_period_sample_intervals,
+            bool particles = DEFAULT_particles,
+            bool beam_moments = DEFAULT_beam_moments
+        );
 
         BeamMonitor (BeamMonitor const & other) = default;
         BeamMonitor (BeamMonitor && other) = default;
         BeamMonitor& operator= (BeamMonitor const & other) = default;
         BeamMonitor& operator= (BeamMonitor && other) = default;
+
+        /** A distinct monitor with the same output configuration
+         *
+         * The open output series is deliberately not carried over: two monitors writing
+         * through one series handle would interleave into the same iterations. The copy
+         * opens its own on first use.
+         */
+        [[nodiscard]] BeamMonitor copy () const
+        {
+            BeamMonitor out(*this);
+            out.m_series.reset();
+            out.m_series_key.clear();
+            out.m_step = 0;
+            out.m_offset.clear();
+            out.m_rbc.clear();
+            return out;
+        }
 
         /** Reverse the element (no-op for diagnostics) */
         void reverse () { }
@@ -179,9 +211,23 @@ namespace detail
         AMREX_FORCE_INLINE
         int period_sample_intervals () const { return m_period_sample_intervals; }
 
-        /** track all m_series_name instances
+        /** Output the individual particles of the beam */
+        AMREX_FORCE_INLINE
+        bool particles () const { return m_particles; }
+
+        /** Toggle output of the individual particles of the beam */
+        void set_particles (bool particles) { m_particles = particles; }
+
+        /** Output the beam moments (reduced beam characteristics) as openPMD attributes */
+        AMREX_FORCE_INLINE
+        bool beam_moments () const { return m_beam_moments; }
+
+        /** Toggle output of the beam moments */
+        void set_beam_moments (bool beam_moments) { m_beam_moments = beam_moments; }
+
+        /** track all openPMD series instances
          *
-         * Ensure m_series is the same for the same name.
+         * Ensure m_series is the same for the same output path.
          */
         static inline std::map<std::string, std::any> m_unique_series = {};
 
@@ -194,15 +240,42 @@ namespace detail
         /** Open the openPMD series (on first access) */
         void open ();
 
+        /** Whether to write through the steps-based openPMD writeIterations() API
+         *
+         * I/O steps are the recommended way to write and are fully supported
+         * by ADIOS2 BP5, HDF5 and JSON, with one exception: the ADIOS2 BP4
+         * engine drops attribute-only iterations written through I/O steps
+         * (verified with openPMD-api 0.16.1 and 0.17.1). Thus, when no
+         * particle data sets are written, use random access for "bp4". The
+         * generic "bp" ending resolves to ADIOS2's default engine, which is
+         * BP5 for ADIOS2 >= 2.9. Variable-based encoding strictly requires
+         * I/O steps (random access overwrites attributes of prior
+         * iterations).
+         * Note: openPMD-api cannot report the selected ADIOS2
+         *   engine (Series::backend() only returns "ADIOS2"), so this checks
+         *   the resolved file ending.
+         *   https://github.com/openPMD/openPMD-api/issues/1913
+         */
+        bool use_io_steps () const
+        {
+            return m_particles ||
+                   m_encoding == "v" ||
+                   m_OpenPMDFileType != "bp4";
+        }
+
         std::string m_series_name; //! openPMD filename
         std::string m_OpenPMDFileType; //! openPMD backend: usually HDF5 (h5) or ADIOS2 (bp/bp4/bp5) or ADIOS2 SST (sst)
         std::string m_encoding; //! openPMD iteration encoding: "v"ariable based, "f"ile based, "g"roup based (default)
         std::any m_series; //! openPMD::Series that holds potentially multiple outputs
+        std::string m_series_key; //! full path used as key in m_unique_series
         int m_step = 0; //! global step for output
 
         int m_file_min_digits = 6; //! minimum number of digits to iteration number in file name
 
-        int m_period_sample_intervals = 1; //! only output every Nth period (turn or cycle) of periodic lattices
+        int m_period_sample_intervals = DEFAULT_period_sample_intervals; //! only output every Nth period (turn or cycle) of periodic lattices
+
+        bool m_particles = DEFAULT_particles; //! output the individual particles of the beam
+        bool m_beam_moments = DEFAULT_beam_moments; //! output the beam moments as openPMD attributes
 
         /** This rank's offset in the MPI-global particle array, by level
          *

@@ -11,16 +11,14 @@
 #define IMPACTX_SOFTSOL_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
-#include "mixin/dynamicdata.H"
+#include "helper/ArrayValidation.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
-#include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
-#include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
 
@@ -30,13 +28,13 @@
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 #include <AMReX_SmallMatrix.H>
+#include <AMReX_TrackedVector.H>
 
 #include <cmath>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
-
 
 namespace impactx::elements
 {
@@ -107,17 +105,21 @@ namespace impactx::elements
      */
     struct SolenoidFourierCoefficients
     {
-        mixin::TrackedVector<amrex::ParticleReal> cos;
-        mixin::TrackedVector<amrex::ParticleReal> sin;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> cos;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> sin;
     };
 
-    struct SoftSolenoid
-    : public mixin::Named,
-      public mixin::BeamOptic<SoftSolenoid>,
-      public mixin::LinearTransport<SoftSolenoid>,
+    /** The prepared pusher for a soft-edge solenoid.
+     *
+     * Holds the particle-facing configuration and a bounded, non-owning view of the
+     * Fourier coefficients, resolved to the execution space of one element slice.
+     * It can be pushed over a tile, but not advance the reference particle: that needs
+     * the canonical element, which owns the coefficients.
+     */
+    struct SoftSolenoidPusher
+    : public mixin::ParticlePush<SoftSolenoidPusher>,
       public mixin::Thick,
       public mixin::Alignment,
-      public mixin::NoFinalize,
       public mixin::PipeAperture,
       public mixin::SpinTransport,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -125,62 +127,39 @@ namespace impactx::elements
         static constexpr auto type = "SoftSolenoid";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        using DynamicData = mixin::GPUDataRegistry<SolenoidFourierCoefficients>;
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr int DEFAULT_mapsteps = 10;
 
-        /** A soft-edge solenoid
+        /** The particle-facing configuration of a soft-edge solenoid
          *
          * @param ds Segment length in m
-         * @param bscale Scaling factor for on-axis longitudinal magnetic field in 1/m (MAD-X convention)
-         *           = (Bz in T) / (rigidity in T-m)
-         *        OR Magnetic field Bz in T (SI units)
-         * @param cos_coef cosine coefficients in Fourier expansion of on-axis magnetic field Bz
-         * @param sin_coef sine coefficients in Fourier expansion of on-axis magnetic field Bz
-         * @param unit  Unit specification
-         *           unit = 0 MADX convention (default)
-         *           unit = 1 SI units
+         * @param bscale Scaling factor for the on-axis longitudinal magnetic field
+         * @param unit unit specification for the field strength
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
-         * @param mapsteps number of integration steps per slice used for
-         *        map and reference particle push in applied fields
+         * @param mapsteps number of integration steps per slice
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        SoftSolenoid (
+        SoftSolenoidPusher (
             amrex::ParticleReal ds,
             amrex::ParticleReal bscale,
-            std::vector<amrex::ParticleReal> cos_coef,
-            std::vector<amrex::ParticleReal> sin_coef,
             int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int mapsteps = 10,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx,
+            amrex::ParticleReal dy,
+            amrex::ParticleReal rotation_degree,
+            amrex::ParticleReal aperture_x,
+            amrex::ParticleReal aperture_y,
+            int mapsteps,
+            int nslice
         )
-          : Named(std::move(name)),
-            Thick(ds, nslice),
+          : Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
             PipeAperture(aperture_x, aperture_y),
-            m_bscale(bscale), m_unit(unit), m_mapsteps(mapsteps),
-            m_id(DynamicData::allocate_id())
+            m_bscale(bscale), m_unit(unit), m_mapsteps(mapsteps)
         {
-            m_ncoef = int(cos_coef.size());
-            if (m_ncoef != int(sin_coef.size()))
-                throw std::runtime_error("SoftSolenoid: cos and sin coefficients must have same length!");
-
-            auto& coef = DynamicData::emplace(
-                m_id,
-                std::move(cos_coef),
-                std::move(sin_coef)
-            );
-            m_cos_h_data = coef.cos.host_const().data();
-            m_sin_h_data = coef.sin.host_const().data();
         }
 
         /** Reverse the element (negate ds) */
@@ -190,32 +169,15 @@ namespace impactx::elements
             Thick::reverse();
         }
 
-        /** Push all particles */
-        using BeamOptic::operator();
+        /** Push all particles on a tile */
+        using mixin::ParticlePush<SoftSolenoidPusher>::operator();
 
-        /** Compute and cache the constants for the push.
-         *
-         * In particular, used to pre-compute and cache variables that are
-         * independent of the individually tracked particle.
-         *
-         * @param refpart reference particle
-         */
-        void compute_constants (RefPart const & refpart)
-        {
-            using namespace amrex::literals; // for _rt and _prt
-
-            Alignment::compute_constants(refpart);
-
-            // Ensure dynamic coefficient data is on GPU and we have fresh pointers to it
-            auto const & coef = *DynamicData::get(m_id);
-            m_cos_d_data = coef.cos.device_const().data();
-            m_sin_d_data = coef.sin.device_const().data();
-        }
 
         /** This is a soft-edge solenoid functor, so that a variable of this type can be used
          *  like a soft-edge solenoid function.
          *
-         * The @see compute_constants method must be called before pushing particles through this operator.
+         * The pusher must be prepared through ``make_particle_pusher`` on the owning element
+         * before particles are pushed through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -235,17 +197,14 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            RefPart const & AMREX_RESTRICT refpart
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // get the linear map
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
 
             // symplectic linear map for a solenoid is computed using the
             // Hamiltonian formalism as described in:
@@ -264,82 +223,7 @@ namespace impactx::elements
             py = out[4];
             t  = out[5];
             pt = out[6];
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
-
-        /** This pushes the reference particle.
-         *
-         * @param[in,out] refpart reference particle
-         */
-        AMREX_GPU_HOST AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const
-        {
-            using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
-
-            // assign input reference particle values
-            amrex::ParticleReal const x = refpart.x;
-            amrex::ParticleReal const px = refpart.px;
-            amrex::ParticleReal const y = refpart.y;
-            amrex::ParticleReal const py = refpart.py;
-            amrex::ParticleReal const z = refpart.z;
-            amrex::ParticleReal const pz = refpart.pz;
-            amrex::ParticleReal const pt = refpart.pt;
-            amrex::ParticleReal const s = refpart.s;
-            amrex::ParticleReal const sedge = refpart.sedge;
-
-            // initialize linear map (deviation) values
-            refpart.map = decltype(refpart.map)::Identity();
-
-            // initialize the spin-orbit coupling matrix and the spin rotation vector
-            refpart.spin_rotation_vector = {};
-            refpart.spin_coupling = {};
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // compute initial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
-
-            // call integrator to advance (t,pt)
-            amrex::ParticleReal const zin = s - sedge;
-            amrex::ParticleReal const zout = zin + slice_ds;
-            int const nsteps = m_mapsteps;
-
-            integrators::symp2_integrate_split3(refpart,zin,zout,nsteps,*this);
-            amrex::ParticleReal const ptf = refpart.pt;
-
-            /* print computed linear map:
-               for(int i=1; i<7; ++i){
-                 for(int j=1; j<7; ++j){
-                    amrex::PrintToFile("SolMap.txt") << i << " " <<
-                    j << " " << refpart.map(i,j) << "\n";
-                 }
-               }
-            */
-
-            // advance position (x,y,z)
-            refpart.x = x + slice_ds*px/bgi;
-            refpart.y = y + slice_ds*py/bgi;
-            refpart.z = z + slice_ds*pz/bgi;
-
-            // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
-
-            // advance momentum (px,py,pz)
-            refpart.px = px*bgf/bgi;
-            refpart.py = py*bgf/bgi;
-            refpart.pz = pz*bgf/bgi;
-
-            // advance integrated path length
-            refpart.s = s + slice_ds;
-        }
-
 
         /** This operator pushes the particle spin.
          *
@@ -353,7 +237,7 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -367,7 +251,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -382,7 +266,7 @@ namespace impactx::elements
             amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
 
             // get the spin-orbit coupling matrix
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = m_spin_coupling;
 
             // use phase space variables to obtain the angle-axis generator of spin rotation
             auto const out = A * v;
@@ -396,7 +280,7 @@ namespace impactx::elements
             rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
 
             // axis-angle vector components generating the reference spin map
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> const lambda = refpart.spin_rotation_vector;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> const lambda = m_spin_rotation_vector;
             lambdax = lambda(1);
             lambday = lambda(2);
             lambdaz = lambda(3);
@@ -406,26 +290,6 @@ namespace impactx::elements
 
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
-        }
-
-
-        /** This pushes the covariance matrix. */
-        using LinearTransport::operator();
-
-        /** This function returns the linear transport map.
-         *
-         * @param[in] refpart reference particle
-         * @returns 6x6 transport matrix
-         */
-        AMREX_GPU_HOST AMREX_FORCE_INLINE
-        Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
-        {
-
-            Map6x6 R = Map6x6::Identity();
-            R = refpart.map;
-
-            return R;
         }
 
         /** This evaluates the on-axis magnetic field Bz at a fixed location
@@ -440,15 +304,11 @@ namespace impactx::elements
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // pick the right data depending if we are on the host side
-            // (reference particle push) or device side (particles):
-#if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal const * cos_data = m_cos_d_data;
-            amrex::ParticleReal const * sin_data = m_sin_d_data;
-#else
-            amrex::ParticleReal const * cos_data = m_cos_h_data;
-            amrex::ParticleReal const * sin_data = m_sin_h_data;
-#endif
+            // the coefficients were resolved to this pusher's execution space when it
+            // was prepared, so there is a single copy of the field expansion below
+            amrex::ParticleReal const * cos_data = m_cos_coefficients;
+            amrex::ParticleReal const * sin_data = m_sin_coefficients;
+            int const ncoef = m_ncoef;
 
             // specify constants
             using ablastr::constant::math::pi;
@@ -465,7 +325,7 @@ namespace impactx::elements
             {
                bfield = 0.5_prt*cos_data[0];
                bfieldint = z*bfield;
-               for (int j=1; j < m_ncoef; ++j)
+               for (int j=1; j < ncoef; ++j)
                {
                  bfield = bfield + cos_data[j] * std::cos(j*2*pi*z/zlen) +
                      sin_data[j] * std::sin(j*2*pi*z/zlen);
@@ -511,21 +371,21 @@ namespace impactx::elements
             zeval = z + tau;
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
-            refpart.map(1,1) = R(1,1) + tau*R(2,1);
-            refpart.map(1,2) = R(1,2) + tau*R(2,2);
-            refpart.map(1,3) = R(1,3) + tau*R(2,3);
-            refpart.map(1,4) = R(1,4) + tau*R(2,4);
+            m_map(1,1) = R(1,1) + tau*R(2,1);
+            m_map(1,2) = R(1,2) + tau*R(2,2);
+            m_map(1,3) = R(1,3) + tau*R(2,3);
+            m_map(1,4) = R(1,4) + tau*R(2,4);
 
-            refpart.map(3,1) = R(3,1) + tau*R(4,1);
-            refpart.map(3,2) = R(3,2) + tau*R(4,2);
-            refpart.map(3,3) = R(3,3) + tau*R(4,3);
-            refpart.map(3,4) = R(3,4) + tau*R(4,4);
+            m_map(3,1) = R(3,1) + tau*R(4,1);
+            m_map(3,2) = R(3,2) + tau*R(4,2);
+            m_map(3,3) = R(3,3) + tau*R(4,3);
+            m_map(3,4) = R(3,4) + tau*R(4,4);
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<2>(betgam);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<2>(betgam);
+            m_map(5,5) = R(5,5) + tau*R(6,5)/powi<2>(betgam);
+            m_map(5,6) = R(5,6) + tau*R(6,6)/powi<2>(betgam);
 
         }
 
@@ -562,23 +422,23 @@ namespace impactx::elements
             refpart.pt = pt;
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
             amrex::ParticleReal const alpha = B0*bz*0.5_prt;
             amrex::ParticleReal const alpha2 = powi<2>(alpha);
 
-            refpart.map(2,1) = R(2,1) - tau*alpha2*R(1,1);
-            refpart.map(2,2) = R(2,2) - tau*alpha2*R(1,2);
-            refpart.map(2,3) = R(2,3) - tau*alpha2*R(1,3);
-            refpart.map(2,4) = R(2,4) - tau*alpha2*R(1,4);
+            m_map(2,1) = R(2,1) - tau*alpha2*R(1,1);
+            m_map(2,2) = R(2,2) - tau*alpha2*R(1,2);
+            m_map(2,3) = R(2,3) - tau*alpha2*R(1,3);
+            m_map(2,4) = R(2,4) - tau*alpha2*R(1,4);
 
-            refpart.map(4,1) = R(4,1) - tau*alpha2*R(3,1);
-            refpart.map(4,2) = R(4,2) - tau*alpha2*R(3,2);
-            refpart.map(4,3) = R(4,3) - tau*alpha2*R(3,3);
-            refpart.map(4,4) = R(4,4) - tau*alpha2*R(3,4);
+            m_map(4,1) = R(4,1) - tau*alpha2*R(3,1);
+            m_map(4,2) = R(4,2) - tau*alpha2*R(3,2);
+            m_map(4,3) = R(4,3) - tau*alpha2*R(3,3);
+            m_map(4,4) = R(4,4) - tau*alpha2*R(3,4);
 
             // BELOW: if spin is needed only:
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> const v = refpart.spin_rotation_vector;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = m_spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> const v = m_spin_rotation_vector;
             amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> dA = {};
             amrex::ParticleReal const gamma = refpart.gamma();
             amrex::ParticleReal const beta = refpart.beta();
@@ -599,7 +459,7 @@ namespace impactx::elements
             dA(3,6) = -2_prt *(1_prt + G) * tau * alpha/beta;
 
             // update the spin-orbit coupling matrix here
-            refpart.spin_coupling = A + dA*R;
+            m_spin_coupling = A + dA*R;
 
         }
 
@@ -636,57 +496,277 @@ namespace impactx::elements
             refpart.pt = pt;
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
             amrex::ParticleReal const theta = tau*B0*bz*0.5_prt;
             amrex::ParticleReal const cs = std::cos(theta);
             amrex::ParticleReal const sn = std::sin(theta);
 
-            refpart.map(1,1) = R(1,1)*cs + R(3,1)*sn;
-            refpart.map(1,2) = R(1,2)*cs + R(3,2)*sn;
-            refpart.map(1,3) = R(1,3)*cs + R(3,3)*sn;
-            refpart.map(1,4) = R(1,4)*cs + R(3,4)*sn;
+            m_map(1,1) = R(1,1)*cs + R(3,1)*sn;
+            m_map(1,2) = R(1,2)*cs + R(3,2)*sn;
+            m_map(1,3) = R(1,3)*cs + R(3,3)*sn;
+            m_map(1,4) = R(1,4)*cs + R(3,4)*sn;
 
-            refpart.map(2,1) = R(2,1)*cs + R(4,1)*sn;
-            refpart.map(2,2) = R(2,2)*cs + R(4,2)*sn;
-            refpart.map(2,3) = R(2,3)*cs + R(4,3)*sn;
-            refpart.map(2,4) = R(2,4)*cs + R(4,4)*sn;
+            m_map(2,1) = R(2,1)*cs + R(4,1)*sn;
+            m_map(2,2) = R(2,2)*cs + R(4,2)*sn;
+            m_map(2,3) = R(2,3)*cs + R(4,3)*sn;
+            m_map(2,4) = R(2,4)*cs + R(4,4)*sn;
 
-            refpart.map(3,1) = R(3,1)*cs - R(1,1)*sn;
-            refpart.map(3,2) = R(3,2)*cs - R(1,2)*sn;
-            refpart.map(3,3) = R(3,3)*cs - R(1,3)*sn;
-            refpart.map(3,4) = R(3,4)*cs - R(1,4)*sn;
+            m_map(3,1) = R(3,1)*cs - R(1,1)*sn;
+            m_map(3,2) = R(3,2)*cs - R(1,2)*sn;
+            m_map(3,3) = R(3,3)*cs - R(1,3)*sn;
+            m_map(3,4) = R(3,4)*cs - R(1,4)*sn;
 
-            refpart.map(4,1) = R(4,1)*cs - R(2,1)*sn;
-            refpart.map(4,2) = R(4,2)*cs - R(2,2)*sn;
-            refpart.map(4,3) = R(4,3)*cs - R(2,3)*sn;
-            refpart.map(4,4) = R(4,4)*cs - R(2,4)*sn;
+            m_map(4,1) = R(4,1)*cs - R(2,1)*sn;
+            m_map(4,2) = R(4,2)*cs - R(2,2)*sn;
+            m_map(4,3) = R(4,3)*cs - R(2,3)*sn;
+            m_map(4,4) = R(4,4)*cs - R(2,4)*sn;
 
             // BELOW: if spin is needed only:
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> const v = refpart.spin_rotation_vector;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> const v = m_spin_rotation_vector;
             amrex::ParticleReal dv_z = 0_prt;
             amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
 
             // Update reference spin rotation vector here
             dv_z = -(1_prt + G) * tau * B0 * bz;
-            refpart.spin_rotation_vector(3) = v(3) + dv_z;
+            m_spin_rotation_vector(3) = v(3) + dv_z;
 
         }
 
         amrex::ParticleReal m_bscale; //! scaling factor for solenoid Bz field
         int m_unit; //! unit specification for quad strength
         int m_mapsteps; //! number of map integration steps per slice
-        int m_id; //! unique soft solenoid id used for data lookup map
+        /** Coefficients resolved to this pusher's execution space; non-owning */
+        //! non-owning, device-copyable; valid for the launch it was prepared for
+        amrex::ParticleReal const * m_cos_coefficients = nullptr;
+        amrex::ParticleReal const * m_sin_coefficients = nullptr;
+        int m_ncoef = 0;
 
-        int m_ncoef = 0; //! number of Fourier coefficients
-        amrex::ParticleReal const * m_cos_h_data = nullptr; //! non-owning pointer to host cosine coefficients
-        amrex::ParticleReal const * m_sin_h_data = nullptr; //! non-owning pointer to host sine coefficients
-        amrex::ParticleReal const * m_cos_d_data = nullptr; //! non-owning pointer to device cosine coefficients
-        amrex::ParticleReal const * m_sin_d_data = nullptr; //! non-owning pointer to device sine coefficients
+
+        // Reference-trajectory linearization around the reference particle.
+        // Computed during the reference-particle push and consumed during the
+        // particle push.
+        // mutable: written by the const reference push before the element is copied
+        // into the particle-push functor.
+        mutable amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> m_map{}; //! linearized map
+        mutable amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> m_spin_coupling{}; //! linearized spin-orbit coupling matrix
+        mutable amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> m_spin_rotation_vector{}; //! reference spin rotation vector
     };
+
+    /** A soft-edge solenoid: the canonical element that owns its coefficients.
+     *
+     * The reference-particle push, the transfer map, serialization and finalization run
+     * here on the host. Particle pushes run against @see SoftSolenoidPusher.
+     */
+    struct SoftSolenoidGPU
+    : public mixin::BeamOptic<SoftSolenoidGPU>,
+      public mixin::LinearTransport<SoftSolenoidGPU>,
+      public SoftSolenoidPusher
+    {
+        /** A soft-edge solenoid
+         *
+         * @param ds Segment length in m
+         * @param bscale Scaling factor for on-axis longitudinal magnetic field in 1/m (MAD-X convention)
+         *           = (Bz in T) / (rigidity in T-m)
+         *        OR Magnetic field Bz in T (SI units)
+         * @param cos_coef cosine coefficients in Fourier expansion of on-axis magnetic field Bz
+         * @param sin_coef sine coefficients in Fourier expansion of on-axis magnetic field Bz
+         * @param unit  Unit specification
+         *           unit = 0 MADX convention (default)
+         *           unit = 1 SI units
+         * @param dx horizontal translation error in m
+         * @param dy vertical translation error in m
+         * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
+         * @param mapsteps number of integration steps per slice used for
+         *        map and reference particle push in applied fields
+         * @param nslice number of slices used for the application of space charge
+         */
+        SoftSolenoidGPU (
+            amrex::ParticleReal ds,
+            amrex::ParticleReal bscale,
+            std::vector<amrex::ParticleReal> cos_coef,
+            std::vector<amrex::ParticleReal> sin_coef,
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice
+        )
+          : SoftSolenoidPusher(ds, bscale, unit, dx, dy, rotation_degree, aperture_x, aperture_y, mapsteps, nslice),
+            m_coefficients{std::move(cos_coef), std::move(sin_coef)}
+        {
+            require_array_pair(m_coefficients.cos, m_coefficients.sin,
+                               "SoftSolenoid: cos and sin coefficient", 1);
+            if (m_mapsteps <= 0)
+                throw std::invalid_argument("SoftSolenoid: mapsteps must be > 0!");
+        }
+
+        /** Push all particles */
+        using mixin::BeamOptic<SoftSolenoidGPU>::operator();
+
+        /** This pushes the reference particle.
+         *
+         * @param[in,out] refpart reference particle
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // evaluate the field against a host view obtained at the point of use
+            SoftSolenoidPusher pusher = *this;
+            pusher.m_cos_coefficients = m_coefficients.cos.host_const().data();
+            pusher.m_sin_coefficients = m_coefficients.sin.host_const().data();
+            pusher.m_ncoef = static_cast<int>(m_coefficients.cos.host_const().size());
+
+            // assign input reference particle values
+            amrex::ParticleReal const x = refpart.x;
+            amrex::ParticleReal const px = refpart.px;
+            amrex::ParticleReal const y = refpart.y;
+            amrex::ParticleReal const py = refpart.py;
+            amrex::ParticleReal const z = refpart.z;
+            amrex::ParticleReal const pz = refpart.pz;
+            amrex::ParticleReal const pt = refpart.pt;
+            amrex::ParticleReal const s = refpart.s;
+            amrex::ParticleReal const sedge = refpart.sedge;
+
+            // initialize linear map (deviation) values
+            pusher.m_map = decltype(m_map)::Identity();
+
+            // initialize the spin-orbit coupling matrix and the spin rotation vector
+            pusher.m_spin_rotation_vector = {};
+            pusher.m_spin_coupling = {};
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // compute initial value of beta*gamma
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
+
+            // call integrator to advance (t,pt)
+            amrex::ParticleReal const zin = s - sedge;
+            amrex::ParticleReal const zout = zin + slice_ds;
+            int const nsteps = m_mapsteps;
+
+            integrators::symp2_integrate_split3(refpart,zin,zout,nsteps,pusher);
+
+            // keep the linearization the integrator produced
+            m_map = pusher.m_map;
+            m_spin_coupling = pusher.m_spin_coupling;
+            m_spin_rotation_vector = pusher.m_spin_rotation_vector;
+            amrex::ParticleReal const ptf = refpart.pt;
+
+            /* print computed linear map:
+               for(int i=1; i<7; ++i){
+                 for(int j=1; j<7; ++j){
+                    amrex::PrintToFile("SolMap.txt") << i << " " <<
+                    j << " " << m_map(i,j) << "\n";
+                 }
+               }
+            */
+
+            // advance position (x,y,z)
+            refpart.x = x + slice_ds*px/bgi;
+            refpart.y = y + slice_ds*py/bgi;
+            refpart.z = z + slice_ds*pz/bgi;
+
+            // compute final value of beta*gamma
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
+
+            // advance momentum (px,py,pz)
+            refpart.px = px*bgf/bgi;
+            refpart.py = py*bgf/bgi;
+            refpart.pz = pz*bgf/bgi;
+
+            // advance integrated path length
+            refpart.s = s + slice_ds;
+        }
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
+        /** This function returns the linear transport map.
+         *
+         * @param[in] refpart reference particle
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        {
+
+            Map6x6 R = Map6x6::Identity();
+            R = m_map;
+
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
+        }
+        /** Prepare the pusher for one element slice
+         *
+         * @param refpart reference particle, already advanced for this slice
+         * @return a pusher holding an execution-space view of the coefficients
+         */
+        [[nodiscard]] SoftSolenoidPusher make_particle_pusher (RefPart const & refpart) const
+        {
+            SoftSolenoidPusher pusher = *this;
+            pusher.Alignment::compute_constants(refpart);
+            pusher.m_cos_coefficients = m_coefficients.cos.device_const().data();
+            pusher.m_sin_coefficients = m_coefficients.sin.device_const().data();
+            pusher.m_ncoef = static_cast<int>(m_coefficients.cos.host_const().size());
+            return pusher;
+        }
+
+        /** Cosine coefficients of the on-axis field expansion */
+        [[nodiscard]] std::vector<amrex::ParticleReal> cos_coefficients () const
+        {
+            return m_coefficients.cos.host_const();
+        }
+
+        /** Sine coefficients of the on-axis field expansion */
+        [[nodiscard]] std::vector<amrex::ParticleReal> sin_coefficients () const
+        {
+            return m_coefficients.sin.host_const();
+        }
+
+        /** Replace both arrays at once
+         *
+         * The two are validated before either is stored, so a rejected update leaves the
+         * element as it was. They are always the same length, which is why this takes
+         * both rather than offering to change one of them alone.
+         *
+         * @param first the new cosine values
+         * @param second the new sine values
+         */
+        void set_coefficients (
+            std::vector<amrex::ParticleReal> first,
+            std::vector<amrex::ParticleReal> second
+        )
+        {
+            require_array_pair(first, second, "SoftSolenoid: cos and sin coefficient", 1);
+            m_coefficients.cos.host() = std::move(first);
+            m_coefficients.sin.host() = std::move(second);
+        }
+
+        /** Release device storage; host configuration survives for reuse */
+        void finalize ()
+        {
+            m_coefficients.cos.release_gpu();
+            m_coefficients.sin.release_gpu();
+        }
+
+        //! the coefficient arrays this element owns, mirrored to the device on demand
+        SolenoidFourierCoefficients m_coefficients;
+    };
+
+    /** SoftSolenoid: GPU state plus common host-only metadata */
+    using SoftSolenoid = Element<SoftSolenoidGPU>;
 
 } // namespace impactx
 
-IMPACTX_GPUDATA_EXTERN(impactx::elements::SoftSolenoid)
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::SoftSolenoid)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::SoftSolenoidGPU)
 
 #endif // IMPACTX_SOFTSOL_H

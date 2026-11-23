@@ -121,6 +121,10 @@ algo.space_charge = 3D
 algo.poisson_solver = "multigrid"
 
 amr.n_cell = 56 56 64
+# one box per MPI process (this example runs on 2 MPI processes)
+amr.max_grid_size_x = 56
+amr.max_grid_size_y = 56
+amr.max_grid_size_z = 32
 geometry.prob_relative = 4.0
 
 ###############################################################################

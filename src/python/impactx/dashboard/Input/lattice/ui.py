@@ -48,6 +48,9 @@ def add_lattice_element() -> dict:
     parameters = []
     for name, default_value, default_type in parameters_data:
         value = default_value
+        if default_type == "bool":
+            # real boolean for the checkbox v-model (the string "False" is truthy in JS)
+            value = str(value).strip().lower() == "true"
         if selected_lattice == "BeamMonitor" and name == "name" and not value:
             value = BEAM_MONITOR_DEFAULT_NAME
 
@@ -146,9 +149,14 @@ def process_if_variable(index, parameter_name, ui_input, parameter_type):
 def on_lattice_element_parameter_change(
     index, parameter_name, ui_input, parameter_type
 ):
-    sim_input, bounded_or_pending_variable = process_if_variable(
-        index, parameter_name, ui_input, parameter_type
-    )
+    if parameter_type == "bool":
+        # booleans come from a checkbox and cannot reference variables
+        ui_input = bool(ui_input)
+        sim_input, bounded_or_pending_variable = ui_input, None
+    else:
+        sim_input, bounded_or_pending_variable = process_if_variable(
+            index, parameter_name, ui_input, parameter_type
+        )
 
     key = (id(state.selected_lattice_list[index]), parameter_name)
     if bounded_or_pending_variable is not None:
@@ -279,7 +287,21 @@ class LatticeConfiguration(CardBase):
                         v_for="(parameter, parameterIndex) in latticeElement.parameters",
                         cols="auto",
                     ):
+                        vuetify.VCheckbox(
+                            v_if="parameter.parameter_type === 'bool'",
+                            label=("parameter.parameter_name",),
+                            v_model=("parameter.ui_input",),
+                            id=("parameter.parameter_name + (index + 1)",),
+                            update_modelValue=(
+                                ctrl.updateLatticeElementParameters,
+                                "[index, parameter.parameter_name, $event, parameter.parameter_type]",
+                            ),
+                            error_messages=("parameter.parameter_error_message",),
+                            density="comfortable",
+                            hide_details="auto",
+                        )
                         vuetify.VTextField(
+                            v_if="parameter.parameter_type !== 'bool'",
                             label=("parameter.parameter_name",),
                             v_model=("parameter.ui_input",),
                             id=("parameter.parameter_name + (index + 1)",),

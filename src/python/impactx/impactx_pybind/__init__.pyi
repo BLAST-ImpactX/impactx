@@ -50,23 +50,6 @@ __all__: list[str] = [
     "wakeconvolution",
 ]
 
-class Envelope:
-    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    @typing.overload
-    def __init__(self) -> None: ...
-    @typing.overload
-    def __init__(
-        self,
-        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
-        arg1: typing.SupportsFloat | typing.SupportsIndex,
-    ) -> None: ...
-    @property
-    def beam_intensity(self) -> float: ...
-    @beam_intensity.setter
-    def beam_intensity(
-        self, arg1: typing.SupportsFloat | typing.SupportsIndex
-    ) -> Envelope: ...
-
 class RefPart:
     @staticmethod
     def load_file(ref: RefPart, madx_file):
@@ -170,15 +153,6 @@ class RefPart:
         Get reference particle energy [MeV]
         """
     @property
-    def map(self) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double:
-        """
-        linearized map
-        """
-    @map.setter
-    def map(
-        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
-    ) -> None: ...
-    @property
     def mass(self) -> float:
         """
         reference rest mass [kg]
@@ -243,28 +217,6 @@ class RefPart:
     @sedge.setter
     def sedge(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
     @property
-    def spin_coupling(
-        self,
-    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double:
-        """
-        linearized spin-orbit coupling matrix
-        """
-    @spin_coupling.setter
-    def spin_coupling(
-        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x6_F_SI1_double
-    ) -> None: ...
-    @property
-    def spin_rotation_vector(
-        self,
-    ) -> amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double:
-        """
-        reference spin rotation vector
-        """
-    @spin_rotation_vector.setter
-    def spin_rotation_vector(
-        self, arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_3x1_F_SI1_double
-    ) -> None: ...
-    @property
     def t(self) -> float:
         """
         clock time * c [m]
@@ -293,6 +245,30 @@ class RefPart:
     @z.setter
     def z(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None: ...
 
+class Envelope:
+    envelope: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(
+        self,
+        arg0: amrex.space3d.amrex_3d_pybind.SmallMatrix_6x6_F_SI1_double,
+        arg1: typing.SupportsFloat | typing.SupportsIndex,
+    ) -> None: ...
+    def beam_moments(self, ref: RefPart) -> dict[str, float]:
+        """
+        Calculate beam moments (position and momentum moments, emittances,
+        Twiss functions, dispersion, ...) from this envelope's covariance
+        matrix and a reference particle. The envelope counterpart of
+        ImpactXParticleContainer.beam_moments().
+        """
+    @property
+    def beam_intensity(self) -> float: ...
+    @beam_intensity.setter
+    def beam_intensity(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
+    ) -> Envelope: ...
+
 class CoordSystem:
     """
     Members:
@@ -305,12 +281,18 @@ class CoordSystem:
     __members__: typing.ClassVar[dict[str, CoordSystem]]
     s: typing.ClassVar[CoordSystem]
     t: typing.ClassVar[CoordSystem]
+    @typing.overload
+    def __eq__(self, other: CoordSystem) -> bool: ...
+    @typing.overload
     def __eq__(self, other: typing.Any) -> bool: ...
     def __getstate__(self) -> int: ...
     def __hash__(self) -> int: ...
     def __index__(self) -> int: ...
     def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     def __int__(self) -> int: ...
+    @typing.overload
+    def __ne__(self, other: CoordSystem) -> bool: ...
+    @typing.overload
     def __ne__(self, other: typing.Any) -> bool: ...
     def __repr__(self) -> str: ...
     def __setstate__(
@@ -365,7 +347,56 @@ class ImpactXParticleContainer(
 ):
     ConstIterator = ImpactXParConstIter
     Iterator = ImpactXParIter
-    def add_n_particles(
+    @staticmethod
+    def at_fixed_t(*args, **kwds):
+        """
+        Temporarily represent the beam at fixed t, e.g., to exchange particles with a code
+        that uses time as the independent variable.
+
+        On entry, the particle coordinates are transformed from fixed s to fixed t.
+        When the ``with`` block is left, normally or through an exception, they are
+        transformed back to fixed s.
+
+        Inside the block, the particle arrays hold ``x, y, z, px, py, pz`` instead of
+        ``x, y, t, px, py, pt``: ``z`` is the longitudinal position relative to the
+        reference particle, in meters, ``px, py`` are the transverse momenta and ``pz``
+        is the deviation from the reference momentum, all normalized by the reference
+        momentum.
+        The arrays are named accordingly: ``position_z`` and ``momentum_z`` replace
+        ``position_t`` and ``momentum_t``.
+        The arguments of ``add_n_particles`` keep their names ``t`` and ``pt``; inside the
+        block, they take ``z`` and ``pz``.
+
+        Both transformations take the design energy from ``self.ref.pt`` at the moment
+        they run: the one on entry uses the reference particle as it is when the block
+        starts, the one on exit uses the reference particle as it is when the block ends.
+        If the block changes the reference energy, it must also write the particle
+        coordinates relative to the new reference particle before the block ends.
+        Only ``ref.pt`` is read, so update it (e.g., with ``ref.set_kin_energy_MeV``)
+        rather than ``ref.pz`` alone.
+
+        Parameters
+        ----------
+        self : ImpactXParticleContainer
+            The particle container; its particles must be at fixed s.
+
+        Yields
+        ------
+        ImpactXParticleContainer
+            The same particle container, now at fixed t.
+
+        Raises
+        ------
+        RuntimeError
+            If the particles are not at fixed s on entry, or no longer at fixed t
+            when the block ends without an exception.
+
+        Examples
+        --------
+        >>> with sim.beam.at_fixed_t() as beam:
+        ...     beam.add_n_particles(x, y, z, px, py, pz, qm, bunch_charge=charge_C)
+        """
+    def _add_n_particles(
         self,
         x: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
         y: amrex.space3d.amrex_3d_pybind.PODVector_real_std,
@@ -385,6 +416,9 @@ class ImpactXParticleContainer(
 
         Either the total charge (bunch_charge) or the weight of each
         particle (w) must be provided.
+        With bunch_charge, each particle represents the same number of real
+        particles with the charge of the reference particle, which must be
+        set up before.
 
         Note: This can only be used *after* the initialization (grids) have
               been created, meaning after the call to ImpactX.init_grids
@@ -397,9 +431,63 @@ class ImpactXParticleContainer(
         :param py: momentum in y
         :param pt: momentum in t
         :param qm: charge over mass in 1/eV
-        :param bunch_charge: total charge within a bunch in C:param w: weight of each particle: how many real particles to represent:param sx: spin component in x
+        :param bunch_charge: magnitude of the total charge of the particles added in this call in C
+        :param w: weight of each particle: how many real particles to represent
+        :param sx: spin component in x
         :param sy: spin component in y
         :param sz: spin component in z
+        """
+    def add_n_particles(
+        self,
+        x,
+        y,
+        t,
+        px,
+        py,
+        pt,
+        qm,
+        bunch_charge=None,
+        w=None,
+        sx=None,
+        sy=None,
+        sz=None,
+    ):
+        """
+        Add new particles to the container.
+
+        The coordinate and weight arguments accept NumPy or CuPy arrays (or
+        array-likes), as well as pyAMReX ``PODVector`` objects. Inputs are copied
+        into device-compatible PODVectors as needed.
+
+        Either the total charge (``bunch_charge``) or the weight of each particle
+        (``w``) must be provided.
+        With ``bunch_charge``, each particle represents the same number of real
+        particles with the charge of the reference particle, which must be set up
+        before.
+
+        Note: This can only be used *after* the grids have been created, i.e. after
+        ``ImpactX.init_grids`` has been called.
+
+        Parameters
+        ----------
+        x, y, t, px, py, pt : array_like
+            Particle coordinates, relative to the reference particle.
+            ``x`` and ``y`` are positions in m, ``px`` and ``py`` are momenta
+            normalized by the reference momentum (unitless).
+            At fixed s (the default), ``t`` is the time-of-flight c*t in m and
+            ``pt`` is the energy deviation p_t = -Delta(gamma)/(beta_0 gamma_0)
+            (unitless).
+            Inside a ``beam.at_fixed_t()`` block, ``t`` takes the position z in m
+            and ``pt`` takes the momentum deviation
+            p_z = Delta(beta_z gamma)/(beta_0 gamma_0) (unitless).
+        qm : float
+            Charge over mass in 1/eV.
+        bunch_charge : float, optional
+            Magnitude of the total charge of the particles added in this call in C.
+        w : array_like, optional
+            Weight of each particle: how many real particles to represent.
+        sx, sy, sz : array_like, optional
+            Spin components in x, y, z.
         """
     def beam_moments(self) -> dict[str, float]:
         """
@@ -433,6 +521,9 @@ class ImpactXParticleContainer(
         """
         Plot the longitudinal and transverse phase space projections with matplotlib.
 
+        The histograms show the magnitude of the charge per bin. A beam without charge,
+        e.g., of zero-weight test particles, shows its number of macroparticles per bin.
+
         Parameters
         ----------
         self : ImpactXParticleContainer_*
@@ -446,6 +537,11 @@ class ImpactXParticleContainer(
         -------
         A matplotlib figure with containing the plot.
         For MPI-parallel ranks, the figure is only created on the root_rank.
+
+        Raises
+        ------
+        RuntimeError
+            If the particles are not at fixed s, or the beam has no particles.
         """
     def record_beam_moments(self) -> None:
         """
@@ -580,11 +676,13 @@ class ImpactX:
         """
         Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.
         """
-    def rho(
-        self, lev: typing.SupportsInt | typing.SupportsIndex
-    ) -> amrex.space3d.amrex_3d_pybind.MultiFab:
+    def rho(self, lev: typing.SupportsInt | typing.SupportsIndex) -> typing.Any:
         """
-        charge density per level
+        charge density per level.
+
+        For the 2D space-charge models (``2D`` / ``2.5D``) this returns the
+        x-y projected (2D) charge density that is actually solved; for the
+        3D models it returns the 3D charge density.
         """
     def space_charge_field(
         self, lev: typing.SupportsInt | typing.SupportsIndex, comp: str
@@ -641,7 +739,7 @@ class ImpactX:
     @property
     def blocking_factor_x(self) -> list[int]:
         """
-        AMReX blocking factor for a direction, per MR level.
+        AMReX blocking factor for a direction, per MR level. Also sets max_grid_size_x/_y/_z in this direction to the same value; assign that property afterwards to overwrite. The all-direction max_grid_size does not overwrite it, since per-direction values always take precedence.
         """
     @blocking_factor_x.setter
     def blocking_factor_x(
@@ -650,7 +748,7 @@ class ImpactX:
     @property
     def blocking_factor_y(self) -> list[int]:
         """
-        AMReX blocking factor for a direction, per MR level.
+        AMReX blocking factor for a direction, per MR level. Also sets max_grid_size_x/_y/_z in this direction to the same value; assign that property afterwards to overwrite. The all-direction max_grid_size does not overwrite it, since per-direction values always take precedence.
         """
     @blocking_factor_y.setter
     def blocking_factor_y(
@@ -659,7 +757,7 @@ class ImpactX:
     @property
     def blocking_factor_z(self) -> list[int]:
         """
-        AMReX blocking factor for a direction, per MR level.
+        AMReX blocking factor for a direction, per MR level. Also sets max_grid_size_x/_y/_z in this direction to the same value; assign that property afterwards to overwrite. The all-direction max_grid_size does not overwrite it, since per-direction values always take precedence.
         """
     @blocking_factor_z.setter
     def blocking_factor_z(
@@ -673,9 +771,9 @@ class ImpactX:
     @csr.setter
     def csr(self, arg1: bool) -> None: ...
     @property
-    def csr_bins(self) -> bool:
+    def csr_bins(self) -> int:
         """
-        Number of longitudinal bins used for CSR calculations (default: 150).
+        Number of longitudinal bins used for CSR calculations, at least 2 (default: 150).
         """
     @csr_bins.setter
     def csr_bins(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
@@ -689,6 +787,13 @@ class ImpactX:
     def diag_file_min_digits(
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
+    @property
+    def diag_file_prefix(self) -> str:
+        """
+        Root directory for diagnostic output (default: ``diags``).
+        """
+    @diag_file_prefix.setter
+    def diag_file_prefix(self, arg1: str) -> None: ...
     @property
     def diagnostics(self) -> bool:
         """
@@ -719,6 +824,12 @@ class ImpactX:
     @eigenemittances.setter
     def eigenemittances(self, arg1: bool) -> None: ...
     @property
+    def envelope(self) -> Envelope:
+        """
+        Access the beam envelope (6x6 covariance matrix and beam intensity)
+        used for envelope tracking. Only available after init_envelope().
+        """
+    @property
     def finest_level(self) -> int:
         """
         The currently finest level of mesh-refinement used. This is always less or equal to max_level.
@@ -745,19 +856,55 @@ class ImpactX:
     @isr_on_ref_part.setter
     def isr_on_ref_part(self, arg1: bool) -> None: ...
     @property
-    def isr_order(self) -> bool:
+    def isr_order(self) -> int:
         """
         Number of terms in the Taylor series retained for quantum effects (default: 1).
         """
     @isr_order.setter
     def isr_order(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
     @property
-    def lattice(self) -> elements.KnownElementsList:
+    def lattice(self) -> typing.Any:
         """
         Access the accelerator element lattice.
         """
     @lattice.setter
-    def lattice(self, arg0: elements.KnownElementsList) -> None: ...
+    def lattice(self, arg1: collections.abc.Iterable) -> None: ...
+    @property
+    def max_grid_size(self) -> list[int]:
+        """
+        AMReX maximum box size along all directions, per MR level. Boxes larger than this are chopped; aim for one box per parallel process. Per-direction values (max_grid_size_x/_y/_z, also set by blocking_factor_x/_y/_z) take precedence, no matter in which order they are assigned; assign those to change a direction that is already set.
+        """
+    @max_grid_size.setter
+    def max_grid_size(
+        self, arg1: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex]
+    ) -> None: ...
+    @property
+    def max_grid_size_x(self) -> list[int]:
+        """
+        AMReX maximum box size for a direction, per MR level. Boxes larger than this are chopped, aim for one box per parallel process. Takes precedence over the all-direction max_grid_size, no matter in which order they are assigned.
+        """
+    @max_grid_size_x.setter
+    def max_grid_size_x(
+        self, arg1: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex]
+    ) -> None: ...
+    @property
+    def max_grid_size_y(self) -> list[int]:
+        """
+        AMReX maximum box size for a direction, per MR level. Boxes larger than this are chopped, aim for one box per parallel process. Takes precedence over the all-direction max_grid_size, no matter in which order they are assigned.
+        """
+    @max_grid_size_y.setter
+    def max_grid_size_y(
+        self, arg1: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex]
+    ) -> None: ...
+    @property
+    def max_grid_size_z(self) -> list[int]:
+        """
+        AMReX maximum box size for a direction, per MR level. Boxes larger than this are chopped, aim for one box per parallel process. Takes precedence over the all-direction max_grid_size, no matter in which order they are assigned.
+        """
+    @max_grid_size_z.setter
+    def max_grid_size_z(
+        self, arg1: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex]
+    ) -> None: ...
     @property
     def max_level(self) -> int:
         """
@@ -773,7 +920,7 @@ class ImpactX:
     @memory_profiler.setter
     def memory_profiler(self, arg1: bool) -> None: ...
     @property
-    def mlmg_absolute_tolerance(self) -> bool:
+    def mlmg_absolute_tolerance(self) -> float:
         """
         The absolute tolerance with which the space-charge fields should be calculated in units of V/m^2. More specifically, the acceptable residual with which the solution can be considered converged. In general this should be left as the default, but in cases where the simulation state changes very little between steps it can occur that the initial guess for the MLMG solver is so close to the converged value that it fails to improve that solution sufficiently to reach the mlmg_relative_tolerance value.
         """
@@ -782,7 +929,7 @@ class ImpactX:
         self, arg1: typing.SupportsFloat | typing.SupportsIndex
     ) -> None: ...
     @property
-    def mlmg_max_iters(self) -> bool:
+    def mlmg_max_iters(self) -> int:
         """
         Maximum number of iterations used for MLMG solver for space-charge fields calculation. In case if MLMG converges but fails to reach the desired self_fields_required_precision, this parameter may be increased.
         """
@@ -791,7 +938,7 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
-    def mlmg_relative_tolerance(self) -> bool:
+    def mlmg_relative_tolerance(self) -> float:
         """
         The relative precision with which the electrostatic space-charge fields should be calculated. More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver. This solver can fail to reach the default precision within a reasonable time.
         """
@@ -800,7 +947,7 @@ class ImpactX:
         self, arg1: typing.SupportsFloat | typing.SupportsIndex
     ) -> None: ...
     @property
-    def mlmg_verbosity(self) -> bool:
+    def mlmg_verbosity(self) -> int:
         """
         The verbosity used for MLMG solver for space-charge fields calculation. Currently MLMG solver looks for verbosity levels from 0-5. A higher number results in more verbose output.
         """
@@ -881,6 +1028,13 @@ class ImpactX:
         arg1: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
     ) -> None: ...
     @property
+    def short_range_wakefields(self) -> bool:
+        """
+        Enable or disable short range structure wakefield calculations (default: disabled).
+        """
+    @short_range_wakefields.setter
+    def short_range_wakefields(self, arg1: bool) -> None: ...
+    @property
     def slice_step_diagnostics(self) -> bool:
         """
         Enable or disable diagnostics every slice step in elements (default: disabled).
@@ -907,11 +1061,20 @@ class ImpactX:
     @property
     def space_charge_gauss_charge_z_bins(self) -> int:
         """
-        Number of longitudinal bins for computing the linear charge density (default: ``129``).
+        Number of longitudinal bins (grid points) for computing the linear charge density, at least 2 (default: ``129``).
         """
     @space_charge_gauss_charge_z_bins.setter
     def space_charge_gauss_charge_z_bins(
         self, arg1: typing.SupportsInt | typing.SupportsIndex
+    ) -> None: ...
+    @property
+    def space_charge_gauss_long_scale(self) -> float:
+        """
+        Longitudinal space charge scale for the Gauss2p5D space charge model. Approximation affecting only the longitudinal momentum (``pt``) kick. If not set, it defaults to ``1.103 * gamma * sigma_z``, estimated in-situ from the current reduced beam characteristics, which is a typical value when comparing to a 3D model.
+        """
+    @space_charge_gauss_long_scale.setter
+    def space_charge_gauss_long_scale(
+        self, arg1: typing.SupportsFloat | typing.SupportsIndex
     ) -> None: ...
     @property
     def space_charge_gauss_nint(self) -> int:
@@ -923,7 +1086,7 @@ class ImpactX:
         self, arg1: typing.SupportsInt | typing.SupportsIndex
     ) -> None: ...
     @property
-    def space_charge_gauss_taylor_delta(self) -> int:
+    def space_charge_gauss_taylor_delta(self) -> float:
         """
         Initial region for computing the integrals (default: ``0.01``).
         """
@@ -934,7 +1097,7 @@ class ImpactX:
     @property
     def space_charge_num_longitudinal_bins(self) -> int:
         """
-        Number of longitudinal bins for 2.5D space charge calculation (default: ``100``).
+        Number of longitudinal bins (grid points) for 2.5D space charge calculation, at least 2 (default: ``100``).
         """
     @space_charge_num_longitudinal_bins.setter
     def space_charge_num_longitudinal_bins(
@@ -947,6 +1110,13 @@ class ImpactX:
         """
     @spin.setter
     def spin(self, arg1: bool) -> None: ...
+    @property
+    def strang_split(self) -> bool:
+        """
+        Compose the collective effect kicks and the element transport in a second-order, time-symmetric Strang split (default: enabled) or to first order.
+        """
+    @strang_split.setter
+    def strang_split(self, arg1: bool) -> None: ...
     @property
     def tiny_profiler(self) -> bool:
         """
@@ -1029,6 +1199,13 @@ class ImpactX:
         """
     @verbose.setter
     def verbose(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
+    @property
+    def wake_bins(self) -> int:
+        """
+        Number of longitudinal bins used for short range wakefield calculations, at least 2 (default: 150).
+        """
+    @wake_bins.setter
+    def wake_bins(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None: ...
 
 class UnorderedMap:
     def __bool__(self) -> bool:
@@ -1053,19 +1230,67 @@ class UnorderedMap:
 
 class Config:
     gpu_backend = None
+    """
+    GPU backend ('CUDA', 'HIP' or 'SYCL'), None without GPU support
+    """
+    have_fft: typing.ClassVar[bool] = True
+    """
+    Build supports FFT-based solvers
+    """
     have_gpu: typing.ClassVar[bool] = False
+    """
+    Build supports GPUs
+    """
     have_mpi: typing.ClassVar[bool] = True
+    """
+    Build supports MPI
+    """
     have_omp: typing.ClassVar[bool] = True
+    """
+    Build supports OpenMP
+    """
+    have_openpmd: typing.ClassVar[bool] = True
+    """
+    Build supports openPMD I/O
+    """
     have_simd: typing.ClassVar[bool] = False
+    """
+    Build supports explicit SIMD vectorization
+    """
+    openpmd_backends: typing.ClassVar[dict] = {
+        "adios1": False,
+        "adios2": False,
+        "hdf5": True,
+        "json": True,
+        "mpi": True,
+        "toml": True,
+    }
+    """
+    openPMD I/O backends available in this build
+    """
     precision: typing.ClassVar[str] = "DOUBLE"
+    """
+    Floating point precision of amrex::Real ('SINGLE' or 'DOUBLE')
+    """
     precision_particles: typing.ClassVar[str] = "DOUBLE"
+    """
+    Floating point precision of amrex::ParticleReal ('SINGLE' or 'DOUBLE')
+    """
     simd_size: typing.ClassVar[int] = 1
+    """
+    Number of amrex::ParticleReal elements in a native SIMD vector
+    """
+    @staticmethod
+    def to_dict() -> dict:
+        """
+        Return the ImpactX build configuration as a dictionary.
+        """
 
 def coordinate_transformation(
     pc: ImpactXParticleContainer, direction: CoordSystem
 ) -> None:
     """
-    Transform coordinates from fixed s to fixed to or vice versa.
+    Transform coordinates from fixed s to fixed t or vice versa, using the reference energy pc.ref.pt at the time of the call.
     """
 
 def create_envelope(
@@ -1231,6 +1456,6 @@ __author__: str = (
     "Axel Huebl, Chad Mitchell, Ryan Sandberg, Marco Garten, Ji Qiang, et al."
 )
 __license__: str = "BSD-3-Clause-LBNL"
-__version__: str = "26.04"
+__version__: str = "26.10"
 s: CoordSystem
 t: CoordSystem

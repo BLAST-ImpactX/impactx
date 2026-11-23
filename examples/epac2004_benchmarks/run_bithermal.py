@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Marco Garten, Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -12,6 +12,10 @@ sim = ImpactX()
 
 # set numerical parameters and IO control
 sim.n_cell = [64, 64, 64]
+# one box per MPI process (this example runs on 2 MPI processes)
+sim.max_grid_size_x = [64]
+sim.max_grid_size_y = [64]
+sim.max_grid_size_z = [32]
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"
 sim.poisson_solver = "fft"

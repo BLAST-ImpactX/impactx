@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,7 +11,7 @@
 #define HANDLE_ISR_H
 
 #include "particles/ImpactXParticleContainer.H"
-#include "ISRBendElement.H"
+#include "BendRadius.H"
 #include "ISRPush.H"
 
 #include <cmath>
@@ -21,6 +21,8 @@
 namespace impactx::particles::wakefields
 {
     /** Function to handle ISR in bending dipoles.
+     *
+     * Returns immediately if slice_ds is zero.
      *
      * @param[in] particle_container the particle species container
      * @param[in] element_variant variant type of the lattice element
@@ -33,18 +35,20 @@ namespace impactx::particles::wakefields
         amrex::Real slice_ds
     )
     {
+        if (slice_ds == 0.0) { return; }
+
         BL_PROFILE("impactx::particles::wakefields::HandleISR")
 
         amrex::ParmParse pp_algo("algo");
         bool isr = false;
         pp_algo.queryAdd("isr", isr);
 
-        // Call the ISR bend function
-        auto const [element_has_isr, R] = impactx::particles::wakefields::ISRBendElement(element_variant, particle_container.GetRefParticle());
+        // ISR is applied only in elements that bend the reference orbit
+        auto const rc = impactx::particles::wakefields::bend_radius(element_variant, particle_container.GetRefParticle());
 
-        // Enter loop if lattice has bend element
-        if (isr && element_has_isr)
+        if (isr && rc.has_value())
         {
+            amrex::Real const R = *rc;
 
             int isr_order = 1;
             pp_algo.queryAddWithParser("isr_order", isr_order);

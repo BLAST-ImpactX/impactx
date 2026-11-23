@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,13 +11,13 @@
 #define IMPACTX_CHRPLASMALENS_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
@@ -28,13 +28,11 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
-    struct ChrPlasmaLens
-    : public mixin::Named,
-      public mixin::BeamOptic<ChrPlasmaLens>,
-      public mixin::LinearTransport<ChrPlasmaLens>,
+    struct ChrPlasmaLensGPU
+    : public mixin::BeamOptic<ChrPlasmaLensGPU>,
+      public mixin::LinearTransport<ChrPlasmaLensGPU>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
@@ -44,6 +42,8 @@ namespace impactx::elements
     {
         static constexpr auto type = "ChrPlasmaLens";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr int DEFAULT_unit = 0;
 
         /** An active cylindrically symmetric plasma lens with chromatic focusing
          *
@@ -63,22 +63,19 @@ namespace impactx::elements
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        ChrPlasmaLens (
+        ChrPlasmaLensGPU (
             amrex::ParticleReal ds,
             amrex::ParticleReal k,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int nslice = DEFAULT_nslice
         )
-        : Named(std::move(name)),
-          Thick(ds, nslice),
+        : Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
           m_k(k), m_unit(unit)
@@ -110,13 +107,13 @@ namespace impactx::elements
 
             // access reference particle values to find beta and gamma
             m_beta = refpart.beta();
-            m_gamma = refpart.gamma();
+            amrex::ParticleReal const gamma = refpart.gamma();
 
             // normalize focusing strength units to MAD-X convention if needed
             m_g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
 
             //For m_g=0 time propagation
-            m_const1 = 1_prt / (2_prt * powi<3>(m_beta) * powi<2>(m_gamma));
+            m_const1 = 1_prt / (2_prt * powi<3>(m_beta) * powi<2>(gamma));
         }
 
         /** This is a chrplasmalens functor, so that a variable of this type can be used like a chrplasmalens function.
@@ -128,7 +125,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -138,17 +135,14 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
             using namespace std; // for cmath(float)
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // compute particle momentum deviation delta + 1
             T_Real const delta1 = sqrt(1_prt - 2_prt*pt/m_beta + powi<2>(pt));
@@ -166,13 +160,13 @@ namespace impactx::elements
             // initialize output values of momenta
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real const ptout = pt;
+            // T_Real const ptout = pt;
 
             // placeholder variables -- canonical position and momentum
-            T_Real q1 = x;
-            T_Real q2 = y;
-            T_Real p1 = px;
-            T_Real p2 = py;
+            T_Real const q1 = x;
+            T_Real const q2 = y;
+            T_Real const p1 = px;
+            T_Real const p2 = py;
 
             if (m_g > 0_prt)
             {
@@ -223,7 +217,7 @@ namespace impactx::elements
                 T_Real const term3 = -2_prt * q2 * p2 * w * cosh(2_prt*m_slice_ds*omega);
                 T_Real const term4 = -2_prt * q1 * p1 * w * cosh(2_prt*m_slice_ds*omega);
                 T_Real const term5 = 2_prt * omega * (q1*p1*delta1 + q2*p2*delta1
-                    -(powi<2>(p1) + powi<2>(p2))*m_slice_ds - (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
+                    -(powi<2>(p1) + powi<2>(p2))*m_slice_ds + (powi<2>(q1) + powi<2>(q2)) * powi<2>(w)*m_slice_ds);
                 tout = t0 + (-1_prt+m_beta*pt)
                           / (8_prt*m_beta * powi<3>(delta1)*omega)
                           * (term1+term2+term3+term4+term5);
@@ -239,13 +233,12 @@ namespace impactx::elements
                 // avoiding division by 0
                 T_Real term = 2_prt * powi<2>(pt) + powi<2>(px) + powi<2>(py);
                 term = 2_prt - 4_prt * m_beta * pt + powi<2>(m_beta) * term;
-                term = -2_prt + powi<2>(m_gamma)*term;
+                term = -2_prt + powi<2>(refpart.gamma())*term;
                 term = (-1_prt + m_beta * pt) * term;
                 term = term * m_const1;
                 tout = t - m_slice_ds * (1_prt / m_beta + term / powi<3>(delta1));
             }
             // advance longitudinal position and momentum
-
 
             // assign updated position & momenta
             x = xout;
@@ -253,13 +246,7 @@ namespace impactx::elements
             t = tout;
             px = pxout;
             py = pyout;
-            pt = ptout;
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            // pt = ptout;
         }
 
         /** This pushes the reference particle.
@@ -312,7 +299,7 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -322,11 +309,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT pt,
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -344,7 +331,7 @@ namespace impactx::elements
             T_Real const inv_delta1 = 1_prt / delta1;
 
             // compute particle relativistic gamma
-            T_Real const gamma = m_gamma * (1_prt - m_beta*pt);
+            T_Real const gamma = refpart.gamma() * (1_prt - m_beta*pt);
             T_Real const gyro_const = 1_prt + refpart.gyromagnetic_anomaly * gamma;
 
             // compute phase advance per unit length in s (in rad/m)
@@ -405,13 +392,16 @@ namespace impactx::elements
             amrex::ParticleReal const pt_ref = refpart.pt;
             amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1_prt;
 
+            // normalize focusing strength units to MAD-X convention if needed
+            amrex::ParticleReal const g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
+
             // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+            amrex::ParticleReal const omega = std::sqrt(std::abs(g));
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            if (m_k > 0.0) {
+            if (g > 0.0) {
                 R(1,1) = std::cos(omega*slice_ds);
                 R(1,2) = std::sin(omega*slice_ds)/omega;
                 R(2,1) = -omega*std::sin(omega*slice_ds);
@@ -421,7 +411,7 @@ namespace impactx::elements
                 R(4,3) = -omega*std::sin(omega*slice_ds);
                 R(4,4) = std::cos(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
-            } else if (m_k < 0.0) {
+            } else if (g < 0.0) {
                 R(1,1) = std::cosh(omega*slice_ds);
                 R(1,2) = std::sinh(omega*slice_ds)/omega;
                 R(2,1) = omega*std::sinh(omega*slice_ds);
@@ -437,7 +427,8 @@ namespace impactx::elements
                 R(5,6) = slice_ds / betgam2;
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_k; //! focusing strength in 1/m^2 (or T/m)
@@ -448,13 +439,15 @@ namespace impactx::elements
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;  //! m_ds / nslice();
         amrex::ParticleReal m_beta;
-        amrex::ParticleReal m_gamma;
         amrex::ParticleReal m_g;
         amrex::ParticleReal m_const1;
     };
 
+    /** ChrPlasmaLens: GPU state plus common host-only metadata */
+    using ChrPlasmaLens = Element<ChrPlasmaLensGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ChrPlasmaLens)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ChrPlasmaLensGPU)
 
 #endif // IMPACTX_CHRPLASMALENS_H

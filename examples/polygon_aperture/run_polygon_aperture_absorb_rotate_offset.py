@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Eric G. Stern, Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
 # -*- coding: utf-8 -*-
 
 
-from impactx import ImpactX, distribution, elements
+from impactx import Config, ImpactX, distribution, elements
 
 sim = ImpactX()
 
@@ -57,13 +57,19 @@ vertices_y = [
 mr2 = 2 * 0.5e-3**2
 
 aperture = elements.PolygonAperture(
-    vertices_x, vertices_y, action="absorb", dx=0.0006, dy=-0.0012, rotation=30.0
+    vertices_x=vertices_x,
+    vertices_y=vertices_y,
+    action="absorb",
+    dx=0.0006,
+    dy=-0.0012,
+    rotation=30.0,
 )
 
 print(aperture.to_dict())
 assert aperture.min_radius2 == 0.0
 aperture.min_radius2 = mr2
-assert abs(aperture.min_radius2 / mr2 - 1.0) < 1.0e-15
+rtol = 1.0e-15 if Config.precision == "DOUBLE" else 1.0e-6
+assert abs(aperture.min_radius2 / mr2 - 1.0) < rtol
 
 # design the accelerator lattice)
 ns = 1  # number of slices per ds in the element

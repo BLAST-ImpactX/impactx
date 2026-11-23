@@ -1,18 +1,19 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
  * This file is part of ImpactX.
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 
 #include "BeamMonitor.H"
 
 #include "ImpactXVersion.H"
-#include "particles/ImpactXParticleContainer.H"
+#include "diagnostics/FilePrefix.H"
 #include "diagnostics/ReducedBeamCharacteristics.H"
+#include "particles/ImpactXParticleContainer.H"
 
 #include <AMReX.H>
 #include <AMReX_BLProfiler.H>
@@ -27,6 +28,7 @@ namespace io = openPMD;
 
 #include <filesystem>
 #include <fstream>  // for std::ofstream
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,10 +48,10 @@ namespace detail {
 
         for (auto currentLevel = 0; currentLevel <= pc.finestLevel(); currentLevel++)
         {
-            long numParticles = 0; // numParticles in this processor
+            amrex::Long numParticles = 0;  // numParticles on this MPI rank
 
             for (ParticleIter pti(pc, currentLevel); pti.isValid(); ++pti) {
-                auto numParticleOnTile = pti.numParticles();
+                amrex::Long const numParticleOnTile = pti.numParticles();
                 numParticles += numParticleOnTile;
             }
 
@@ -82,14 +84,14 @@ namespace detail {
     //
     void
     ImpactXParticleCounter::GetParticleOffsetOfProcessor (
-            const long& numParticles,
+            amrex::Long const & numParticles,
             unsigned long long& offset,
             unsigned long long& sum
     ) const
     {
         offset = 0;
 #if defined(AMREX_USE_MPI)
-        std::vector<long> result(m_MPISize, 0);
+        std::vector<amrex::Long> result(m_MPISize, 0);
     amrex::ParallelGather::Gather (numParticles, result.data(), -1, amrex::ParallelDescriptor::Communicator());
 
     sum = 0;
@@ -118,13 +120,31 @@ namespace detail {
         }
 
         // remove from unique series map
-        if (m_unique_series.count(m_series_name) != 0u)
-            m_unique_series.erase(m_series_name);
+        if (!m_series_key.empty() && m_unique_series.count(m_series_key) != 0u) {
+            m_unique_series.erase(m_series_key);
+            m_series_key.clear();
+        }
 #endif // ImpactX_USE_OPENPMD
     }
 
-    BeamMonitor::BeamMonitor (std::string series_name, std::string backend, std::string encoding, int period_sample_intervals) :
-        m_series_name(std::move(series_name)), m_OpenPMDFileType(std::move(backend)), m_encoding(std::move(encoding)), m_period_sample_intervals(period_sample_intervals) {
+    BeamMonitor::BeamMonitor (
+        std::string series_name,
+        std::string backend,
+        std::string encoding,
+        int period_sample_intervals,
+        bool particles,
+        bool beam_moments
+    ) :
+        m_series_name(std::move(series_name)),
+        m_OpenPMDFileType(std::move(backend)),
+        m_encoding(std::move(encoding)),
+        m_period_sample_intervals(period_sample_intervals),
+        m_particles(particles),
+        m_beam_moments(beam_moments)
+    {
+        if (period_sample_intervals < 1) {
+            throw std::invalid_argument("BeamMonitor: period_sample_intervals must be >= 1");
+        }
     }
 
     void BeamMonitor::open ()
@@ -159,29 +179,31 @@ namespace detail {
         }
 
         amrex::ParmParse pp_diag("diag");
-        // turn filter
-        pp_diag.queryAddWithParser("period_sample_intervals", m_period_sample_intervals);
         // legacy options from other diagnostics
         pp_diag.queryAddWithParser("file_min_digits", m_file_min_digits);
 
-        // Ensure m_series is the same for the same names.
-        if (m_unique_series.count(m_series_name) == 0u) {
-            std::string filepath = "diags/openPMD/";
-            std::string filename = m_series_name;
+        std::filesystem::path filepath = impactx::diagnostics::FilePrefixPath("openPMD");
+        std::string filename = m_series_name;
 
-            if (series_encoding == openPMD::IterationEncoding::fileBased)
-            {
-                std::string const fileSuffix = std::string("_%0") + std::to_string(m_file_min_digits) + std::string("T");
-                filename.append(fileSuffix);
-            }
-            filename.append(".").append(m_OpenPMDFileType);
+        if (series_encoding == openPMD::IterationEncoding::fileBased)
+        {
+            std::string const fileSuffix =
+                std::string("_%0") + std::to_string(m_file_min_digits) + std::string("T");
+            filename.append(fileSuffix);
+        }
+        filename.append(".").append(m_OpenPMDFileType);
 
-            // transform paths for Windows
+        std::string series_path = (filepath / filename).string();
+
+        // transform paths for Windows
 #   ifdef _WIN32
-            filepath = openPMD::auxiliary::replace_all(filepath, "/", "\\");
+        series_path = openPMD::auxiliary::replace_all(series_path, "/", "\\");
 #   endif
+        m_series_key = series_path;
 
-            auto series = io::Series(filepath + filename, io::Access::CREATE
+        // Ensure m_series is the same for the same full output path.
+        if (m_unique_series.count(m_series_key) == 0u) {
+            auto series = io::Series(m_series_key, io::Access::CREATE
 #   if openPMD_HAVE_MPI==1
                 , amrex::ParallelDescriptor::Communicator()
 #   endif
@@ -189,20 +211,20 @@ namespace detail {
             series.setSoftware("ImpactX", IMPACTX_VERSION);
             series.setIterationEncoding( series_encoding );
             m_series = series;
-            m_unique_series[m_series_name] = series;
+            m_unique_series[m_series_key] = series;
 
             // create a little helper file for ParaView 5.9+
             if (amrex::ParallelDescriptor::IOProcessor())
             {
                 std::filesystem::create_directories(filepath);
-                std::ofstream pv_helper_file(filepath + "paraview.pmd");
+                std::ofstream pv_helper_file((filepath / "paraview.pmd").string());
                 AMREX_ALWAYS_ASSERT_WITH_MESSAGE(pv_helper_file.is_open(), "Could not open paraview.pmd file.");
                 pv_helper_file << filename << "\n";
                 pv_helper_file.close();
             }
         }
         else {
-            m_series = m_unique_series[m_series_name];
+            m_series = m_unique_series[m_series_key];
         }
 #else
         amrex::AllPrint() << "Warning: openPMD output requested but not compiled for series=" << m_series_name << "\n";
@@ -220,31 +242,14 @@ namespace detail {
         m_step = step;
 
         // series & iteration
+        //   note: the ADIOS2 BP4 engine drops attribute-only iterations with
+        //         the steps-based writeIterations() API, thus use random
+        //         access when no particle data sets are written
         auto series = std::any_cast<io::Series>(m_series);
-        io::WriteIterations iterations = series.writeIterations();
-        io::Iteration iteration = iterations[m_step];
+        io::Iteration iteration = use_io_steps() ?
+                                  io::Iteration(series.writeIterations()[m_step]) :
+                                  series.iterations[m_step];
         io::ParticleSpecies beam = iteration.particles["beam"];
-
-        // calculate & update particle offset in MPI-global particle array, per level
-        auto const num_levels = pc.finestLevel() + 1;
-        m_offset = std::vector<uint64_t>(num_levels);
-        auto counter = detail::ImpactXParticleCounter(pc);
-        auto const np = counter.GetTotalNumParticles();
-        for (auto currentLevel = 0; currentLevel < num_levels; currentLevel++) {
-            m_offset.at(currentLevel) = static_cast<uint64_t>( counter.m_ParticleOffsetAtRank[currentLevel] );
-        }
-
-        // helpers to parse strings to openPMD
-        auto const scalar = openPMD::RecordComponent::SCALAR;
-        auto const getComponentRecord = [&beam](std::string comp_name) {
-            return detail::get_component_record(beam, std::move(comp_name));
-        };
-
-        // define data set and metadata
-        io::Datatype const dtype_fl = io::determineDatatype<amrex::ParticleReal>();
-        io::Datatype const dtype_ui = io::determineDatatype<uint64_t>();
-        auto d_fl = io::Dataset(dtype_fl, {np});
-        auto d_ui = io::Dataset(dtype_ui, {np});
 
         // openPMD 1.* needs "seconds" here, but we fake it as "s"
         iteration.setTime(ref_part.s);
@@ -262,6 +267,7 @@ namespace detail {
         beam.setAttribute( "py_ref", ref_part.py );
         beam.setAttribute( "pz_ref", ref_part.pz );
         beam.setAttribute( "pt_ref", ref_part.pt );
+        beam.setAttribute( "gyromagnetic_anomaly_ref", ref_part.gyromagnetic_anomaly );
         beam.setAttribute( "mass_ref", ref_part.mass );
         beam.setAttribute( "charge_ref", ref_part.charge );
 
@@ -271,33 +277,69 @@ namespace detail {
             beam.setAttribute(kv.first, kv.second);
         }
 
-        // openPMD coarse position: for global coordinates
+        // individual particle data
+        if (m_particles)
         {
-
-            beam["positionOffset"]["x"].resetDataset(d_fl);
-            beam["positionOffset"]["x"].makeConstant(ref_part.x);
-            beam["positionOffset"]["y"].resetDataset(d_fl);
-            beam["positionOffset"]["y"].makeConstant(ref_part.y);
-            beam["positionOffset"]["t"].resetDataset(d_fl);
-            beam["positionOffset"]["t"].makeConstant(ref_part.t);
-        }
-
-        // unique, global particle index
-        beam["id"][scalar].resetDataset(d_ui);
-
-        // SoA: Real
-        {
-            for (auto real_idx = 0; real_idx < pc.NumRealComps(); real_idx++) {
-                auto const component_name = real_soa_names.at(real_idx);
-                getComponentRecord(component_name).resetDataset(d_fl);
+            // calculate & update particle offset in MPI-global particle array, per level
+            auto const num_levels = pc.finestLevel() + 1;
+            m_offset = std::vector<uint64_t>(num_levels);
+            auto counter = detail::ImpactXParticleCounter(pc);
+            auto const np = counter.GetTotalNumParticles();
+            for (auto currentLevel = 0; currentLevel < num_levels; currentLevel++) {
+                m_offset.at(currentLevel) = static_cast<uint64_t>( counter.m_ParticleOffsetAtRank[currentLevel] );
             }
+
+            // helpers to parse strings to openPMD
+            auto const scalar = openPMD::RecordComponent::SCALAR;
+            auto const getComponentRecord = [&beam](std::string comp_name) {
+                return detail::get_component_record(beam, std::move(comp_name));
+            };
+
+            // define data set and metadata
+            io::Datatype const dtype_fl = io::determineDatatype<amrex::ParticleReal>();
+            io::Datatype const dtype_ui = io::determineDatatype<uint64_t>();
+            auto d_fl = io::Dataset(dtype_fl, {np});
+            auto d_ui = io::Dataset(dtype_ui, {np});
+
+            // openPMD coarse position: for global coordinates
+            {
+
+                beam["positionOffset"]["x"].resetDataset(d_fl);
+                beam["positionOffset"]["x"].makeConstant(ref_part.x);
+                beam["positionOffset"]["y"].resetDataset(d_fl);
+                beam["positionOffset"]["y"].makeConstant(ref_part.y);
+                beam["positionOffset"]["t"].resetDataset(d_fl);
+                beam["positionOffset"]["t"].makeConstant(ref_part.t);
+            }
+
+            // unique, global particle index
+            beam["id"][scalar].resetDataset(d_ui);
+
+            // SoA: Real
+            {
+                for (auto real_idx = 0; real_idx < pc.NumRealComps(); real_idx++) {
+                    auto const component_name = real_soa_names.at(real_idx);
+                    getComponentRecord(component_name).resetDataset(d_fl);
+                }
+            }
+            // SoA: Int
+            static_assert(IntSoA::nattribs == 0); // not yet used
+            if (!int_soa_names.empty())
+                throw std::runtime_error("BeamMonitor: int_soa_names output not yet implemented!");
         }
-        // SoA: Int
-        static_assert(IntSoA::nattribs == 0); // not yet used
-        if (!int_soa_names.empty())
-            throw std::runtime_error("BeamMonitor: int_soa_names output not yet implemented!");
+        else
+        {
+            // zero-extent constant record: openPMD-api 0.17+ readers reject
+            // particle species without any component extent by default
+            auto const scalar = openPMD::RecordComponent::SCALAR;
+            io::Datatype const dtype_fl = io::determineDatatype<amrex::ParticleReal>();
+            auto d_none = io::Dataset(dtype_fl, {0});
+
+            beam["empty"][scalar].resetDataset(d_none);
+            beam["empty"][scalar].makeConstant(amrex::ParticleReal(0.0));
+        }
 #else
-        amrex::ignore_unused(pc, step);
+        amrex::ignore_unused(pc, real_soa_names, int_soa_names, ref_part, step);
 #endif // ImpactX_USE_OPENPMD
     }
 
@@ -308,6 +350,15 @@ namespace detail {
         int period
     )
     {
+        // the output schema describes particles at fixed s
+        if (pc.GetCoordSystem() != CoordSystem::s)
+        {
+            throw std::runtime_error(
+                "BeamMonitor (" + m_series_name + "): the particles must be at fixed s. "
+                "Call coordinate_transformation(beam, CoordSystem.s) or leave the "
+                "at_fixed_t() block before writing.");
+        }
+
         // filter out this turn?
         if (period % m_period_sample_intervals != 0)
             return;
@@ -322,11 +373,31 @@ namespace detail {
         RefPart & ref_part = pc.GetRefParticle();
 
         // optional: add and calculate additional particle properties
-        add_optional_properties(m_series_name, pc);
+        if (m_particles)
+        {
+            add_optional_properties(m_series_name, pc);
+        }
+        else
+        {
+            // H & I are per-particle columns and cannot be written without particle output
+            bool add_nll_invariants = false;
+            amrex::ParmParse pp_element(m_series_name);
+            pp_element.queryAdd("nonlinear_lens_invariants", add_nll_invariants);
+            if (add_nll_invariants)
+            {
+                throw std::runtime_error(
+                    "BeamMonitor (" + m_series_name +
+                    "): nonlinear_lens_invariants=true requires particles=true");
+            }
+        }
 
         // optional: calculate total particle bunch information
         m_rbc.clear();
-        m_rbc = impactx::diagnostics::reduced_beam_characteristics(pc);
+        if (m_beam_moments)
+        {
+            m_rbc = impactx::diagnostics::reduced_beam_characteristics(pc);
+            m_rbc["period"] = period;  // current period (turn or cycle)
+        }
 
         // component names
         std::vector<std::string> real_soa_names = pc.GetRealSoANames();
@@ -335,7 +406,10 @@ namespace detail {
         // pinned memory copy
         PinnedContainer pinned_pc = pc.make_alike<amrex::PolymorphicArenaAllocator>();
         pinned_pc.SetArena(amrex::The_Pinned_Arena());
-        pinned_pc.copyParticles(pc, true);  // no filtering
+        if (m_particles)
+        {
+            pinned_pc.copyParticles(pc, true);  // no filtering
+        }
 
         // TODO: filtering
         /*
@@ -352,28 +426,35 @@ namespace detail {
         // prepare element access & write reference particle
         this->prepare(pinned_pc, real_soa_names, int_soa_names, ref_part, step);
 
-        // loop over refinement levels
-        int const nLevel = pinned_pc.finestLevel();
-        for (int lev = 0; lev <= nLevel; ++lev)
+        if (m_particles)
         {
-            // loop over all particle boxes
-            //using ParIt = ImpactXParticleContainer::iterator;
-            using ParIt = PinnedContainer::ParIterType;
-            // note: openPMD-api is not thread-safe, so do not run OMP parallel here
-            for (ParIt pti(pinned_pc, lev); pti.isValid(); ++pti) {
-                // write beam particles relative to reference particle
-                this->operator()(pti, real_soa_names, int_soa_names, ref_part);
-            } // end loop over all particle boxes
-        } // end mesh-refinement level loop
+            // loop over refinement levels
+            int const nLevel = pinned_pc.finestLevel();
+            for (int lev = 0; lev <= nLevel; ++lev)
+            {
+                // loop over all particle boxes
+                //using ParIt = ImpactXParticleContainer::iterator;
+                using ParIt = PinnedContainer::ParIterType;
+                // note: openPMD-api is not thread-safe, so do not run OMP parallel here
+                for (ParIt pti(pinned_pc, lev); pti.isValid(); ++pti) {
+                    // write beam particles relative to reference particle
+                    this->operator()(pti, real_soa_names, int_soa_names, ref_part);
+                } // end loop over all particle boxes
+            } // end mesh-refinement level loop
+        }
 
+        //   note: as in prepare(), use random access when no particle data
+        //         sets are written
         auto series = std::any_cast<io::Series>(m_series);
-        io::WriteIterations iterations = series.writeIterations();
-        io::Iteration iteration = iterations[m_step];
+        io::Iteration iteration = use_io_steps() ?
+                                  io::Iteration(series.writeIterations()[m_step]) :
+                                  series.iterations[m_step];
 
-        // close iteration
+        // close iteration: writes all particle tiles (MPI-collective) while the
+        // pinned particle copy is still alive
         iteration.close();
 #else
-        amrex::ignore_unused(pc, step);
+        amrex::ignore_unused(pc, step, period);
 #endif // ImpactX_USE_OPENPMD
     }
 
@@ -447,12 +528,8 @@ namespace detail {
 
         // needs to be higher for next pti; must be reset for next step via prepare
         offset += numParticleOnTile64;
-
-        // TODO could be done once after all pti are processed
-        // TODO at that point, we could also close the iteration/step
-        series.flush();
 #else
-        amrex::ignore_unused(pti, ref_part);
+        amrex::ignore_unused(pti, real_soa_names, int_soa_names, ref_part);
 #endif   // ImpactX_USE_OPENPMD
     }
 

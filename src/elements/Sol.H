@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,12 +11,12 @@
 #define IMPACTX_SOL_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 #include "mixin/spintransport.H"
 
@@ -28,13 +28,11 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
-    struct Sol
-    : public mixin::Named,
-      public mixin::BeamOptic<Sol>,
-      public mixin::LinearTransport<Sol>,
+    struct SolGPU
+    : public mixin::BeamOptic<SolGPU>,
+      public mixin::LinearTransport<SolGPU>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
@@ -58,21 +56,18 @@ namespace impactx::elements
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        Sol (
+        SolGPU (
             amrex::ParticleReal ds,
             amrex::ParticleReal ks,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int nslice = DEFAULT_nslice
         )
-        : Named(std::move(name)),
-          Thick(ds, nslice),
+        : Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
           m_ks(ks)
@@ -150,15 +145,12 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // initialize output values
             T_Real xout = x;
@@ -166,7 +158,7 @@ namespace impactx::elements
             T_Real tout = t;
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real ptout = pt;
 
             // advance positions and momenta using map for focusing
             xout = m_cos_theta        * x
@@ -180,12 +172,12 @@ namespace impactx::elements
                   + m_cos_theta           * py;
 
             tout = t + m_ds_bg2 * pt;
-            ptout = pt;
+            // ptout = pt;
 
             // assign intermediate momenta
             px = pxout;
             py = pyout;
-            pt = ptout;
+            // pt = ptout;
 
             // advance positions and momenta using map for rotation
             x = m_cos_theta * xout
@@ -199,18 +191,12 @@ namespace impactx::elements
                    + m_cos_theta * py;
 
             t = tout;
-            ptout = pt;
+            // ptout = pt;
 
             // assign updated values
             px = pxout;
             py = pyout;
-            pt = ptout;
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            // pt = ptout;
         }
 
         /** This pushes the reference particle.
@@ -250,7 +236,6 @@ namespace impactx::elements
             refpart.s = s + slice_ds;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -268,17 +253,17 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -308,7 +293,6 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -367,7 +351,8 @@ namespace impactx::elements
 
             R = Rrotation * Rfocusing;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_ks; //! solenoid strength in 1/m
@@ -379,8 +364,11 @@ namespace impactx::elements
         amrex::ParticleReal m_rel_const, m_sin_G, m_1cos_G, m_neg2_theta_1pG, m_ibeta;
     };
 
+    /** Sol: GPU state plus common host-only metadata */
+    using Sol = Element<SolGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Sol)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::SolGPU)
 
 #endif // IMPACTX_SOL_H

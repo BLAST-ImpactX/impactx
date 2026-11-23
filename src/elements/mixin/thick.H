@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -15,6 +15,8 @@
 #include <AMReX_Extension.H>
 #include <AMReX_REAL.H>
 
+#include <stdexcept>
+
 
 namespace impactx::elements::mixin
 {
@@ -22,10 +24,13 @@ namespace impactx::elements::mixin
      */
     struct Thick
     {
+        static constexpr int DEFAULT_nslice = 1;
+
         /** A finite-length element
          *
          * @param ds Segment length in m
-         * @param nslice number of slices used for the application of space charge
+         * @param nslice number of slices used for the application of space charge,
+         *               a positive integer
          */
         Thick (
             amrex::ParticleReal ds,
@@ -33,6 +38,8 @@ namespace impactx::elements::mixin
         )
         : m_ds(ds), m_nslice(nslice)
         {
+            if (m_nslice <= 0)
+                throw std::invalid_argument("Thick: nslice must be > 0!");
         }
 
         /** Number of slices used for the application of space charge

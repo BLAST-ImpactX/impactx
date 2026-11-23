@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,12 +11,13 @@
 #define IMPACTX_ELEMENT_LINEAR_MAP_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
+#include "mixin/pipeaperture.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
@@ -27,20 +28,21 @@
 #include <stdexcept>
 #include <type_traits>
 
-
 namespace impactx::elements
 {
-    struct LinearMap
-    : public mixin::Named,
-      public mixin::BeamOptic<LinearMap>,
-      public mixin::LinearTransport<LinearMap>,
+    struct LinearMapGPU
+    : public mixin::BeamOptic<LinearMapGPU>,
+      public mixin::LinearTransport<LinearMapGPU>,
       public mixin::Alignment,
+      public mixin::PipeAperture,
       public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "LinearMap";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr amrex::ParticleReal DEFAULT_ds = 0;
 
         /** A thin element that applies a user-provided linear transport map R
          *  to the 6-vector of phase space coordinates (x,px,y,py,t,pt).
@@ -52,18 +54,20 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param name a user defined and not necessarily unique name of the element
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
          */
-        LinearMap (
+        LinearMapGPU (
             Map6x6 const & R,
-            amrex::ParticleReal ds = 0,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal ds = DEFAULT_ds,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y
         )
-        : Named(std::move(name)),
-          Alignment(dx, dy, rotation_degree)
+        : Alignment(dx, dy, rotation_degree),
+          PipeAperture(aperture_x, aperture_y)
         {
             m_transport_map = R;
             m_ds = ds;
@@ -130,11 +134,11 @@ namespace impactx::elements
          *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t (unused)
+         * @param t particle position in t
          * @param px particle momentum in x
          * @param py particle momentum in y
-         * @param pt particle momentum in t (unused)
-         * @param idcpu particle global index
+         * @param pt particle momentum in t
+         * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
@@ -146,17 +150,14 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // input and output phase space vectors
-            amrex::SmallVector<T_Real, 6, 1> vectorin{
+            amrex::SmallVector<T_Real, 6, 1> const vectorin{
                 x, px, y, py, t, pt
             };
 
@@ -170,9 +171,6 @@ namespace impactx::elements
             py = vectorout(4);
             t = vectorout(5);
             pt = vectorout(6);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.
@@ -236,7 +234,6 @@ namespace impactx::elements
             return m_ds;
         }
 
-
         /** This operator pushes the particle spin.
          *
          * @param x particle position in x
@@ -247,24 +244,24 @@ namespace impactx::elements
          * @param pt particle momentum in t
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
-         * @param sx particle spin x-component
-         * @param sy particle spin y-component
-         * @param sz particle spin z-component
+         * @param sx particle spin x-component (unused)
+         * @param sy particle spin y-component (unused)
+         * @param sz particle spin z-component (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sz,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
              // spin is unaffected
@@ -273,7 +270,6 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -290,15 +286,19 @@ namespace impactx::elements
             Map6x6 R = Map6x6::Identity();
             R = m_transport_map;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         Map6x6 m_transport_map;  // 6x6 transport map
         amrex::ParticleReal m_ds;  // finite ds allowed for bookkeeping, but we do not allow slicing
     };
 
+    /** LinearMap: GPU state plus common host-only metadata */
+    using LinearMap = Element<LinearMapGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::LinearMap)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::LinearMapGPU)
 
 #endif // IMPACTX_ELEMENT_LINEAR_MAP_H

@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
-cmake_minimum_required(VERSION 3.24.0)
-project(ImpactX VERSION 26.04)
+cmake_minimum_required(VERSION 3.25.0)
+project(ImpactX VERSION 26.10)
 
 include(${ImpactX_SOURCE_DIR}/cmake/ImpactXFunctions.cmake)
 
@@ -13,21 +13,6 @@ if(CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
             "${CMAKE_SOURCE_DIR}/CMakeCache.txt ${CMAKE_SOURCE_DIR}/CMakeFiles/")
 endif()
 
-
-# CMake policies ##############################################################
-#
-# Setting a cmake_policy to OLD is deprecated by definition and will raise a
-# verbose warning
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
-endif()
-
-# AMReX 21.06+ supports CUDA_ARCHITECTURES with CMake 3.20+
-# CMake 3.18+: CMAKE_CUDA_ARCHITECTURES
-# https://cmake.org/cmake/help/latest/policy/CMP0104.html
-if(POLICY CMP0104)
-    cmake_policy(SET CMP0104 OLD)
-endif()
 
 
 # C++ Standard in Superbuilds #################################################
@@ -72,6 +57,13 @@ option(ImpactX_MPI           "Multi-node support (message-passing)"         ON)
 option(ImpactX_SIMD          "CPU SIMD Acceleration"                        OFF)
 option(ImpactX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                    ON)
 option(ImpactX_PYTHON        "Python bindings"                              OFF)
+option(ImpactX_SYNMADX       "Standalone MAD-X lattice parser (needs Boost)" OFF)
+
+# Specialize the particle push into branch-free paths for aligned vs. misaligned
+# elements (selected at runtime). This doubles the compile time of the element
+# pushes. Set to OFF to compile a single, always-on shift/rotate path instead.
+option(ImpactX_OPTIMIZE_ALIGNMENT "Branch-free push paths for aligned/misaligned elements (OFF halves element-push compile time)" ON)
+mark_as_advanced(ImpactX_OPTIMIZE_ALIGNMENT)
 
 set(ImpactX_PRECISION_VALUES SINGLE DOUBLE)
 set(ImpactX_PRECISION DOUBLE CACHE STRING "Floating point precision (SINGLE/DOUBLE)")
@@ -96,6 +88,7 @@ mark_as_advanced(ImpactX_TEST_CLEANUP)
 
 option(ImpactX_ablastr_internal                  "Download & build ABLASTR" ON)
 option(ImpactX_amrex_internal                    "Download & build AMReX" ON)
+option(ImpactX_catch_internal                    "Download & build Catch2" ON)
 option(ImpactX_openpmd_internal                  "Download & build openPMD-api" ON)
 option(ImpactX_pyamrex_internal                  "Download & build pyAMReX" ON)
 
@@ -130,7 +123,8 @@ if(ImpactX_FFT)
     set(ABLASTR_FFT ON CACHE STRING "FFT-based solvers" FORCE)
 endif()
 
-# this defined the variable BUILD_TESTING which is ON by default
+# Define the variable BUILD_TESTING (ON by default),
+# include CDash dashboard testing module (settings: CTestConfig.cmake)
 include(CTest)
 
 
@@ -143,6 +137,15 @@ include(CTest)
 #     install
 include(${ImpactX_SOURCE_DIR}/cmake/dependencies/ABLASTR.cmake)
 impactx_make_third_party_includes_system(WarpX::ablastr_3d ablastr_3d)
+
+# Boost
+#   header-only libraries (Spirit, Phoenix, Fusion, ...) used by the synmadx
+#   MAD-X lattice parser
+#   CONFIG mode: BoostConfig.cmake ships with Boost 1.70+; CMake's FindBoost
+#   module was removed in CMake 3.30 (policy CMP0167)
+if(ImpactX_SYNMADX)
+    find_package(Boost 1.70.0 CONFIG REQUIRED)
+endif()
 
 # Python
 if(ImpactX_PYTHON)
@@ -235,6 +238,29 @@ if(ImpactX_PYTHON)
         PDB_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx
         COMPILE_PDB_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/impactx
     )
+
+    # The CXX_VISIBILITY_PRESET above only hides pyImpactX's own objects, but
+    # statically-embedded dependencies (HDF5, openPMD, ADIOS2, and the ImpactX
+    # core archive) are compiled without hidden visibility and would otherwise
+    # be re-exported from this extension. If another extension loaded in the
+    # same process also statically embeds them (openpmd_api, WarpX, a second
+    # openPMD/HDF5), the duplicate exported symbols cross-bind, one has two
+    # HDF5/openPMD instances in one process, UBs and crashes.
+    # Export only the module init symbol so each extension keeps its
+    # dependencies private.
+    # Windows does not auto-export and Emscripten links a single namespace, so
+    # neither needs this.
+    if(APPLE)
+        target_link_options(pyImpactX PRIVATE
+            "LINKER:-exported_symbol,_PyInit_impactx_pybind")
+    elseif(EMSCRIPTEN)
+        target_link_options(pyImpactX PRIVATE
+            "SHELL:-sSIDE_MODULE=1"
+            "SHELL:-sEXPORTED_FUNCTIONS=_PyInit_impactx_pybind")
+    elseif(NOT WIN32)
+        target_link_options(pyImpactX PRIVATE "LINKER:--exclude-libs,ALL")
+    endif()
+
     get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(isMultiConfig)
         foreach(CFG IN LISTS CMAKE_CONFIGURATION_TYPES)
@@ -299,7 +325,7 @@ if(ImpactX_PYTHON)
             impactx_enable_IPO(pyImpactX)
         else()
             # conditionally defined target in pybind11
-            # https://github.com/pybind/pybind11/blob/v3.0.3/tools/pybind11Common.cmake#L436-L442
+            # https://github.com/pybind/pybind11/blob/v3.1.0/tools/pybind11Common.cmake#L446-L452
             target_link_libraries(pyImpactX PRIVATE pybind11::lto)
         endif()
     endif()
@@ -344,6 +370,9 @@ if(ImpactX_FFT)
 endif()
 if(ImpactX_OPENPMD)
     target_compile_definitions(lib PUBLIC ImpactX_USE_OPENPMD)
+endif()
+if(ImpactX_OPTIMIZE_ALIGNMENT)
+    target_compile_definitions(lib PUBLIC ImpactX_OPTIMIZE_ALIGNMENT)
 endif()
 if(ImpactX_PYTHON)
     # for module __version__
@@ -447,6 +476,7 @@ if(ImpactX_PYTHON)
             ${ImpactX_BINARY_DIR}
         DEPENDS
             pyImpactX
+            $<$<BOOL:${ImpactX_SYNMADX}>:pysynmadx>
             pyImpactX_python_sources
     )
 
@@ -510,6 +540,9 @@ if(ImpactX_PYTHON)
         VERBATIM
     )
     add_dependencies(pyImpactX_python_sources pyImpactX)
+    if(ImpactX_SYNMADX)
+        add_dependencies(pyImpactX_python_sources pysynmadx)
+    endif()
 endif()
 
 

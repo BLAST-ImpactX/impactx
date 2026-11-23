@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Marco Garten, Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -12,6 +12,7 @@ sim = ImpactX()
 
 # set numerical parameters and IO control
 sim.n_cell = [56, 56, 64]
+sim.max_grid_size = [64]  # one box per process: this example runs on a single process
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"
 sim.dynamic_size = True
@@ -54,7 +55,7 @@ constf = elements.Constf(
     kx=6.283185307179586,
     ky=6.283185307179586,
     kt=6.283185307179586,
-    nslice=400,
+    nslice=200,  # 400 for full resolution
 )
 
 #   set first lattice element

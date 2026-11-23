@@ -11,7 +11,7 @@ import impactx.impactx_pybind.elements
 __all__: list[str] = ["insert_element_every_ds"]
 
 def insert_element_every_ds(
-    list: impactx.impactx_pybind.elements.KnownElementsList,
+    list: typing.Any,
     ds: typing.SupportsFloat | typing.SupportsIndex,
     element: impactx.impactx_pybind.elements.Empty
     | impactx.impactx_pybind.elements.Aperture
@@ -51,7 +51,12 @@ def insert_element_every_ds(
     | impactx.impactx_pybind.elements.SpinMap
     | impactx.impactx_pybind.elements.TaperedPL
     | impactx.impactx_pybind.elements.ThinDipole,
-) -> impactx.impactx_pybind.elements.KnownElementsList:
+) -> typing.Any:
     """
-    Insert an element every s into an element list
+    Insert an element every s into an element list.
+
+    Returns a new lattice. Elements that are not split are the same objects as
+    in the lattice given; an element that a split falls inside is replaced by two
+    new elements covering its halves, which carry its parameters but not a Python
+    subclass or attributes.
     """

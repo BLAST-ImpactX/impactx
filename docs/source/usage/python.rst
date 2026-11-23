@@ -31,6 +31,29 @@ Collective Effects & Overall Simulation Parameters
 
       The number of grid points along each direction on the coarsest level.
 
+   .. py:property:: max_grid_size
+
+      The maximum number of grid points per box (grid) along each direction, as a list with one entry per mesh-refinement level.
+      The mesh is decomposed into boxes of at most this size.
+      For best performance, aim for exactly one box per parallel (MPI) process, which is also one box per GPU on accelerated machines; ImpactX warns at the start of a run if the number of boxes does not match the number of processes.
+      A direction that is also set through :py:attr:`~max_grid_size_x`, :py:attr:`~max_grid_size_y`, :py:attr:`~max_grid_size_z` or :py:attr:`~blocking_factor_x` keeps the per-direction value, no matter in which order the properties are assigned.
+      Use the per-direction properties in that case.
+
+   .. py:property:: max_grid_size_x
+
+      The maximum number of grid points per box along ``x``, as a list with one entry per mesh-refinement level, overwriting :py:attr:`~max_grid_size`.
+      This property is also set when assigning :py:attr:`~blocking_factor_x`.
+      The per-direction value always wins over :py:attr:`~max_grid_size`, independent of the order of assignment, so assign this property to change ``x``.
+      Analogous properties exist as ``max_grid_size_y`` and ``max_grid_size_z``.
+
+   .. py:property:: blocking_factor_x
+
+      The AMReX blocking factor for the ``x`` direction, as a list with one entry per mesh-refinement level.
+      Box sizes are forced to be a multiple of this value, which must be a power of two.
+      Setting this property also sets :py:attr:`~max_grid_size_x` to the same value, which preserves one box per process in the default decomposition; assign :py:attr:`~max_grid_size_x` afterwards to overwrite.
+      Assigning the all-direction :py:attr:`~max_grid_size` does not overwrite it, since per-direction values always win.
+      Analogous properties exist as ``blocking_factor_y`` and ``blocking_factor_z``.
+
    .. py:property:: max_level
 
       The maximum mesh-refinement level for the simulation.
@@ -49,7 +72,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: prob_relative
 
-      This is a list with ``amr.max_level`` + 1 entries.
+      This is a list with :pp:param:`amr.max_level` + 1 entries.
 
       By default, we dynamically extract the minimum and maximum of the particle positions in the beam.
       The field mesh spans, per direction, multiple times the maximum physical extent of beam particles, as given by this factor.
@@ -63,6 +86,12 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: dynamic_size
 
       Use dynamic (``True``) resizing of the field mesh or static sizing (``False``).
+
+   .. py:property:: strang_split
+
+      Compose the collective effect kicks and the element transport in a second-order,
+      time-symmetric Strang split (``True``, default) or to first order (``False``).
+      See :pp:param:`algo.strang_split`.
 
    .. py:property:: space_charge
 
@@ -79,13 +108,13 @@ Collective Effects & Overall Simulation Parameters
 
       * ``"3D"``: Space charge forces are computed in three dimensions, assuming the beam is bunched.
 
-        When running in envelope mode (when ``algo.track = "envelope"``), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
+        When running in envelope mode (when :pp:param:`algo.track = envelope`), this model currently assumes that ``<xy> = <yt> = <tx> = 0``.
 
       * ``"Gauss3D"``: Calculate 3D space charge forces as if the beam was a Gaussian distribution.
 
       * ``"Gauss2p5D"``: Calculate 2.5D space charge forces as if the beam was a transverse Gaussian distribution.
 
-        These models are supported only in particle tracking mode (when ``algo.track = "particles"``).
+        These models are supported only in particle tracking mode (when :pp:param:`algo.track = particles`).
         Ref.: J. Qiang, "Two-and-a-half dimensional symplectic space-charge solver", LBNL Report Number: LBNL-2001674 (2025).
         (This reference describes both 3D and 2.5D models.)
 
@@ -99,11 +128,23 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: space_charge_gauss_charge_z_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``129``).  Used by the Gauss2p5D space charge model.
+      Number of bins (grid points) for longitudinal charge density deposition, at least ``2`` (default: ``129``).  Used by the Gauss2p5D space charge model.
+
+   .. py:property:: space_charge_gauss_long_scale
+
+      Longitudinal space charge scale for the Gauss2p5D space charge model.
+      This is an approximation that only influences the longitudinal momentum (``pt``) kick.
+      If not set, it defaults to :math:`1.103 \cdot \gamma \cdot \sigma_z`, estimated in-situ from the
+      current reduced beam characteristics (with :math:`\sigma_z` the RMS bunch length), which is a
+      typical value when comparing to a 3D model.  This value minimizes the L2-norm of the error in
+      the on-axis field Ez in the case of a long 3D Gaussian bunch.
+      In a perfectly conducting pipe with a long bunch, where the bunch length in the
+      rest frame is significantly larger than the pipe radius, it is recommended to set
+      the longitudinal scale length to the pipe radius in the input file.
 
    .. py:property:: space_charge_num_longitudinal_bins
 
-      Number of bins for longitudinal charge density deposition (default: ``100``).  Used by the 2p5D space charge model.
+      Number of bins (grid points) for longitudinal charge density deposition, at least ``2`` (default: ``100``).  Used by the 2p5D space charge model.
 
    .. py:property:: space_charge_apply_longitudinal_kick
 
@@ -127,7 +168,7 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: mlmg_relative_tolerance
 
-      Default: ``1.e-7``
+      Default: ``1.e-7`` (DP) / ``1.e-4`` (SP)
 
       The relative precision with which the electrostatic space-charge fields should be calculated.
       More specifically, the space-charge fields are computed with an iterative Multi-Level Multi-Grid (MLMG) solver.
@@ -175,7 +216,28 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: csr_bins
 
-      The number of bins along the longitudinal direction used for the CSR calculations (default: ``150``).
+      The number of bins along the longitudinal direction used for the CSR calculations, at least ``2`` (default: ``150``).
+
+   .. py:property:: short_range_wakefields
+
+      Enable (``True``) or disable (``False``) Short-range wakefield calculations (default: ``False``).
+
+      Currently, this uses a 1D model based on user-specified tabulated single-particle wake functions.
+
+      .. note::
+
+         Short-range wakefield effects are only calculated for ``RFCavity`` elements, and only for the longitudinal wake.
+
+         Short-range wakefield effects are only supported with particle tracking: ``track_envelope`` and ``track_reference`` raise a ``RuntimeError``.
+
+         Short-range wakefield effects require the compilation flag ``-DImpactX_FFT=ON``.
+
+   .. py:property:: wake_bins
+
+      The number of bins along the longitudinal direction used for the short-range wakefield calculations, at least ``2`` (default: ``150``).
+
+      The wakefield is sampled on the bin edges only, so a bin has to be short against the shortest length scale of the wakefield, which is not checked.
+      Coarser bins overestimate the kick of a wakefield that decays with the separation.
 
    .. py:property:: isr
 
@@ -189,7 +251,7 @@ Collective Effects & Overall Simulation Parameters
 
       `F. Niel et al., Phys. Rev. E 97, 043209 (2018), DOI:10.1103/PhysRevE.97.043209 <https://doi.org/10.1103/PhysRevE.97.043209>`__
 
-      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When ``algo.isr_order = 1``, the model is equivalent to that described in:
+      However, a Taylor expansion is used to evaluate the dependence on the quantum parameter :math:`\chi`.  When :pp:param:`algo.isr_order = 1`, the model is equivalent to that described in:
 
       `J. M. Jowett, "Introductory Statistical Mechanics for Electron Storage Rings", AIP Conf. Proc. 153, 864-970 (1987), DOI:10.1063/1.36374 <https://doi.org/10.1063/1.36374>`__
 
@@ -210,17 +272,22 @@ Collective Effects & Overall Simulation Parameters
    .. py:property:: particle_bc
 
       The application of a non-trivial boundary condition for particles is currently supported only in the longitudinal direction (the local direction of motion as defined by the reference
-      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``.
+      particle).  This parameter sets the type of particle boundary condition to be applied to the longitudinal coordinate, based on the value of parameter ``bucket_length``
+      (see :py:meth:`~impactx.ParticleContainer.set_bucket_length`).
+
+      The boundary condition acts on the particle coordinate :math:`t` (:math:`c\,\Delta t`, in m) and is applied at the end of each slice.
+      A bucket of length :math:`L` (``bucket_length``) spans :math:`L/\beta_0` in :math:`t`, where :math:`\beta_0` is the normalized velocity of the reference particle at that slice:
+      The domain is centered on the reference particle and extends to :math:`t = \pm L/(2\beta_0)`.
 
       Options:
 
       * ``"open"`` (default): no action is applied at the boundary.
 
-      * ``"periodic"``: each particle's longitudinal coordinate is treated modulo the value ``bucket_length`` (phase wrapping).
+      * ``"periodic"``: each particle's coordinate :math:`t` is treated modulo :math:`L/\beta_0` (phase wrapping).
 
-      * ``"absorbing"``: a particle whose longitudinal coordinate falls outside the boundary is declared lost.
+      * ``"absorbing"``: a particle whose coordinate :math:`t` falls outside the domain is declared lost.
 
-      * ``"reflecting"``: a particle whose longitudinal coordinate crosses the boundary is reflected about the boundary, with reversed longitudinal momentum.
+      * ``"reflecting"``: a particle whose coordinate :math:`t` crosses the boundary of the domain is reflected about that boundary, with reversed longitudinal momentum.
 
         .. note::
 
@@ -234,6 +301,9 @@ Collective Effects & Overall Simulation Parameters
       Whether to track particle spin.
       Currently, the implementation of spin tracking is a work in progress, and this feature is not yet supported.
 
+      Spin tracking uses the gyromagnetic anomaly of the reference particle.
+      Set it via ``RefPart.set_species()`` or ``RefPart.set_gyromagnetic_anomaly()``.
+
    .. py:property:: diagnostics
 
       Enable (``True``) or disable (``False``) diagnostics generally (default: ``True``).
@@ -245,6 +315,18 @@ Collective Effects & Overall Simulation Parameters
 
       By default, diagnostics is performed at the beginning and end of the simulation.
       Enabling this flag will write diagnostics every step and slice step.
+
+   .. py:property:: diag_file_prefix
+
+      Root directory for diagnostic output (default: folder named ``"diags"``).
+
+      Set to ``""`` or ``"."`` to write diagnostics in the current working directory.
+
+      If a directory at ``diag_file_prefix`` already exists when a simulation starts,
+      ImpactX renames it to ``<diag_file_prefix>.old.<suffix>`` to preserve prior results.
+      This is skipped when ``diag_file_prefix`` resolves to the current working directory,
+      the root directory, or an ancestor of the current working directory; in those cases
+      new output is written alongside existing files.
 
    .. py:property:: diag_file_min_digits
 
@@ -299,10 +381,65 @@ Collective Effects & Overall Simulation Parameters
 
       Access the beam particle container (:py:class:`impactx.ParticleContainer`).
 
+      For example, ``sim.beam.to_df(local=True)`` returns the local particles as a pandas DataFrame.
+      See :ref:`usage-howto-python-particle-data` for further data-access recipes.
+
+   .. py:property:: envelope
+
+      Access the beam envelope (:py:class:`impactx.Envelope`: a 6x6 covariance matrix
+      and beam intensity) used for envelope tracking.
+      Only available after :py:meth:`init_envelope`.
+
+   .. py:method:: rho(lev)
+
+      Return the charge density :math:`\rho` on mesh-refinement level ``lev`` as a pyAMReX ``MultiFab``.
+      Populated when space-charge is enabled (see :py:attr:`space_charge`).
+
+      :param int lev: mesh-refinement level.
+
+      .. note::
+
+         Field data are populated by the space-charge solve at each slice step.
+         They are most reliably read from inside a :py:attr:`hook` ``"after_element"`` callback
+         (the element's last slice has just solved) or right after :py:meth:`track_particles` returns.
+         See :ref:`usage-howto-python-field-data` and the
+         `pyAMReX MultiFab guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#fields>`__
+         for indexing details.
+
+   .. py:method:: phi(lev)
+
+      Return the scalar potential :math:`\phi` on mesh-refinement level ``lev`` as a pyAMReX ``MultiFab``.
+      Populated when space-charge is enabled.
+      See lifetime caveats and indexing in :ref:`usage-howto-python-field-data`.
+
+      :param int lev: mesh-refinement level.
+
+   .. py:method:: space_charge_field(lev, comp)
+
+      Return one Cartesian component of the space-charge force as a pyAMReX ``MultiFab``.
+
+      :param int lev: mesh-refinement level.
+      :param str comp: field component to access (``"x"``, ``"y"``, or ``"z"``).
+
+      See lifetime caveats and indexing in :ref:`usage-howto-python-field-data`.
+
+   .. py:method:: Geom(lev)
+
+      Return the AMReX ``Geometry`` object for mesh-refinement level ``lev``.
+      Useful to query the physical domain extent and cell sizes for field data.
+
+   .. py:method:: boxArray(lev)
+
+      Return the AMReX ``BoxArray`` for mesh-refinement level ``lev``.
+
+   .. py:method:: DistributionMap(lev)
+
+      Return the AMReX ``DistributionMapping`` for mesh-refinement level ``lev``.
+
    .. py:property:: lattice
 
-      Access the elements in the accelerator lattice.
-      See :py:mod:`impactx.elements` for lattice elements.
+      The accelerator lattice, a :py:class:`~impactx.elements.KnownElementsList`.
+      See :py:mod:`impactx.elements` for the available elements.
 
    .. py:property:: periods
 
@@ -365,9 +502,10 @@ Collective Effects & Overall Simulation Parameters
 
       .. note::
 
-         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments (translation or rotations).
-         Support for misalignments and feed-down effects in envelope tracking is in development.
-         Until then, misalignment options set on elements are silently ignored.
+         Our current envelope tracking implements ideal transfer maps, assuming always zero misalignments for translations.
+         Element rotations are handled.
+         Support for translations errors, non-zero envelope means, and feed-down effects in envelope tracking is in development.
+         Until then, translations errors set on elements are silently ignored.
 
    .. py:method:: track_reference(ref)
 
@@ -398,6 +536,10 @@ Collective Effects & Overall Simulation Parameters
 
          sim.hook["before_period"] = hook_before_period
 
+      Full example: :ref:`Acceleration by RF Cavities <examples-rfcavity-ref-part-hook>`.
+
+      See :ref:`usage-howto-python-extend` for more callback recipes.
+
    .. py:property:: tracking_step
 
       For tracking hooks/callbacks, a global step of the simulation.
@@ -411,11 +553,54 @@ Collective Effects & Overall Simulation Parameters
 
    .. py:property:: tracking_element
 
-      For tracking hooks/callbacks, the current lattice element.
+      For tracking hooks/callbacks, the element currently being tracked through.
+
+      This is the element in the lattice, so a hook may retune it for the push that is
+      about to happen:
+
+      .. code-block:: python
+
+         def before_element(sim):
+             element = sim.tracking_element
+             if element.name == "cavity":
+                 element.phase = my_phase(sim.beam.ref)
+
+         sim.hook["before_element"] = before_element
+
+      An element placed at several positions is one element: a hook that reads a parameter
+      it also writes sees the value left by the previous position.
 
    .. py:method:: resize_mesh()
 
       Resize the mesh :py:attr:`~domain` based on the :py:attr:`~dynamic_size` and related parameters.
+
+
+.. py:class:: impactx.Envelope
+
+   The beam envelope used for envelope (covariance) tracking: a 6x6 covariance
+   matrix relative to a reference particle, plus an optional beam intensity.
+   Created from a distribution by :py:meth:`impactx.ImpactX.init_envelope` and
+   accessed (during or after :py:meth:`impactx.ImpactX.track_envelope`) via
+   :py:attr:`impactx.ImpactX.envelope`.
+
+   .. py:property:: envelope
+
+      The 6x6 beam covariance matrix (a ``Map6x6``).
+
+   .. py:property:: beam_intensity
+
+      The beam intensity: bunch charge (C) for 3D or beam current (A) for 2D space charge.
+
+   .. py:method:: beam_moments(ref)
+
+      Calculate beam moments (position and momentum moments, emittances, Twiss
+      functions, dispersion, ...) from this envelope's covariance matrix and a
+      reference particle. The envelope counterpart of
+      :py:meth:`impactx.ParticleContainer.beam_moments`.
+
+      :param ref: the reference particle (object from :py:class:`impactx.RefPart`)
+      :return: a dictionary of beam moments
+      :rtype: dict[str, float]
 
 
 .. py:class:: impactx.Config
@@ -462,6 +647,12 @@ Collective Effects & Overall Simulation Parameters
 Particles
 ---------
 
+:py:class:`impactx.ParticleContainer` derives from a pyAMReX particle container.
+Many bulk-access methods used to read or modify the beam in-memory (such as :py:meth:`~impactx.ParticleContainer.to_df` for a pandas DataFrame, or iterating over particle tiles) come from there.
+For a full reference of the inherited compute API, see the `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__.
+
+For step-by-step recipes on how to access particle data live during a simulation, see :ref:`usage-howto-python-particle-data`.
+
 .. py:class:: impactx.ParticleContainer
 
    Beam Particles in ImpactX.
@@ -477,27 +668,71 @@ Particles
 
    .. py:method:: add_n_particles(x, y, t, px, py, pt, qm, bunch_charge=None, w=None, sx=None, sy=None, sz=None)
 
-      Add new particles to the container for fixed s.
+      Add new particles to the container.
 
-      Either the total charge (bunch_charge) or the weight of each
+      Positions are in meters and momenta are normalized by the reference momentum (unitless), all relative to the reference particle (see :ref:`theory-coordinates-and-units`).
+      At fixed :math:`s` (the default), ``t`` and ``pt`` are the time-of-flight :math:`c\,t` and the energy deviation :math:`p_t = -\Delta\gamma/(\beta_0\gamma_0)`.
+      Inside an :py:meth:`at_fixed_t` block, they take the position :math:`z` and the momentum deviation :math:`p_z = \Delta(\beta_z\gamma)/(\beta_0\gamma_0)` instead.
+
+      Either the charge (bunch_charge) of the particles added in this call, or the weight of each
       particle (w) must be provided.
+      With ``bunch_charge``, each particle represents the same number of real particles with the charge of the reference particle, which must be set up before.
 
-      Note: This can only be used *after* the initialization (grids) have
-            been created, meaning after the call to :py:meth:`ImpactX.init_grids`
-            has been made in the ImpactX class.
+      .. note::
+
+         This can only be used *after* the initialization (grids) have
+         been created, meaning after the call to :py:meth:`ImpactX.init_grids`
+         has been made in the ImpactX class.
+
+      .. attention::
+
+         In MPI-parallel simulations, ``beam.add_n_particles(...)`` is local to the MPI rank, spatial locality does not matter.
+         Thus, you can add particles at any MPI rank, e.g., equally chuncked up for perfect load balancing.
+
+         You do NOT want to add the same unique particle at multiple MPI ranks.
+         If you use the ``bunch_charge`` argument, then it will be interpreted as the charge of particles on the current rank.
+
+         When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
 
       :param x: positions in x
       :param y: positions in y
-      :param t: positions as time-of-flight in c*t
+      :param t: time-of-flight :math:`c\,t` in m (at fixed :math:`s`) or position :math:`z` in m (at fixed :math:`t`)
       :param px: momentum in x
       :param py: momentum in y
-      :param pt: momentum in t
+      :param pt: energy deviation :math:`p_t` (at fixed :math:`s`) or momentum deviation :math:`p_z` (at fixed :math:`t`), unitless
       :param qm: charge over mass in 1/eV
-      :param bunch_charge: total charge within a bunch in C
-      :param w: weight of each particle: the macroparticle charge in units of the elementary charge `e` (i.e., how many real particles to represent)
+      :param bunch_charge: magnitude of the total charge of the particles added in this call in C
+      :param w: weight of each particle: how many real particles to represent
       :param sx: spin component in x (optional; if provided, sy and sz must also be provided)
       :param sy: spin component in y (optional; if provided, sx and sz must also be provided)
       :param sz: spin component in z (optional; if provided, sx and sy must also be provided)
+
+   .. py:property:: coord_system
+
+      The coordinate system the particle data is currently in: :py:class:`impactx.CoordSystem` ``s`` (default) or ``t``.
+      The longitudinal attributes are named after it: ``position_t`` and ``momentum_t`` at fixed :math:`s`, ``position_z`` and ``momentum_z`` at fixed :math:`t`.
+
+   .. py:method:: at_fixed_t()
+
+      Context manager that represents the particles at fixed :math:`t` inside a ``with`` block.
+
+      On entry, the particles are transformed from fixed :math:`s` to fixed :math:`t`.
+      When the block ends, normally or through an exception, they are transformed back to fixed :math:`s`.
+      Inside the block, the attributes ``position_z`` and ``momentum_z`` replace ``position_t`` and ``momentum_t`` and hold :math:`z` and :math:`p_z`.
+      The ``t`` and ``pt`` arguments of :py:meth:`add_n_particles` keep their names and take :math:`z` and :math:`p_z` inside the block.
+
+      The transformation to fixed :math:`t` uses the reference energy ``ref.pt`` as the block starts, the transformation back to fixed :math:`s` uses ``ref.pt`` as the block ends.
+      A block that changes the reference energy must write the particle coordinates relative to the updated reference particle.
+
+      .. code-block:: python
+
+         with sim.beam.at_fixed_t() as beam:
+             ...  # read, modify or add particles at fixed t
+
+      See :ref:`usage-howto-python-particle-data-fixed-t` for details.
+
+      :return: this particle container, at fixed :math:`t` inside the block
+      :raises RuntimeError: if the particles are not at fixed :math:`s` on entry (blocks cannot be nested), or if they were transformed out of fixed :math:`t` inside the block
 
    .. py:method:: ref_particle()
 
@@ -519,7 +754,7 @@ Particles
 
    .. py:method:: set_bucket_length(bucket_length)
 
-      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions.
+      Set length of the longitudinal particle domain (e.g., length of the RF bucket in z), optionally provided for the application of particle boundary conditions (see :py:attr:`~impactx.ImpactX.particle_bc`).
 
       :param bucket_length: length of the longitudinal particle domain in m
 
@@ -562,6 +797,45 @@ Particles
    .. py:method:: redistribute()
 
       Redistribute particles in the current mesh in x, y, z.
+
+   .. py:method:: to_df(local=True)
+
+      Return all beam particles as a `pandas DataFrame <https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe>`__.
+
+      Columns correspond to the particle attributes
+      (``position_x``, ``position_y``, ``position_t``,
+      ``momentum_x``, ``momentum_y``, ``momentum_t``,
+      optional ``spin_x``, ``spin_y``, ``spin_z``,
+      plus ``qm``, ``w``, and the AMReX-internal ``cpu`` and ``id``).
+      Phase-space coordinates are relative to the reference particle (see :py:attr:`ref`).
+
+      :param bool local: if ``True`` (default), only particles on the current MPI rank are returned.
+                         If ``False``, particles are gathered to the root rank.
+      :return: particle data as a ``pandas.DataFrame``, or ``None`` on ranks without particles.
+
+      .. note::
+
+         The returned DataFrame is a *copy* of the particle data; modifying it does not write back to the simulation.
+         For in-place modification, iterate over particle tiles instead. See :ref:`usage-howto-python-particle-data` and
+         the `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__.
+
+   .. py:attribute:: iterator
+
+      Alias for :py:class:`impactx.ImpactXParIter`, the per-tile iterator used to access
+      particle data on a mesh-refinement level without copying.
+      The canonical usage is to import the iterator directly:
+
+      .. code-block:: python
+
+         from impactx import ImpactXParIter
+
+         for pti in ImpactXParIter(sim.beam, level=0):
+             soa = pti.soa().to_xp()  # NumPy (CPU) or CuPy (GPU)
+             x = soa.real["position_x"]
+             px = soa.real["momentum_x"]
+
+      See :ref:`usage-howto-python-particle-data` for full usage examples and
+      `pyAMReX particles <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__ for the underlying API.
 
 
 .. py:class:: impactx.RefPart
@@ -682,6 +956,24 @@ Particles
       :param madx_file: file name to MAD-X file with a ``BEAM`` entry
 
 
+.. py:class:: impactx.ImpactXParIter(particle_container, level)
+
+   Per-tile iterator over the beam particle data on a mesh-refinement level.
+   Yields direct (zero-copy) access to the particle Struct-of-Arrays on CPU or GPU and is the
+   recommended way to access particles in performance-critical paths.
+
+   :param impactx.ParticleContainer particle_container: the beam particle container (e.g. ``sim.beam``).
+   :param int level: mesh-refinement level (typically ``0``).
+
+   See :ref:`usage-howto-python-particle-data` for full usage examples and the
+   `pyAMReX particles guide <https://pyamrex.readthedocs.io/en/latest/usage/compute.html#particles>`__
+   for the underlying API.
+
+.. py:class:: impactx.ImpactXParConstIter(particle_container, level)
+
+   Read-only variant of :py:class:`impactx.ImpactXParIter`.
+
+
 Initial Beam Phase Space Distributions
 --------------------------------------
 
@@ -703,7 +995,7 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
 
 .. autofunction:: impactx.fourier_coefficients
 
-.. py:class:: impactx.distribution.Gaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
+.. py:class:: impactx.distribution.Gaussian(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0, cutX=0.0, cutY=0.0, cutT=0.0)
 
    A 6D Gaussian distribution, optionally with truncation.
    The user may specify an independent cutoff in each phase plane (x,px), (y,py), and (t,pt).
@@ -734,19 +1026,19 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
    :param cutY: number of sigma at which to cut the distribution in (y,py) (dimensionless); 0 means no cut
    :param cutT: number of sigma at which to cut the distribution in (t,pt) (dimensionless); 0 means no cut
 
-.. py:class:: impactx.distribution.Kurth4D(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Kurth4D(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 4D Kurth distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
 
-.. py:class:: impactx.distribution.Kurth6D(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Kurth6D(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Kurth distribution.
 
    R. Kurth, Quarterly of Applied Mathematics vol. 32, pp. 325-329 (1978)
    C. Mitchell, K. Hwang and R. D. Ryne, IPAC2021, WEPAB248 (2021)
 
-.. py:class:: impactx.distribution.KVdist(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.KVdist(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A K-V distribution transversely + a uniform distribution
    in t + a Gaussian distribution in pt.
@@ -755,24 +1047,33 @@ For computing Fourier coefficients from on-axis field data (used by :py:class:`~
 
    This distribution sets all values to zero.
 
-.. py:class:: impactx.distribution.Semigaussian(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Semigaussian(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Semi-Gaussian distribution (uniform in position, Gaussian in momentum).
 
-.. py:class:: impactx.distribution.Triangle(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Triangle(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A triangle distribution for laser-plasma acceleration related applications.
 
    A ramped, triangular current profile with a Gaussian energy spread (possibly correlated).
    The transverse distribution is a 4D waterbag.
 
-.. py:class:: impactx.distribution.Waterbag(lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
+.. py:class:: impactx.distribution.Waterbag(*, lambdaX, lambdaY, lambdaT, lambdaPx, lambdaPy, lambdaPt, muxpx=0.0, muypy=0.0, mutpt=0.0, meanX=0.0, meanY=0.0, meanT=0.0, meanPx=0.0, meanPy=0.0, meanPt=0.0, dispX=0.0, dispPx=0.0, dispY=0.0, dispPy=0.0)
 
    A 6D Waterbag distribution.
 
-.. py:class:: impactx.distribution.Thermal(k, kT, kT_halo, normalize, normalize_halo, halo=0.0)
+.. py:class:: impactx.distribution.Thermal(*, k, kT, kT_halo, normalize, normalize_halo, halo=0.0)
 
    A 6D stationary thermal or bithermal distribution.
+
+   .. py:method:: radial_cdf(bunch_charge, ref)
+
+      Tabulated radial cumulative distribution functions (CDFs) that the particle radius is sampled from, on uniform bins in radius.
+      A population with zero weight is never sampled and its table is zero.
+
+      :param bunch_charge: bunch charge (C)
+      :param ref: the reference particle
+      :return: the radius in the beam rest frame (m), and the core and halo CDF at this radius, as a tuple of three lists
 
 Initial Beam Spin Distribution
 ------------------------------
@@ -789,9 +1090,12 @@ Initial Beam Spin Distribution
    - K. V. Mardia and P. E. Jupp, Directional Statistics, Wiley, 1999;
    - S. Kang and H-S. Oh, "Novel sampling method for the von Mises-Fisher distribution", Stat. and Comput. 34, 106 (2024), `DOI:10.1007/s11222-024-10419-3 <https://doi.org/10.1007/s11222-024-10419-3>`__
 
-   :param mux: x component of the unit vector specifying the mean direction
-   :param muy: y component of the unit vector specifying the mean direction
-   :param muz: z component of the unit vector specifying the mean direction
+   The polarization vector ``(mux, muy, muz)`` must lie within the unit ball: its direction is the mean spin direction and its magnitude is the degree of polarization.
+   A zero vector describes an unpolarized beam, with spins uniformly distributed on the unit sphere.
+
+   :param mux: x component of the polarization vector
+   :param muy: y component of the polarization vector
+   :param muz: z component of the polarization vector
 
 
 Lattice
@@ -801,23 +1105,187 @@ This module provides elements and methods for the accelerator lattice.
 
 .. py:class:: impactx.elements.KnownElementsList
 
-   An iterable, ``list``-like type of elements.
+   The accelerator lattice: a ``list``-like sequence of elements.
+
+   The lattice holds the element objects it is given, the way a Python list holds its
+   items: changing an element changes what is tracked, and the same element may sit at
+   several positions.
+
+   Indexing, slicing, iteration, ``len()``, ``in``, ``insert()``, ``remove()``, ``index()``,
+   ``count()``, ``del`` and ``reversed()`` are supported, alongside
+   :py:meth:`~impactx.elements.KnownElementsList.append`,
+   :py:meth:`~impactx.elements.KnownElementsList.extend`,
+   :py:meth:`~impactx.elements.KnownElementsList.clear` and
+   :py:meth:`~impactx.elements.KnownElementsList.pop_back`.
+
+   ``in``, ``index()``, ``count()`` and ``remove()`` match on the element itself, so an
+   element with the same parameters as another is not mistaken for it -- which is why
+   ``element in lattice`` can be ``False`` while ``lattice == [element]`` is ``True``,
+   see :ref:`element-comparison-methods`.
+
+   Iteration and ``reversed()`` take a snapshot of the element references when the iterator
+   is created. Later structural edits do not change its sequence, while parameter changes
+   to those elements remain visible. This type supports the methods documented below;
+   it does not implement the entire Python ``list`` API.
+
+   .. seealso::
+
+      :ref:`usage-howto-lattice-manipulation` walks through the workflows: repeating a
+      cell, editing a lattice in place, building one lattice per run, and keeping a
+      lattice for longer than the simulation that used it.
+
+   .. note::
+
+      Scripts written for earlier ImpactX versions may need an adjustment here, see the
+      :ref:`Upgrade Guide <install-upgrade>`.
 
    .. py:method:: clear()
 
-      Clear the list to become empty.
+      Remove all elements from the lattice.
 
-   .. py:method:: extend(list)
+   .. py:method:: pop_back()
 
-      Add a list of elements to the list.
+      Remove the last element of the lattice and return it.
+
+   .. py:property:: generation
+
+      How often the sequence of elements changed.
+
+      Counts structural edits only: changing a parameter on an element that is already in
+      the lattice does not move anything and does not change this. A selection taken with
+      :py:meth:`select` compares this to notice that its positions went stale.
+
+   .. py:method:: extend(elements)
+
+      Add several elements to the end of the lattice.
 
    .. py:method:: append(element)
 
-      Add a single element to the list.
+      Add an element to the end of the lattice.
 
-   .. py:method:: load_file(filename, nslice=1)
+   .. py:method:: insert(index, element)
+
+      Insert an element before a position. The position is clamped to the ends, as for a
+      ``list``.
+
+   .. py:method:: remove(element)
+
+      Remove the first position holding this element. Matches on the element itself, not on
+      its parameters. Raises ``ValueError`` if the element is not in the lattice.
+
+   .. py:method:: index(element)
+
+      Return the first position holding this element. Matches on the element itself.
+      Raises ``ValueError`` if the element is not in the lattice.
+
+   .. py:method:: count(element)
+
+      Return how many positions this element occupies. Matches on the element itself.
+
+   .. py:method:: __contains__(element)
+
+      ``element in lattice``: whether the lattice holds this very element. An element with
+      the same parameters as another is not mistaken for it.
+
+   .. py:method:: __reversed__()
+
+      ``reversed(lattice)``: iterate the elements from the end.
+
+   .. py:method:: __getitem__(index_or_slice)
+
+      ``lattice[i]`` returns the element at a position, with negative indices as for a
+      ``list``. ``lattice[a:b]`` returns a new lattice over the same elements.
+
+   .. py:method:: __setitem__(index_or_slice, element_or_elements)
+
+      ``lattice[i] = element`` replaces one position. ``lattice[a:b] = elements`` replaces a
+      range, which may change the length.
+
+   .. py:method:: __delitem__(index_or_slice)
+
+      ``del lattice[i]`` and ``del lattice[a:b]`` remove positions. Other positions holding
+      the same element are unaffected: this removes an occurrence, not the element.
+
+   .. py:method:: load_file(filename, nslice=1, *, min_model="linear")
 
       Load and append a lattice file from MAD-X (.madx) or PALS (e.g., .pals.yaml) formats.
+
+      The reader picks the *cheapest* ImpactX element that represents each imported
+      element.
+      ``min_model`` raises the lower gate of that choice, so that an imported lattice
+      starts out with at least the requested level of physical fidelity
+      (see :ref:`theory-assumptions`):
+
+      * ``"linear"`` (default) uses the linear model
+      * ``"paraxial"`` requires at least the chromatic ``Chr*`` models
+      * ``"exact"`` requires at least the exact-Hamiltonian ``Exact*`` models
+
+      A floor never *lowers* a model.
+      An element that already requires a richer model, such as a thick octupole
+      that only exists as ``ExactMultipole``, keeps it.
+      Where a tier is not implemented for an element family, the next higher one is
+      used.
+      Where no model reaches the requested tier at all, the most faithful model
+      available is used and a warning is emitted:
+
+      .. list-table::
+         :header-rows: 1
+         :widths: 20 25 25 30
+
+         * - MAD-X element
+           - ``"linear"``
+           - ``"paraxial"``
+           - ``"exact"``
+         * - ``DRIFT``
+           - ``Drift``
+           - ``ChrDrift``
+           - ``ExactDrift``
+         * - ``QUADRUPOLE``
+           - ``Quad``
+           - ``ChrQuad``
+           - ``ExactQuad``
+         * - ``SBEND``, ``RBEND``
+           - ``Sbend`` / ``CFbend``
+           - ``ExactSbend`` / ``ExactCFbend``
+           - ``ExactSbend`` / ``ExactCFbend``
+         * - ``DIPEDGE`` (and bend edges)
+           - ``DipEdge(model="linear")``
+           - ``DipEdge(model="nonlinear")``
+           - ``DipEdge(model="nonlinear")``
+         * - ``SOLENOID``
+           - ``Sol``
+           - ``ChrAcc(ez=0)``
+           - ``ChrAcc(ez=0)`` (warns)
+         * - ``SEXTUPOLE``, ``OCTUPOLE``, skew ``QUADRUPOLE``
+           - ``ExactMultipole``
+           - ``ExactMultipole``
+           - ``ExactMultipole``
+
+      A skew ``QUADRUPOLE`` reaches ``ExactMultipole`` at every floor because the
+      reader translates a combined normal and skew quadrupole as one multipole,
+      not because the cheaper tiers could not express it: a pure skew quadrupole
+      is also a ``Quad`` or ``ChrQuad`` under a 45 degree ``rotation``.
+
+      The paraxial ``SOLENOID`` is ``ChrAcc`` with ``ez=0``, which is the same
+      hard-edge solenoid map for the reference particle and adds the chromatic
+      dependence.
+      ``Sol`` takes its strength per unit rigidity, as ``ks``, while ``ChrAcc``
+      takes ``bz = ks * beta_gamma``, so the paraxial solenoid is pinned to the
+      reference energy that the MAD-X ``BEAM`` command declares.
+      Changing the reference energy after the import does not rescale it, and the
+      reader warns when it applies this translation.
+      Only a stated energy (``ENERGY``, ``PC``, ``GAMMA``, ``BETA`` or ``BRHO``) is used: MAD-X defaults it to 1 GeV, so a lattice without one keeps ``Sol`` at every floor.
+
+      Elements that MAD-X itself defines as thin (``MULTIPOLE``, ``KICKER``,
+      ``RFCAVITY``, ``NLLENS``) and structural elements (``MARKER``, apertures,
+      monitors) have no model tiers, so the kick or map they translate into is
+      the same at every floor.
+      Their *length*, however, is carried by drifts that the reader adds around
+      that kick, and those follow ``min_model`` like any other drift.
+      A finite-length ``RFCAVITY``, for example, becomes
+      ``ExactDrift`` + ``ShortRF`` + ``ExactDrift`` at ``min_model="exact"``.
+      The same applies to the drifts emitted for ``COLLIMATOR``, ``INSTRUMENT``,
+      ``PLACEHOLDER`` and for a ``MONITOR`` with ``L > 0``.
 
       .. warning::
 
@@ -825,15 +1293,34 @@ This module provides elements and methods for the accelerator lattice.
          Please check any loaded lattice files very carefully.
          Please report your experience and bugs on `our issue tracker <https://github.com/BLAST-ImpactX/impactx/issues>`__.
 
+      .. seealso::
+
+         *synmadx*, our :ref:`alternative MAD-X parser <usage-python-synmadx>` ported from Synergia.
+
+         :py:meth:`impactx.elements.FilteredElementsList.replace_with_drifts` uses the
+         same ``"linear"``/``"paraxial"``/``"exact"`` vocabulary for its ``model``
+         parameter.
+
       :param filename: filename to file with beamline elements
       :param nslice: number of slices used for the application of collective effects
+      :param min_model: lowest element model to translate into, one of ``"linear"``
+         (default), ``"paraxial"`` or ``"exact"``
 
-   .. py:method:: from_pals(pals_line, nslice=1)
+      **Example:**
+
+      .. code-block:: python
+
+         # import a lattice with at least exact-Hamiltonian element models
+         sim.lattice.load_file("fodo.madx", nslice=25, min_model="exact")
+
+   .. py:method:: from_pals(pals_line, nslice=1, *, min_model="linear")
 
       Load and append a lattice from a Particle Accelerator Lattice Standard (PALS) Python Line.
 
       :param pals_line: PALS Python Line with beamline elements
       :param nslice: number of slices used for the application of collective effects
+      :param min_model: lowest element model to translate into, see
+         :py:meth:`~impactx.elements.KnownElementsList.load_file`
 
    .. py:method:: select(kind=None, name=None)
 
@@ -864,8 +1351,8 @@ This module provides elements and methods for the accelerator lattice.
          # Chain filters (AND logic)
          drift_named_d1 = lattice.select(kind="Drift").select(name="drift1")
 
-         # Modify original elements through references
-         drift_elements[0].ds = 2.0  # modifies original lattice
+         # A selection holds the lattice's elements, so changes apply to the lattice
+         drift_elements[0].ds = 2.0
 
          # delete all drifts
          lattice.select(kind=r".*Drift").delete()
@@ -1081,7 +1568,7 @@ This module provides elements and methods for the accelerator lattice.
          the special ``"type"`` key for cross-variant comparisons.
       :rtype: bool
 
-   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5)
+   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc")
 
       Plot over s of all elements in the KnownElementsList.
 
@@ -1093,6 +1580,7 @@ This module provides elements and methods for the accelerator lattice.
       :param ax: A plotting area in matplotlib (called axes there).
       :param legend: Plot a legend if true.
       :param legend_ncols: Number of columns for lattice element types in the legend.
+      :param palette: Color palette of the elements: ``"cern-lhc"``; ``"fnal-booster"`` with dipoles blue, quadrupoles red, sextupoles (multipoles) yellow and combined-function magnets green; or ``"fnal-iota"`` with dipoles blue, quadrupoles green, sextupoles (multipoles) yellow, nonlinear lenses red and RF cavities tan.
 
 .. py:class:: impactx.elements.FilteredElementsList
 
@@ -1101,10 +1589,23 @@ This module provides elements and methods for the accelerator lattice.
    Indexing returns the same element objects as the full lattice; assigning to fields updates the
    underlying list.
 
-   All mutating operations (``delete``, ``replace_each``, ``replace_with_drifts``) rebuild the
-   lattice using cloned elements. Existing Python references to lattice elements will then point
-   to objects that are **no longer in the lattice**. If you cache element references, re-fetch
-   them from the lattice after any mutation.
+   A selection is a set of positions in the lattice, so it describes the lattice as it was
+   when the selection was taken. Any edit that adds, removes or moves elements -- through
+   the selection or directly on the lattice -- makes it stale, and using it afterwards
+   raises. Take a new one with
+   :py:meth:`~impactx.elements.KnownElementsList.select`. Changing an element's own
+   parameters moves nothing and leaves selections usable.
+
+   Mutating operations rewrite only the positions selected. Elements at other positions are
+   left exactly as they are, keeping their identity, their Python subclass and their
+   attributes. Every replacement is prepared and validated before any is installed.
+   A failure during preparation or validation installs no replacements. Python callbacks,
+   property getters and finalizers may make their own edits; those edits are not rolled back.
+   If preparation changes the lattice, the stale selection is rejected before installation.
+
+   Replacement methods return a new selection over the replaced positions. A finalizer
+   that structurally edits the lattice as displaced elements are released can invalidate
+   that selection before the method returns. In that case, take a new selection.
 
    If the selection is empty, ``delete`` is a no-op and ``replace_*`` return
    an empty ``FilteredElementsList``.
@@ -1120,20 +1621,22 @@ This module provides elements and methods for the accelerator lattice.
 
    .. py:method:: delete()
 
-      Remove all elements in the current selection from the underlying lattice. Invalidates this
-      view **and** all other live selections on that lattice.
+      Remove all elements in the current selection from the underlying lattice. This is an
+      edit, so it makes this view and every other live selection on that lattice stale.
       Call :py:meth:`~impactx.elements.KnownElementsList.select` on the underlying lattice again to obtain a new view.
 
       :rtype: None
 
    .. py:method:: replace_each(element, *, keep_name=True, keep_ds=False)
 
-      Replace each selected element with a copy of ``element``. Invalidates all **other** live
-      selections on the same lattice; returns a **new** filtered view over the same indices (the
-      returned view is valid).
+      Replace each selected element with a copy of ``element``. This is an edit, so it makes
+      this selection and every other live selection on the same lattice stale. Returns a
+      new filtered view over the same positions, subject to the finalizer caveat above.
 
-      :param element: Element to clone at each selected index (names and ``ds`` may be overridden;
-         see below).
+      :param element: Element copied into each selected position (names and ``ds`` may be
+         overridden; see below). A Python subclass of an element must define ``copy()`` to be
+         used here, as :py:meth:`~impactx.elements.Drift.copy` does not know how to reproduce
+         one.
       :param keep_name: If true (default), copy ``name`` from each replaced element when present.
       :param keep_ds: If true, copy segment length ``ds`` from each replaced element; otherwise
          ``ds`` comes from the template (default false).
@@ -1156,14 +1659,15 @@ This module provides elements and methods for the accelerator lattice.
    .. py:method:: replace_with_drifts(*, model="match", keep_alignment=True, keep_aperture=False)
 
       Replace each selected element with a drift of the chosen physics family. Names and ``ds``
-      are always taken from the replaced element. Invalidates all **other** live selections on the
-      same lattice; returns a **new** filtered view over the same indices (the returned view is
-      valid).
+      are always taken from the replaced element. Invalidates this selection and every other
+      live selection on the same lattice. Returns a new filtered view over the same positions,
+      subject to the finalizer caveat above.
 
-      :param model: With ``"match"`` (default), linear elements become ``Drift``, class names
-         starting with ``Chr`` become ``ChrDrift``, and class names starting with ``Exact`` become
-         ``ExactDrift``. With ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot
-         uses that drift type.
+      :param model: With ``"match"`` (default), the underlying element kind determines the
+         physics family: linear elements become ``Drift``, paraxial elements become
+         ``ChrDrift``, and exact elements become ``ExactDrift``. Python subclasses retain
+         their underlying element's family, regardless of the subclass name. With
+         ``"linear"``, ``"paraxial"``, or ``"exact"``, every selected slot uses that drift type.
       :param keep_alignment: If true (default), copy ``dx``, ``dy``, and ``rotation`` from each
          replaced element; otherwise zero them.
       :param keep_aperture: If true, copy ``aperture_x`` and ``aperture_y`` from each replaced
@@ -1194,6 +1698,47 @@ This module provides elements and methods for the accelerator lattice.
       Tolerant element-wise comparison, with the same semantics as
       :py:meth:`impactx.elements.KnownElementsList.isclose`.
       ``ignore_attributes`` is forwarded to each element's ``isclose``.
+
+.. _element-copy:
+
+Copying a lattice element
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. py:method:: impactx.elements.Element.copy(**overrides)
+
+   Return a new element with the same configuration.
+
+   ``lattice.append(q)`` places ``q`` itself; ``lattice.append(q.copy())`` places a
+   separate element. See :ref:`usage-howto-lattice-manipulation` for when each is wanted.
+
+   Keyword arguments give the copy a different value for a parameter, so that one element
+   supplies the values for many:
+
+   .. code-block:: python
+
+      scan = [quad.copy(k=k) for k in [0.8, 0.9, 1.0]]
+      cavities = [rf] + [rf.copy(name=f"rf{i}") for i in range(2, 5)]
+
+   Parameters that only mean something as a pair are given together, as the constructor
+   takes them: ``cos_coefficients`` with ``sin_coefficients``, ``k_normal`` with
+   ``k_skew``, and ``vertices_x`` with ``vertices_y``.
+
+   Setting a parameter the element does not have raises ``AttributeError``, so a mistyped
+   name is reported rather than quietly ignored.
+
+   :param overrides: parameters whose value differs in the copy.
+   :raises AttributeError: if a named parameter is not one the element has.
+   :raises TypeError: if called on a Python subclass that does not define its own
+      ``copy()``, since the subclass carries state that cannot be reproduced here.
+   :raises ValueError: if an override changes a beam monitor setting shared with the original.
+
+   .. note::
+
+      A copy of a :py:class:`impactx.elements.BeamMonitor` does not inherit an
+      already-open output file. Its ``alpha``, ``beta``, ``tn``, ``cn`` and
+      ``nonlinear_lens_invariants`` settings are keyed by its name and shared with the
+      original. Passing any of these as a ``copy()`` override raises ``ValueError``.
+      Construct a monitor with a different name for independent settings.
 
 .. _element-comparison-methods:
 
@@ -1271,10 +1816,125 @@ comparison methods. They derive directly from each element's ``to_dict()`` outpu
       elements.isclose(lattice_a, lattice_b, ignore_attributes=["name"])
 
 
+.. _usage-python-synmadx:
+
+Synergia Migration Parser: synmadx
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ImpactX's primary MAD-X importer is
+:py:meth:`impactx.elements.KnownElementsList.load_file`.  ImpactX also ships
+*synmadx*, a custom compatibility parser ported from
+`Synergia <https://github.com/fnalacceleratormodeling/synergia2>`__ for users
+migrating existing Synergia workflows.
+
+.. warning::
+
+   The synmadx reader has `known correctness and coverage issues
+   <https://github.com/BLAST-ImpactX/impactx/issues/1584>`__.  Use the primary
+   :py:meth:`impactx.elements.KnownElementsList.load_file` importer for new and
+   general-purpose MAD-X workflows, and validate converted lattices carefully
+   when using synmadx for migration.
+
+.. note::
+
+   synmadx is only available if ImpactX was compiled with the CMake option
+   ``-DImpactX_SYNMADX=ON``, which needs `Boost <https://www.boost.org>`__ installed.
+
+.. py:class:: impactx.synmadx.MadX_reader
+
+   Read and parse a MAD-X file into a Synergia lattice.
+
+   .. py:method:: parse(string)
+
+      Parse MAD-X input given as a string.
+
+      :param string: MAD-X statements to parse
+
+   .. py:method:: get_lattice(line_name)
+                  get_lattice(line_name, filename)
+
+      Return the named beamline as a Synergia lattice, optionally reading and
+      parsing a MAD-X file first.
+
+      :param line_name: name of the beamline (line or sequence) to extract
+      :param filename: path to a MAD-X (``.madx``) file
+
+.. py:function:: impactx.synmadx.syn2_to_impactx(lattice, init_monitor=True, final_monitor=True, order=Order.exact)
+
+   Convert a Synergia lattice parsed with synmadx into a list of ImpactX
+   lattice elements.
+
+   :param lattice: Synergia lattice, e.g., from :py:meth:`impactx.synmadx.MadX_reader.get_lattice`; must include a reference particle
+   :param init_monitor: prepend a ``BeamMonitor`` that records the initial beam
+   :param final_monitor: append a ``BeamMonitor`` that records the final beam
+   :param order: tracking model used for the converted elements: ``Order.linear``, ``Order.chr`` (chromatic), or ``Order.exact``
+
+.. py:function:: impactx.synmadx.unroll_impactx_lattice(lattice)
+
+   Return a Python source string that recreates the given list of ImpactX
+   elements, e.g., for saving a converted lattice to a file.
+
+   :param lattice: a list of ImpactX lattice elements
+
+See the :ref:`Simple Booster (synmadx MAD-X Parser) example <examples-simple-booster-synmadx>`
+for a complete workflow.
+
+
 Lattice Elements
 ----------------
 
-.. py:class:: impactx.elements.CFbend(ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+Lattice elements expose multiple methods, including: (i) ``push(pc)`` to advance particles ``pc`` (e.g., ``sim.beam``),
+(ii) ``push(cm, ref)`` to advance a covariance matrix ``cm``, (iii) ``transfer_map(ref)`` that returns the
+element's analytic 6x6 linear transport map (phase-space ordering ``(x, px, y, py, t, pt)``) for the reference
+particle ``ref``, (iv) ``reverse()`` to reverse the element in place, (v) ``to_dict()`` to serialize it, and
+(vi) ``copy()`` to make a new element with the same configuration.
+For an element with ``nslice`` > 1, the pushes and maps refer to a single ``ds/nslice`` slice.
+
+Element parameters can be changed after construction, and a lattice tracks the elements it
+holds, so an element can be retuned between runs:
+
+.. code-block:: python
+
+   quad = elements.Quad(ds=0.3, k=2.0)
+   sim.lattice.append(quad)
+
+   quad.k = 2.5          # applies to the next tracking run
+
+Use ``copy()`` when a second, separately tunable element is wanted:
+
+.. code-block:: python
+
+   focus = elements.Quad(ds=0.3, k=2.0)
+   defocus = focus.copy()
+   defocus.k = -2.0
+
+The elements carrying array-valued parameters (e.g., the soft-edge elements, the exact multipole
+and combined-function bend, and the polygon aperture) expose those arrays as properties,
+plus a setter that takes both at once. The two arrays of an element always have the same
+length, so the paired setter is the one that can change that length:
+
+.. code-block:: python
+
+   cavity.cos_coefficients = new_cos            # same length as before
+   cavity.set_coefficients(new_cos, new_sin)    # any length, applied together
+
+   aperture.set_vertices(x, y)                  # closed outline: x[0] == x[-1], y[0] == y[-1]
+
+.. _usage-python-aperture-convention:
+
+Many elements take a transverse aperture via ``aperture_x`` and ``aperture_y``: the ``Aperture``
+collimator, and as a beam pipe most other elements.
+They all follow the same convention.
+A half-aperture of zero or less removes the boundary in that plane, while the other plane still
+cuts.
+Bounding a single plane gives a jaw (slit) collimator: with only ``aperture_y`` set, a particle is
+lost when ``|y| > aperture_y`` at any ``x``, and the ``rectangular`` and ``elliptical`` shapes
+degenerate to the same slab.
+Bounding both planes gives an iris of the element's shape: an ellipse for the beam pipe, and a
+rectangle or an ellipse for the ``Aperture`` collimator, depending on its ``shape``.
+The aperture is disabled entirely only if both planes are zero or less, which is the default.
+
+.. py:class:: impactx.elements.CFbend(*, ds, rc, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A combined function bending magnet.  This is an ideal Sbend with a normal quadrupole field component.
 
@@ -1292,7 +1952,7 @@ Lattice Elements
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ConstF(ds, kx, ky, kt, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ConstF(*, ds, kx, ky, kt, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A linear Constant Focusing element.
 
@@ -1320,11 +1980,17 @@ Lattice Elements
 
       focusing t strength in 1/m
 
-.. py:class:: impactx.elements.DipEdge(psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.DipEdge(*, psi, rc, g, R=1, K0=pi**2/6, K1=0, K2=1, K3=1/6, K4=0, K5=0, K6=0, model="linear", location="entry", modify_ref_part=False, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    Edge focusing associated with bend entry or exit
 
-   The model here is based on:
+   If ``model = "linear_slac75"``, then the model is given by the linear part of the map described in:
+
+   * K. L. Brown, SLAC Report No. 75 (1982)
+
+   which coincides with the dipole edge focusing model in MAD-X.
+
+   If ``model = "nonlinear_hwang_lee"``, then the model is given by:
 
    * K. Hwang and S. Y. Lee, PRAB 18, 122401 (2015).
 
@@ -1333,17 +1999,14 @@ Lattice Elements
    * C. Mitchell and K. Hwang, in Proc. NAPAC2025, TUP040, Sacramento, CA (2025).
 
    Here, ``g`` denotes the magnetic gap, which is a length scale that sets the rate of decay of the fringe field.  The values ``K0`` - ``K6`` denote
-   dimensionless field integrals, describing the shape of the fringe field, as defined in eqs. (28-34) of the first reference above.  In
+   dimensionless field integrals, describing the shape of the fringe field, as defined in eqs. (28-34) of Hwang & Lee PRAB 18.  In
    particular, ``K2`` is the well-known fringe field parameter denoted ``FINT`` in MAD-X.  The default values of the field integrals ``K0`` - ``K6`` are
-   those given in eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
+   those given in Hwang & Lee PRAB 18, eq. (52), corresponding to a ``tanh`` (i.e. logistic) field profile.
 
-   When ``model = "linear"``, the linearized map is used.  This model is identical to:
+   If ``model = "linear_hwang_lee"``, then the model is given by the linearization of this map.  In this case, the values ``K0=K1=K5=0`` are assumed.  This enforces zero centroid offset and ensures the correct bend angle.
+   This is identical to the linear model in K. L. Brown when expanded to first order in ``g/rc`` (gap / radius of curvature).
 
-   * K. L. Brown, SLAC Report No. 75 (1982)
-
-   when expanded to first order in ``g/rc`` (gap / radius of curvature).
-
-   By comparison, note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
+   Note that the MAD-X DIPEDGE element uses as input the half-gap ``HGAP = g/2``, and sets the default value ``FINT = 0`` (while
    the corresponding default value of ``K2`` is set to 1).
 
    Note that the nonlinear model includes a nonzero horizontal translation (depending on the field integral values) that is present even for a particle that begins on the ideal "hard-edge" reference
@@ -1367,15 +2030,17 @@ Lattice Elements
    :param K4: Fringe field integral [unitless]
    :param K5: Fringe field integral [unitless]
    :param K6: Fringe field integral [unitless]
-   :param model: the fringe field model: ``linear`` (default) or ``nonlinear``
+   :param model: the fringe field model: ``linear_slac75`` (default), ``nonlinear_hwang_lee``, or ``linear_hwang_lee``
    :param location: the fringe field edge location: ``entry`` (default) or ``exit``
    :param modify_ref_part: apply fringe field to the reference particle ``True`` or ``False`` (default)
    :param dx: horizontal translation error [m]
    :param dy: vertical translation error [m]
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Drift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Drift(*, ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift.
 
@@ -1388,7 +2053,7 @@ Lattice Elements
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ChrDrift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrDrift(*, ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift with chromatic effects included.  The Hamiltonian is expanded
    through second order in the transverse variables (x,px,y,py), with the exact pt
@@ -1403,7 +2068,7 @@ Lattice Elements
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactDrift(ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactDrift(*, ds, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A drift using the exact nonlinear transfer map.
 
@@ -1416,16 +2081,21 @@ Lattice Elements
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Kicker(xkick, ykick, unit="dimensionless", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.Kicker(*, xkick, ykick, unit="dimensionless", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A thin transverse kicker.
 
    :param xkick: horizontal kick strength (dimensionless OR T-m)
    :param ykick: vertical kick strength (dimensionless OR T-m)
    :param unit: specification of units (``"dimensionless"`` in units of the magnetic rigidity of the reference particle or ``"T-m"``)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.LinearMap(R, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.LinearMap(*, R, ds=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A custom, linear transport matrix.
 
@@ -1442,25 +2112,38 @@ Lattice Elements
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Multipole(multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, name=None)
+   .. note::
+
+      This element cannot be sliced, so a collective effect kick (space charge,
+      CSR, ISR) is applied as ``K(ds/2) M(ds) K(ds/2)``: half a kick, the element
+      map, then the other half, at two collective solves per element
+      (see :py:attr:`~impactx.ImpactX.strang_split`).
+      Model it as several shorter elements to resolve collective effects along
+      its length.
+
+.. py:class:: impactx.elements.Multipole(*, multipole, K_normal, K_skew, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A general thin multipole element.
 
-   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
+   :param multipole: index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc., up to m=13)
    :param K_normal: Integrated normal multipole coefficient (meter^(-m+1))
                     = ds * 1/(magnetic rigidity in T-m) * (derivative of order :math:`m-1` of :math:`B_y` with respect to :math:`x`)
    :param K_skew: Integrated skew multipole coefficient (meter^(-m+1))
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactCFbend(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactCFbend(*, ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick combined-function dipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to decapole order (m=5).
    The multipole coefficients are defined in the curvilinear coordinate system defined by the nominal reference trajectory.
    For definitions of the coordinate system and (curvilinear) multipole coefficients we follow:
 
@@ -1505,10 +2188,10 @@ Lattice Elements
       number of integration steps per slice used for symplectic integration
 
 
-.. py:class:: impactx.elements.ExactMultipole(ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactMultipole(*, ds, k_normal, k_skew, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A thick Multipole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
-   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to arbitrarily high order.
+   The user must provide arrays containing normal and skew multipole coefficients, which can be specified up to order m=12.
    The fields are assumed to be uniform along the longitudinal beamline coordinate (hard-edge model).
    The coefficients must appear in the following sequence:
 
@@ -1550,7 +2233,7 @@ Lattice Elements
 
    This element does nothing.
 
-.. py:class:: impactx.elements.NonlinearLens(knll, cnll, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.NonlinearLens(*, knll, cnll, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    Single short segment of the nonlinear magnetic insert element.
 
@@ -1564,9 +2247,11 @@ Lattice Elements
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.BeamMonitor(name, backend="default", encoding="g", period_sample_intervals=1)
+.. py:class:: impactx.elements.BeamMonitor(name, *, backend="default", encoding="g", period_sample_intervals=1, particles=True, beam_moments=True)
 
    A beam monitor, writing all beam particles at fixed ``s`` to openPMD files.
 
@@ -1577,21 +2262,33 @@ Lattice Elements
    ``json`` only works with serial/single-rank jobs.
    By default, the first available backend in the order given above is taken.
 
-   openPMD `iteration encoding <https://openpmd-api.readthedocs.io/en/0.14.0/usage/concepts.html#iteration-and-series>`__ determines if multiple files are created for individual output steps or not.
-   Variable based is an `experimental feature with ADIOS2 <https://openpmd-api.readthedocs.io/en/0.14.0/backends/adios2.html#experimental-new-adios2-schema>`__.
+   openPMD `iteration encoding <https://openpmd-api.readthedocs.io/en/latest/usage/concepts.html#iteration-and-series>`__ determines if multiple files are created for individual output steps or not.
+   Variable based is an `experimental feature with ADIOS2 <https://openpmd-api.readthedocs.io/en/0.14.0/backends/adios2.html#experimental-new-adios2-schema>`__ and currently requires linear read access (``Access.read_linear``) in downstream readers.
 
    :param name: name of the series
    :param backend: I/O backend, e.g., ``bp``, ``h5``, ``json``
    :param encoding: openPMD iteration encoding: (v)ariable based, (f)ile based, (g)roup based (default)
    :param period_sample_intervals: for periodic lattice, only output every Nth period (turn)
+   :param particles: output the individual particles of the beam (default: ``True``)
+   :param beam_moments: output the beam moments (reduced beam characteristics) as openPMD attributes (default: ``True``)
 
    .. py:property:: name
 
       name of the series
 
+   .. py:property:: particles
+
+      Output the individual particles of the beam (default: ``True``).
+      When set to ``False``, the beam monitor becomes a fast, small diagnostic that stores only per-output attributes (reference particle and, if enabled, beam moments).
+
+   .. py:property:: beam_moments
+
+      Output the beam moments (reduced beam characteristics) of the whole bunch as openPMD attributes on the ``beam`` particle species (default: ``True``).
+
    .. py:property:: nonlinear_lens_invariants
 
-      Compute and output the invariants H and I within the nonlinear magnetic insert element
+      Compute and output the invariants H and I within the nonlinear magnetic insert element.
+      Requires ``particles=True``.
 
    .. py:property:: alpha
 
@@ -1611,7 +2308,7 @@ Lattice Elements
 
       Scale factor (in meters^(1/2)) of the IOTA nonlinear magnetic insert element used for computing H and I.
 
-.. py:class:: impactx.elements.Source(distribution, openpmd_path, name)
+.. py:class:: impactx.elements.Source(distribution, openpmd_path, *, active_once=True, load_ref_particle=True, load_step=None, load_step_index=None, name=None)
 
    A particle source.
    Currently, this only supports openPMD files from our :py:class:`impactx.elements.BeamMonitor`
@@ -1619,17 +2316,92 @@ Lattice Elements
    :param distribution: Distribution type of particles in the source. currently, only ``"openPMD"`` is supported
    :param openpmd_path: path to the openPMD series
    :param active_once: Inject particles only for the first lattice period. Default: ``True``
+   :param load_ref_particle: Restore the reference particle from the species metadata of the openPMD file. Default: ``True``
+   :param load_step: Which step (iteration) to load from the openPMD series, selected by step number. Default: ``None``
+   :param load_step_index: Which step (iteration) to load from the openPMD series, selected by position in the file. Default: ``None``
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Programmable(ds=0.0, nslice=1, name=None)
+   .. note::
+
+      ``load_step`` is the ImpactX step at which the :py:class:`impactx.elements.BeamMonitor`
+      wrote the beam, which is stored as the openPMD iteration in the file.
+      These step numbers are usually not consecutive, because the global step counter also advances in
+      the elements between two monitors: list them with, e.g., `openpmd-ls <https://openpmd-api.readthedocs.io/en/0.17.1/utilities/cli.html>`__ before selecting one.
+      A step that is not in the file is an error, which lists the steps that are in it.
+      A negative value is an error, too: the step numbers in a file are not negative, use
+      ``load_step_index`` to count back from the last step.
+
+      ``load_step_index`` selects the step by position in the file instead: ``0`` is the first step
+      and ``-1`` is the last, counting back from it as in Python, e.g. ``load_step_index=-2`` is the
+      second to last step.
+      Use this when the step numbers in the file are not known, e.g. ``load_step_index=-2`` to
+      continue from the turn before the last one that a ring wrote.
+      An index that reaches past either end of the file is an error, which lists the steps in it.
+
+      Set at most one of ``load_step`` and ``load_step_index``.
+      If neither is set, the last step in the file is loaded.
+
+   .. note::
+
+      With ``load_ref_particle``, the reference particle state (:math:`s`, positions, momenta, mass, charge
+      and the gyromagnetic anomaly) is restored exactly from the iteration the particles are read from.
+      Set ``load_ref_particle=False`` to load all particles relative to a manually configured reference
+      particle: the relative particle coordinates in the file (in particular the momenta :math:`p_x`,
+      :math:`p_y` and :math:`p_t`, which are normalized by the reference particle momentum) are then
+      interpreted with respect to the existing reference particle.
+      The existing reference particle in that case needs to be manually configured before the tracking loop.
+      This option acts when particles are tracked or pushed (:py:func:`impactx.push`),
+      it has no effect in envelope or reference-particle-only tracking.
+
+   .. attention::
+
+      In MPI-parallel simulations, reading the particles in the source file is distributed over all MPI ranks:
+      each of the :math:`N` ranks reads a different contiguous chunk of :math:`1/N`-th of the particles, independent of their position.
+      This balances the I/O and memory load between the ranks.
+
+      When ImpactX needs to sort particles spatially, it will redistribute them over MPI ranks automatically during tracking.
+
+.. py:class:: impactx.elements.Programmable(*, ds=0.0, includes_collective_effects=False, nslice=1, name=None)
 
    A programmable beam optics element.
 
    This element can be programmed to receive callback hooks into Python functions.
+   See :ref:`usage-howto-python-extend` for a worked example.
 
    :param ds: Segment length in m.
+   :param includes_collective_effects: the push hooks already model collective effects over the length of this element, see :py:attr:`includes_collective_effects`
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
+
+   .. note::
+
+      The Strang split (:py:attr:`~impactx.ImpactX.strang_split`) cannot halve this element's
+      push, so it halves the collective effect kick (space charge, CSR, ISR)
+      instead: ``K(ds/2) M(ds) K(ds/2)`` per slice, at two collective solves per
+      slice.
+
+   .. py:property:: includes_collective_effects
+
+      Declares that the push hooks already model collective effects over the length of this
+      element, e.g., because they call an external code that computes the beam self-fields or
+      plasma wakefields.
+      If ``True``, ImpactX applies no additional collective effect kicks (space charge,
+      wakefields, CSR, ISR) for this element, so these effects are not applied twice.
+      If ``False`` (default), ImpactX applies the enabled collective effects to this element
+      like to any other element of finite length.
+
+   .. note::
+
+      The ``Programmable`` element is intended for *replacing* a beamline element's
+      particle push with custom Python code (e.g. a non-linear kick, tabulated map,
+      or ML surrogate). The ``beam_particles`` callback is invoked per particle
+      tile for performance, so the beam is presented in chunks, not as a single
+      global container, which is a poor fit for observation/analysis.
+
+      For **in-situ analysis** of the beam, prefer a :py:attr:`~impactx.ImpactX.hook`
+      callback instead: ``sim.beam`` and methods like
+      :py:meth:`~impactx.ParticleContainer.to_df` give you the full beam in one place.
+      See :ref:`usage-howto-python-particle-data`.
 
    .. py:property:: push
 
@@ -1662,7 +2434,7 @@ Lattice Elements
          This function is called for the reference particle as it passes through the element.
          The reference particle is updated *before* the beam particles are pushed.
 
-.. py:class:: impactx.elements.Quad(ds, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Quad(*, ds, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A Quadrupole magnet.
 
@@ -1679,7 +2451,7 @@ Lattice Elements
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ChrQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrQuad(*, ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    A Quadrupole magnet, with chromatic effects included.  The Hamiltonian is expanded
    through second order in the transverse variables (x,px,y,py), with the exact pt
@@ -1708,7 +2480,7 @@ Lattice Elements
 
       unit specification for quad strength
 
-.. py:class:: impactx.elements.ExactQuad(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=5, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactQuad(*, ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
    A Quadrupole magnet using the exact relativistic Hamiltonian, including all kinematic nonlinearities.
    Particle tracking is performed using symplectic integration based on the Hamiltonian splitting H = H_1 + H_2.
@@ -1751,7 +2523,7 @@ Lattice Elements
 
       number of integration steps per slice used for symplectic integration
 
-.. py:class:: impactx.elements.QuadEdge(k, unit=0, flag="entry", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
+.. py:class:: impactx.elements.QuadEdge(*, k, unit=0, flag="entry", dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    Hard-edge nonlinear fringe field map for a Quadrupole.  This is a nonlinear symplectic map (derived from a third-order Lie generator), representing
    the effect of quadrupole entry or exit fringe fields in the hard-edge limit. This is an explicit symplectification of the Lie map that appears in eq
@@ -1767,8 +2539,9 @@ Lattice Elements
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
-
 
 .. py:class:: impactx.elements.MagnetostaticVectorPotential(ds, unit=0, ax="0", ay="0", daxdx="0", daxdy="0", daydx="0", daydy="0", dazdx="0", dazdy="0", dx=0, dy=0, rotation=0, aperture_x=0,
 aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
@@ -1804,7 +2577,6 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-
    .. py:property:: unit
 
       unit specification for quad strength
@@ -1817,8 +2589,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
       number of integration steps per slice used for symplectic integration
 
-
-.. py:class:: impactx.elements.ChrPlasmaLens(ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrPlasmaLens(*, ds, k, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An active cylindrically symmetric plasma lens, with chromatic effects included.
    The Hamiltonian is expanded through second order in the transverse variables
@@ -1845,7 +2616,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
       unit specification for plasma lens focusing strength
 
-.. py:class:: impactx.elements.ChrAcc(ds, ez, bz, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ChrAcc(*, ds, ez, bz, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    Acceleration in a uniform field Ez, with a uniform solenoidal field Bz.
 
@@ -1873,7 +2644,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
       magnetic field strength in 1/m
 
-.. py:class:: impactx.elements.RFCavity(ds, escale, freq, phase, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.RFCavity(*, ds, escale, freq, phase, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, z_data=None, wake_x_data=None, wake_y_data=None, wake_z_data=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A radiofrequency cavity.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -1898,6 +2669,10 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param z: array of longitudinal positions in m, covering the element from entry (``min(z)``) to exit (``max(z)``); the range is scaled to ``ds`` (alternative to Fourier coefficients)
    :param field_on_axis: array of on-axis electric field Ez values, typically normalized to a peak absolute value of 1; multiplied by ``escale`` (alternative to Fourier coefficients)
    :param ncoef: number of Fourier coefficients to compute (alternative to Fourier coefficients)
+   :param z_data: optional longitudinal positions of the single-particle wake function in m, ascending from 0 in uniform steps; other positions are not yet implemented and raise a ``RuntimeError``; the wake function is zero beyond the last position
+   :param wake_x_data: optional horizontal single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_y_data: optional vertical single-particle wake function data; not yet implemented, anything but ``None`` or an empty array raises a ``RuntimeError``
+   :param wake_z_data: optional longitudinal single-particle wake function data in V/(C m), positive where it decelerates a trailing particle
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
@@ -1907,7 +2682,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Sbend(ds, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Sbend(*, ds, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal sector bend.
 
@@ -1921,7 +2696,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ExactSbend(ds, phi, B=0.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.ExactSbend(*, ds, phi, B=0.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal sector bend using the exact nonlinear map.  The model consists of a uniform bending field B_y with a hard edge.  Pole faces are
    normal to the entry and exit velocity of the reference particle.
@@ -1942,7 +2717,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Buncher(V, k, dx=0, dy=0, rotation=0)
+.. py:class:: impactx.elements.Buncher(*, V, k, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A short RF cavity element at zero crossing for bunching (MaryLie model).
 
@@ -1951,8 +2726,11 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
+   :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ShortRF(V, freq, phase=-90.0, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.ShortRF(*, V, freq, phase=-90.0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A short RF cavity element (MAD-X model).
 
@@ -1962,9 +2740,11 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SoftSolenoid(ds, bscale, *, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftSolenoid(*, ds, bscale, cos_coefficients=None, sin_coefficients=None, z=None, field_on_axis=None, ncoef=None, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A soft-edge solenoid.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -1998,7 +2778,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Sol(ds, ks, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
+.. py:class:: impactx.elements.Sol(*, ds, ks, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, nslice=1, name=None)
 
    An ideal hard-edge Solenoid magnet.
 
@@ -2012,7 +2792,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.PRot(phi_in, phi_out, name=None)
+.. py:class:: impactx.elements.PRot(*, phi_in, phi_out, name=None)
 
    Exact map for a pole-face rotation in the x-z plane.
 
@@ -2020,7 +2800,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param phi_out: angle of the reference particle with respect to the longitudinal (z) axis in the rotated frame in degrees
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.PlaneXYRot(angle,  dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.PlaneXYRot(*, angle, dx=0, dy=0, rotation=0, name=None)
 
    Map for a transverse rotation in the x-y plane (i.e., about the reference velocity vector).
 
@@ -2030,15 +2810,21 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.Aperture(aperture_x, aperture_y, repeat_x, repeat_y, shift_odd_x, shape="rectangular", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.Aperture(*, aperture_x, aperture_y, repeat_x=0, repeat_y=0, shift_odd_x=False, shape="rectangular", action="transmit", dx=0, dy=0, rotation=0, name=None)
 
    A thin collimator element, applying a transverse aperture boundary.
 
-   :param aperture_x: horizontal half-aperture (rectangular or elliptical) in m
-   :param aperture_y: vertical half-aperture (rectangular or elliptical) in m
-   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
-   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
-   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+   A half-aperture of zero or less disables the boundary in that plane, the same
+   convention as every other element's ``aperture_x``/``aperture_y`` above.
+   Note that with ``action="absorb"`` a disabled plane makes the absorbing domain
+   unbounded in that direction, so disabling both planes absorbs the whole beam,
+   while for ``action="transmit"`` the element has no effect on the beam.
+
+   :param aperture_x: horizontal half-aperture (rectangular or elliptical) in m; zero or less disables the horizontal boundary
+   :param aperture_y: vertical half-aperture (rectangular or elliptical) in m; zero or less disables the vertical boundary
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter); the aperture is repeated by translation, and copies may overlap
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter); the aperture is repeated by translation, and copies may overlap
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Requires repeat_x and repeat_y. Use alignment offsets dx,dy to move whole mask as needed.
    :param shape: aperture boundary shape: ``"rectangular"`` (default) or ``"elliptical"``
    :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m
@@ -2054,15 +2840,15 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
       aperture type (transmit, absorb)
 
-   .. py:property:: xmax
+   .. py:property:: aperture_x
 
-      maximum horizontal coordinate
+      maximum horizontal coordinate in m; zero or less removes the horizontal boundary
 
-   .. py:property:: ymax
+   .. py:property:: aperture_y
 
-      maximum vertical coordinate
+      maximum vertical coordinate in m; zero or less removes the vertical boundary
 
-.. py:class:: impactx.elements.PolygonAperture(vertices_x, vertices_y, min_radius2=0.0, repeat_x, repeat_y, shift_odd_x, action="transmit", dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.PolygonAperture(*, vertices_x, vertices_y, min_radius2=0.0, repeat_x=0, repeat_y=0, shift_odd_x=False, action="transmit", dx=0, dy=0, rotation=0, name=None)
 
    This element defines a thin collimator element applying a transverse polygon aperture boundary defined by :math:`(x,y)` coordinates
    and optional radius below which all particles are transmitted. The vertices must define a closed curve and be ordered in the counter-clockwise direction.
@@ -2071,9 +2857,9 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param vertices_x: sequence of aperture boundary :math:`x` coordinates in m
    :param vertices_y: sequence of aperture boundary :math:`y` coordinates in m
    :param min_radius2: radius-squared of a circle fully inscribed by the polygon aperture (default 0) (meters-squared)
-   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter)
-   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter)
-   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Use alignment offsets dx,dy to move whole mask as needed.
+   :param repeat_x: horizontal period for repeated aperture masking (inactive by default) (meter); the polygon is repeated by translation and must lie inside one period, ``|x| <= repeat_x / 2`` for all vertices
+   :param repeat_y: vertical period for repeated aperture masking (inactive by default) (meter); the polygon is repeated by translation and must lie inside one period, ``|y| <= repeat_y / 2`` for all vertices
+   :param shift_odd_x: for hexagonal/triangular mask patterns: horizontal shift of every 2nd (odd) vertical period by repeat_x / 2. Requires repeat_x and repeat_y. Use alignment offsets dx,dy to move whole mask as needed.
    :param action: aperture domain action: ``"transmit"`` (default) or ``"absorb"``
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
@@ -2086,7 +2872,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
 
       aperture type (transmit, absorb)
 
-.. py:class:: impactx.elements.SoftQuadrupole(ds, gscale, *, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
+.. py:class:: impactx.elements.SoftQuadrupole(*, ds, gscale, cos_coefficients=None, sin_coefficients=None, z=None, gradient_on_axis=None, ncoef=None, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, mapsteps=10, nslice=1, name=None)
 
    A soft-edge quadrupole.  See :ref:`Models of Soft-Edge Elements <theory-softedge-elements>`.
 
@@ -2119,7 +2905,7 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param nslice: number of slices used for the application of space charge
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.SpinMap(v=0, A=0, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.SpinMap(*, v, A, ds=0, dx=0, dy=0, rotation=0, name=None)
 
    A custom, user-specified spin map that acts on the spin 3-vector :math:`(s_x,s_y,s_z)`.  Spin maps are specified in the Lie-algebraic form:
 
@@ -2138,14 +2924,23 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    All three components of :math:`v` are dimensionless.
 
    :param v: a 1-indexed, 3x1, axis-angle vector that defines the spin rotation at the phase space design point
-   :param R: a 1-indexed, 3x6, spin-orbit coupling matrix to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)` that defines the spin rotation for off-design particles
+   :param A: a 1-indexed, 3x6, spin-orbit coupling matrix to multiply with the phase space vector :math:`(x,p_x,y,p_y,t,p_t)` that defines the spin rotation for off-design particles
    :param ds: length associated with a user-defined linear element (defaults to 0), in m
-   :param dx: horizontal translation error in m (not used, defaults to 0)
-   :param dy: vertical translation error in m (not used, defaults to 0)
-   :param rotation: rotation error in the transverse plane [degrees] (not used, defaults to 0)
+   :param dx: horizontal translation error in m
+   :param dy: vertical translation error in m
+   :param rotation: rotation error in the transverse plane [degrees]
    :param name: an optional name for the element
 
-.. py:class:: impactx.elements.ThinDipole(theta, rc, dx=0, dy=0, rotation=0, name=None)
+   .. note::
+
+      This element cannot be sliced, so a collective effect kick (space charge,
+      CSR, ISR) is applied as ``K(ds/2) M(ds) K(ds/2)``: half a kick, the element
+      map, then the other half, at two collective solves per element
+      (see :py:attr:`~impactx.ImpactX.strang_split`).
+      Model it as several shorter elements to resolve collective effects along
+      its length.
+
+.. py:class:: impactx.elements.ThinDipole(*, theta, rc, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A general thin dipole element.
 
@@ -2154,13 +2949,15 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
    Reference:
 
    * G. Ripken and F. Schmidt, Thin-Lens Formalism for Tracking, CERN/SL/95-12 (AP), 1995.
 
-.. py:class:: impactx.elements.TaperedPL(k, taper, unit=0, dx=0, dy=0, rotation=0, name=None)
+.. py:class:: impactx.elements.TaperedPL(*, k, taper, unit=0, dx=0, dy=0, rotation=0, aperture_x=0, aperture_y=0, name=None)
 
    A thin nonlinear plasma lens with transverse (horizontal) taper
 
@@ -2180,6 +2977,8 @@ aperture_y=0, int_order=2, mapsteps=10, nslice=1, name=None)
    :param dx: horizontal translation error in m
    :param dy: vertical translation error in m
    :param rotation: rotation error in the transverse plane [degrees]
+   :param aperture_x: horizontal half-aperture (elliptical) in m
+   :param aperture_y: vertical half-aperture (elliptical) in m
    :param name: an optional name for the element
 
    .. py:property:: k
@@ -2207,6 +3006,11 @@ Each lattice element provides a ``.to_dict()`` method, which can be used to seri
 
    Splits up every element that is on s = N * ds for N>0.
 
+   Returns a new lattice. Elements that are not split are the same objects as in the
+   lattice given, so changing one afterwards changes both lattices. An element that a
+   split falls inside is replaced by two new elements covering its halves: these carry
+   its parameters, but a Python subclass and any attributes on it do not carry over.
+
    :param list: element lattice list
    :param ds: spacing in meters along s to add an element
    :param element: the extra element to add every s
@@ -2215,16 +3019,41 @@ Each lattice element provides a ``.to_dict()`` method, which can be used to seri
 Coordinate Transformation
 -------------------------
 
-.. py:class:: impactx.TransformationDirection
+.. py:class:: impactx.CoordSystem
 
-   Enumerated type indicating whether to transform to fixed :math:`s` or fixed :math:`t` coordinate system when applying ``impactx.coordinate_transformation``.
+   Enumerated type for the coordinate system of particle data: the independent variable is either the position :math:`s` or the time :math:`t`.
 
-   :param to_fixed_t:
-   :param to_fixed_s:
+   :param s: fixed :math:`s` (the ImpactX default)
+   :param t: fixed :math:`t`
+
+.. py:function:: impactx.push(pc, element, step=0, period=0)
+
+   Push a whole particle beam, including the reference particle, through an element.
+   Acts on the element passed in.
+
+   :param pc: the particle container to push
+   :param element: the element to push through
+   :param step: global step, for diagnostics
+   :param period: the current period, for a periodic lattice
+
+.. py:function:: impactx.push(ref, element)
+   :no-index:
+
+   Push only the reference particle through an element.
+
+.. py:function:: impactx.reverse(element)
+
+   Reverse an element in place, so that pushing particles through it reverses the effect of
+   the original element. Acts on the element passed in, so an element that sits at several
+   lattice positions is reversed at all of them.
 
 .. py:function:: impactx.coordinate_transformation(pc, direction)
 
-   Function to transform the coordinates of the particles in a particle container either to fixed :math:`t` or to fixed :math:`s`.
+   Transform the coordinates of the particles in a particle container either to fixed :math:`t` or to fixed :math:`s`.
+   Both directions take the reference energy from ``pc.ref.pt`` at the time of the call.
+   The longitudinal attributes are renamed accordingly, see :py:attr:`impactx.ParticleContainer.coord_system`.
 
-   :param pc: ``impactx.particle_container`` whose particle coordinates are to be transformed.
-   :param direction: enumerated type ``impactx.TransformationDirection``, indicates whether to transform to fixed :math:`s` or fixed :math:`t`.
+   Prefer :py:meth:`impactx.ParticleContainer.at_fixed_t`, which pairs both transformations and restores fixed :math:`s` if an exception is raised.
+
+   :param pc: :py:class:`impactx.ParticleContainer` whose particle coordinates are to be transformed.
+   :param direction: :py:class:`impactx.CoordSystem` to transform to; must differ from ``pc.coord_system``.

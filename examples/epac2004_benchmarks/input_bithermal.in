@@ -40,6 +40,10 @@ algo.space_charge = 3D
 algo.poisson_solver = "fft"
 
 amr.n_cell = 64 64 64
+# one box per MPI process (this example runs on 2 MPI processes)
+amr.max_grid_size_x = 64
+amr.max_grid_size_y = 64
+amr.max_grid_size_z = 32
 geometry.prob_relative = 1.1
 
 ###############################################################################

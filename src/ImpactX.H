@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,6 +11,7 @@
 #define IMPACT_X_H
 
 #include "elements/All.H"
+#include "Lattice.H"
 #include "initialization/AmrCoreData.H"
 #include "particles/distribution/All.H"
 #include "tracking/TrackingState.H"
@@ -18,7 +19,6 @@
 #include <AMReX_REAL.H>
 
 #include <functional>
-#include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -48,10 +48,20 @@ namespace impactx
         ~ImpactX ();
 
         /** Deallocate all contexts and data
+         *
+         * Finalizes the elements, empties the lattice, releases the hooks and shuts AMReX
+         * down, in that order. Refuses while a tracking traversal is walking the lattice.
+         *
+         * Calls @see m_release_lattice_owners after emptying the lattice and before
+         * shutting AMReX down, including when called from the destructor.
          */
         void finalize ();
 
-        /** Finalize elements
+        /** Finalize the lattice elements
+         *
+         * Runs each element's ``finalize()`` once per lattice position: a beam monitor
+         * closes its output series, an element owning device arrays releases them, a
+         * programmable element runs its finalize hook. Called by @see finalize.
          */
         void finalize_elements ();
 
@@ -142,8 +152,22 @@ namespace impactx
          */
         void ResizeMesh ();
 
-        /** these are elements defining the accelerator lattice */
-        std::list<elements::KnownElements> m_lattice;
+        /** The elements defining the accelerator lattice
+         *
+         * Held indirectly so that it has an address of its own. Python hands out a view of
+         * this lattice and keys that view on where the lattice lives; a lattice that were
+         * part of the simulation would give its address back when the simulation ended, and
+         * a later simulation allocated in the same place would be handed the earlier view.
+         * A share keeps the lattice where it is for as long as anyone refers to it.
+         */
+        std::shared_ptr<Lattice> m_lattice = std::make_shared<Lattice>();
+
+        /** Release external lattice owners after emptying the lattice, before AMReX teardown.
+         *
+         * The Python bindings install a callback holding only a weak reference to the
+         * lattice view, so it does not prevent garbage collection of the simulation.
+         */
+        std::function<void()> m_release_lattice_owners;
 
         /** Was init_grids already called?
          *
@@ -169,7 +193,7 @@ namespace impactx
         std::unordered_map<
             std::string,
             std::function<void(ImpactX *)>
-        > m_hook;  //! hooks that users can call
+        > m_hook;  //! hooks that users can call, released by @see finalize
 
         /** A few states during tracking loops, useful to know in hooks (Python callback functions).
          */

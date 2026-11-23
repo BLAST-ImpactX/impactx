@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,13 +11,13 @@
 #define IMPACTX_CONSTF_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
@@ -28,13 +28,11 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
-    struct ConstF
-    : public mixin::Named,
-      public mixin::BeamOptic<ConstF>,
-      public mixin::LinearTransport<ConstF>,
+    struct ConstFGPU
+    : public mixin::BeamOptic<ConstFGPU>,
+      public mixin::LinearTransport<ConstFGPU>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
@@ -57,23 +55,20 @@ namespace impactx::elements
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        ConstF (
+        ConstFGPU (
             amrex::ParticleReal ds,
             amrex::ParticleReal kx,
             amrex::ParticleReal ky,
             amrex::ParticleReal kt,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int nslice = DEFAULT_nslice
         )
-        : Named(std::move(name)),
-          Thick(ds, nslice),
+        : Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
           m_kx(kx), m_ky(ky), m_kt(kt)
@@ -155,7 +150,7 @@ namespace impactx::elements
 
             if (m_kt < 0_prt)
             {
-                throw std::runtime_error(std::string(type) + ": must have kt >= 0!");
+                throw std::invalid_argument(std::string(type) + ": must have kt >= 0!");
             }
             auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);
             m_cos_ktds = cos_ktds;
@@ -189,14 +184,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // initialize output values
             T_Real xout = x;
@@ -223,12 +215,6 @@ namespace impactx::elements
             px = pxout;
             py = pyout;
             pt = ptout;
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.
@@ -279,9 +265,9 @@ namespace impactx::elements
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
-         * @param sx particle spin x-component
-         * @param sy particle spin y-component
-         * @param sz particle spin z-component
+         * @param sx particle spin x-component (unused)
+         * @param sy particle spin y-component (unused)
+         * @param sz particle spin z-component (unused)
          * @param idcpu particle global index
          * @param refpart reference particle (unused)
          */
@@ -294,10 +280,10 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sx,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sy,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT sz,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -306,7 +292,6 @@ namespace impactx::elements
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
-
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -368,7 +353,7 @@ namespace impactx::elements
             }
 
             if (m_kt < 0_prt) {
-                throw std::runtime_error(std::string(type) + ": must have kt >= 0!");
+                throw std::invalid_argument(std::string(type) + ": must have kt >= 0!");
             }
             auto const [sin_ktds, cos_ktds] = amrex::Math::sincos(m_kt * slice_ds);
             amrex::ParticleReal const_t = -m_kt * betgam2 * sin_ktds;
@@ -394,7 +379,8 @@ namespace impactx::elements
             R(6,5) = const_t;
             R(6,6) = cos_ktds;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_kx; //! focusing x strength in 1/m
@@ -409,8 +395,11 @@ namespace impactx::elements
         amrex::ParticleReal m_cos_kxds, m_cos_kyds, m_cos_ktds;
     };
 
+    /** ConstF: GPU state plus common host-only metadata */
+    using ConstF = Element<ConstFGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ConstF)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ConstFGPU)
 
 #endif // IMPACTX_CONSTF_H

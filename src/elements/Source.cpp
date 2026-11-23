@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -15,15 +15,35 @@
 #   include "elements/diagnostics/openPMD.H"
 #   include <openPMD/openPMD.hpp>
 namespace io = openPMD;
-#else
-#  include <stdexcept>
 #endif
+
+#include <cstddef>
+#include <iterator>
+#include <stdexcept>
+#include <string>
 
 
 namespace impactx::elements
 {
     void
-    Source::operator() (
+    SourceGPU::check_step_selection () const
+    {
+        if (m_load_step.has_value() && m_load_step_index.has_value()) {
+            throw std::invalid_argument(
+                "Source: set either load_step or load_step_index, not both."
+            );
+        }
+        if (m_load_step.has_value() && *m_load_step < 0) {
+            throw std::invalid_argument(
+                "Source: load_step " + std::to_string(*m_load_step) + " is negative, but it is "
+                "the ImpactX step stored in the file; use load_step_index to count back from "
+                "the last step in the file."
+            );
+        }
+    }
+
+    void
+    SourceGPU::operator() (
         ImpactXParticleContainer & pc,
         int,
         int period
@@ -34,6 +54,8 @@ namespace impactx::elements
             return;
         }
 
+        check_step_selection();
+
 #ifdef ImpactX_USE_OPENPMD
         auto series = io::Series(m_series_name, io::Access::READ_ONLY
 #   if openPMD_HAVE_MPI==1
@@ -41,9 +63,71 @@ namespace impactx::elements
 #   endif
         );
 
-        // read the last iteration (highest openPMD iteration)
-        // TODO: later we can make this an option
-        int const read_iteration = std::prev(series.iterations.end())->first;
+        // select the step (openPMD iteration) to read
+        auto const & iterations = series.iterations;
+        if (iterations.empty()) {
+            throw std::runtime_error("Source: no step found in " + m_series_name);
+        }
+
+        // the steps stored in the file, for error messages
+        // a long list, e.g. one step per turn in a ring, is elided in the middle
+        auto const available_steps = [&iterations] () {
+            constexpr std::size_t max_listed = 100; //! list at most this many steps
+            std::size_t const num_steps = iterations.size();
+            bool const elide = num_steps > max_listed;
+            std::size_t const num_head = elide ? max_listed / 2 : num_steps;
+            std::size_t const num_tail = elide ? max_listed - max_listed / 2 : 0;
+
+            std::string list;
+            auto append_step = [&list] (auto const & iteration_entry) {
+                if (!list.empty()) { list += ", "; }
+                list += std::to_string(iteration_entry->first);
+            };
+
+            auto it = iterations.begin();
+            for (std::size_t i = 0; i < num_head; ++i, ++it) { append_step(it); }
+            if (elide) {
+                list += ", ...";
+                std::advance(it, static_cast<long>(num_steps - num_head - num_tail));
+                for (std::size_t i = 0; i < num_tail; ++i, ++it) { append_step(it); }
+            }
+
+            return std::to_string(num_steps) +
+                   (num_steps == 1 ? " available step: " : " available steps: ") + list;
+        };
+
+        io::Iteration::IterationIndex_t read_iteration = 0;
+        if (m_load_step.has_value())
+        {
+            // an ImpactX step, which the beam monitor wrote as the openPMD iteration
+            auto const requested = static_cast<io::Iteration::IterationIndex_t>(*m_load_step);
+            if (!iterations.contains(requested)) {
+                throw std::runtime_error(
+                    "Source: load_step " + std::to_string(*m_load_step) + " not found in " +
+                    m_series_name + " (" + available_steps() + ")"
+                );
+            }
+            read_iteration = requested;
+        }
+        else
+        {
+            // a position in the file: 0 is the first step, -1 the last, as in Python
+            constexpr int last_step_index = -1; //! read the last step in the file by default
+            int const step_index = m_load_step_index.value_or(last_step_index);
+
+            auto const num_steps = static_cast<long>(iterations.size());
+            long const index = step_index < 0
+                ? num_steps + static_cast<long>(step_index)
+                : static_cast<long>(step_index);
+            if (index < 0 || index >= num_steps) {
+                throw std::runtime_error(
+                    "Source: load_step_index " + std::to_string(step_index) +
+                    " is out of range in " + m_series_name + " (" + available_steps() + ")"
+                );
+            }
+            read_iteration = std::next(iterations.begin(), index)->first;
+        }
+
         io::Iteration iteration = series.iterations[read_iteration];
 
         // TODO: later we can make the particle species name an option
@@ -59,7 +143,35 @@ namespace impactx::elements
 
         int const npart = beam["id"][scalar].getExtent()[0];  // how many particles to read total
 
-        // TODO: read reference particle (optional?)
+        // restore the reference particle from the species metadata
+        if (m_load_ref_particle)
+        {
+            RefPart & ref = pc.GetRefParticle();
+            auto const read_attr = [&beam, this] (std::string const & attr_name) {
+                if (!beam.containsAttribute(attr_name)) {
+                    throw std::runtime_error(
+                        "Source: attribute '" + attr_name + "' not found in " + m_series_name +
+                        " (load_ref_particle requires a file written by an ImpactX beam_monitor;"
+                        " set load_ref_particle=false to keep the current reference particle)"
+                    );
+                }
+                return beam.getAttribute(attr_name).get<amrex::ParticleReal>();
+            };
+
+            ref.s = read_attr("s_ref");
+            ref.x = read_attr("x_ref");
+            ref.y = read_attr("y_ref");
+            ref.z = read_attr("z_ref");
+            ref.t = read_attr("t_ref");
+            ref.px = read_attr("px_ref");
+            ref.py = read_attr("py_ref");
+            ref.pz = read_attr("pz_ref");
+            ref.pt = read_attr("pt_ref");
+            ref.gyromagnetic_anomaly = read_attr("gyromagnetic_anomaly_ref");
+            ref.mass = read_attr("mass_ref");
+            ref.charge = read_attr("charge_ref");
+            // ref.sedge: could be set to ref.s, but should be set anyway in tracking loops on element entry.
+        }
 
         // read the particles
 

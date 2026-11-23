@@ -1,10 +1,11 @@
-/* Copyright 2021-2023 The ImpactX Community
+/* Copyright 2022-2026 The ImpactX Community
  *
  * Authors: Axel Huebl
  * License: BSD-3-Clause-LBNL
  */
 #include "pyImpactX.H"
 
+#include <diagnostics/ReducedBeamCharacteristics.H>
 #include <particles/distribution/All.H>
 #include <initialization/InitDistribution.H>
 
@@ -35,6 +36,7 @@ void init_distribution(py::module& m)
                 amrex::ParticleReal, amrex::ParticleReal,
                 amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -56,6 +58,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
          >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -77,6 +80,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -99,6 +103,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -125,6 +130,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -140,11 +146,19 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("k"), py::arg("kT"), py::arg("kT_halo"),
              py::arg("normalize"), py::arg("normalize_halo"),
              py::arg("halo")=0.0,
              "A stationary thermal or bithermal distribution\n\n"
              "R. D. Ryne, J. Qiang, and A. Adelmann, in Proc. EPAC2004, pp. 1942-1944 (2004)"
+        )
+        .def("radial_cdf",
+             &distribution::Thermal::radial_cdf,
+             py::arg("bunch_charge"), py::arg("ref"),
+             "Tabulated radial CDFs that the particle radius is sampled from, on uniform\n"
+             "bins in radius: (r, core, halo), with the radius r in m in the beam rest\n"
+             "frame. A population with zero weight is never sampled and its table is zero."
         );
 
     py::class_<distribution::Triangle>(md, "Triangle")
@@ -157,6 +171,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -179,6 +194,7 @@ void init_distribution(py::module& m)
                  amrex::ParticleReal, amrex::ParticleReal,
                  amrex::ParticleReal, amrex::ParticleReal
              >(),
+             py::kw_only(),
              py::arg("lambdaX"), py::arg("lambdaY"), py::arg("lambdaT"),
              py::arg("lambdaPx"), py::arg("lambdaPy"), py::arg("lambdaPt"),
              py::arg("muxpx")=0.0, py::arg("muypy")=0.0, py::arg("mutpt")=0.0,
@@ -209,6 +225,16 @@ void init_distribution(py::module& m)
         .def(py::init<CovarianceMatrix, amrex::ParticleReal>())
         .def_property("envelope", &Envelope::covariance_matrix, &Envelope::set_covariance_matrix)
         .def_property("beam_intensity", &Envelope::beam_intensity, &Envelope::set_beam_intensity)
+        .def("beam_moments",
+            [](Envelope const & env, RefPart const & ref) {
+                return diagnostics::reduced_beam_characteristics(env.covariance_matrix(), ref);
+            },
+            py::arg("ref"),
+            "Calculate beam moments (position and momentum moments, emittances,\n"
+            "Twiss functions, dispersion, ...) from this envelope's covariance\n"
+            "matrix and a reference particle. The envelope counterpart of\n"
+            "ImpactXParticleContainer.beam_moments()."
+        )
     ;
 
     m.def("create_envelope", &initialization::create_envelope);

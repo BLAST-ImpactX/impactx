@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -16,6 +16,10 @@ sim.n_cell = [16, 16, 20]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [4]
+# one box per level and process: this example runs on a single process
+sim.max_grid_size_x = [64]
+sim.max_grid_size_y = [64]
+sim.max_grid_size_z = [64]
 
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"
@@ -55,7 +59,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice
-sim.lattice.extend([monitor, elements.Drift(name="d1", ds=6.0, nslice=40), monitor])
+sim.lattice.extend([monitor, elements.Drift(name="d1", ds=6.0, nslice=6), monitor])
 
 # run simulation
 sim.track_particles()

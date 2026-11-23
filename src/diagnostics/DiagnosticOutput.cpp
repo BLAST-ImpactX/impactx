@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -8,6 +8,7 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "DiagnosticOutput.H"
+#include "FilePrefix.H"
 #include "NonlinearLensInvariants.H"
 #include "particles/CovarianceMatrix.H"
 #include "ReducedBeamCharacteristics.H"
@@ -17,9 +18,9 @@
 #include <AMReX_REAL.H>       // for ParticleReal
 #include <AMReX_Print.H>      // for PrintToFile
 
+#include <iomanip>
 #include <limits>
 #include <stdexcept>
-#include <utility>
 
 
 namespace
@@ -54,7 +55,7 @@ namespace
             bool compute_spin_moments = false;
             pp_algo.queryAdd("spin", compute_spin_moments);
 
-            file_handler << "step" << " " << "s" << " "
+            file_handler << "step" << " " << "period" << " " << "s" << " "
                          << "mean_x" << " " << "min_x" << " " << "max_x" << " "
                          << "mean_y" << " " << "min_y" << " " << "max_y" << " "
                          << "mean_t" << " " << "min_t" << " " << "max_t" << " "
@@ -92,7 +93,9 @@ namespace
         bool append
     )
     {
-        file_handler.SetPrecision(std::numeric_limits<amrex::ParticleReal>::max_digits10);
+        // In scientific mode, precision is the number of digits after the decimal point.
+        file_handler << std::scientific;
+        file_handler.SetPrecision(std::numeric_limits<amrex::ParticleReal>::max_digits10 - 1);
 
         // write file header per MPI RANK
         if (!append)
@@ -108,10 +111,18 @@ namespace
         int step
     )
     {
+        using namespace amrex::literals; // for _prt
+
+        /* A reference particle that carries no energy yet, e.g. before a Source
+         * element loads it from file, has gamma = 0 and thus no valid beta.
+         */
+        auto const nan = std::numeric_limits<amrex::ParticleReal>::quiet_NaN();
+        bool const ref_is_initialized = ref_part.gamma() >= 1.0_prt;
+
         amrex::ParticleReal const s = ref_part.s;
-        amrex::ParticleReal const beta = ref_part.beta();
-        amrex::ParticleReal const gamma = ref_part.gamma();
-        amrex::ParticleReal const beta_gamma = ref_part.beta_gamma();
+        amrex::ParticleReal const beta = ref_is_initialized ? ref_part.beta() : nan;
+        amrex::ParticleReal const gamma = ref_is_initialized ? ref_part.gamma() : nan;
+        amrex::ParticleReal const beta_gamma = ref_is_initialized ? ref_part.beta_gamma() : nan;
         amrex::ParticleReal const x = ref_part.x;
         amrex::ParticleReal const y = ref_part.y;
         amrex::ParticleReal const z = ref_part.z;
@@ -134,7 +145,8 @@ namespace
         amrex::AllPrintToFile & file_handler,
         std::unordered_map<std::string, amrex::ParticleReal> const & rbc,
         amrex::ParticleReal s,
-        int step
+        int step,
+        int period
     )
     {
         // determine whether to output eigenemittances
@@ -147,14 +159,14 @@ namespace
         bool compute_spin_moments = false;
         pp_algo.queryAdd("spin", compute_spin_moments);
 
-        file_handler << step << " " << s << " "
+        file_handler << step << " " << period << " " << s << " "
                 << rbc.at("mean_x") << " " << rbc.at("min_x") << " " << rbc.at("max_x") << " "
                 << rbc.at("mean_y") << " " << rbc.at("min_y") << " " << rbc.at("max_y") << " "
                 << rbc.at("mean_t") << " " << rbc.at("min_t") << " " << rbc.at("max_t") << " "
                 << rbc.at("sigma_x") << " " << rbc.at("sigma_y") << " " << rbc.at("sigma_t") << " "
-                << rbc.at("mean_px") << " " << rbc.at("mean_px") << " " << rbc.at("mean_px") << " "
-                << rbc.at("mean_py") << " " << rbc.at("mean_py") << " " << rbc.at("mean_py") << " "
-                << rbc.at("mean_pt") << " " << rbc.at("mean_pt") << " " << rbc.at("mean_pt") << " "
+                << rbc.at("mean_px") << " " << rbc.at("min_px") << " " << rbc.at("max_px") << " "
+                << rbc.at("mean_py") << " " << rbc.at("min_py") << " " << rbc.at("max_py") << " "
+                << rbc.at("mean_pt") << " " << rbc.at("min_pt") << " " << rbc.at("max_pt") << " "
                 << rbc.at("sigma_px") << " " << rbc.at("sigma_py") << " " << rbc.at("sigma_pt") << " "
                 << rbc.at("emittance_x") << " " << rbc.at("emittance_y") << " " << rbc.at("emittance_t") << " "
                 << rbc.at("alpha_x") << " " << rbc.at("alpha_y") << " " << rbc.at("alpha_t") << " "
@@ -183,8 +195,9 @@ namespace impactx::diagnostics
 {
     void DiagnosticOutput (
         ImpactXParticleContainer const & pc,
-        std::string file_name,
+        std::string const & file_name,
         int step,
+        int period,
         bool append
     )
     {
@@ -195,40 +208,41 @@ namespace impactx::diagnostics
         OutputType const otype = OutputType::PrintReducedBeamCharacteristics;
 
         // keep file open as we add more and more lines
-        amrex::AllPrintToFile file_handler(std::move(file_name));
+        amrex::AllPrintToFile file_handler(FilePrefixPath(file_name));
         prepare_header(file_handler, otype, append);
 
         amrex::ParticleReal const s = pc.GetRefParticle().s;
         std::unordered_map<std::string, amrex::ParticleReal> const rbc =
             diagnostics::reduced_beam_characteristics(pc);
 
-        write_rbc(file_handler, rbc, s, step);
+        write_rbc(file_handler, rbc, s, step, period);
     }
 
     void DiagnosticOutput (
         Map6x6 const & cm,
         RefPart const & ref_part,
-        std::string file_name,
+        std::string const & file_name,
         int step,
+        int period,
         bool append
     )
     {
         BL_PROFILE("impactx::diagnostics::DiagnosticOutput(cm)");
 
         // keep file open as we add more and more lines
-        amrex::AllPrintToFile file_handler(std::move(file_name));
+        amrex::AllPrintToFile file_handler(FilePrefixPath(file_name));
         prepare_header(file_handler, OutputType::PrintReducedBeamCharacteristics, append);
 
         amrex::ParticleReal const s = ref_part.s;
         std::unordered_map<std::string, amrex::ParticleReal> const rbc =
             diagnostics::reduced_beam_characteristics(cm, ref_part);
 
-        write_rbc(file_handler, rbc, s, step);
+        write_rbc(file_handler, rbc, s, step, period);
     }
 
     void DiagnosticOutput (
         RefPart const & ref_part,
-        std::string file_name,
+        std::string const & file_name,
         int step,
         bool append
     )
@@ -238,7 +252,7 @@ namespace impactx::diagnostics
         OutputType const otype = OutputType::PrintRefParticle;
 
         // keep file open as we add more and more lines
-        amrex::AllPrintToFile file_handler(std::move(file_name));
+        amrex::AllPrintToFile file_handler(FilePrefixPath(file_name));
         prepare_header(file_handler, otype, append);
         write_ref(file_handler, ref_part, step);
     }

@@ -54,14 +54,14 @@ On Perlmutter, you can run either on GPU nodes with fast A100 GPUs (recommended)
             :language: bash
 
       Edit the 2nd line of this script, which sets the ``export proj=""`` variable.
-      Perlmutter GPU projects must end in ``..._g``.
       For example, if you are member of the project ``m3239``, then run ``nano $HOME/perlmutter_gpu_impactx.profile`` and edit line 2 to read:
 
       .. code-block:: bash
 
-         export proj="m3239_g"
+         export proj="m3239"
 
       Exit the ``nano`` editor with ``Ctrl`` + ``O`` (save) and then ``Ctrl`` + ``X`` (exit).
+      With that setting, ImpactX will be built and installed under ``$CFS/m3239/$USER/sw/perlmutter/gpu``.
 
       .. important::
 
@@ -76,7 +76,7 @@ On Perlmutter, you can run either on GPU nodes with fast A100 GPUs (recommended)
       .. code-block:: bash
 
          bash $HOME/src/impactx/docs/source/install/hpc/perlmutter-nersc/install_gpu_dependencies.sh
-         source ${CFS}/${proj%_g}/${USER}/sw/perlmutter/gpu/venvs/impactx/bin/activate
+         source ${CFS}/${proj}/${USER}/sw/perlmutter/gpu/venvs/impactx/bin/activate
 
       .. dropdown:: Script Details
          :color: light
@@ -106,6 +106,7 @@ On Perlmutter, you can run either on GPU nodes with fast A100 GPUs (recommended)
 
       Edit the 2nd line of this script, which sets the ``export proj=""`` variable.
       For example, if you are member of the project ``m3239``, then run ``nano $HOME/perlmutter_cpu_impactx.profile`` and edit line 2 to read:
+      With that setting, ImpactX will be built and installed under ``$CFS/m3239/$USER/sw/perlmutter/cpu``.
 
       .. code-block:: bash
 
@@ -164,7 +165,7 @@ Use the following :ref:`cmake commands <building-cmake>` to compile the applicat
          cd $HOME/src/impactx
          rm -rf build_pm_gpu_py
 
-         cmake -S . -B build_pm_gpu_py -DImpactX_COMPUTE=CUDA -DImpactX_APP=OFF -DImpactX_FFT=ON -DImpactX_PYTHON=ON
+         cmake -S . -B build_pm_gpu_py -DImpactX_COMPUTE=CUDA -DImpactX_APP=OFF -DImpactX_FFT=ON -DImpactX_PYTHON=ON -DImpactX_SYNMADX=ON
          cmake --build build_pm_gpu_py -j 16 --target pip_install
 
    .. tab-item:: CPU Nodes
@@ -184,7 +185,7 @@ Use the following :ref:`cmake commands <building-cmake>` to compile the applicat
 
          rm -rf build_pm_cpu_py
 
-         cmake -S . -B build_pm_cpu_py -DImpactX_COMPUTE=OMP -DImpactX_APP=OFF -DImpactX_FFT=ON -DImpactX_PYTHON=ON
+         cmake -S . -B build_pm_cpu_py -DImpactX_COMPUTE=OMP -DImpactX_APP=OFF -DImpactX_FFT=ON -DImpactX_PYTHON=ON -DImpactX_SYNMADX=ON
          cmake --build build_pm_cpu_py -j 16 --target pip_install
 
 Now, you can :ref:`submit Perlmutter compute jobs <running-cpp-perlmutter>` for ImpactX :ref:`Python scripts <usage-python>` (:ref:`example scripts <usage-examples>`).

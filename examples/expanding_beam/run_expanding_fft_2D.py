@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -58,7 +58,7 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 doubling_distance = 10.612823669911099
 
 sim.lattice.extend(
-    [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=100), monitor]
+    [monitor, elements.Drift(name="d1", ds=doubling_distance, nslice=4), monitor]
 )
 
 # run simulation

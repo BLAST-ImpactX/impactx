@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,9 +11,11 @@
 #define IMPACTX_ELEMENTS_PROGRAMMABLE_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "particles/CovarianceMatrix.H"
+#include "mixin/hostonly.H"
+#include "mixin/includescollectiveeffects.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
 #include "mixin/thick.H"
 
 #include <AMReX_Extension.H>
@@ -25,29 +27,40 @@
 #include <functional>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
-    struct Programmable
-    : public mixin::Named,
-      public mixin::LinearTransport<Programmable, false>
+    /** An element whose push is supplied from Python
+     *
+     * Host-only: the callbacks below hold Python objects, which no kernel may touch. This
+     * element is never turned into a pusher -- its push is the callback
+     * itself -- and the marker says so rather than leaving it to that fact.
+     */
+    struct ProgrammableGPU
+    : public mixin::LinearTransport<ProgrammableGPU, false>,
+      public mixin::HostOnly,
+      public mixin::IncludesCollectiveEffects
       // TODO: public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "Programmable";
         using PType = ImpactXParticleContainer::ParticleType;
 
+        static constexpr amrex::ParticleReal DEFAULT_ds = 0;
+        static constexpr int DEFAULT_nslice = mixin::Thick::DEFAULT_nslice;
+
         /** This element can be programmed
          *
          * @param ds Segment length in m
+         * @param includes_collective_effects the push hooks already model collective effects,
+         *                                    @see mixin::IncludesCollectiveEffects
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        Programmable (
-            amrex::ParticleReal ds=0.0,
-            int nslice=1,
-            std::optional<std::string> name = std::nullopt
+        ProgrammableGPU (
+            amrex::ParticleReal ds = DEFAULT_ds,
+            bool includes_collective_effects = DEFAULT_includes_collective_effects,
+            int nslice = DEFAULT_nslice
         )
-          : Named(std::move(name)), m_ds(ds), m_nslice(nslice)
+          : mixin::IncludesCollectiveEffects(includes_collective_effects),
+            m_ds(ds), m_nslice(nslice)
         {}
 
         /** Reverse the element (not supported for Programmable) */
@@ -126,8 +139,8 @@ namespace impactx::elements
         void
         finalize ();
 
-        amrex::ParticleReal m_ds = 0.0; //! segment length in m
-        int m_nslice = 1; //! number of slices used for the application of space charge
+        amrex::ParticleReal m_ds = 0.0;  //! segment length in m
+        int m_nslice = DEFAULT_nslice;  //! number of slices used for the application of space charge
 
         /** Allow threading via OpenMP for the particle iterator loop
          *
@@ -138,11 +151,14 @@ namespace impactx::elements
          */
         bool m_threadsafe = false;
 
-        std::function<void(ImpactXParticleContainer *, int, int)> m_push; //! hook for push of whole container (pc, step, period)
-        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles; //! hook for beam particles (pti, ref)
-        std::function<void(RefPart &)> m_ref_particle; //! hook for reference particle
-        std::function<void()> m_finalize; //! hook for finalize cleanup
+        std::function<void(ImpactXParticleContainer *, int, int)> m_push;  //! hook for push of whole container (pc, step, period)
+        std::function<void(ImpactXParticleContainer::iterator *, RefPart &)> m_beam_particles;  //! hook for beam particles (pti, ref)
+        std::function<void(RefPart &)> m_ref_particle;  //! hook for reference particle
+        std::function<void()> m_finalize;  //! hook for finalize cleanup
     };
+
+    /** Programmable: GPU state plus common host-only metadata */
+    using Programmable = Element<ProgrammableGPU>;
 
 } // namespace impactx
 

@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,13 +11,14 @@
 #define IMPACTX_MULTIPOLE_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
+#include "mixin/pipeaperture.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_GpuComplex.H>
@@ -26,16 +27,16 @@
 
 #include <cmath>
 #include <stdexcept>
-
+#include <string>
 
 namespace impactx::elements
 {
-    struct Multipole
-    : public mixin::Named,
-      public mixin::BeamOptic<Multipole>,
-      public mixin::LinearTransport<Multipole>,
+    struct MultipoleGPU
+    : public mixin::BeamOptic<MultipoleGPU>,
+      public mixin::LinearTransport<MultipoleGPU>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::PipeAperture,
       public mixin::SpinTransport,
       public mixin::NoFinalize
 #ifndef _WIN32
@@ -46,13 +47,26 @@ namespace impactx::elements
         static constexpr auto type = "Multipole";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        /** compute factorial of multipole index
+        //! highest multipole index: the factorial of m_multipole - 1 is stored in an int
+        static constexpr int MAX_order = 13;
+
+        /** Set the multipole index and its factorial
          *
-         * Needs to be called whenever m_multipole is changed.
+         * The index is validated before it is stored, so a rejected update leaves the element
+         * as it was.
+         *
+         * @param multipole index m (m=1 dipole, m=2 quadrupole, m=3 sextupole etc.)
          */
         void
-        compute_factorial ()
+        set_multipole (int multipole)
         {
+            if (multipole < 1 || multipole > MAX_order) {
+                throw std::invalid_argument(
+                    "Multipole: multipole must be between 1 and " + std::to_string(MAX_order) +
+                    ", got " + std::to_string(multipole) + "!");
+            }
+            m_multipole = multipole;
+
             int const m = m_multipole - 1;
             m_mfactorial = 1;
             for( int n = 1; n < m + 1; n = n + 1 ) {
@@ -68,22 +82,24 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param name a user defined and not necessarily unique name of the element
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
          */
-        Multipole (
+        MultipoleGPU (
             int multipole,
             amrex::ParticleReal K_normal,
             amrex::ParticleReal K_skew,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y
         )
-        : Named(std::move(name)),
-          Alignment(dx, dy, rotation_degree),
-          m_multipole(multipole), m_Kn(K_normal), m_Ks(K_skew)
+        : Alignment(dx, dy, rotation_degree),
+          PipeAperture(aperture_x, aperture_y),
+          m_Kn(K_normal), m_Ks(K_skew)
         {
-            compute_factorial();
+            set_multipole(multipole);
         }
 
         /** Reverse the element (negate strengths) */
@@ -111,11 +127,8 @@ namespace impactx::elements
             m_inv_factorial = 1.0_prt / static_cast<amrex::ParticleReal>(m_mfactorial);
 
             // additional constants needed for spin push
-            m_gamma_ref = refpart.gamma();
-            m_gyro_anomaly = refpart.gyromagnetic_anomaly;
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
-
         }
 
         /** This is a multipole functor, so that a variable of this type can be used like a
@@ -125,30 +138,27 @@ namespace impactx::elements
          *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t
+         * @param t particle position in t (unused)
          * @param px particle momentum in x
          * @param py particle momentum in y
-         * @param pt particle momentum in t
+         * @param pt particle momentum in t (unused)
          * @param idcpu particle global index (unused)
          * @param refpart reference particle (unused)
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // a complex type with two T_Real
             using Complex = amrex::GpuComplex<T_Real>;
@@ -158,12 +168,12 @@ namespace impactx::elements
             //amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
             // initialize output values
-            T_Real xout = x;
-            T_Real yout = y;
-            T_Real tout = t;
+            // T_Real xout = x;
+            // T_Real yout = y;
+            // T_Real tout = t;
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real ptout = pt;
 
             // assign complex position and complex multipole strength
             Complex const zeta(x, y);
@@ -182,25 +192,24 @@ namespace impactx::elements
             pyout = py + dpy;
 
             // tout = t;
-            ptout = pt;
+            // ptout = pt;
 
             // assign updated values
-            x = xout;
-            y = yout;
-            t = tout;
+            // x = xout;
+            // y = yout;
+            // t = tout;
             px = pxout;
             py = pyout;
-            pt = ptout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */
         using Thin::operator();
 
-
         /** This operator pushes the particle spin.
+         *
+         * The push is s-symmetric: the map is second-order accurate in the
+         * kick strength and an exact inverse of the reversed element.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -212,27 +221,31 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
+            T_Real const & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
             using namespace std; // for cmath(float)
+
+            // reference particle relativistic factors
+            amrex::ParticleReal const gamma_ref = refpart.gamma();
+            amrex::ParticleReal const gyro_anomaly = refpart.gyromagnetic_anomaly;
 
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
@@ -248,8 +261,8 @@ namespace impactx::elements
             // compute multipole magnetic field normalized by q/mc:
             int const m = m_multipole - 1;
             Complex const kick = amrex::pow(zeta, m) * m_alpha;
-            T_Real const Bx = kick.m_imag * m_inv_factorial * m_beta * m_gamma_ref;
-            T_Real const By = kick.m_real * m_inv_factorial * m_beta * m_gamma_ref;
+            T_Real const Bx = kick.m_imag * m_inv_factorial * m_beta * gamma_ref;
+            T_Real const By = kick.m_real * m_inv_factorial * m_beta * gamma_ref;
             T_Real const Bz = 0_prt;
 
             // Electric field normalized by q/mc^2:
@@ -257,29 +270,38 @@ namespace impactx::elements
             T_Real const Ey = 0.0_prt;
             T_Real const Ez = 0.0_prt;
 
-            // Quantities required to evaluate the full Thomas-BMT precession vector.
-            T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
-            T_Real const iPnorm = 1_prt/Pnorm;
-            T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
-            T_Real const ux = px * iPnorm;
-            T_Real const uy = py * iPnorm;
-            T_Real const uz = Ps * iPnorm;
-
-            // Zero curvature in a quadrupole
-            amrex::ParticleReal const h = 0.0_prt;
-
-            // Evaluation of the full Thomas-BMT precession vector.
-            tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
-
-            // push the spin vector using the generator just determined
-            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+            // The Thomas-BMT generator is evaluated at the transverse momentum
+            // halfway through the kick, so that reversing the element (negating
+            // the strengths) produces the exact inverse rotation.
+            T_Real const px_in = px;
+            T_Real const py_in = py;
 
             // phase space push
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
-        }
+            // transverse momenta at the kick midpoint
+            T_Real const px_mid = 0.5_prt * (px_in + px);
+            T_Real const py_mid = 0.5_prt * (py_in + py);
 
+            // Quantities required to evaluate the full Thomas-BMT precession
+            // vector, at the midpoint transverse momentum.
+            T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
+            T_Real const iPnorm = 1_prt/Pnorm;
+            T_Real const Ps = sqrt(Pnorm*Pnorm - px_mid*px_mid - py_mid*py_mid);
+            T_Real const gamma = gamma_ref * (1_prt - pt*m_beta);
+            T_Real const ux = px_mid * iPnorm;
+            T_Real const uy = py_mid * iPnorm;
+            T_Real const uz = Ps * iPnorm;
+
+            // Zero curvature in a multipole
+            amrex::ParticleReal const h = 0.0_prt;
+
+            // Evaluation of the full Thomas-BMT precession vector.
+            tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax,lambday,lambdaz,sx,sy,sz);
+        }
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -337,7 +359,8 @@ namespace impactx::elements
                 R(4,3) = +m_Kn;
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         int m_multipole; //! multipole index
@@ -346,19 +369,20 @@ namespace impactx::elements
 
       private:
         // constants that are independent of the individually tracked particle
-        // see: compute_factorial() to refresh
+        // see: set_multipole() to refresh
         int m_mfactorial;  //! factorial of multipole index
         // see: compute_constants() to refresh
         amrex::GpuComplex<amrex::ParticleReal> m_alpha;
         amrex::ParticleReal m_inv_factorial;
-        amrex::ParticleReal m_gamma_ref;      //! relativistic gamma
-        amrex::ParticleReal m_gyro_anomaly;   //! particle gyromagnetic anomaly
         amrex::ParticleReal m_beta;           //! relativistic beta
         amrex::ParticleReal m_ibeta;          //! inverse of beta
     };
 
+    /** Multipole: GPU state plus common host-only metadata */
+    using Multipole = Element<MultipoleGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::Multipole)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::MultipoleGPU)
 
 #endif // IMPACTX_MULTIPOLE_H

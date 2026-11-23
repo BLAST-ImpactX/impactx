@@ -176,3 +176,60 @@ def test_element_reuse_across_simulations():
     run_minimal_simulation(sim2, [reusable_sol])
 
     sim2.finalize()
+
+
+@pytest.mark.manages_amrex
+@pytest.mark.parametrize(
+    "cleanup",
+    ["sim.finalize()", "del sim", "kept_view = sim.lattice\ndel sim"],
+    ids=["finalize", "destructor", "kept_view"],
+)
+def test_python_side_element_data_is_released_before_amrex_shuts_down(cleanup):
+    """An element's Python attributes may hold AMReX data, here a pinned ``MultiFab``.
+
+    Shutting down releases the lattice's Python objects while AMReX is still up, so the
+    buffer goes back to its arena and a subclass finalizer still sees AMReX initialized.
+    Releasing them afterwards segfaults, hence the subprocess.
+    """
+
+    import subprocess
+    import sys
+
+    program = """
+from impactx import ImpactX, elements
+import amrex.space3d as amr
+
+sim = ImpactX()
+sim.particle_shape = 2
+sim.diagnostics = False
+sim.init_grids()
+
+seen = []
+
+class Holder(elements.Programmable):
+    def __del__(self):
+        seen.append(amr.initialized())
+
+box = amr.Box([0, 0, 0], [3, 3, 3])
+ba = amr.BoxArray(box)
+dm = amr.DistributionMapping(ba)
+holder = Holder()
+holder.buffer = amr.MultiFab(ba, dm, 1, 0, amr.MFInfo().set_arena(amr.The_Pinned_Arena()))
+sim.lattice.append(holder)
+del holder, dm, ba, box
+
+CLEANUP
+
+assert seen == [True], seen
+print("survived")
+"""
+
+    finished = subprocess.run(
+        [sys.executable, "-c", program.replace("CLEANUP", cleanup)],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+    assert finished.returncode == 0, finished.stdout + finished.stderr[-2000:]
+    assert "survived" in finished.stdout

@@ -4,6 +4,10 @@
 
 ImpactX is a high-performance beam dynamics code for particle accelerators with collective effects, the next generation of the IMPACT-Z code. It is built on top of AMReX (adaptive mesh refinement framework) and shares the ABLASTR abstraction layer with WarpX. Particle tracking uses the reference trajectory path length `s` as the independent variable, with symplectic integrators and self-fields (space charge, CSR, wakefields). It runs on CPU/OpenMP, CUDA, HIP, and SYCL backends.
 
+## Domain Context
+
+Reference `docs/source/glossary.rst` as context for WarpX terminology, acronyms, and physics concepts.
+
 ## Development Environment
 
 If you cannot find the `cmake` or `ctest` command, activate the conda environment named `impactx-cpu-mpich-dev` before running shell commands that compile or test ImpactX.
@@ -84,6 +88,22 @@ add_impactx_test(<name>
 Tests must be quick to run on a 2 core CI CPU runner (ideally <30sec) and be written in a CPU/GPU portable way.
 Analysis functions validate the outputs are as expected (e.g., Twiss parameters, emittances, moments).
 
+## Breaking Changes
+
+A change that makes an existing user script behave differently, or stop working, is
+documented in the upgrade guide `docs/source/install/upgrade.rst`, under a section for the
+release it lands in (newest first).
+
+Write what a user has to do:
+
+- what changed, in terms of the API they call;
+- what to look for in their own scripts;
+- the replacement, as code.
+
+This is the one place where "it used to do X" belongs. Everywhere else -- docstrings, the
+rest of the manual -- documents current behavior only. There is no changelog in the docs;
+per-release notes live in the GitHub release.
+
 ## Auto-Generated Files
 
 - **`.pyi` stub files** under `src/python/impactx/`: Never modify. They are auto-generated on the `development` branch after a PR is merged (see `.github/workflows/stubs.yml`).
@@ -126,6 +146,7 @@ Commits should limit any formatting changes of unchanged code.
 - Space-charge and CSR solvers and many utilities come from `ABLASTR` (shared with WarpX, fetched into `build/_deps/fetchedablastr-src/`)
 - Python bindings are generated via `pybind11` and `pyAMReX`; after C++ changes, rebuild with the `pip_install` target
 - The independent variable of motion is the reference trajectory path length `s` (not time); all integrators are symplectic
+- `amrex::ParallelFor` promises the compiler that loop iterations are independent (it applies a CPU SIMD pragma). Kernels where different iterations can write the same memory location (e.g. deposition, histogram bins, shared counters, etc.) must use `amrex::For` instead, and whole-loop sums/maxima the `amrex::Reduce` functions. `amrex::Gpu::Atomic` and `amrex::HostDevice::Atomic` operations are plain non-atomic updates on serial CPU builds and do not make a `ParallelFor` safe. See https://github.com/BLAST-WarpX/warpx/issues/7097
 
 ## C++ Style
 

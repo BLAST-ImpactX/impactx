@@ -147,6 +147,9 @@ class InputDefaultsHelper:
         for parameter in docstring:
             if parameter.startswith("self"):
                 continue
+            # the keyword-only marker is not a parameter
+            if parameter.strip() == "*":
+                continue
 
             name = parameter
             default = None

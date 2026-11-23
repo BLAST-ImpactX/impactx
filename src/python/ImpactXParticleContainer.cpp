@@ -1,4 +1,4 @@
-/* Copyright 2021-2023 The ImpactX Community
+/* Copyright 2022-2026 The ImpactX Community
  *
  * Authors: Axel Huebl
  * License: BSD-3-Clause-LBNL
@@ -79,7 +79,8 @@ void init_impactxparticlecontainer(py::module& m)
              py::arg("keep_mass")=false, py::arg("keep_charge")=false,
              "Empty the container and reset the reference particle"
         )
-        .def("add_n_particles",
+        // internal: there is a high-level Python wrapper that accepts more types
+        .def("_add_n_particles",
              &ImpactXParticleContainer::AddNParticles,
              py::arg("x"), py::arg("y"), py::arg("t"),
              py::arg("px"), py::arg("py"), py::arg("pt"),
@@ -87,7 +88,10 @@ void init_impactxparticlecontainer(py::module& m)
              py::arg("sx")=py::none(), py::arg("sy")=py::none(), py::arg("sz")=py::none(),
              "Add new particles to the container for fixed s.\n\n"
              "Either the total charge (bunch_charge) or the weight of each\n"
-             "particle (w) must be provided.\n\n"
+             "particle (w) must be provided.\n"
+             "With bunch_charge, each particle represents the same number of real\n"
+             "particles with the charge of the reference particle, which must be\n"
+             "set up before.\n\n"
              "Note: This can only be used *after* the initialization (grids) have\n"
              "      been created, meaning after the call to ImpactX.init_grids\n"
              "      has been made in the ImpactX class.\n\n"
@@ -98,8 +102,9 @@ void init_impactxparticlecontainer(py::module& m)
              ":param py: momentum in y\n"
              ":param pt: momentum in t\n"
              ":param qm: charge over mass in 1/eV\n"
-             ":param bunch_charge: total charge within a bunch in C"
-             ":param w: weight of each particle: how many real particles to represent"
+             ":param bunch_charge: magnitude of the total charge of the particles added in this "
+             "call in C\n"
+             ":param w: weight of each particle: how many real particles to represent\n"
              ":param sx: spin component in x\n"
              ":param sy: spin component in y\n"
              ":param sz: spin component in z\n"

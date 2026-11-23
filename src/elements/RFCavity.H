@@ -11,33 +11,34 @@
 #define IMPACTX_RFCAVITY_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
-#include "mixin/dynamicdata.H"
+#include "helper/ArrayValidation.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
-#include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
+#include "mixin/shortrangewake.H"
 #include "mixin/thick.H"
 #include "mixin/spintransport.H"
-#include "mixin/TrackedVector.H"
 
 #include <ablastr/constant.H>
 
 #include <AMReX.H>
+#include <AMReX_Algorithm.H>
 #include <AMReX_Extension.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
 #include <AMReX_SmallMatrix.H>
+#include <AMReX_TrackedVector.H>
 
 #include <cmath>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
-
 
 namespace impactx::elements
 {
@@ -94,17 +95,20 @@ namespace impactx::elements
      */
     struct CavityFourierCoefficients
     {
-        mixin::TrackedVector<amrex::ParticleReal> cos;
-        mixin::TrackedVector<amrex::ParticleReal> sin;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> cos;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> sin;
     };
 
-    struct RFCavity
-    : public mixin::Named,
-      public mixin::BeamOptic<RFCavity>,
-      public mixin::LinearTransport<RFCavity>,
+    /** The prepared pusher for an RF cavity.
+     *
+     * Holds the particle-facing configuration and a bounded, non-owning view of the
+     * Fourier coefficients of the on-axis field, resolved to the execution space of one
+     * element slice.
+     */
+    struct RFCavityPusher
+    : public mixin::ParticlePush<RFCavityPusher>,
       public mixin::Thick,
       public mixin::Alignment,
-      public mixin::NoFinalize,
       public mixin::PipeAperture,
       public mixin::SpinTransport,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -112,60 +116,40 @@ namespace impactx::elements
         static constexpr auto type = "RFCavity";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        using DynamicData = mixin::GPUDataRegistry<CavityFourierCoefficients>;
+        static constexpr int DEFAULT_mapsteps = 10;
 
-        /** An RF cavity
+        /** The particle-facing configuration of an RF cavity
          *
          * @param ds Segment length in m
          * @param escale Scaling factor for on-axis RF electric field in 1/m
          * @param freq RF frequency in Hz
          * @param phase RF driven phase in deg
-         * @param cos_coef TODO
-         * @param sin_coef TODO
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
-         * @param mapsteps number of integration steps per slice used for
-         *        map and reference particle push in applied fields
+         * @param mapsteps number of integration steps per slice
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        RFCavity (
+        RFCavityPusher (
             amrex::ParticleReal ds,
             amrex::ParticleReal escale,
             amrex::ParticleReal freq,
             amrex::ParticleReal phase,
-            std::vector<amrex::ParticleReal> cos_coef,
-            std::vector<amrex::ParticleReal> sin_coef,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int mapsteps = 10,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx,
+            amrex::ParticleReal dy,
+            amrex::ParticleReal rotation_degree,
+            amrex::ParticleReal aperture_x,
+            amrex::ParticleReal aperture_y,
+            int mapsteps,
+            int nslice
         )
-          : Named(std::move(name)),
-            Thick(ds, nslice),
+          : Thick(ds, nslice),
             Alignment(dx, dy, rotation_degree),
             PipeAperture(aperture_x, aperture_y),
-            m_escale(escale), m_freq(freq), m_phase(phase), m_mapsteps(mapsteps),
-            m_id(DynamicData::allocate_id())
+            m_escale(escale), m_freq(freq), m_phase(phase), m_mapsteps(mapsteps)
         {
-            m_ncoef = int(cos_coef.size());
-            if (m_ncoef != int(sin_coef.size()))
-                throw std::runtime_error("RFCavity: cos and sin coefficients must have same length!");
-
-            auto& coef = DynamicData::emplace(
-                m_id,
-                std::move(cos_coef),
-                std::move(sin_coef)
-            );
-            m_cos_h_data = coef.cos.host_const().data();
-            m_sin_h_data = coef.sin.host_const().data();
         }
 
         /** Reverse the element (negate ds) */
@@ -175,31 +159,15 @@ namespace impactx::elements
             Thick::reverse();
         }
 
-        /** Push all particles */
-        using BeamOptic::operator();
+        /** Push all particles on a tile */
+        using mixin::ParticlePush<RFCavityPusher>::operator();
 
-        /** Compute and cache the constants for the push.
-         *
-         * In particular, used to pre-compute and cache variables that are
-         * independent of the individually tracked particle.
-         *
-         * @param refpart reference particle
-         */
-        void compute_constants (RefPart const & refpart)
-        {
-            using namespace amrex::literals; // for _rt and _prt
-
-            Alignment::compute_constants(refpart);
-
-            auto const & coef = *DynamicData::get(m_id);
-            m_cos_d_data = coef.cos.device_const().data();
-            m_sin_d_data = coef.sin.device_const().data();
-        }
 
         /** This is an RF cavity functor, so that a variable of this type can be used like
          *  an RF cavity function.
          *
-         * The @see compute_constants method must be called before pushing particles through this operator.
+         * The pusher must be prepared through ``make_particle_pusher`` on the owning element
+         * before particles are pushed through this operator.
          *
          * @param x particle position in x
          * @param y particle position in y
@@ -219,17 +187,14 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            RefPart const & AMREX_RESTRICT refpart
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // get the linear map
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
 
             // symplectic linear map for the RF cavity is computed using the
             // Hamiltonian formalism as described in:
@@ -248,97 +213,7 @@ namespace impactx::elements
             py = out[4];
             t  = out[5];
             pt = out[6];
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
-
-        /** This pushes the reference particle.
-         *
-         * @param[in,out] refpart reference particle
-         */
-        AMREX_GPU_HOST AMREX_FORCE_INLINE
-        void operator() (RefPart & AMREX_RESTRICT refpart) const
-        {
-            using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
-
-            // assign input reference particle values
-            amrex::ParticleReal const x = refpart.x;
-            amrex::ParticleReal const px = refpart.px;
-            amrex::ParticleReal const y = refpart.y;
-            amrex::ParticleReal const py = refpart.py;
-            amrex::ParticleReal const z = refpart.z;
-            amrex::ParticleReal const pz = refpart.pz;
-            amrex::ParticleReal const pt = refpart.pt;
-            amrex::ParticleReal const s = refpart.s;
-            amrex::ParticleReal const sedge = refpart.sedge;
-
-            // initialize linear map (deviation) values
-            refpart.map = decltype(refpart.map)::Identity();
-
-            // initialize the spin-orbit coupling matrix
-            refpart.spin_coupling = {};
-
-            // length of the current slice
-            amrex::ParticleReal const slice_ds = m_ds / nslice();
-
-            // compute initial value of beta*gamma
-            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
-
-            // call integrator to advance (t,pt)
-            amrex::ParticleReal const zin = s - sedge;
-            amrex::ParticleReal const zout = zin + slice_ds;
-            int const nsteps = m_mapsteps;
-
-            integrators::symp2_integrate_split3(refpart,zin,zout,nsteps,*this);
-            amrex::ParticleReal const ptf = refpart.pt;
-
-            // advance position (x,y,z)
-            refpart.x = x + slice_ds*px/bgi;
-            refpart.y = y + slice_ds*py/bgi;
-            refpart.z = z + slice_ds*pz/bgi;
-
-            // compute final value of beta*gamma
-            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
-
-            // advance momentum (px,py,pz)
-            refpart.px = px*bgf/bgi;
-            refpart.py = py*bgf/bgi;
-            refpart.pz = pz*bgf/bgi;
-
-            // convert linear map from dynamic to static units
-            amrex::ParticleReal scale_in = 1.0_prt;
-            amrex::ParticleReal scale_fin = 1.0_prt;
-
-            for (int i=1; i<7; i++) {
-               for (int j=1; j<7; j++) {
-                   if( i % 2 == 0)
-                      scale_fin = bgf;
-                   else
-                      scale_fin = 1.0_prt;
-                   if( j % 2 == 0)
-                      scale_in = bgi;
-                   else
-                      scale_in = 1.0_prt;
-                   refpart.map(i, j) = refpart.map(i, j) * scale_in / scale_fin;
-               }
-            }
-
-            // convert spin-orbit coupling map from dynamic to static units
-            for (int i=1; i<4; i++) {
-                for (int j=2; j<7; j+=2) {
-                    refpart.spin_coupling(i, j) *= bgi;
-                }
-            }
-
-            // advance integrated path length
-            refpart.s = s + slice_ds;
-        }
-
 
         /** This operator pushes the particle spin.
          *
@@ -352,7 +227,7 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -366,7 +241,7 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
+            T_IdCpu const & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -381,7 +256,7 @@ namespace impactx::elements
             amrex::SmallVector<T_Real, 6, 1> const v{x, px, y, py, t, pt};
 
             // get the spin-orbit coupling matrix
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = m_spin_coupling;
 
             // use phase space variables to obtain the angle-axis generator of spin rotation
             auto const out = A * v;
@@ -398,47 +273,27 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
         }
 
-
-        /** This pushes the covariance matrix. */
-        using LinearTransport::operator();
-
-        /** This function returns the linear transport map.
-         *
-         * @returns 6x6 transport matrix
-         */
-        AMREX_GPU_HOST AMREX_FORCE_INLINE
-        Map6x6
-        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
-        {
-
-            Map6x6 R = Map6x6::Identity();
-            R = refpart.map;
-
-            return R;
-        }
-
         /** This evaluates the on-axis RF electric field at a fixed location
          *  z, together with certain required integrals and derivatives.
          *  The field returned is normalized to a peak value of 1.
          *
+         *  The field profile lies on 0 <= zeval <= |ds|. A location outside of it
+         *  returns the values at the nearest end of the profile.
+         *
          * @param zeval Longitudinal on-axis location in m
+         * @return the field, its derivative in z, and an antiderivative of it in z
          */
         std::tuple<amrex::ParticleReal, amrex::ParticleReal, amrex::ParticleReal>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         RF_Efield (amrex::ParticleReal const zeval) const
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
 
-            // pick the right data depending if we are on the host side
-            // (reference particle push) or device side (particles):
-#if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal const * cos_data = m_cos_d_data;
-            amrex::ParticleReal const * sin_data = m_sin_d_data;
-#else
-            amrex::ParticleReal const * cos_data = m_cos_h_data;
-            amrex::ParticleReal const * sin_data = m_sin_h_data;
-#endif
+            // the coefficients were resolved to this pusher's execution space when it
+            // was prepared, so there is a single copy of the field expansion below
+            amrex::ParticleReal const * cos_data = m_cos_coefficients;
+            amrex::ParticleReal const * sin_data = m_sin_coefficients;
+            int const ncoef = m_ncoef;
 
             // specify constants
             using ablastr::constant::math::pi;
@@ -446,35 +301,23 @@ namespace impactx::elements
             amrex::ParticleReal const zmid = zlen * 0.5_prt;
 
             // compute on-axis electric field (z is relative to cavity midpoint)
-            amrex::ParticleReal efield = 0.0;
-            amrex::ParticleReal efieldp = 0.0;
-            amrex::ParticleReal efieldpp = 0.0;
-            amrex::ParticleReal efieldint = 0.0;
-            amrex::ParticleReal const z = zeval - zmid;
+            //   The integration accumulates zeval step by step, and round-off can put an
+            //   evaluation at an end of the profile a few ulp outside of it: evaluate at
+            //   the end itself, so that the field, its slope and its integral are
+            //   continuous in zeval.
+            amrex::ParticleReal const z = amrex::Clamp(zeval - zmid, -zmid, zmid);
 
-            if (std::abs(z) <= zmid)
+            amrex::ParticleReal efield = 0.5_prt*cos_data[0];
+            amrex::ParticleReal efieldp = 0.0_prt;
+            amrex::ParticleReal efieldint = z*efield;
+            for (int j=1; j < ncoef; ++j)
             {
-               efield = 0.5_prt*cos_data[0];
-               efieldint = z*efield;
-               for (int j=1; j < m_ncoef; ++j)
-               {
-                 efield = efield + cos_data[j] * std::cos(j*2*pi*z/zlen) +
-                     sin_data[j] * std::sin(j*2*pi*z/zlen);
-                 efieldp = efieldp-j*2*pi*cos_data[j] * std::sin(j*2*pi*z/zlen)/zlen +
-                      j*2*pi*sin_data[j] * std::cos(j*2*pi*z/zlen)/zlen;
-                 efieldpp = efieldpp- powi<2>(j*2*pi*cos_data[j]/zlen)  * std::cos(j*2*pi*z/zlen) -
-                     powi<2>(j*2*pi*sin_data[j]/zlen)  * std::sin(j*2*pi*z/zlen);
-                 efieldint = efieldint + zlen*cos_data[j] * std::sin(j*2*pi*z/zlen)/(j*2*pi) -
-                      zlen*sin_data[j] * std::cos(j*2*pi*z/zlen)/(j*2*pi);
-               }
-            }
-            else  // endpoint of the RF, outsize zlen
-            {
-               efieldint = std::copysign(zmid, z)*0.5_prt*cos_data[0];
-               for (int j=1; j < m_ncoef; ++j)
-               {
-                 efieldint = efieldint - zlen*sin_data[j] * std::cos(j*pi)/(j*2*pi);
-               }
+                efield = efield + cos_data[j] * std::cos(j*2*pi*z/zlen) +
+                    sin_data[j] * std::sin(j*2*pi*z/zlen);
+                efieldp = efieldp-j*2*pi*cos_data[j] * std::sin(j*2*pi*z/zlen)/zlen +
+                     j*2*pi*sin_data[j] * std::cos(j*2*pi*z/zlen)/zlen;
+                efieldint = efieldint + zlen*cos_data[j] * std::sin(j*2*pi*z/zlen)/(j*2*pi) -
+                     zlen*sin_data[j] * std::cos(j*2*pi*z/zlen)/(j*2*pi);
             }
             return std::make_tuple(efield, efieldp, efieldint);
         }
@@ -509,13 +352,13 @@ namespace impactx::elements
             }
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
-            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = refpart.spin_coupling;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
+            amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> const A = m_spin_coupling;
             amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> dA = {};
             amrex::ParticleReal const betgam = refpart.beta_gamma();
 
-            refpart.map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
-            refpart.map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
+            m_map(5,5) = R(5,5) + tau*R(6,5)/powi<3>(betgam);
+            m_map(5,6) = R(5,6) + tau*R(6,6)/powi<3>(betgam);
 
             // BELOW: if spin is needed only:
             // Define parameters and intermediate constants
@@ -528,16 +371,22 @@ namespace impactx::elements
             amrex::ignore_unused(ezint);
 
             // Update spin-orbit coupling matrix here
-            amrex::ParticleReal G = refpart.gyromagnetic_anomaly;
-            amrex::ParticleReal cos_term = std::cos(k*t+phi);
-            amrex::ParticleReal sin_term = std::sin(k*t+phi);
-            dA(1,3) = E0 * tau / 2_prt * (k * ez * (G*pt - 1_prt) * sin_term / std::sqrt(1_prt + powi<2>(pt)) + cos_term * (G + 1_prt/(1_prt - pt)) * ezp);
-            dA(1,4) = E0 * tau / std::sqrt(1_prt + powi<2>(pt)) * cos_term * (G + 1_prt/(1_prt - pt));
+            //   Thomas-BMT precession, linear in (x, px, y, py), at the midpoint of the
+            //   step in z and t. px and py are canonical momenta: the kinetic momentum
+            //   is py - L*y, with L as in map2.
+            amrex::ParticleReal const G = refpart.gyromagnetic_anomaly;
+            amrex::ParticleReal const tmid = 0.5_prt * (t + refpart.t);
+            amrex::ParticleReal const cos_term = std::cos(k*tmid+phi);
+            amrex::ParticleReal const sin_term = std::sin(k*tmid+phi);
+            amrex::ParticleReal const L = E0*ezp * sin_term/(2_prt*k);
+            dA(1,4) = E0 * tau / betgam * ez * cos_term * (G + 1_prt/(1_prt - pt));
+            dA(1,3) = E0 * tau / 2_prt * (k * ez * (G*pt - 1_prt) * sin_term / betgam
+                      + cos_term * (G + 1_prt/(1_prt - pt)) * ezp) - L * dA(1,4);
             dA(2,1) = -dA(1,3);
             dA(2,2) = -dA(1,4);
 
             // update the spin-orbit coupling matrix here
-            refpart.spin_coupling = A + dA*R;
+            m_spin_coupling = A + dA*R;
         }
 
         /** This pushes the reference particle and the linear map matrix
@@ -574,19 +423,19 @@ namespace impactx::elements
             refpart.pt = pt;
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
             amrex::ParticleReal const s = tau/refpart.beta_gamma();
             amrex::ParticleReal const L = E0*ezp * std::sin(k*t+phi)/(2_prt*k);
 
-            refpart.map(1,1) = (1_prt-s*L)*R(1,1) + s*R(2,1);
-            refpart.map(1,2) = (1_prt-s*L)*R(1,2) + s*R(2,2);
-            refpart.map(2,1) = -s * powi<2>(L)*R(1,1) + (1_prt+s*L)*R(2,1);
-            refpart.map(2,2) = -s * powi<2>(L)*R(1,2) + (1_prt+s*L)*R(2,2);
+            m_map(1,1) = (1_prt-s*L)*R(1,1) + s*R(2,1);
+            m_map(1,2) = (1_prt-s*L)*R(1,2) + s*R(2,2);
+            m_map(2,1) = -s * powi<2>(L)*R(1,1) + (1_prt+s*L)*R(2,1);
+            m_map(2,2) = -s * powi<2>(L)*R(1,2) + (1_prt+s*L)*R(2,2);
 
-            refpart.map(3,3) = (1_prt-s*L)*R(3,3) + s*R(4,3);
-            refpart.map(3,4) = (1_prt-s*L)*R(3,4) + s*R(4,4);
-            refpart.map(4,3) = -s * powi<2>(L)*R(3,3) + (1_prt+s*L)*R(4,3);
-            refpart.map(4,4) = -s * powi<2>(L)*R(3,4) + (1_prt+s*L)*R(4,4);
+            m_map(3,3) = (1_prt-s*L)*R(3,3) + s*R(4,3);
+            m_map(3,4) = (1_prt-s*L)*R(3,4) + s*R(4,4);
+            m_map(4,3) = -s * powi<2>(L)*R(3,3) + (1_prt+s*L)*R(4,3);
+            m_map(4,4) = -s * powi<2>(L)*R(3,4) + (1_prt+s*L)*R(4,4);
 
         }
 
@@ -627,18 +476,18 @@ namespace impactx::elements
             refpart.pt = pt - E0*(ezintf-ezint) * std::cos(k*t+phi);
 
             // push the linear map equations
-            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = refpart.map;
+            amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> const R = m_map;
             amrex::ParticleReal const M = E0*(ezintf-ezint)*k * std::sin(k*t+phi);
             amrex::ParticleReal const L = E0*(ezpf-ezp) * std::sin(k*t+phi)/(2_prt*k)+M*0.5_prt;
 
-            refpart.map(2,1) = L*R(1,1) + R(2,1);
-            refpart.map(2,2) = L*R(1,2) + R(2,2);
+            m_map(2,1) = L*R(1,1) + R(2,1);
+            m_map(2,2) = L*R(1,2) + R(2,2);
 
-            refpart.map(4,3) = L*R(3,3) + R(4,3);
-            refpart.map(4,4) = L*R(3,4) + R(4,4);
+            m_map(4,3) = L*R(3,3) + R(4,3);
+            m_map(4,4) = L*R(3,4) + R(4,4);
 
-            refpart.map(6,5) = M*R(5,5) + R(6,5);
-            refpart.map(6,6) = M*R(5,6) + R(6,6);
+            m_map(6,5) = M*R(5,5) + R(6,5);
+            m_map(6,6) = M*R(5,6) + R(6,6);
 
         }
 
@@ -646,18 +495,264 @@ namespace impactx::elements
         amrex::ParticleReal m_freq; //! RF frequency in Hz
         amrex::ParticleReal m_phase; //! RF driven phase in deg
         int m_mapsteps; //! number of map integration steps per slice
-        int m_id; //! unique RF cavity id used for data lookup map
+        /** Coefficients resolved to this pusher's execution space; non-owning */
+        //! non-owning, device-copyable; valid for the launch it was prepared for
+        amrex::ParticleReal const * m_cos_coefficients = nullptr;
+        amrex::ParticleReal const * m_sin_coefficients = nullptr;
+        int m_ncoef = 0;
 
-        int m_ncoef = 0; //! number of Fourier coefficients
-        amrex::ParticleReal const * m_cos_h_data = nullptr; //! non-owning pointer to host cosine coefficients
-        amrex::ParticleReal const * m_sin_h_data = nullptr; //! non-owning pointer to host sine coefficients
-        amrex::ParticleReal const * m_cos_d_data = nullptr; //! non-owning pointer to device cosine coefficients
-        amrex::ParticleReal const * m_sin_d_data = nullptr; //! non-owning pointer to device sine coefficients
+
+        // Reference-trajectory linearization around the reference particle.
+        // Computed during the reference-particle push and consumed during the
+        // particle push.
+        // mutable: written by the const reference push before the element is copied
+        // into the particle-push functor.
+        mutable amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> m_map{}; //! linearized map
+        mutable amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> m_spin_coupling{}; //! linearized spin-orbit coupling matrix
     };
+
+    /** An RF cavity: the canonical element that owns its field coefficients.
+     *
+     * The reference-particle push, the transfer map, serialization and finalization run
+     * here on the host. Particle pushes run against @see RFCavityPusher.
+     */
+    struct RFCavityGPU
+    : public mixin::BeamOptic<RFCavityGPU>,
+      public mixin::LinearTransport<RFCavityGPU>,
+      public RFCavityPusher,
+      public mixin::ShortRangeWake
+    {
+        /** An RF cavity
+         *
+         * @param ds Segment length in m
+         * @param escale Scaling factor for on-axis RF electric field in 1/m
+         * @param freq RF frequency in Hz
+         * @param phase RF driven phase in deg
+         * @param cos_coef TODO
+         * @param sin_coef TODO
+         * @param z_data Optional longitudinal positions of the single-particle wake function in m,
+         *               ascending from 0 in uniform steps
+         * @param wake_x_data Optional horizontal single-particle wake function data: not yet
+         *                    implemented, has to be absent or empty
+         * @param wake_y_data Optional vertical single-particle wake function data: not yet
+         *                    implemented, has to be absent or empty
+         * @param wake_z_data Optional longitudinal single-particle wake function data in V/(C m),
+         *                    positive where it decelerates a trailing particle
+         * @param dx horizontal translation error in m
+         * @param dy vertical translation error in m
+         * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
+         * @param mapsteps number of integration steps per slice used for
+         *        map and reference particle push in applied fields
+         * @param nslice number of slices used for the application of space charge
+         */
+        RFCavityGPU (
+            amrex::ParticleReal ds,
+            amrex::ParticleReal escale,
+            amrex::ParticleReal freq,
+            amrex::ParticleReal phase,
+            std::vector<amrex::ParticleReal> cos_coef,
+            std::vector<amrex::ParticleReal> sin_coef,
+            std::optional<std::vector<amrex::ParticleReal>> z_data,
+            std::optional<std::vector<amrex::ParticleReal>> wake_x_data,
+            std::optional<std::vector<amrex::ParticleReal>> wake_y_data,
+            std::optional<std::vector<amrex::ParticleReal>> wake_z_data,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice
+        )
+          : RFCavityPusher(ds, escale, freq, phase, dx, dy, rotation_degree, aperture_x, aperture_y, mapsteps, nslice),
+            ShortRangeWake(std::move(z_data), std::move(wake_x_data),
+                           std::move(wake_y_data), std::move(wake_z_data)),
+            m_coefficients{std::move(cos_coef), std::move(sin_coef)}
+        {
+            require_array_pair(m_coefficients.cos, m_coefficients.sin,
+                               "RFCavity: cos and sin coefficient", 1);
+            if (m_mapsteps <= 0)
+                throw std::invalid_argument("RFCavity: mapsteps must be > 0!");
+        }
+
+        /** Push all particles */
+        using mixin::BeamOptic<RFCavityGPU>::operator();
+
+        /** This pushes the reference particle.
+         *
+         * @param[in,out] refpart reference particle
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        void operator() (RefPart & AMREX_RESTRICT refpart) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+            using amrex::Math::powi;
+
+            // evaluate the field against a host view obtained at the point of use
+            RFCavityPusher pusher = *this;
+            pusher.m_cos_coefficients = m_coefficients.cos.host_const().data();
+            pusher.m_sin_coefficients = m_coefficients.sin.host_const().data();
+            pusher.m_ncoef = static_cast<int>(m_coefficients.cos.host_const().size());
+
+            // assign input reference particle values
+            amrex::ParticleReal const x = refpart.x;
+            amrex::ParticleReal const px = refpart.px;
+            amrex::ParticleReal const y = refpart.y;
+            amrex::ParticleReal const py = refpart.py;
+            amrex::ParticleReal const z = refpart.z;
+            amrex::ParticleReal const pz = refpart.pz;
+            amrex::ParticleReal const pt = refpart.pt;
+            amrex::ParticleReal const s = refpart.s;
+            amrex::ParticleReal const sedge = refpart.sedge;
+
+            // initialize linear map (deviation) values
+            pusher.m_map = decltype(m_map)::Identity();
+
+            // initialize the spin-orbit coupling matrix
+            pusher.m_spin_coupling = {};
+
+            // length of the current slice
+            amrex::ParticleReal const slice_ds = m_ds / nslice();
+
+            // compute initial value of beta*gamma
+            amrex::ParticleReal const bgi = std::sqrt(powi<2>(pt) - 1.0_prt);
+
+            // call integrator to advance (t,pt)
+            amrex::ParticleReal const zin = s - sedge;
+            amrex::ParticleReal const zout = zin + slice_ds;
+            int const nsteps = m_mapsteps;
+
+            integrators::symp2_integrate_split3(refpart,zin,zout,nsteps,pusher);
+
+            // keep the linearization the integrator produced
+            m_map = pusher.m_map;
+            m_spin_coupling = pusher.m_spin_coupling;
+            amrex::ParticleReal const ptf = refpart.pt;
+
+            // advance position (x,y,z)
+            refpart.x = x + slice_ds*px/bgi;
+            refpart.y = y + slice_ds*py/bgi;
+            refpart.z = z + slice_ds*pz/bgi;
+
+            // compute final value of beta*gamma
+            amrex::ParticleReal const bgf = std::sqrt(powi<2>(ptf) - 1.0_prt);
+
+            // advance momentum (px,py,pz)
+            refpart.px = px*bgf/bgi;
+            refpart.py = py*bgf/bgi;
+            refpart.pz = pz*bgf/bgi;
+
+            // convert linear map from dynamic to static units
+            amrex::ParticleReal scale_in = 1.0_prt;
+            amrex::ParticleReal scale_fin = 1.0_prt;
+
+            for (int i=1; i<7; i++) {
+               for (int j=1; j<7; j++) {
+                   if( i % 2 == 0)
+                      scale_fin = bgf;
+                   else
+                      scale_fin = 1.0_prt;
+                   if( j % 2 == 0)
+                      scale_in = bgi;
+                   else
+                      scale_in = 1.0_prt;
+                   m_map(i, j) = m_map(i, j) * scale_in / scale_fin;
+               }
+            }
+
+            // convert spin-orbit coupling map from dynamic to static units
+            for (int i=1; i<4; i++) {
+                for (int j=2; j<7; j+=2) {
+                    m_spin_coupling(i, j) *= bgi;
+                }
+            }
+
+            // advance integrated path length
+            refpart.s = s + slice_ds;
+        }
+        /** This pushes the covariance matrix. */
+        using LinearTransport::operator();
+
+        /** This function returns the linear transport map.
+         *
+         * @returns 6x6 transport matrix
+         */
+        AMREX_GPU_HOST AMREX_FORCE_INLINE
+        Map6x6
+        transport_map ([[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
+        {
+
+            Map6x6 R = Map6x6::Identity();
+            R = m_map;
+
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
+        }
+        /** Prepare the pusher for one element slice
+         *
+         * @param refpart reference particle, already advanced for this slice
+         * @return a pusher holding an execution-space view of the coefficients
+         */
+        [[nodiscard]] RFCavityPusher make_particle_pusher (RefPart const & refpart) const
+        {
+            RFCavityPusher pusher = *this;
+            pusher.Alignment::compute_constants(refpart);
+            pusher.m_cos_coefficients = m_coefficients.cos.device_const().data();
+            pusher.m_sin_coefficients = m_coefficients.sin.device_const().data();
+            pusher.m_ncoef = static_cast<int>(m_coefficients.cos.host_const().size());
+            return pusher;
+        }
+
+        /** Cosine coefficients of the on-axis field expansion */
+        [[nodiscard]] std::vector<amrex::ParticleReal> cos_coefficients () const
+        {
+            return m_coefficients.cos.host_const();
+        }
+
+        /** Sine coefficients of the on-axis field expansion */
+        [[nodiscard]] std::vector<amrex::ParticleReal> sin_coefficients () const
+        {
+            return m_coefficients.sin.host_const();
+        }
+
+        /** Replace both arrays at once
+         *
+         * The two are validated before either is stored, so a rejected update leaves the
+         * element as it was. They are always the same length, which is why this takes
+         * both rather than offering to change one of them alone.
+         *
+         * @param first the new cosine values
+         * @param second the new sine values
+         */
+        void set_coefficients (
+            std::vector<amrex::ParticleReal> first,
+            std::vector<amrex::ParticleReal> second
+        )
+        {
+            require_array_pair(first, second, "RFCavity: cos and sin coefficient", 1);
+            m_coefficients.cos.host() = std::move(first);
+            m_coefficients.sin.host() = std::move(second);
+        }
+
+        /** Release device storage; host configuration survives for reuse */
+        void finalize ()
+        {
+            m_coefficients.cos.release_gpu();
+            m_coefficients.sin.release_gpu();
+            release_wake_gpu();
+        }
+
+        //! the coefficient arrays this element owns, mirrored to the device on demand
+        CavityFourierCoefficients m_coefficients;
+    };
+
+    /** RFCavity: GPU state plus common host-only metadata */
+    using RFCavity = Element<RFCavityGPU>;
 
 } // namespace impactx
 
-IMPACTX_GPUDATA_EXTERN(impactx::elements::RFCavity)
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::RFCavity)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::RFCavityGPU)
 
 #endif // IMPACTX_RFCAVITY_H

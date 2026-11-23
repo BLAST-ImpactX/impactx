@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,11 +11,12 @@
 #define IMPACTX_PLANE_XYROT_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
+#include "mixin/spintransport.H"
 #include "mixin/nofinalize.H"
 
 #include <ablastr/constant.H>
@@ -28,15 +29,14 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
-    struct PlaneXYRot
-    : public mixin::Named,
-      public mixin::BeamOptic<PlaneXYRot>,
-      public mixin::LinearTransport<PlaneXYRot>,
+    struct PlaneXYRotGPU
+    : public mixin::BeamOptic<PlaneXYRotGPU>,
+      public mixin::LinearTransport<PlaneXYRotGPU>,
       public mixin::Thin,
       public mixin::Alignment,
+      public mixin::SpinTransport,
       public mixin::NoFinalize
       // At least on Intel AVX512, there is a small overhead to vectorize this element, see
       // https://github.com/BLAST-ImpactX/impactx/pull/1002
@@ -53,17 +53,14 @@ namespace impactx::elements
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
-         * @param name a user defined and not necessarily unique name of the element
          */
-        PlaneXYRot (
+        PlaneXYRotGPU (
             amrex::ParticleReal phi,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree
         )
-        : Named(std::move(name)),
-          Alignment(dx, dy, rotation_degree),
+        : Alignment(dx, dy, rotation_degree),
           m_phi(phi * degree2rad)
         {
         }
@@ -98,10 +95,10 @@ namespace impactx::elements
          *
          * @param x particle position in x
          * @param y particle position in y
-         * @param t particle position in t
+         * @param t particle position in t (unused)
          * @param px particle momentum in x
          * @param py particle momentum in y
-         * @param pt particle momentum in t
+         * @param pt particle momentum in t (unused)
          * @param idcpu particle global index (unused)
          * @param refpart reference particle
          */
@@ -110,24 +107,21 @@ namespace impactx::elements
         void operator() (
             T_Real & AMREX_RESTRICT x,
             T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // initialize output values
             T_Real xout = x;
             T_Real yout = y;
-            T_Real tout = t;
+            // T_Real tout = t;
             T_Real pxout = px;
             T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real ptout = pt;
 
             // advance position and momentum
             xout = x * m_cos_phi - y * m_sin_phi;
@@ -142,17 +136,58 @@ namespace impactx::elements
             // assign updated values
             x = xout;
             y = yout;
-            t = tout;
+            // t = tout;
             px = pxout;
             py = pyout;
-            pt = ptout;
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */
         using Thin::operator();
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t (unused)
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t (unused)
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index (unused)
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // A simple rotation about the z-axis (in the x-y plane).
+            T_Real const lambdax = 0_prt;
+            T_Real const lambday = 0_prt;
+            T_Real const lambdaz = m_phi;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax, lambday, lambdaz, sx, sy, sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -180,7 +215,8 @@ namespace impactx::elements
             R(4,2) = sin_phi;
             R(4,4) = cos_phi;
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
         amrex::ParticleReal m_phi; //! angle of rotation (rad)
@@ -191,8 +227,11 @@ namespace impactx::elements
         amrex::ParticleReal m_sin_phi, m_cos_phi;
     };
 
+    /** PlaneXYRot: GPU state plus common host-only metadata */
+    using PlaneXYRot = Element<PlaneXYRotGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::PlaneXYRot)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::PlaneXYRotGPU)
 
 #endif // IMPACTX_PLANE_XYROT_H

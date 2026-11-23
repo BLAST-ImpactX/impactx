@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -16,6 +16,9 @@ sim.n_cell = [32, 32, 1]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [1]
+# one box per MPI process (this example runs on 2 MPI processes)
+sim.max_grid_size_x = [16]
+sim.max_grid_size_y = [32]
 
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "2D"
@@ -61,7 +64,7 @@ sim.add_particles(beam_current_A, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice)
-ns = 100  # number of slices per ds in the element
+ns = 4  # number of slices per ds in the element
 fodo = [
     monitor,
     elements.Drift(name="drift1", ds=7.44e-2, nslice=ns),

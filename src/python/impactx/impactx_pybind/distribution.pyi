@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import typing
 
+import impactx.impactx_pybind
+
 __all__: list[str] = [
     "Empty",
     "Gaussian",
@@ -22,6 +24,7 @@ __all__: list[str] = [
 class Gaussian:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -52,6 +55,7 @@ class Gaussian:
 class Kurth4D:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -80,6 +84,7 @@ class Kurth4D:
 class Kurth6D:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -110,6 +115,7 @@ class Kurth6D:
 class KVdist:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -144,6 +150,7 @@ class Empty:
 class Semigaussian:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -171,6 +178,7 @@ class Semigaussian:
 class Thermal:
     def __init__(
         self,
+        *,
         k: typing.SupportsFloat | typing.SupportsIndex,
         kT: typing.SupportsFloat | typing.SupportsIndex,
         kT_halo: typing.SupportsFloat | typing.SupportsIndex,
@@ -183,10 +191,21 @@ class Thermal:
 
         R. D. Ryne, J. Qiang, and A. Adelmann, in Proc. EPAC2004, pp. 1942-1944 (2004)
         """
+    def radial_cdf(
+        self,
+        bunch_charge: typing.SupportsFloat | typing.SupportsIndex,
+        ref: impactx.impactx_pybind.RefPart,
+    ) -> tuple[list[float], list[float], list[float]]:
+        """
+        Tabulated radial CDFs that the particle radius is sampled from, on uniform
+        bins in radius: (r, core, halo), with the radius r in m in the beam rest
+        frame. A population with zero weight is never sampled and its table is zero.
+        """
 
 class Triangle:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,
@@ -217,6 +236,7 @@ class Triangle:
 class Waterbag:
     def __init__(
         self,
+        *,
         lambdaX: typing.SupportsFloat | typing.SupportsIndex,
         lambdaY: typing.SupportsFloat | typing.SupportsIndex,
         lambdaT: typing.SupportsFloat | typing.SupportsIndex,

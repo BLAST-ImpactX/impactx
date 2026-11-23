@@ -1,4 +1,4 @@
-/* Copyright 2021-2023 The ImpactX Community
+/* Copyright 2022-2026 The ImpactX Community
  *
  * This header is used to centrally define classes that shall not violate the
  * C++ one-definition-rule (ODR) for various Python translation units.
@@ -27,7 +27,6 @@
 namespace py = pybind11;
 using namespace impactx;
 
-PYBIND11_MAKE_OPAQUE(std::list<elements::KnownElements>)
 PYBIND11_MAKE_OPAQUE(std::unordered_map<std::string, std::function<void(ImpactX *)> >)
 
 #endif // IMPACTX_PYIMPACTX_H

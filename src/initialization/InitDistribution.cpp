@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -231,6 +231,10 @@ namespace impactx
                 amrex::ParticleReal muxpx = distribution.m_muxpx;
                 amrex::ParticleReal muypy = distribution.m_muypy;
                 amrex::ParticleReal mutpt = distribution.m_mutpt;
+                amrex::ParticleReal dispx = distribution.m_dispx;
+                amrex::ParticleReal disppx = distribution.m_disppx;
+                amrex::ParticleReal dispy = distribution.m_dispy;
+                amrex::ParticleReal disppy = distribution.m_disppy;
 
                 // some things we cannot represent in envelope mode
                 if (distribution.m_meanx  != 0.0_prt ||
@@ -238,13 +242,9 @@ namespace impactx
                     distribution.m_meant  != 0.0_prt ||
                     distribution.m_meanpx != 0.0_prt ||
                     distribution.m_meanpy != 0.0_prt ||
-                    distribution.m_meanpt != 0.0_prt ||
-                    distribution.m_dispx  != 0.0_prt ||
-                    distribution.m_disppx != 0.0_prt ||
-                    distribution.m_dispy  != 0.0_prt ||
-                    distribution.m_disppy != 0.0_prt
+                    distribution.m_meanpt != 0.0_prt
                 ) {
-                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means or dispersion! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
+                    throw std::runtime_error("Cannot (yet) create envelope for distribution with non-zero means! Please see: https://github.com/BLAST-ImpactX/impactx/issues/1114");
                 }
 
                 // use distribution inputs to populate a 6x6 covariance matrix
@@ -265,6 +265,20 @@ namespace impactx
                 cv(5,6) = -lambdaT*lambdaPt*mutpt / denom_t;
                 cv(6,5) = cv(5,6);
                 cv(6,6) = lambdaPt*lambdaPt / denom_t;
+
+                // normalizing matrix to handle nonzero dispersion
+                CovarianceMatrix dmat{};
+                dmat(1,1) = 1_prt;
+                dmat(1,6) = -dispx;
+                dmat(2,2) = 1_prt;
+                dmat(2,6) = -disppx;
+                dmat(3,3) = 1_prt;
+                dmat(3,6) = -dispy;
+                dmat(4,4) = 1_prt;
+                dmat(4,6) = -disppy;
+                dmat(5,5) = 1_prt;
+                dmat(6,6) = 1_prt;
+                cv = dmat * cv * dmat.transpose();
             }
         }, distr);
 
@@ -546,6 +560,14 @@ namespace impactx
         auto space_charge = get_space_charge_algo();
 
         if (track == "particles") {
+            // The beam input block is optional: if omitted, a source element in the
+            // lattice is expected to load the beam (and, by default, the reference
+            // particle) from an openPMD file.
+            if (!pp_dist.contains("distribution")) {
+                amrex::Print() << "No beam.distribution: expecting a source element in the lattice to load the beam." << std::endl;
+                return;
+            }
+
             // set charge and mass and energy of ref particle
             RefPart const ref = initialization::read_reference_particle(pp_dist);
             amr_data->track_particles.m_particle_container->SetRefParticle(ref);

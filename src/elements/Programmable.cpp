@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -17,7 +17,7 @@
 namespace impactx::elements
 {
     void
-    Programmable::operator() (
+    ProgrammableGPU::operator() (
         ImpactXParticleContainer & pc,
         int step,
         int period
@@ -34,7 +34,7 @@ namespace impactx::elements
     }
 
     void
-    Programmable::operator() (
+    ProgrammableGPU::operator() (
         ImpactXParticleContainer::iterator & pti,
         RefPart & ref_part,
         bool /* spin */
@@ -48,7 +48,7 @@ namespace impactx::elements
     }
 
     void
-    Programmable::operator() (RefPart & ref_part) const
+    ProgrammableGPU::operator() (RefPart & ref_part) const
     {
         if (m_ref_particle == nullptr)
             // TODO: only if verbose mode is set
@@ -58,7 +58,7 @@ namespace impactx::elements
     }
 
     void
-    Programmable::finalize ()
+    ProgrammableGPU::finalize ()
     {
         if (m_finalize != nullptr)
             m_finalize();

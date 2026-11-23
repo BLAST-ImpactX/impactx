@@ -1,4 +1,4 @@
-/* Copyright 2021-2023 The ImpactX Community
+/* Copyright 2022-2026 The ImpactX Community
  *
  * Authors: Ryan Sandberg, Axel Huebl
  * License: BSD-3-Clause-LBNL
@@ -17,6 +17,6 @@ void init_transformation(py::module& m)
         &transformation::CoordinateTransformation,
         py::arg("pc"),
         py::arg("direction"),
-        "Transform coordinates from fixed s to fixed to or vice versa."
+        "Transform coordinates from fixed s to fixed t or vice versa, using the reference energy pc.ref.pt at the time of the call."
     );
 }

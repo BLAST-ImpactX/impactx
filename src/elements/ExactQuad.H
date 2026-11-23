@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,12 +11,12 @@
 #define IMPACTX_EXACTQUAD_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
@@ -29,13 +29,11 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
-    struct ExactQuad
-    : public mixin::Named,
-      public mixin::BeamOptic<ExactQuad>,
-      public mixin::LinearTransport<ExactQuad>,
+    struct ExactQuadGPU
+    : public mixin::BeamOptic<ExactQuadGPU>,
+      public mixin::LinearTransport<ExactQuadGPU>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
@@ -45,6 +43,10 @@ namespace impactx::elements
     {
         static constexpr auto type = "ExactQuad";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr int DEFAULT_int_order = 2;
+        static constexpr int DEFAULT_mapsteps = 10;
 
         /** A Quadrupole magnet treated using the exact Hamiltonian, which
          *  includes all nonlinear kinematic effects.  Like the element Quad,
@@ -70,28 +72,30 @@ namespace impactx::elements
          * @param mapsteps number of integration steps per slice used for
          *        particle push in the applied fields
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        ExactQuad (
+        ExactQuadGPU (
             amrex::ParticleReal ds,
             amrex::ParticleReal k,
-            int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int int_order = 2,
-            int mapsteps = 5,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int int_order = DEFAULT_int_order,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice
         )
-        : Named(std::move(name)),
-          Thick(ds, nslice),
+        : Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
           m_k(k),m_unit(unit),m_int_order(int_order),m_mapsteps(mapsteps)
         {
+            if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
+                throw std::invalid_argument("ExactQuad: The order used for symplectic integration must be 2, 4 or 6.");
+
+            if (m_mapsteps <= 0)
+                throw std::invalid_argument("ExactQuad: mapsteps must be > 0!");
         }
 
         /** Reverse the element (negate ds) */
@@ -129,10 +133,6 @@ namespace impactx::elements
 
             // compute phase advance per unit length in s (in rad/m)
             m_omega = std::sqrt(std::abs(m_g));
-
-            // additional constants needed for spin push
-            m_gamma_ref = refpart.gamma();
-            m_gyro_anomaly = refpart.gyromagnetic_anomaly;
         }
 
         /** This is a quad functor, so that a variable of this type can be used like a quad function.
@@ -146,7 +146,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -157,14 +157,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
@@ -178,13 +175,13 @@ namespace impactx::elements
 
             // call integrator to advance through slice (int_order = 2 or 4, otherwise default 2)
             if (m_int_order == 2) {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else if (m_int_order == 4) {
-                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else if (m_int_order == 6) {
-                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             }
 
             // assign updated values
@@ -194,12 +191,6 @@ namespace impactx::elements
             py = particle(4);
             t = particle(5);
             pt = particle(6);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes a particle in an ExactQuad element through
@@ -210,12 +201,14 @@ namespace impactx::elements
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map1 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
@@ -290,12 +283,14 @@ namespace impactx::elements
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map2 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
@@ -334,17 +329,23 @@ namespace impactx::elements
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] particle_spin particle spin 3-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map3 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
                    amrex::SmallVector<T_Real, 3, 1> & particle_spin,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
+
+            // reference particle relativistic factors
+            amrex::ParticleReal const gamma_ref = refpart.gamma();
+            amrex::ParticleReal const gyro_anomaly = refpart.gyromagnetic_anomaly;
 
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
@@ -362,8 +363,8 @@ namespace impactx::elements
             T_Real sz = particle_spin(3);
 
             // Magnetic field normalized by q/mc:
-            T_Real const Bx = m_g * y * m_beta * m_gamma_ref;
-            T_Real const By = m_g * x * m_beta * m_gamma_ref;
+            T_Real const Bx = m_g * y * m_beta * gamma_ref;
+            T_Real const By = m_g * x * m_beta * gamma_ref;
             T_Real const Bz = 0_prt;
 
             // Electric field normalized by q/mc^2:
@@ -375,7 +376,7 @@ namespace impactx::elements
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
             T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
+            T_Real const gamma = gamma_ref * (1_prt - pt*m_beta);
             T_Real const ux = px * iPnorm;
             T_Real const uy = py * iPnorm;
             T_Real const uz = Ps * iPnorm;
@@ -384,7 +385,7 @@ namespace impactx::elements
             amrex::ParticleReal const h = 0.0_prt;
 
             // Evaluation of the full Thomas-BMT precession vector.
-            tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+            tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
 
             // Generator of the spin rotation for a single step
             lambdax *= tau;
@@ -403,7 +404,6 @@ namespace impactx::elements
 
             zeval += 0_prt;
         }
-
 
         /** This pushes the reference particle.
          *
@@ -460,13 +460,16 @@ namespace impactx::elements
             amrex::ParticleReal const pt_ref = refpart.pt;
             amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1.0_prt;
 
+            // normalize quad units to MAD-X convention if needed
+            amrex::ParticleReal const g = m_unit == 1 ? m_k / refpart.rigidity_Tm() : m_k;
+
             // compute phase advance per unit length in s (in rad/m)
-            amrex::ParticleReal const omega = std::sqrt(std::abs(m_k));
+            amrex::ParticleReal const omega = std::sqrt(std::abs(g));
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
-            if (m_k > 0.0_prt) {
+            if (g > 0.0_prt) {
                 R(1,1) = std::cos(omega*slice_ds);
                 R(1,2) = std::sin(omega*slice_ds)/omega;
                 R(2,1) = -omega*std::sin(omega*slice_ds);
@@ -476,7 +479,7 @@ namespace impactx::elements
                 R(4,3) = omega*std::sinh(omega*slice_ds);
                 R(4,4) = std::cosh(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
-            } else if (m_k < 0.0_prt) {
+            } else if (g < 0.0_prt) {
                 R(1,1) = std::cosh(omega*slice_ds);
                 R(1,2) = std::sinh(omega*slice_ds)/omega;
                 R(2,1) = omega*std::sinh(omega*slice_ds);
@@ -487,14 +490,14 @@ namespace impactx::elements
                 R(4,4) = std::cos(omega*slice_ds);
                 R(5,6) = slice_ds/betgam2;
             } else {
-                R(1,2) = m_slice_ds;
-                R(3,4) = m_slice_ds;
-                R(5,6) = m_slice_ds / betgam2;
+                R(1,2) = slice_ds;
+                R(3,4) = slice_ds;
+                R(5,6) = slice_ds / betgam2;
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
-
 
         /** This operator pushes the particle spin.
          *
@@ -507,8 +510,8 @@ namespace impactx::elements
          * @param[in,out] sx particle spin x-component
          * @param[in,out] sy particle spin y-component
          * @param[in,out] sz particle spin z-component
-         * @param[in,out] idcpu particle global index
-         * @param[in] refpart reference particle (unused)
+         * @param[in,out] idcpu particle global index (unused)
+         * @param[in] refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -522,14 +525,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT sx,
             T_Real & AMREX_RESTRICT sy,
             T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // numerical integration parameters
             amrex::ParticleReal const zin = 0_prt;
@@ -547,7 +547,7 @@ namespace impactx::elements
             };
 
             // call integrator to advance through slice
-            integrators::symp_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,m_int_order,*this);
+            integrators::symp_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,m_int_order,refpart,*this);
 
             // assign updated values
             x = particle(1);
@@ -559,12 +559,6 @@ namespace impactx::elements
             sx = particle_spin(1);
             sy = particle_spin(2);
             sz = particle_spin(3);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the covariance matrix. */
@@ -585,12 +579,13 @@ namespace impactx::elements
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_g;              //! quadrupole strength in 1/m^2
         amrex::ParticleReal m_omega;
-        amrex::ParticleReal m_gamma_ref;      //! gamma
-        amrex::ParticleReal m_gyro_anomaly;   //! particle gyromagnetic anomaly
     };
+
+    /** ExactQuad: GPU state plus common host-only metadata */
+    using ExactQuad = Element<ExactQuadGPU>;
 
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactQuad)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactQuadGPU)
 
 #endif // IMPACTX_EXACTQUAD_H

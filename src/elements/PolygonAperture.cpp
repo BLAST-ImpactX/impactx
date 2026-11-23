@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -12,20 +12,10 @@
 #include <stdexcept>
 #include <string>
 
-IMPACTX_GPUDATA_INSTANTIATE(impactx::elements::PolygonAperture)
-
 std::string
-impactx::elements::PolygonAperture::action_name (Action const & action)
+impactx::elements::PolygonAperturePusher::action_name (Action const & action)
 {
-    switch (action)
-    {
-        case PolygonAperture::Action::transmit :  // default
-            return "transmit";
-        case PolygonAperture::Action::absorb :
-            return "absorb";
-        default:
-            throw std::runtime_error("Unknown action");
-    }
+    return amrex::getEnumNameString(action);
 }
 
-IMPACTX_PUSH_INSTANTIATE(impactx::elements::PolygonAperture)
+IMPACTX_PUSH_INSTANTIATE(impactx::elements::PolygonApertureGPU)

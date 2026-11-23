@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -10,8 +10,11 @@
 #ifndef IMPACTX_INTEGRATORS_H_
 #define IMPACTX_INTEGRATORS_H_
 
-#include <AMReX_Extension.H>  // for AMREX_RESTRICT
-#include <AMReX_REAL.H>       // for ParticleReal
+#include "particles/ReferenceParticle.H"
+
+#include <AMReX_Extension.H>     // for AMREX_RESTRICT
+#include <AMReX_REAL.H>          // for ParticleReal
+#include <AMReX_SmallMatrix.H>   // for SmallVector
 
 #include <stdexcept>
 
@@ -172,6 +175,7 @@ namespace impactx::integrators
     * @param zin  Initial value of independent variable (z-location)
     * @param zout  Final value of independent variable (z-location)
     * @param nsteps  Number of integration steps
+    * @param refpart  Reference particle data
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
     template <typename T_Real, typename T_Element>
@@ -181,6 +185,7 @@ namespace impactx::integrators
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,
+        RefPart const & refpart,
         T_Element const & element
     )
     {
@@ -197,9 +202,9 @@ namespace impactx::integrators
         // loop over integration steps
         for(int j=0; j < nsteps; ++j)
         {
-            element.map1(tau1,particle,zeval);
-            element.map2(tau2,particle,zeval);
-            element.map1(tau1,particle,zeval);
+            element.map1(tau1,particle,zeval,refpart);
+            element.map2(tau2,particle,zeval,refpart);
+            element.map1(tau1,particle,zeval,refpart);
         }
     }
 
@@ -219,6 +224,7 @@ namespace impactx::integrators
     * @param zin  Initial value of independent variable (z-location)
     * @param zout  Final value of independent variable (z-location)
     * @param nsteps  Number of integration steps
+    * @param refpart  Reference particle data
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
     template <typename T_Real, typename T_Element>
@@ -228,6 +234,7 @@ namespace impactx::integrators
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,
+        RefPart const & refpart,
         T_Element const & element
     )
     {
@@ -247,13 +254,13 @@ namespace impactx::integrators
         // loop over integration steps
         for (int j=0; j < nsteps; ++j)
         {
-            element.map1(tau1,particle,zeval);
-            element.map2(tau2,particle,zeval);
-            element.map1(tau3,particle,zeval);
-            element.map2(tau4,particle,zeval);
-            element.map1(tau3,particle,zeval);
-            element.map2(tau2,particle,zeval);
-            element.map1(tau1,particle,zeval);
+            element.map1(tau1,particle,zeval,refpart);
+            element.map2(tau2,particle,zeval,refpart);
+            element.map1(tau3,particle,zeval,refpart);
+            element.map2(tau4,particle,zeval,refpart);
+            element.map1(tau3,particle,zeval,refpart);
+            element.map2(tau2,particle,zeval,refpart);
+            element.map1(tau1,particle,zeval,refpart);
         }
     }
 
@@ -278,6 +285,7 @@ namespace impactx::integrators
     * @param zin  Initial value of independent variable (z-location)
     * @param zout  Final value of independent variable (z-location)
     * @param nsteps  Number of integration steps
+    * @param refpart  Reference particle data
     * @param element  Element defining the two maps associated with H_1 and H_2
     */
     template <typename T_Real, typename T_Element>
@@ -287,6 +295,7 @@ namespace impactx::integrators
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
         int const nsteps,
+        RefPart const & refpart,
         T_Element const & element
     )
     {
@@ -314,21 +323,21 @@ namespace impactx::integrators
         // loop over integration steps
         for (int j=0; j < nsteps; ++j)
         {
-            element.map1(tau1,particle,zeval);
-            element.map2(tau2,particle,zeval);
-            element.map1(tau3,particle,zeval);
-            element.map2(tau4,particle,zeval);
-            element.map1(tau5,particle,zeval);
-            element.map2(tau6,particle,zeval);
-            element.map1(tau7,particle,zeval);
-            element.map2(tau8,particle,zeval);
-            element.map1(tau7,particle,zeval);
-            element.map2(tau6,particle,zeval);
-            element.map1(tau5,particle,zeval);
-            element.map2(tau4,particle,zeval);
-            element.map1(tau3,particle,zeval);
-            element.map2(tau2,particle,zeval);
-            element.map1(tau1,particle,zeval);
+            element.map1(tau1,particle,zeval,refpart);
+            element.map2(tau2,particle,zeval,refpart);
+            element.map1(tau3,particle,zeval,refpart);
+            element.map2(tau4,particle,zeval,refpart);
+            element.map1(tau5,particle,zeval,refpart);
+            element.map2(tau6,particle,zeval,refpart);
+            element.map1(tau7,particle,zeval,refpart);
+            element.map2(tau8,particle,zeval,refpart);
+            element.map1(tau7,particle,zeval,refpart);
+            element.map2(tau6,particle,zeval,refpart);
+            element.map1(tau5,particle,zeval,refpart);
+            element.map2(tau4,particle,zeval,refpart);
+            element.map1(tau3,particle,zeval,refpart);
+            element.map2(tau2,particle,zeval,refpart);
+            element.map1(tau1,particle,zeval,refpart);
         }
     }
 
@@ -345,6 +354,7 @@ namespace impactx::integrators
     * @param particle_spin  Particle spin data in a 3-vector
     * @param tau  Size of the step in s
     * @param zeval  Evaluation point in s
+    * @param refpart  Reference particle data
     * @param element  Element defining the maps associated with H_1, H_2, and spin.
     */
     template <typename T_Real, typename T_Element>
@@ -354,6 +364,7 @@ namespace impactx::integrators
         amrex::SmallVector<T_Real, 3, 1> & particle_spin,
         amrex::ParticleReal const tau,
         amrex::ParticleReal & zeval,
+        RefPart const & refpart,
         T_Element const & element
     )
     {
@@ -365,11 +376,11 @@ namespace impactx::integrators
         amrex::ParticleReal const tau3 = tau;
 
         // a single second-order step
-        element.map1(tau1,particle,zeval);
-        element.map2(tau2,particle,zeval);
-        element.map3(tau3,particle,particle_spin,zeval);
-        element.map2(tau2,particle,zeval);
-        element.map1(tau1,particle,zeval);
+        element.map1(tau1,particle,zeval,refpart);
+        element.map2(tau2,particle,zeval,refpart);
+        element.map3(tau3,particle,particle_spin,zeval,refpart);
+        element.map2(tau2,particle,zeval,refpart);
+        element.map1(tau1,particle,zeval,refpart);
     }
 
    /** A fourth-order symplectic integration step based on a Hamiltonian
@@ -386,6 +397,7 @@ namespace impactx::integrators
     * @param particle_spin  Particle spin data in a 3-vector
     * @param tau  Size of the step in s
     * @param zeval  Evaluation point in s
+    * @param refpart  Reference particle data
     * @param element  Element defining the maps associated with H_1, H_2, and spin.
     */
     template <typename T_Real, typename T_Element>
@@ -395,6 +407,7 @@ namespace impactx::integrators
         amrex::SmallVector<T_Real, 3, 1> & particle_spin,
         amrex::ParticleReal const tau,
         amrex::ParticleReal & zeval,
+        RefPart const & refpart,
         T_Element const & element
     )
     {
@@ -408,9 +421,9 @@ namespace impactx::integrators
         amrex::ParticleReal const tau2 = tau*z1;
 
         // a single fourth-order step
-        symp2_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
-        symp2_integrate_particle_spin_step(particle,particle_spin,tau2,zeval,element);
-        symp2_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
+        symp2_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,refpart,element);
+        symp2_integrate_particle_spin_step(particle,particle_spin,tau2,zeval,refpart,element);
+        symp2_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,refpart,element);
     }
 
 
@@ -428,6 +441,7 @@ namespace impactx::integrators
     * @param particle_spin  Particle spin data in a 3-vector
     * @param tau  Size of the step in s
     * @param zeval  Evaluation point in s
+    * @param refpart  Reference particle data
     * @param element  Element defining the maps associated with H_1, H_2, and spin.
     */
     template <typename T_Real, typename T_Element>
@@ -437,6 +451,7 @@ namespace impactx::integrators
         amrex::SmallVector<T_Real, 3, 1> & particle_spin,
         amrex::ParticleReal const tau,
         amrex::ParticleReal & zeval,
+        RefPart const & refpart,
         T_Element const & element
     )
     {
@@ -450,9 +465,9 @@ namespace impactx::integrators
         amrex::ParticleReal const tau2 = tau * z1;
 
         // a single sixth-order step
-        symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
-        symp4_integrate_particle_spin_step(particle,particle_spin,tau2,zeval,element);
-        symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,element);
+        symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,refpart,element);
+        symp4_integrate_particle_spin_step(particle,particle_spin,tau2,zeval,refpart,element);
+        symp4_integrate_particle_spin_step(particle,particle_spin,tau1,zeval,refpart,element);
     }
 
 
@@ -471,6 +486,7 @@ namespace impactx::integrators
     * @param zout  Final value of independent variable (z-location)
     * @param nsteps  Number of integration steps
     * @param int_order Order of numerical integration (2, 4, or 6)
+    * @param refpart  Reference particle data
     * @param element  Element defining the maps associated with H_1, H_2, and spin.
     */
     template <typename T_Real, typename T_Element>
@@ -482,6 +498,7 @@ namespace impactx::integrators
         amrex::ParticleReal const zout,
         int const nsteps,
         int int_order,
+        RefPart const & refpart,
         T_Element const & element
     )
     {
@@ -497,13 +514,13 @@ namespace impactx::integrators
         for(int j=0; j < nsteps; ++j)
         {
             if (int_order == 2) {
-                symp2_integrate_particle_spin_step(particle,particle_spin,dz,zeval,element);
+                symp2_integrate_particle_spin_step(particle,particle_spin,dz,zeval,refpart,element);
             } else if (int_order == 4) {
-                symp4_integrate_particle_spin_step(particle,particle_spin,dz,zeval,element);
+                symp4_integrate_particle_spin_step(particle,particle_spin,dz,zeval,refpart,element);
             } else if (int_order == 6) {
-                symp6_integrate_particle_spin_step(particle,particle_spin,dz,zeval,element);
+                symp6_integrate_particle_spin_step(particle,particle_spin,dz,zeval,refpart,element);
             } else {
-                symp2_integrate_particle_spin_step(particle,particle_spin,dz,zeval,element);
+                symp2_integrate_particle_spin_step(particle,particle_spin,dz,zeval,refpart,element);
             }
         }
     }

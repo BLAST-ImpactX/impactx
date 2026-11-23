@@ -1,23 +1,28 @@
-/* Copyright 2021-2023 The ImpactX Community
+/* Copyright 2022-2026 The ImpactX Community
  *
- * Authors: Axel Huebl
+ * Authors: Axel Huebl, Chad Mitchell
  * License: BSD-3-Clause-LBNL
  */
 #include "pyImpactX.H"
+#include "LatticeOwners.H"
 
 #include <ImpactX.H>
+#include <diagnostics/FilePrefix.H>
+#include <initialization/Algorithms.H>
 #include <initialization/InitDistribution.H>
+#include <particles/ChargeDeposition.H>
+#include <particles/CovarianceMatrix.H>
 #include <particles/transformation/CoordinateTransformation.H>
 #include <particles/ParticleBoundary.H>
 
 #include <AMReX.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_ParallelDescriptor.H>
-#include <AMReX_SIMD.H>
 
 #if defined(AMREX_DEBUG) || defined(DEBUG)
 #   include <cstdio>
 #endif
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -26,10 +31,6 @@
 
 namespace py = pybind11;
 using namespace impactx;
-
-namespace impactx {
-    struct Config {};
-}
 
 namespace detail
 {
@@ -120,9 +121,57 @@ void init_ImpactX (py::module& m)
                       pp_amr.addarr(bf_str.c_str(), blocking_factor_dir);
                       pp_amr.addarr(mgs_str.c_str(), blocking_factor_dir);
                   },
-                  "AMReX blocking factor for a direction, per MR level."
+                  "AMReX blocking factor for a direction, per MR level. "
+                  "Also sets max_grid_size_x/_y/_z in this direction to the "
+                  "same value; assign that property afterwards to overwrite. "
+                  "The all-direction max_grid_size does not overwrite it, "
+                  "since per-direction values always take precedence."
+            )
+            .def_property(mgs_str.c_str(),
+                  [mgs_str](ImpactX & /* ix */) {
+                      amrex::ParmParse pp_amr("amr");
+                      std::vector<int> max_grid_size_dir;
+                      pp_amr.queryarr(mgs_str.c_str(), max_grid_size_dir);
+
+                      return max_grid_size_dir;
+                  },
+                  [mgs_str](ImpactX &ix, std::vector<int> max_grid_size_dir) {
+                      if (ix.initialized())
+                          throw std::runtime_error("Read-only parameter after init_grids was called.");
+
+                      amrex::ParmParse pp_amr("amr");
+                      pp_amr.addarr(mgs_str.c_str(), max_grid_size_dir);
+                  },
+                  "AMReX maximum box size for a direction, per MR level. "
+                  "Boxes larger than this are chopped, aim for one box per "
+                  "parallel process. Takes precedence over the all-direction "
+                  "max_grid_size, no matter in which order they are assigned."
             );
     }
+
+    impactx
+        .def_property("max_grid_size",
+            [](ImpactX & /* ix */) {
+                amrex::ParmParse pp_amr("amr");
+                std::vector<int> max_grid_size;
+                pp_amr.queryarr("max_grid_size", max_grid_size);
+
+                return max_grid_size;
+            },
+            [](ImpactX &ix, std::vector<int> max_grid_size) {
+                if (ix.initialized())
+                    throw std::runtime_error("Read-only parameter after init_grids was called.");
+
+                amrex::ParmParse pp_amr("amr");
+                pp_amr.addarr("max_grid_size", max_grid_size);
+            },
+            "AMReX maximum box size along all directions, per MR level. "
+            "Boxes larger than this are chopped; aim for one box per "
+            "parallel process. Per-direction values (max_grid_size_x/_y/_z, "
+            "also set by blocking_factor_x/_y/_z) take precedence, no matter "
+            "in which order they are assigned; assign those to change a "
+            "direction that is already set."
+        );
 
     impactx
         // from amrex::AmrMesh
@@ -211,6 +260,17 @@ void init_ImpactX (py::module& m)
             },
             "Whether to calculate space charge effects."
         )
+        .def_property("strang_split",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "strang_split");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("strang_split", enable);
+            },
+            "Compose the collective effect kicks and the element transport in a "
+            "second-order, time-symmetric Strang split (default: enabled) or to first order."
+        )
         .def_property("csr",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<bool>("algo", "csr");
@@ -223,13 +283,42 @@ void init_ImpactX (py::module& m)
         )
         .def_property("csr_bins",
             [](ImpactX & /* ix */) {
-                return detail::get_or_throw<bool>("algo", "csr_bins");
+                return detail::get_or_throw<int>("algo", "csr_bins");
             },
             [](ImpactX & /* ix */, int csr_bins) {
+                if (csr_bins < 2) {
+                    throw std::runtime_error("csr_bins must be at least 2");
+                }
+
                 amrex::ParmParse pp_algo("algo");
                 pp_algo.add("csr_bins", csr_bins);
             },
-            "Number of longitudinal bins used for CSR calculations (default: 150)."
+            "Number of longitudinal bins used for CSR calculations, at least 2 (default: 150)."
+        )
+
+        .def_property("short_range_wakefields",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<bool>("algo", "short_range_wakefields");
+            },
+            [](ImpactX & /* ix */, bool const enable) {
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("short_range_wakefields", enable);
+            },
+            "Enable or disable short range structure wakefield calculations (default: disabled)."
+        )
+        .def_property("wake_bins",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<int>("algo", "wake_bins");
+            },
+            [](ImpactX & /* ix */, int wake_bins) {
+                if (wake_bins < 2) {
+                    throw std::runtime_error("wake_bins must be at least 2");
+                }
+
+                amrex::ParmParse pp_algo("algo");
+                pp_algo.add("wake_bins", wake_bins);
+            },
+            "Number of longitudinal bins used for short range wakefield calculations, at least 2 (default: 150)."
         )
         .def_property("isr",
             [](ImpactX & /* ix */) {
@@ -243,7 +332,7 @@ void init_ImpactX (py::module& m)
         )
         .def_property("isr_order",
             [](ImpactX & /* ix */) {
-                return detail::get_or_throw<bool>("algo", "isr_order");
+                return detail::get_or_throw<int>("algo", "isr_order");
             },
             [](ImpactX & /* ix */, int isr_order) {
                 amrex::ParmParse pp_algo("algo");
@@ -332,18 +421,18 @@ void init_ImpactX (py::module& m)
                 return detail::get_or_throw<int>("algo.space_charge", "gauss_charge_z_bins");
             },
             [](ImpactX & /* ix */, int const gauss_charge_z_bins) {
-                if (gauss_charge_z_bins < 1) {
-                    throw std::runtime_error("space_charge_gauss_charge_z_bins must be strictly positive");
+                if (gauss_charge_z_bins < 2) {
+                    throw std::runtime_error("space_charge_gauss_charge_z_bins must be at least 2");
                 }
 
                 amrex::ParmParse pp_algo("algo.space_charge");
                 pp_algo.add("gauss_charge_z_bins", gauss_charge_z_bins);
             },
-            "Number of longitudinal bins for computing the linear charge density (default: ``129``)."
+            "Number of longitudinal bins (grid points) for computing the linear charge density, at least 2 (default: ``129``)."
         )
         .def_property("space_charge_gauss_taylor_delta",
             [](ImpactX & /* ix */) {
-                return detail::get_or_throw<int>("algo.space_charge", "gauss_taylor_delta");
+                return detail::get_or_throw<amrex::Real>("algo.space_charge", "gauss_taylor_delta");
             },
             [](ImpactX & /* ix */, amrex::Real const gauss_taylor_delta) {
                 if (gauss_taylor_delta < 0) {
@@ -357,26 +446,42 @@ void init_ImpactX (py::module& m)
             },
             "Initial region for computing the integrals (default: ``0.01``)."
         )
+        .def_property("space_charge_gauss_long_scale",
+            [](ImpactX & /* ix */) {
+                return detail::get_or_throw<amrex::Real>("algo.space_charge", "gauss_long_scale");
+            },
+            [](ImpactX & /* ix */, amrex::Real const gauss_long_scale) {
+                if (gauss_long_scale < 0) {
+                    throw std::runtime_error("space_charge_gauss_long_scale must be strictly positive");
+                }
+                amrex::ParmParse pp_algo("algo.space_charge");
+                pp_algo.add("gauss_long_scale", gauss_long_scale);
+            },
+            "Longitudinal space charge scale for the Gauss2p5D space charge model. "
+            "Approximation affecting only the longitudinal momentum (``pt``) kick. "
+            "If not set, it defaults to ``1.103 * gamma * sigma_z``, estimated in-situ from the current "
+            "reduced beam characteristics, which is a typical value when comparing to a 3D model."
+        )
         .def_property("space_charge_num_longitudinal_bins",
             [](ImpactX & /* ix */) {
                 return detail::get_or_throw<int>("algo.space_charge", "num_longitudinal_bins");
             },
             [](ImpactX & /* ix */, int const num_longitudinal_bins) {
-                if (num_longitudinal_bins < 1) {
-                    throw std::runtime_error("space_charge_num_longitudinal_bins must be strictly positive");
+                if (num_longitudinal_bins < 2) {
+                    throw std::runtime_error("space_charge_num_longitudinal_bins must be at least 2");
                 }
                 amrex::ParmParse pp_algo("algo.space_charge");
                 pp_algo.add("num_longitudinal_bins", num_longitudinal_bins);
             },
-            "Number of longitudinal bins for 2.5D space charge calculation (default: ``100``)."
+            "Number of longitudinal bins (grid points) for 2.5D space charge calculation, at least 2 (default: ``100``)."
         )
         .def_property("space_charge_apply_longitudinal_kick",
              [](ImpactX & /* ix */) {
                  return detail::get_or_throw<bool>("algo.space_charge", "apply_longitudinal_kick");
              },
-             [](ImpactX & /* ix */, bool const apply_longitudinal_kick) {
+             [](ImpactX & /* ix */, bool const enable) {
                  amrex::ParmParse pp_algo("algo.space_charge");
-                 pp_algo.add("apply_longitudinal_kick", apply_longitudinal_kick);
+                 pp_algo.add("apply_longitudinal_kick", enable);
              },
              "Enable or disable longitudinal space charge kick in 2.5D space charge solver (default: enabled).\n"
          )
@@ -396,7 +501,7 @@ void init_ImpactX (py::module& m)
         )
         .def_property("mlmg_relative_tolerance",
               [](ImpactX & /* ix */) {
-                  return detail::get_or_throw<bool>("algo", "mlmg_relative_tolerance");
+                  return detail::get_or_throw<amrex::Real>("algo", "mlmg_relative_tolerance");
               },
               [](ImpactX & /* ix */, amrex::Real const mlmg_relative_tolerance) {
                   amrex::ParmParse pp_algo("algo");
@@ -408,7 +513,7 @@ void init_ImpactX (py::module& m)
         )
         .def_property("mlmg_absolute_tolerance",
               [](ImpactX & /* ix */) {
-                  return detail::get_or_throw<bool>("algo", "mlmg_absolute_tolerance");
+                  return detail::get_or_throw<amrex::Real>("algo", "mlmg_absolute_tolerance");
               },
               [](ImpactX & /* ix */, amrex::Real const mlmg_absolute_tolerance) {
                   amrex::ParmParse pp_algo("algo");
@@ -423,7 +528,7 @@ void init_ImpactX (py::module& m)
         )
         .def_property("mlmg_max_iters",
               [](ImpactX & /* ix */) {
-                  return detail::get_or_throw<bool>("algo", "mlmg_max_iters");
+                  return detail::get_or_throw<int>("algo", "mlmg_max_iters");
               },
               [](ImpactX & /* ix */, int const mlmg_max_iters) {
                   amrex::ParmParse pp_algo("algo");
@@ -435,7 +540,7 @@ void init_ImpactX (py::module& m)
         )
         .def_property("mlmg_verbosity",
               [](ImpactX & /* ix */) {
-                  return detail::get_or_throw<bool>("algo", "mlmg_verbosity");
+                  return detail::get_or_throw<int>("algo", "mlmg_verbosity");
               },
               [](ImpactX & /* ix */, int const mlmg_verbosity) {
                   amrex::ParmParse pp_algo("algo");
@@ -487,6 +592,16 @@ void init_ImpactX (py::module& m)
              "Enable or disable diagnostics every slice step in elements (default: disabled).\n\n"
              "By default, diagnostics is performed at the beginning and end of the simulation.\n"
              "Enabling this flag will write diagnostics every step and slice step."
+        )
+        .def_property("diag_file_prefix",
+             [](ImpactX & /* ix */) {
+                 return diagnostics::FilePrefix();
+             },
+             [](ImpactX & /* ix */, std::string const & file_prefix) {
+                 amrex::ParmParse pp_diag("diag");
+                 pp_diag.add("file_prefix", file_prefix);
+             },
+             "Root directory for diagnostic output (default: ``diags``)."
         )
         .def_property("diag_file_min_digits",
              [](ImpactX & /* ix */) {
@@ -638,6 +753,20 @@ void init_ImpactX (py::module& m)
                     ix.amr_data->track_particles.m_rho,
                     ix.amr_data->refRatio());
 
+                // for the 2D models, also produce the x-y projected (charge-
+                // conserving) density, so it is available via sim.rho without a
+                // Poisson solve
+                auto const space_charge = get_space_charge_algo();
+                if (space_charge == SpaceChargeAlgo::True_2D ||
+                    space_charge == SpaceChargeAlgo::True_2p5D)
+                {
+                    auto geom_3d = ix.amr_data->track_particles
+                        .m_particle_container->GetParGDB()->Geom();
+                    amrex::Box const domain_3d = geom_3d[0].Domain();
+                    ix.amr_data->track_particles.m_rho_2d = project_charge_to_2D(
+                        ix.amr_data->track_particles.m_rho, domain_3d);
+                }
+
                 // transform from x,y,z to x',y',t
                 transformation::CoordinateTransformation(
                     *(ix.amr_data)->track_particles.m_particle_container,
@@ -685,17 +814,21 @@ void init_ImpactX (py::module& m)
                     PyExc_DeprecationWarning,
                     2
                 );
+                py::gil_scoped_release const release;
                 ix.evolve();
              },
              "Run the main simulation loop."
         )
         .def("track_particles", &ImpactX::track_particles,
+             py::call_guard<py::gil_scoped_release>(),
              "Run the particle tracking simulation loop."
         )
         .def("track_envelope", &ImpactX::track_envelope,
+             py::call_guard<py::gil_scoped_release>(),
              "Run the envelope tracking simulation loop."
         )
         .def("track_reference", &ImpactX::track_reference,
+             py::call_guard<py::gil_scoped_release>(),
              "Run the reference orbit tracking simulation loop."
         )
 
@@ -742,12 +875,40 @@ void init_ImpactX (py::module& m)
             },
             "Access the beam particle container."
         )
+        .def_property_readonly("envelope",
+            [](ImpactX & ix) -> Envelope & {
+                if (!ix.amr_data->track_envelope.m_env.has_value()) {
+                    throw std::runtime_error(
+                        "sim.envelope is only available after init_envelope()."
+                    );
+                }
+                return ix.amr_data->track_envelope.m_env.value();
+            },
+            "Access the beam envelope (6x6 covariance matrix and beam intensity)\n"
+            "used for envelope tracking. Only available after init_envelope()."
+        )
         .def(
             "rho",
-            [](ImpactX & ix, int const lev) { return &ix.amr_data->track_particles.m_rho.at(lev); },
+            [](py::object self, int const lev) -> py::object {
+                ImpactX & ix = self.cast<ImpactX &>();
+                auto & tp = ix.amr_data->track_particles;
+                auto const space_charge = get_space_charge_algo();
+                // The 2D models solve the x-y projected charge density: return
+                // that (stored like the solved potential phi, populated by the
+                // last deposit / Poisson solve); the 3D charge otherwise.
+                auto & rho_per_level =
+                    (space_charge == SpaceChargeAlgo::True_2D ||
+                     space_charge == SpaceChargeAlgo::True_2p5D)
+                    ? tp.m_rho_2d : tp.m_rho;
+                return py::cast(
+                    &rho_per_level.at(lev),
+                    py::return_value_policy::reference_internal, self);
+            },
             py::arg("lev"),
-            py::return_value_policy::reference_internal,
-            "charge density per level"
+            "charge density per level.\n\n"
+            "For the 2D space-charge models (``2D`` / ``2.5D``) this returns the\n"
+            "x-y projected (2D) charge density that is actually solved; for the\n"
+            "3D models it returns the 3D charge density."
         )
         .def(
             "phi",
@@ -765,8 +926,80 @@ void init_ImpactX (py::module& m)
             py::return_value_policy::reference_internal,
             "space charge force (vector: x,y,z) per level"
         )
-        .def_readwrite("lattice",
-            &ImpactX::m_lattice,
+        // A cached view, not a fresh wrapper per access. The lattice keeps the Python
+        // object of each element alive in its instance dictionary, so handing out a
+        // temporary here would drop those the moment it was collected, and an element
+        // would come back as a plain base-class wrapper without its attributes.
+        .def_property("lattice",
+            [](py::object self) -> py::object {
+                if (!py::hasattr(self, "_lattice_view"))
+                {
+                    auto & ix = self.cast<ImpactX &>();
+
+                    // A share, not a pointer: the view is registered against the address
+                    // of the lattice, and holding a share keeps the lattice at that
+                    // address. A lattice owned by the simulation would hand its address
+                    // back when the simulation ended, and a view still held by the user
+                    // would then be handed to whichever simulation was allocated there
+                    // next.
+                    //
+                    // Deliberately not `reference_internal`: that is `keep_alive` under
+                    // the hood, and its lifetime edge lives in a pybind-internal list the
+                    // cyclic collector cannot see. Storing the view on the simulation
+                    // would then form a cycle that never collects, and the simulation --
+                    // with its mesh and its open diagnostics -- would leak.
+                    py::object view = py::cast(ix.m_lattice);
+
+                    // The link back to the simulation is weak on purpose. A strong one
+                    // would make simulation and view a cycle, and a simulation would then
+                    // be destroyed by the collector at an arbitrary later point -- after
+                    // AMReX has been finalized, which fails while freeing its MPI
+                    // communicator. Weak keeps destruction deterministic.
+                    view.attr("_parent_sim") = py::module_::import("weakref").attr("ref")(self);
+                    self.attr("_lattice_view") = view;
+
+                    // The destructor must release wrappers before AMReX too. A weak view
+                    // reference remains usable while the simulation wrapper is being
+                    // destroyed, without creating an invisible ownership cycle.
+                    //
+                    // This is called from C++ (finalize, destructor) and holds a Python
+                    // object: hand it over through pybind11's std::function caster, whose
+                    // wrapper takes the GIL when the callback is called, copied and
+                    // destroyed, instead of relying on every caller to hold it.
+                    ix.m_release_lattice_owners = py::cast<std::function<void()>>(
+                        py::cpp_function([weak_view = py::weakref(view)]() {
+                            py::object const live_view = weak_view();
+                            if (!live_view.is_none() && py::hasattr(live_view, "_element_owners"))
+                            {
+                                live_view.attr("_element_owners") = py::list();
+                            }
+                        })
+                    );
+                }
+                return self.attr("_lattice_view");
+            },
+            [](py::object self, py::iterable const & elements) {
+                // Materialize the new contents before touching the lattice: assigning a bad
+                // entry must leave the previous lattice in place, and `sim.lattice =
+                // sim.lattice` must not empty the very sequence it is reading.
+                py::list const wanted(elements);
+                for (auto const & item : wanted)
+                {
+                    python::handle_from_python(item);
+                }
+
+                py::object view = self.attr("lattice");
+
+                // Hold on to what is being displaced until the new contents are in place.
+                // `clear()` can drop the last reference to an element's Python wrapper and
+                // run its `__del__` there, and a finalizer that reads the lattice would
+                // see it empty -- a state the caller never asked for. Released at the end
+                // of this setter, once the replacement is committed.
+                py::list const displaced(view);
+
+                view.attr("clear")();
+                view.attr("extend")(wanted);
+            },
             "Access the accelerator element lattice."
         )
         .def_property("periods",
@@ -798,83 +1031,4 @@ void init_ImpactX (py::module& m)
             py::arg("lev")
         )
     ;
-
-    py::class_<Config>(m, "Config")
-//        .def_property_readonly_static(
-//            "impactx_version",
-//            [](py::object) { return Version(); },
-//            "ImpactX version")
-        .def_property_readonly_static(
-            "have_mpi",
-            [](py::object const &){
-#ifdef AMREX_USE_MPI
-                return true;
-#else
-                return false;
-#endif
-            })
-        .def_property_readonly_static(
-            "have_gpu",
-            [](py::object const &){
-#ifdef AMREX_USE_GPU
-                return true;
-#else
-                return false;
-#endif
-            })
-        .def_property_readonly_static(
-            "have_omp",
-            [](py::object const &){
-#ifdef AMREX_USE_OMP
-                return true;
-#else
-                return false;
-#endif
-        })
-        .def_property_readonly_static(
-            "have_simd",
-            [](py::object const &){
-#ifdef AMREX_USE_SIMD
-                return true;
-#else
-                return false;
-#endif
-        })
-        .def_property_readonly_static(
-            "simd_size",
-            [](py::object const &){
-                return amrex::simd::native_simd_size_particlereal;
-        })
-        .def_property_readonly_static(
-            "gpu_backend",
-            [](py::object const &){
-#ifdef AMREX_USE_CUDA
-                return "CUDA";
-#elif defined(AMREX_USE_HIP)
-                return "HIP";
-#elif defined(AMREX_USE_DPCPP)
-                return "SYCL";
-#else
-                return py::none();
-#endif
-        })
-        .def_property_readonly_static(
-            "precision",
-            [](py::object){
-#ifdef AMREX_USE_FLOAT
-                return "SINGLE";
-#else
-                return "DOUBLE";
-#endif
-        })
-        .def_property_readonly_static(
-            "precision_particles",
-            [](py::object const &){
-#ifdef AMREX_SINGLE_PRECISION_PARTICLES
-                return "SINGLE";
-#else
-                return "DOUBLE";
-#endif
-        })
-        ;
 }

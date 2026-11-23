@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,11 +11,12 @@
 #define IMPACTX_PROT_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
+#include "mixin/spintransport.H"
 #include "mixin/nofinalize.H"
 
 #include <ablastr/constant.H>
@@ -28,14 +29,13 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
-    struct PRot
-    : public mixin::Named,
-      public mixin::BeamOptic<PRot>,
-      public mixin::LinearTransport<PRot>,
+    struct PRotGPU
+    : public mixin::BeamOptic<PRotGPU>,
+      public mixin::LinearTransport<PRotGPU>,
       public mixin::Thin,
+      public mixin::SpinTransport,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -49,15 +49,12 @@ namespace impactx::elements
          *
          * @param phi_in Initial angle of reference trajectory w/r/t z (degrees)
          * @param phi_out Final angle of reference trajectory w/r/t/ z (degrees)
-         * @param name a user defined and not necessarily unique name of the element
          */
-        PRot (
+        PRotGPU (
             amrex::ParticleReal phi_in,
-            amrex::ParticleReal phi_out,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal phi_out
         )
-        : Named(std::move(name)),
-          m_phi_in(phi_in * mixin::Alignment::degree2rad),
+        : m_phi_in(phi_in * mixin::Alignment::degree2rad),
           m_phi_out(phi_out * mixin::Alignment::degree2rad)
         {
         }
@@ -113,9 +110,9 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT y,
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -128,8 +125,8 @@ namespace impactx::elements
             T_Real yout = y;
             T_Real tout = t;
             T_Real pxout = px;
-            T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real pyout = py;
+            // T_Real ptout = pt;
 
             T_Real const pz = sqrt(
                 1.0_prt -
@@ -145,22 +142,66 @@ namespace impactx::elements
             pxout = px * m_cos_theta + (pz - m_cos_phi_in) * m_sin_theta;
 
             yout = y + py * x * m_sin_theta / pzf;
-            pyout = py;
+            // pyout = py;
 
             tout = t - (pt - m_inv_beta) * x * m_sin_theta / pzf;
-            ptout = pt;
+            // ptout = pt;
 
             // assign updated values
             x = xout;
             y = yout;
             t = tout;
             px = pxout;
-            py = pyout;
-            pt = ptout;
+            // py = pyout;
+            // pt = ptout;
         }
 
         /** This pushes the reference particle. */
         using Thin::operator();
+
+        /** This operator pushes the particle spin.
+         *
+         * @param x particle position in x
+         * @param y particle position in y
+         * @param t particle position in t
+         * @param px particle momentum in x
+         * @param py particle momentum in y
+         * @param pt particle momentum in t
+         * @param sx particle spin x-component
+         * @param sy particle spin y-component
+         * @param sz particle spin z-component
+         * @param idcpu particle global index (unused)
+         * @param refpart reference particle (unused)
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // A simple rotation about the y-axis (in the x-z plane).
+            T_Real const lambdax = 0_prt;
+            T_Real const lambday = m_phi_out - m_phi_in;
+            T_Real const lambdaz = 0_prt;
+
+            // push the spin vector using the generator just determined
+            rotate_spin(lambdax, lambday, lambdaz, sx, sy, sz);
+
+            // phase space push
+            (*this)(x, y, t, px, py, pt, idcpu, refpart);
+        }
 
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
@@ -232,8 +273,11 @@ namespace impactx::elements
         amrex::ParticleReal m_inv_beta, m_sin_theta, m_cos_theta, m_sin_phi_in, m_cos_phi_in;
     };
 
+    /** PRot: GPU state plus common host-only metadata */
+    using PRot = Element<PRotGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::PRot)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::PRotGPU)
 
 #endif // IMPACTX_PROT_H

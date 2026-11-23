@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright 2021-2023 The ImpactX Community
+# Copyright 2022-2026 The ImpactX Community
 #
 # License: BSD-3-Clause-LBNL
 # Authors: Axel Huebl
@@ -14,6 +14,7 @@ sudo apt-get install -y \
     ccache              \
     cmake               \
     gnupg               \
+    libboost-dev        \
     libfftw3-dev        \
     libfftw3-mpi-dev    \
     libhdf5-openmpi-dev \

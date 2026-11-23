@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -8,11 +8,12 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
+#include "diagnostics/DiagnosticOutput.H"
 #include "initialization/Algorithms.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
-#include "diagnostics/DiagnosticOutput.H"
+#include "tracking/common.H"
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
@@ -31,6 +32,12 @@ namespace impactx
     {
         BL_PROFILE("ImpactX::track_reference");
 
+        if (m_lattice->empty())
+        {
+            throw std::runtime_error(
+                "Beamline lattice has zero elements. Not yet initialized?");
+        }
+
         // verbosity
         amrex::ParmParse pp_impactx("impactx");
         int verbose = 1;
@@ -40,10 +47,7 @@ namespace impactx
         //   before we start the tracking loop, we are in "step 0" (initial state)
         int & step = m_tracking_state.m_step;
         step = 0;
-
-        // period in the lattice (e.g., turns)
-        int & period = m_tracking_state.m_period;
-        period = 0;
+        m_tracking_state.m_direction = TrackingDirection::Forward;
 
         // check typos in inputs after step 1
         bool early_params_checked = false;
@@ -63,7 +67,7 @@ namespace impactx
             pp_diag.queryAddWithParser("file_min_digits", file_min_digits);
 
             // print initial reference particle to file
-            diagnostics::DiagnosticOutput(ref, "diags/ref_particle");
+            diagnostics::DiagnosticOutput(ref, "ref_particle");
 
         }
 
@@ -85,89 +89,77 @@ namespace impactx
             );
         }
 
-        // periods through the lattice
-        int num_periods = 1;
-        amrex::ParmParse("lattice").queryAddWithParser("periods", num_periods);
-
-        for (period=0; period < num_periods; ++period)
+        bool short_range_wakefields = false;
+        pp_algo.query("short_range_wakefields", short_range_wakefields);
+        if (short_range_wakefields)
         {
-            // optional, user-defined function call
-            m_tracking_state.m_element = &m_lattice.front();
-            call_hook("before_period");
+            throw std::runtime_error(
+                "Short-range wakefields cannot be modeled for single particle tracking. "
+                "Please set the short_range_wakefields option to false."
+            );
+        }
 
-            // loop over all beamline elements
-            for (auto &element_variant: m_lattice) {
-                // update element edge of the reference particle
-                ref.sedge = ref.s;
+        // the external-field transport map ``M`` of one element slice
+        auto element_push = [&ref] (
+            elements::ElementHandle & element_variant,
+            //! (unused) the reference particle has no per-step or per-period element output
+            [[maybe_unused]] int step_,
+            [[maybe_unused]] int period_
+        )
+        {
+            // push the reference particle with external maps
+            push(ref, element_variant);
+        };
 
-                // optional, user-defined function call
-                m_tracking_state.m_element = &element_variant;
-                call_hook("before_element");
+        // book-keeping and diagnostics, applied once at the end of each slice
+        auto slice_diagnostics = [
+            this, &ref, verbose, &pp_diag, diag_enable, &early_params_checked
+        ] (
+            int step_,
+            //! (unused) the reference particle output carries no period
+            [[maybe_unused]] int period_
+        )
+        {
+            // just prints an empty newline at the end of the slice_step
+            if (verbose > 0)
+            {
+                amrex::Print() << "\n";
+            }
 
-                // number of slices through the element
-                int nslice = 1;
-                amrex::ParticleReal slice_ds; // in meters
-                std::visit([&nslice, &slice_ds](auto &&element)
-                {
-                    nslice = element.nslice();
-                    slice_ds = element.ds() / nslice;
-                }, element_variant);
+            // slice-step diagnostics
+            bool slice_step_diagnostics = false;
+            pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
 
-                // sub-steps within the element
-                for (int slice_step = 0; slice_step < nslice; ++slice_step)
-                {
-                    BL_PROFILE("ImpactX::track_reference::slice_step");
-                    step++;
-                    if (verbose > 0) {
-                        amrex::Print() << "\n++++ Starting step=" << step
-                                       << " slice_step=" << slice_step;
-                    }
+            if (diag_enable && slice_step_diagnostics)
+            {
+                // print slice step reference particle to file
+                diagnostics::DiagnosticOutput(ref, "ref_particle", step_, true);
+            }
 
-                    // optional, user-defined function call
-                    call_hook("before_slice");
+            // inputs: unused parameters (e.g. typos) check after step 1 has finished
+            if (!early_params_checked) { early_params_checked = early_param_check(); }
+        };
 
-                    // push the reference particle with external maps
-                    push(ref, element_variant);
-
-                    // just prints an empty newline at the end of the slice_step
-                    if (verbose > 0)
-                    {
-                        amrex::Print() << "\n";
-                    }
-
-                    // slice-step diagnostics
-                    bool slice_step_diagnostics = false;
-                    pp_diag.queryAdd("slice_step_diagnostics", slice_step_diagnostics);
-
-
-                    if (diag_enable && slice_step_diagnostics)
-                    {
-                        // print slice step reference particle to file
-                        diagnostics::DiagnosticOutput(ref, "diags/ref_particle", step, true);
-                    }
-
-                    // inputs: unused parameters (e.g. typos) check after step 1 has finished
-                    if (!early_params_checked) { early_params_checked = early_param_check(); }
-
-                } // end in-element slice-step loop
-
-                // optional, user-defined function call
-                call_hook("after_element");
-
-            } // end beamline element loop
-
-            // optional, user-defined function call
-            call_hook("after_period");
-
-        } // end periods though the lattice loop
-
-        // avoid dangling references if users manipulate the lattice
-        m_tracking_state.set_no_element();
+        // traverse the lattice, applying the element transport per element slice
+        //   Reference-particle tracking rejects space charge and CSR above and models no
+        //   other collective effect, so it applies ``M`` alone and never calls the kick
+        //   (\see track_lattice).
+        track_lattice(
+            *m_lattice,
+            ref,
+            m_tracking_state,
+            false, // no collective effects
+            false, // nothing to Strang-split
+            [this](std::string const & name) { call_hook(name); },
+            [](elements::ElementHandle &, amrex::ParticleReal) {}, // never called
+            element_push,
+            slice_diagnostics
+        );
 
         if (diag_enable)
         {
             // print final reference particle to file
-            diagnostics::DiagnosticOutput(ref, "diags/ref_particle_final", step);
+            diagnostics::DiagnosticOutput(ref, "ref_particle_final", step);
         }
     }
 } // namespace impactx

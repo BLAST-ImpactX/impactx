@@ -43,7 +43,7 @@ Run
 
    .. tab-item:: Xopt
 
-      This example uses `Xopt <https://christophermayes.github.io/Xopt>`__ (methods: `Nelder-Mead <https://christophermayes.github.io/Xopt/examples/scipy/neldermead>`__ or `TuRBO <https://christophermayes.github.io/Xopt/examples/single_objective_bayes_opt/turbo_tutorial>`__) to find the quadrupole strengths by minimizing the objective.
+      This example uses `Xopt <https://christophermayes.github.io/Xopt>`__ 3.0+ (methods: `Nelder-Mead <https://christophermayes.github.io/Xopt/examples/scipy/neldermead>`__ or `TuRBO <https://christophermayes.github.io/Xopt/examples/single_objective_bayes_opt/turbo_tutorial>`__) to find the quadrupole strengths by minimizing the objective.
 
       Conventional optimization algorithms like ``Nelder-Mead`` work best if there is only a global minima in the objective.
       Machine-learning based, surrogate optimization works well for highly dimensional inputs and/or to find global minima in an objective that has potentially many local minima, where conventional optimizers can get stuck.

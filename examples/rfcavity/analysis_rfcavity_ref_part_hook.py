@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
 
 import glob
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -37,7 +38,17 @@ def read_time_series(file_pattern):
 
 
 # read reference particle data
+def data_is_double(file_pattern):
+    """Detect float precision (single vs double) from a text diagnostic's digits."""
+    text = "".join(Path(f).read_text() for f in glob.glob(file_pattern))
+    return any(
+        len(m.replace(".", "") if e else m.replace(".", "").strip("0")) >= 12
+        for m, e in re.findall(r"(\d*\.\d+)([eE][+-]?\d+)?", text)
+    )
+
+
 rbc = read_time_series("diags/ref_particle.*")
+is_double = data_is_double("diags/ref_particle.*")
 
 s = rbc["s"]
 gamma = rbc["gamma"]
@@ -52,7 +63,7 @@ print("")
 print("Initial Beam:")
 print(f"  s_ref={si:e} gamma_ref={gammai:e}")
 
-atol = 1.0e-4  # ignored
+atol = 1.0e-4
 print(f"  atol={atol}")
 
 assert np.allclose(
@@ -61,6 +72,7 @@ assert np.allclose(
         0.000000,
         451.09877160930125,
     ],
+    rtol=0.0,
     atol=atol,
 )
 
@@ -69,7 +81,7 @@ print("")
 print("Final Beam:")
 print(f"  s_ref={sf:e} gamma_ref={gammaf:e}")
 
-atol = 1.0e-4  # ignored
+atol = 1.0e-4 if is_double else 1.5e-2
 print(f"  atol={atol}")
 
 assert np.allclose(
@@ -78,5 +90,6 @@ assert np.allclose(
         5.9391682799999987,
         585.11989430128892,
     ],
+    rtol=0.0,
     atol=atol,
 )

@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -12,7 +12,6 @@
 #include "initialization/Algorithms.H"
 #include "particles/ChargeDeposition.H"
 
-#include <ablastr/constant.H>
 #include <ablastr/fields/PoissonSolver.H>
 
 #include <AMReX_BLProfiler.H>
@@ -29,6 +28,7 @@ namespace impactx::particles::spacecharge
     void PoissonSolve (
         ImpactXParticleContainer const & pc,
         std::unordered_map<int, amrex::MultiFab> & rho,
+        std::unordered_map<int, amrex::MultiFab> & rho_2d_out,
         std::unordered_map<int, amrex::MultiFab> & phi,
         amrex::Vector<amrex::IntVect> rel_ref_ratio
     )
@@ -75,7 +75,13 @@ namespace impactx::particles::spacecharge
         }
 
         // MLMG options
-        amrex::Real mlmg_relative_tolerance = 1.e-7_rt; // relative TODO: make smaller for SP
+        //   Single precision: achievable relative residual is limited by float32
+        //   round-off (machine epsilon ~1.2e-7).
+#ifdef AMREX_USE_FLOAT
+        amrex::Real mlmg_relative_tolerance = 1.e-4_rt; // relative (single precision)
+#else
+        amrex::Real mlmg_relative_tolerance = 1.e-7_rt; // relative (double precision)
+#endif
         amrex::Real mlmg_absolute_tolerance = 0.0;   // ignored
         pp_algo.queryAddWithParser("mlmg_relative_tolerance", mlmg_relative_tolerance);
         pp_algo.queryAddWithParser("mlmg_absolute_tolerance", mlmg_absolute_tolerance);
@@ -85,12 +91,12 @@ namespace impactx::particles::spacecharge
         pp_algo.queryAddWithParser("mlmg_max_iters", mlmg_max_iters);
         pp_algo.queryAddWithParser("mlmg_verbosity", mlmg_verbosity);
 
-        // flatten rho to 2D
-        std::unordered_map<int, std::pair<amrex::MultiFab, amrex::MultiFab>> rho_2d;  // pair: local & unique boxes
+        // flatten rho to 2D; store it in the output so it can be accessed after
+        // the solve (e.g. via sim.rho), like the solved potential phi
         if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {
             auto geom_3d = pc.GetParGDB()->Geom();
             amrex::Box domain_3d = geom_3d[0].Domain();  // whole simulation index space (level 0)
-            rho_2d = flatten_charge_to_2D(rho, domain_3d);
+            rho_2d_out = project_charge_to_2D(rho, domain_3d);
         }
 
         // create a vector to our fields, sorted by level
@@ -107,14 +113,14 @@ namespace impactx::particles::spacecharge
                     sorted_phi.emplace_back(&phi[lev]);
                 } else {
                     // 2D phi
-                    auto & r2d = rho_2d[lev].second;
+                    auto & r2d = rho_2d_out[lev];
                     auto nGrow = phi[lev].nGrowVect();
                     nGrow[2] = 0;
                     phi_2d[lev].define(r2d.boxArray(), r2d.DistributionMap(), r2d.nComp(), nGrow);
                     sorted_phi.emplace_back(&phi_2d[lev]);
                 }
 
-                sorted_rho.emplace_back(&rho_2d[lev].second);
+                sorted_rho.emplace_back(&rho_2d_out[lev]);
             }
             else if (space_charge == SpaceChargeAlgo::True_3D) {
                 sorted_rho.emplace_back(&rho[lev]);
@@ -149,12 +155,6 @@ namespace impactx::particles::spacecharge
             eb_farray_box_factory
             */
         );
-
-        // fix side effect on rho from previous call
-        for (int lev=0; lev<=finest_level; lev++) {
-            using namespace ablastr::constant::SI;
-            rho[lev].mult(-1._rt * epsilon_0);
-        }
 
         // We may need to copy phi from phi_2d
         if (space_charge == SpaceChargeAlgo::True_2D || space_charge == SpaceChargeAlgo::True_2p5D) {

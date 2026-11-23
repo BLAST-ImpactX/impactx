@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2024 The ImpactX Community
+# Copyright 2022-2026 The ImpactX Community
 #
 # Authors: Axel Huebl
 # License: BSD-3-Clause-LBNL
@@ -896,10 +896,10 @@ def test_replace_each_default_keep_name_not_ds():
     new_sel = sel.replace_each(template)
     assert type(lattice[1]) is elements.Quad
     assert lattice[1].name == "qf1"
-    assert lattice[1].ds == 0.01
+    assert lattice[1].ds == pytest.approx(0.01)
     assert lattice[1].k == 99.0
     assert lattice[2].name == "qd1"
-    assert lattice[2].ds == 0.01
+    assert lattice[2].ds == pytest.approx(0.01)
     assert len(new_sel) == 2
     assert new_sel[0].name == "qf1"
     with pytest.raises(RuntimeError, match="no longer valid"):
@@ -931,7 +931,7 @@ def test_replace_each_keep_name_and_ds_false():
     template = elements.Quad(name="tpl", ds=0.01, k=7.0)
     lattice.select(kind="Quad").replace_each(template, keep_name=False)
     assert lattice[0].name == "tpl"
-    assert lattice[0].ds == 0.01
+    assert lattice[0].ds == pytest.approx(0.01)
     assert lattice[0].k == 7.0
 
 
@@ -996,8 +996,8 @@ def test_replace_with_drifts_keep_alignment():
 
     # Default: keep_alignment=True
     lattice.select(kind="Quad").replace_with_drifts()
-    assert lattice[0].dx == 0.01
-    assert lattice[0].dy == 0.02
+    assert lattice[0].dx == pytest.approx(0.01)
+    assert lattice[0].dy == pytest.approx(0.02)
     assert lattice[0].rotation == 0.5
 
     # Reset and test keep_alignment=False
@@ -1029,8 +1029,8 @@ def test_replace_with_drifts_keep_aperture():
         [elements.Quad(name="q1", ds=0.5, k=1.0, aperture_x=0.05, aperture_y=0.03)]
     )
     lattice.select(kind="Quad").replace_with_drifts(keep_aperture=True)
-    assert lattice[0].aperture_x == 0.05
-    assert lattice[0].aperture_y == 0.03
+    assert lattice[0].aperture_x == pytest.approx(0.05)
+    assert lattice[0].aperture_y == pytest.approx(0.03)
 
 
 def test_chained_replace_each():
@@ -1134,3 +1134,38 @@ def test_replace_with_drifts_thin_element():
     assert lattice[0].ds == 0.0
     assert lattice[1].name == "d1"
     assert lattice[1].ds == 1.0
+
+
+def test_delete_with_thin_element_present():
+    """Cloning must not pass `ds` to thin elements that do not accept it.
+
+    `Marker.to_dict()` reports `ds=0.0` but `Marker.__init__` takes only a name,
+    so rebuilding the lattice used to raise TypeError whenever an unselected
+    thin element had to be cloned.
+    """
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Marker(name="m1"),
+            elements.Drift(name="d1", ds=1.0),
+            elements.ShortRF(name="rf1", V=1.0, freq=1.0e6, phase=0.0),
+        ]
+    )
+    lattice.select(kind="Drift").delete()
+    assert [type(e).__name__ for e in lattice] == ["Marker", "ShortRF"]
+    assert lattice[0].name == "m1"
+    assert lattice[1].name == "rf1"
+
+
+def test_replace_each_with_thin_element_present():
+    """Same cloning path, via replace_each."""
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.Marker(name="m1"),
+            elements.Quad(name="q1", ds=0.5, k=1.0),
+        ]
+    )
+    lattice.select(kind="Quad").replace_each(elements.Drift(ds=0.5))
+    assert [type(e).__name__ for e in lattice] == ["Marker", "Drift"]
+    assert lattice[0].name == "m1"

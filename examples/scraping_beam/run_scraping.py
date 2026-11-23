@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -16,6 +16,10 @@ sim.n_cell = [16, 16, 20]
 sim.blocking_factor_x = [16]
 sim.blocking_factor_y = [16]
 sim.blocking_factor_z = [4]
+# one box per level and process: this example runs on a single process
+sim.max_grid_size_x = [64]
+sim.max_grid_size_y = [64]
+sim.max_grid_size_z = [64]
 
 sim.space_charge = False
 sim.poisson_solver = "fft"

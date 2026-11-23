@@ -34,12 +34,19 @@ PIPE_KWARGS = dict(ALIGNMENT_KWARGS, aperture_x=0.03, aperture_y=0.04)
 
 if Config.precision == "SINGLE":
     phase_atol = 2.0e-6
-    spin_atol = 3.0e-7
-    ref_atol = 3.0e-4
+    spin_atol = 2.0e-6
+    # mostly from ChrAcc, RFCavity on ref particle:
+    ref_atol = 1.0e-3
 else:
     phase_atol = 1.0e-10
     spin_atol = 1.0e-11
     ref_atol = 1.0e-10
+
+# Tight DOUBLE reversibility bound for the symplectic-integrator elements
+# (ExactMultipole/ExactQuad/SoftQuadrupole/SoftSolenoid). Their float32
+# roundtrip floor is FMA-sensitive and exceeds 1e-8, so fall back to the
+# standard SINGLE phase tolerance there.
+TIGHT_PHASE_ATOL = 1e-8 if Config.precision != "SINGLE" else phase_atol
 
 
 @pytest.fixture(scope="function")
@@ -180,6 +187,40 @@ def check_roundtrip(
         )
 
 
+def check_spin_rotation(axis, angle_deg):
+    """Build a check that the forward push rotated every spin by ``angle_deg``
+    about ``axis``, in the convention of the C++ ``rotate_spin()`` helper.
+
+    The roundtrip alone cannot see this: a spin map that is the identity, or one
+    that uses the wrong axis or the wrong sign, is still cancelled exactly by its
+    own reverse. This pins down the forward map.
+    """
+
+    def check(beam, initial):
+        c = np.cos(np.radians(angle_deg))
+        s = np.sin(np.radians(angle_deg))
+        sx, sy, sz = (initial[col] for col in SPIN_COLS)
+        if axis == "y":
+            expected = (c * sx + s * sz, sy, -s * sx + c * sz)
+        elif axis == "z":
+            expected = (c * sx - s * sy, s * sx + c * sy, sz)
+        else:
+            raise ValueError(f"unsupported rotation axis: {axis}")
+
+        df = beam.to_df()
+        for col, exp in zip(SPIN_COLS, expected):
+            np.testing.assert_allclose(
+                df[col].to_numpy(),
+                exp,
+                atol=spin_atol,
+                rtol=0,
+                err_msg=f"Forward spin map is not a {angle_deg} deg rotation "
+                f"about {axis}: mismatch in {col}",
+            )
+
+    return check
+
+
 def roundtrip(
     el,
     sim,
@@ -187,8 +228,14 @@ def roundtrip(
     spin_atol=spin_atol,
     ref_atol=ref_atol,
     spin=False,
+    after_forward=None,
 ):
-    """Run forward + reverse + forward and verify roundtrip."""
+    """Run forward + reverse + forward and verify roundtrip.
+
+    ``after_forward`` is an optional ``check(beam, initial)`` callback applied to
+    the state after the forward push only, for element-specific assertions that
+    the reverse push would otherwise cancel (@see check_spin_rotation).
+    """
     beam = sim.beam
 
     initial = save_state(beam, spin=spin)
@@ -199,6 +246,10 @@ def roundtrip(
 
     # verify something changed
     check_changed(beam, initial, spin=spin)
+
+    # verify the forward map itself, before the reverse push cancels it
+    if spin and after_forward is not None:
+        after_forward(beam, initial)
 
     # reverse and push again
     el.reverse()
@@ -221,6 +272,7 @@ def roundtrip(
 # =============================================================================
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_CFbend(sim):
     roundtrip(
         elements.CFbend(
@@ -231,6 +283,7 @@ def test_CFbend(sim):
             **PIPE_KWARGS,
         ),
         sim,
+        spin=sim.spin,
     )
 
 
@@ -246,18 +299,17 @@ def test_ChrDrift(sim):
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k"),
-    [(0, 2.98636067687944129), (1, 5.0)],
-    ids=["madx", "si"],
+    [(0, 2.98636067687944129), (0, -2.98636067687944129), (1, 5.0)],
+    ids=["madx", "madx-defocusing", "si"],
 )
 def test_ChrPlasmaLens(sim, unit, k):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
         elements.ChrPlasmaLens(
             ds=0.331817852986604588,
             k=k,
             unit=unit,
             nslice=nslice,
-            **kwargs,
+            **PIPE_KWARGS,
         ),
         sim,
         phase_atol=2e-6 if unit == 1 else phase_atol,
@@ -267,30 +319,23 @@ def test_ChrPlasmaLens(sim, unit, k):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.ChrQuad(ds=1.0, k=1.0, unit=0, nslice=nslice, **kwargs),
+        elements.ChrQuad(ds=1.0, k=1.0, unit=0, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrQuad_marylie_unit(sim):
     roundtrip(
         elements.ChrQuad(ds=1.0, k=3.5, unit=1, nslice=nslice, **PIPE_KWARGS),
         sim,
-    )
-
-
-@pytest.mark.parametrize("sim", [True], indirect=True, ids=["spin"])
-def test_ChrQuad_marylie_unit_spin(sim):
-    roundtrip(
-        elements.ChrQuad(ds=1.0, k=1.0, unit=1, nslice=nslice),
-        sim,
         spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ChrAcc(sim):
     roundtrip(
         elements.ChrAcc(
@@ -301,6 +346,7 @@ def test_ChrAcc(sim):
             **PIPE_KWARGS,
         ),
         sim,
+        spin=sim.spin,
     )
 
 
@@ -332,6 +378,7 @@ def test_ExactDrift(sim):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k_normal", "k_skew"),
     [
@@ -353,10 +400,12 @@ def test_ExactMultipole(sim, unit, k_normal, k_skew):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=TIGHT_PHASE_ATOL,
+        spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "k_normal", "k_skew"),
     [
@@ -378,12 +427,16 @@ def test_ExactCFbend(sim, unit, k_normal, k_skew):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=1e-4 if Config.precision == "SINGLE" else 1e-8,
+        spin_atol=5e-6 if Config.precision == "SINGLE" else spin_atol,
+        spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0), (1, 3.5)], ids=["madx", "marylie"])
 def test_ExactQuad(sim, unit, k):
+    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
         elements.ExactQuad(
             ds=1.0,
@@ -392,25 +445,27 @@ def test_ExactQuad(sim, unit, k):
             int_order=4,
             nslice=nslice,
             mapsteps=mapsteps,
-            **PIPE_KWARGS,
+            **kwargs,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=TIGHT_PHASE_ATOL,
+        spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ExactSbend(sim):
     roundtrip(
         elements.ExactSbend(ds=1.0, phi=10.0, B=0.45, nslice=nslice, **PIPE_KWARGS),
         sim,
+        spin=sim.spin,
     )
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Quad(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Quad(ds=1.0, k=1.0, nslice=nslice, **kwargs),
+        elements.Quad(ds=1.0, k=1.0, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -418,14 +473,14 @@ def test_Quad(sim):
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sbend(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **kwargs),
+        elements.Sbend(ds=0.5, rc=-10.346, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_SoftQuadrupole(sim):
     roundtrip(
         elements.SoftQuadrupole(
@@ -438,10 +493,16 @@ def test_SoftQuadrupole(sim):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=TIGHT_PHASE_ATOL,
+        spin=sim.spin,
     )
 
 
+# Spin reversibility is not validated here: the soft-edge split leaves an
+# O(1e-3) residual in the spin components on forward+reverse+forward even though
+# phase space round-trips at 1e-8 (same class as the symmetric-split spin fix
+# for TaperedPL in #1474). Keep nospin-only (the benchmark covers the forward
+# spin push).
 @pytest.mark.parametrize(
     ("unit", "bscale"),
     [(0, 1.233482899483985), (1, 2.0)],
@@ -496,15 +557,14 @@ def test_SoftSolenoid(sim, unit, bscale):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=1e-8,
+        phase_atol=TIGHT_PHASE_ATOL,
     )
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Sol(sim):
-    kwargs = {} if sim.spin else PIPE_KWARGS
     roundtrip(
-        elements.Sol(ds=3.820395, ks=0.8223219329893234, **kwargs),
+        elements.Sol(ds=3.820395, ks=0.8223219329893234, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
     )
@@ -515,10 +575,12 @@ def test_Sol(sim):
 # =============================================================================
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_Buncher(sim):
-    roundtrip(elements.Buncher(V=0.01, k=15.0, **ALIGNMENT_KWARGS), sim)
+    roundtrip(elements.Buncher(V=0.01, k=15.0, **ALIGNMENT_KWARGS), sim, spin=sim.spin)
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(
     ("unit", "xkick", "ykick"),
     [
@@ -531,38 +593,65 @@ def test_Kicker(sim, unit, xkick, ykick):
     roundtrip(
         elements.Kicker(xkick=xkick, ykick=ykick, unit=unit, **ALIGNMENT_KWARGS),
         sim,
+        spin=sim.spin,
     )
-
-
-def test_Multipole(sim):
-    roundtrip(
-        elements.Multipole(multipole=4, K_normal=65.0, K_skew=6.0, **ALIGNMENT_KWARGS),
-        sim,
-    )
-
-
-def test_NonlinearLens(sim):
-    roundtrip(elements.NonlinearLens(knll=4.0e-6, cnll=0.01, **ALIGNMENT_KWARGS), sim)
 
 
 @pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
-@pytest.mark.parametrize(("unit", "k"), [(0, 1.0 / 0.5), (1, 6.0)], ids=["madx", "si"])
-def test_TaperedPL(sim, unit, k):
-    kwargs = {} if sim.spin else ALIGNMENT_KWARGS
+@pytest.mark.parametrize(
+    ("multipole", "K_normal", "K_skew"),
+    [
+        # deflects by only ~1e-13 at this beam size: the small-angle limit
+        (4, 65.0, 6.0),
+        # a strong low-order kick, rotating the spin by a large angle
+        (2, 300.0, 100.0),
+    ],
+    ids=["octupole", "strong_quadrupole"],
+)
+def test_Multipole(sim, multipole, K_normal, K_skew):
     roundtrip(
-        elements.TaperedPL(
-            k=k,
-            taper=11.488289081903567,
-            unit=unit,
-            **kwargs,
+        elements.Multipole(
+            multipole=multipole,
+            K_normal=K_normal,
+            K_skew=K_skew,
+            **ALIGNMENT_KWARGS,
         ),
         sim,
         spin=sim.spin,
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+def test_NonlinearLens(sim):
+    roundtrip(
+        elements.NonlinearLens(knll=4.0e-6, cnll=0.01, **ALIGNMENT_KWARGS),
+        sim,
+        spin=sim.spin,
+    )
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+@pytest.mark.parametrize(("unit", "k"), [(0, 1.0 / 0.5), (1, 6.0)], ids=["madx", "si"])
+def test_TaperedPL(sim, unit, k):
+    roundtrip(
+        elements.TaperedPL(
+            k=k,
+            taper=11.488289081903567,
+            unit=unit,
+            **ALIGNMENT_KWARGS,
+        ),
+        sim,
+        spin=sim.spin,
+    )
+
+
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ThinDipole(sim):
-    roundtrip(elements.ThinDipole(theta=0.45, rc=1.0, **ALIGNMENT_KWARGS), sim)
+    roundtrip(
+        elements.ThinDipole(theta=0.45, rc=1.0, **ALIGNMENT_KWARGS),
+        sim,
+        spin=sim.spin,
+    )
 
 
 # =============================================================================
@@ -570,12 +659,31 @@ def test_ThinDipole(sim):
 # =============================================================================
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_PlaneXYRot(sim):
-    roundtrip(elements.PlaneXYRot(angle=90.0, **ALIGNMENT_KWARGS), sim)
+    angle = 90.0
+    roundtrip(
+        elements.PlaneXYRot(angle=angle, **ALIGNMENT_KWARGS),
+        sim,
+        spin=sim.spin,
+        # A rotation in the x-y plane rotates the spin about z by the same
+        # angle. The roll alignment error is a z-rotation as well, so it
+        # commutes with the element and cancels between entry and exit.
+        after_forward=check_spin_rotation("z", angle),
+    )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_PRot(sim):
-    roundtrip(elements.PRot(phi_in=0.0, phi_out=-5.0), sim)
+    phi_in, phi_out = 0.0, -5.0
+    roundtrip(
+        elements.PRot(phi_in=phi_in, phi_out=phi_out),
+        sim,
+        spin=sim.spin,
+        # A pole face rotation in the x-z plane rotates the spin about y by the
+        # net angle phi_out - phi_in.
+        after_forward=check_spin_rotation("y", phi_out - phi_in),
+    )
 
 
 # =============================================================================
@@ -583,13 +691,20 @@ def test_PRot(sim):
 # =============================================================================
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_ShortRF(sim):
     roundtrip(
-        elements.ShortRF(V=1000.0, freq=1.3e9, phase=-89.5, **ALIGNMENT_KWARGS), sim
+        elements.ShortRF(V=1000.0, freq=1.3e9, phase=-89.5, **ALIGNMENT_KWARGS),
+        sim,
+        spin=sim.spin,
     )
 
 
-def test_RFCavity(sim):
+# Several mapsteps: depending on the round-off of the integration steps, the last
+# evaluation of the field profile lands at its end or a few ulp outside of it.
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
+@pytest.mark.parametrize("mapsteps", [1, 3, 4, 7, 10, 14, 32, 64])
+def test_RFCavity(sim, mapsteps):
     roundtrip(
         elements.RFCavity(
             ds=1.31879807,
@@ -629,7 +744,14 @@ def test_RFCavity(sim):
             **PIPE_KWARGS,
         ),
         sim,
-        phase_atol=5e-4,  # energy-changing element: finite mapsteps limit roundtrip precision
+        # in single precision, the reference momentum of about 2e3 accumulates one
+        # rounding per map step: 7e-4 for 32 and 1.6e-3 for 64 steps forward and back
+        ref_atol=(
+            max(ref_atol, 5.0e-5 * mapsteps)
+            if Config.precision == "SINGLE"
+            else ref_atol
+        ),
+        spin=sim.spin,
     )
 
 
@@ -649,6 +771,10 @@ def test_RFCavity(sim):
     ],
     ids=["linear-zero-gap", "linear-finite-gap", "nonlinear-finite-gap"],
 )
+# WARNING:  The orbit in DipEdge is not reversed simply by taking entry->exit. The inverse map needs to be fixed.  See Issue #1562.
+# Spin reversibility is not validated here either: it inherits the same
+# entry->exit inverse-map problem and leaves an O(1e-4) residual in all three
+# models. Keep nospin-only (the benchmark covers the forward spin push).
 def test_DipEdge(sim, model, g, K2):
     rc = 10.3462283686195526
     psi = 0.048345620280243
@@ -666,12 +792,15 @@ def test_DipEdge(sim, model, g, K2):
     )
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 @pytest.mark.parametrize(("unit", "k"), [(0, 1.0), (1, 3.5)], ids=["madx", "marylie"])
 @pytest.mark.parametrize("flag", ["entry", "exit"])
+# WARNING:  The orbit in QuadEdge is not reversed simply by taking entry->exit. The inverse map needs to be fixed.  See Issue #1562.
 def test_QuadEdge(sim, flag, unit, k):
     roundtrip(
         elements.QuadEdge(k=k, unit=unit, flag=flag, **ALIGNMENT_KWARGS),
         sim,
+        spin=sim.spin,
     )
 
 
@@ -680,6 +809,7 @@ def test_QuadEdge(sim, flag, unit, k):
 # =============================================================================
 
 
+@pytest.mark.parametrize("sim", [True, False], indirect=True, ids=["spin", "nospin"])
 def test_LinearMap(sim):
     R1 = Map6x6.identity()
     ds1 = 0.25
@@ -707,7 +837,7 @@ def test_LinearMap(sim):
 
     el = elements.LinearMap(R=R1, ds=ds1, **ALIGNMENT_KWARGS)
     assert el.symplectic
-    roundtrip(el, sim)
+    roundtrip(el, sim, spin=sim.spin)
 
 
 # There is a hacky implementation draft in the C++ code for

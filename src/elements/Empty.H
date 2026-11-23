@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,9 +11,9 @@
 #define IMPACTX_ELEMENT_EMPTY_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/thin.H"
 #include "mixin/lineartransport.H"
-#include "mixin/named.H"
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
@@ -22,13 +22,11 @@
 
 #include <optional>
 
-
 namespace impactx::elements
 {
-    struct Empty
-    : public mixin::Named,
-      public mixin::Thin,
-      public mixin::LinearTransport<Empty>,
+    struct EmptyGPU
+    : public mixin::Thin,
+      public mixin::LinearTransport<EmptyGPU>,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
@@ -37,10 +35,7 @@ namespace impactx::elements
 
         /** This element does nothing.
          */
-        Empty ()
-        : Named(std::nullopt)
-        {
-        }
+        EmptyGPU () = default;
 
         /** Reverse the element (no-op) */
         void reverse () { }
@@ -105,13 +100,13 @@ namespace impactx::elements
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void operator() (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT x,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT y,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT t,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT px,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT py,
+            [[maybe_unused]] T_Real const & AMREX_RESTRICT pt,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -124,6 +119,9 @@ namespace impactx::elements
         /** This pushes the covariance matrix. */
         using LinearTransport::operator();
     };
+
+    /** Empty: GPU state plus common host-only metadata */
+    using Empty = Element<EmptyGPU>;
 
 } // namespace impactx
 

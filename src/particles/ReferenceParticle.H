@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -45,9 +45,6 @@ namespace impactx
         amrex::ParticleReal gyromagnetic_anomaly = 0.0; ///< anomalous magnetic moment [unitless]
 
         amrex::ParticleReal sedge = 0.0;  ///< value of s at entrance of the current beamline element
-        amrex::SmallMatrix<amrex::ParticleReal, 6, 6, amrex::Order::F, 1> map{}; ///< linearized map
-        amrex::SmallMatrix<amrex::ParticleReal, 3, 6, amrex::Order::F, 1> spin_coupling{}; ///< linearized spin-orbit coupling matrix
-        amrex::SmallMatrix<amrex::ParticleReal, 3, 1, amrex::Order::F, 1> spin_rotation_vector{}; ///< reference spin rotation vector
 
         /** Copy the reference particle
          *
@@ -76,6 +73,18 @@ namespace impactx
 
             if (keep_mass) { mass = old_mass; }
             if (keep_charge) { charge = old_charge; }
+        }
+
+        /** Set the element edge to the current path length
+         *
+         * Call this when entering a beamline element: s-dependent (soft-edge) maps
+         * integrate their on-axis field profile relative to this edge.
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void
+        set_edge ()
+        {
+            sedge = s;
         }
 
         /** Set reference particle species by name
@@ -114,7 +123,10 @@ namespace impactx
             } else if (species_name == "Hminus") {
                 qe = -1.0;
                 massE = (m_p + 2.0_prt * m_e) / MeV_inv_c2;  // neglect ~14 eV/c^2 binding energy
-                g_anomaly = 1.7928473446_prt;
+                // the closed-shell electrons leave the moment of the shielded proton:
+                //   (1 + a) q / m = (1 + a_p) (1 - sigma) e / m_p
+                // with sigma = 24.243189(9)e-6 from Kilich & Pachucki, PRA 112, 042813 (2025)
+                g_anomaly = -3.7958216277_prt;
             }
             // [/known_species]
             else {

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -15,6 +15,9 @@ def get_moments(beam):
     -------
     meanH, sigH, meanI, sigI
     """
+    # float64 arithmetic, also for single-precision data
+    beam = beam.select_dtypes(np.floating).astype(np.float64)
+
     meanH = np.mean(beam["H"])
     sigH = moment(beam["H"], moment=2) ** 0.5
     meanI = np.mean(beam["I"])
@@ -26,8 +29,9 @@ def get_moments(beam):
 # initial/final beam
 series = io.Series("diags/openPMD/monitor.h5", io.Access.read_only)
 last_step = list(series.iterations)[-1]
-initial = series.iterations[1].particles["beam"].to_df()
-final = series.iterations[last_step].particles["beam"].to_df()
+initial = series.iterations[1].particles["beam"].to_df().set_index("id")
+is_double = initial["position_x"].dtype == np.float64
+final = series.iterations[last_step].particles["beam"].to_df().set_index("id")
 
 # compare number of particles
 num_particles = 10000
@@ -56,7 +60,8 @@ meanH, sigH, meanI, sigI = get_moments(final)
 print(f"  meanH={meanH:e} sigH={sigH:e} meanI={meanI:e} sigI={sigI:e}")
 
 atol = 0.0  # a big number
-rtol = 1.6 * num_particles**-0.5  # from random sampling of a smooth distribution
+# from random sampling of a smooth distribution
+rtol = 1.6 * num_particles**-0.5 if is_double else 2.5e-2
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

@@ -1,4 +1,4 @@
-/* Copyright 2021-2023 The ImpactX Community
+/* Copyright 2022-2026 The ImpactX Community
  *
  * Authors: Axel Huebl
  * License: BSD-3-Clause-LBNL
@@ -28,14 +28,11 @@ void init_refparticle(py::module& m)
         .def_readwrite("py", &RefPart::py, "momentum in y divided by m*c = beta_y*gamma [unitless]")
         .def_readwrite("pz", &RefPart::pz, "momentum in z divided by m*c = beta_z*gamma [unitless]")
         .def_readwrite("pt", &RefPart::pt, "energy deviation, normalized by rest energy")
-        .def_readwrite("mass", &RefPart::charge, "reference rest mass [kg]")
-        .def_readwrite("charge", &RefPart::mass, "reference charge [C]")
+        .def_readwrite("mass", &RefPart::mass, "reference rest mass [kg]")
+        .def_readwrite("charge", &RefPart::charge, "reference charge [C]")
         .def_readwrite("gyromagnetic_anomaly", &RefPart::gyromagnetic_anomaly, "reference particle gyromagnetic anomaly [unitless]")
 
         .def_readwrite("sedge", &RefPart::sedge, "value of s at entrance of the current beamline element")
-        .def_readwrite("map", &RefPart::map, "linearized map")
-        .def_readwrite("spin_coupling", &RefPart::spin_coupling, "linearized spin-orbit coupling matrix")
-        .def_readwrite("spin_rotation_vector", &RefPart::spin_rotation_vector, "reference spin rotation vector")
 
         .def_property_readonly("charge_qe", &RefPart::charge_qe, "Get reference particle charge (positive elementary charge)")
         .def_property_readonly("gamma", &RefPart::gamma, "Get reference particle relativistic gamma")

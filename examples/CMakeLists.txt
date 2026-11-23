@@ -789,6 +789,20 @@ if(ImpactX_TEST_CLEANUP)
     set_property(TEST solenoid.py.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.py.cleanup")
 endif()
 
+add_impactx_test(solenoid.restart.noref.py
+    examples/solenoid_restart/run_solenoid_noref.py
+    OFF  # ImpactX MPI-parallel
+    examples/solenoid_restart/analysis_solenoid.py
+    OFF  # no plot script yet
+)
+if(ImpactX_PYTHON)
+    set_property(TEST solenoid.restart.noref.py.run APPEND PROPERTY DEPENDS "solenoid.py.run")
+endif()
+if(ImpactX_TEST_CLEANUP)
+    # do not clean up dependency test before current test is completed
+    set_property(TEST solenoid.py.cleanup APPEND PROPERTY DEPENDS "solenoid.restart.noref.py.cleanup")
+endif()
+
 
 # Pole-face rotation ##########################################################
 #
@@ -929,6 +943,13 @@ add_impactx_test(kicker
 add_impactx_test(kicker.py
     examples/kicker/run_kicker.py
     OFF   # ImpactX MPI-parallel
+    examples/kicker/analysis_kicker.py
+    OFF  # no plot script yet
+)
+# more grids than MPI ranks: each rank owns two grids
+add_impactx_test(kicker-grids.py
+    examples/kicker/run_kicker_grids.py
+    ON   # ImpactX MPI-parallel
     examples/kicker/analysis_kicker.py
     OFF  # no plot script yet
 )
@@ -1612,6 +1633,30 @@ add_impactx_test(dogleg-reverse.py
     OFF  # no plot script yet
 )
 
+# Dogleg in Reverse with Envelope Tracking #############################################
+#
+add_impactx_test(dogleg-reverse-envelope
+    examples/dogleg/input_dogleg_reverse_envelope.in
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+add_impactx_test(dogleg-reverse-envelope.py
+    examples/dogleg/run_dogleg_reverse_envelope.py
+    ON   # ImpactX MPI-parallel
+    examples/dogleg/analysis_dogleg_reverse_envelope.py
+    OFF  # no plot script yet
+)
+
+# Dogleg, Vertical (bends rolled 90 deg) ######################################
+#
+add_impactx_test(dogleg-vertical.py
+    examples/dogleg/run_dogleg_vertical.py
+    OFF  # ImpactX MPI-parallel (script runs two sims: envelope then particles)
+    OFF  # no analysis script (the run script self-validates in-situ)
+    OFF  # no plot script
+)
+
 # Dogleg with Energy Jitter ###################################################
 #
 add_impactx_test(dogleg-jitter
@@ -1680,6 +1725,20 @@ add_impactx_test(simple-booster.py
     examples/simple_booster/analysis_simple_booster.py
     examples/simple_booster/plot_simple_booster.py
 )
+
+# Fermilab Booster (synmadx MAD-X Parser) #####################################
+#
+if(ImpactX_SYNMADX)
+    # copy MAD-X lattice file
+    file(COPY ${ImpactX_SOURCE_DIR}/examples/simple_booster_synmadx/sbbooster-cooked.madx
+            DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/simple-booster-synmadx.py)
+    add_impactx_test(simple-booster-synmadx.py
+        examples/simple_booster_synmadx/run_parse_booster_lattice.py
+        OFF  # ImpactX MPI-parallel
+        OFF  # no analysis script yet
+        examples/simple_booster_synmadx/plot_simple_booster_synmadx.py  # gets --save-png passed
+    )
+endif()
 
 # HTU Beamline Model with Off-Energy Transport ################################
 #
@@ -2111,6 +2170,59 @@ add_impactx_test(fodo-softedge.py
     OFF  # no plot script yet
 )
 
+# Expanding Beam in Free Space with 2D Space Charge, with Test Particles ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/expanding_beam/initial_coords.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/expanding-fft-2d-test-particles.py)
+add_impactx_test(expanding-fft-2d-test-particles.py
+    examples/expanding_beam/run_expanding_fft_2D_test_particles.py
+    ON  # ImpactX MPI-parallel
+    OFF
+    OFF
+)
+label_impactx_test(expanding-fft-2d-test-particles.py slow)
+
+# Expanding Beam in Free Space with 2D Space Charge, Test Space Charge Kick ###################
+add_impactx_test(expanding-fft-2d-test-particles-1slice.py
+    examples/expanding_beam/run_expanding_fft_2D_test_particles_1slice.py
+    ON  # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_fft_2D_test_particles_1slice.py
+    OFF
+)
+label_impactx_test(expanding-fft-2d-test-particles-1slice.py slow)
+
+# Momentum Kick in the 2.5D Gaussian Space Charge Model ###################
+add_impactx_test(kick-Gauss2p5D.py
+    examples/space_charge_gaussian_kick/run_sc_kick_Gauss2p5D.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_Gauss2p5D.py
+    OFF  # no plot script yet
+)
+add_impactx_test(kick-PIC2p5D.py
+    examples/space_charge_gaussian_kick/run_sc_kick_PIC2p5D.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_PIC2p5D.py
+    OFF  # no plot script yet
+)
+add_impactx_test(kick-Gauss2p5D-long-kick-off.py
+    examples/space_charge_gaussian_kick/run_sc_kick_Gauss2p5D_long_kick_off.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_Gauss2p5D_long_kick_off.py
+    OFF  # no plot script yet
+)
+add_impactx_test(kick-Gauss2p5D-protons.py
+    examples/space_charge_gaussian_kick/run_sc_kick_Gauss2p5D_protons.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_Gauss2p5D_protons.py
+    examples/space_charge_gaussian_kick/plot_sc_kick_Gauss2p5D_protons.py
+)
+add_impactx_test(kick-PIC2p5D-protons.py
+    examples/space_charge_gaussian_kick/run_sc_kick_PIC2p5D_protons.py
+    ON    # ImpactX MPI-parallel
+    examples/space_charge_gaussian_kick/analysis_sc_kick_PIC2p5D_protons.py
+    OFF  # no plot script yet
+)
+label_impactx_test(kick-Gauss2p5D-protons.py.plot slow)
+
 # Scaling Test of Spin in an Exact Bend ###################
 file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
      DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-sbend-spin-scaling.py)
@@ -2120,3 +2232,121 @@ add_impactx_test(exact-sbend-spin-scaling.py
     examples/spin_tracking/analysis_exact_sbend_spin_scaling.py
     OFF  # no plot script yet
 )
+
+# Scaling Test of Spin in an Exact Combined Function Bend ###################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/spin_tracking/initial_coords_sbend.csv
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exact-cfbend-spin-scaling.py)
+add_impactx_test(exact-cfbend-spin-scaling.py
+    examples/spin_tracking/run_cfbend_spin_scaling.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_cfbend_spin_scaling.py
+    OFF  # no plot script yet
+)
+
+# Benchmark a Single Sextupole Kick ###################
+add_impactx_test(sextupole-kick.py
+    examples/multipole/run_sextupole_kick.py
+    ON    # ImpactX MPI-parallel
+    examples/multipole/analysis_sextupole_kick.py
+    OFF  # no plot script yet
+)
+
+# Reversibility Test for Spin in a Quadrupole with Fringe Fields ###########
+add_impactx_test(reversibility-quad-fringe-spin.py
+    examples/spin_tracking/run_reversibility_quad_fringe_spin.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_reversibility_quad_fringe_spin.py
+    OFF  # no plot script yet
+)
+
+# Spin Depolarization in a Uniform Accelerating Field ###########
+add_impactx_test(chracc-depol.py
+    examples/spin_tracking/run_chracc_depolarization.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_chracc_depolarization.py
+    OFF  # no plot script yet
+)
+
+# Comparing Spin Tracking Models in a Uniform Solenoid Field ###########
+add_impactx_test(chracc-sol-spin.py
+    examples/spin_tracking/run_chracc_sol.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_chracc_sol.py
+    OFF  # no plot script yet
+)
+
+# Spin Depolarization in a Uniform Accelerating + Magnetic Field ###########
+add_impactx_test(chracc-depol-eb.py
+    examples/spin_tracking/run_chracc_depolarization_EB.py
+    ON    # ImpactX MPI-parallel
+    examples/spin_tracking/analysis_chracc_depolarization_EB.py
+    OFF  # no plot script yet
+)
+
+# Expanding Beam in Uniform Accelerating Field with 3D Space Charge ###########
+add_impactx_test(expanding-acc.py
+    examples/expanding_beam/run_expanding_acc_fft.py
+    ON    # ImpactX MPI-parallel
+    OFF  # analysis in situ in run script
+    OFF  # no plot script yet
+)
+
+# Expanding Beam in Uniform Accelerating Field with 2D Space Charge ###########
+add_impactx_test(expanding-2d-acc.py
+    examples/expanding_beam/run_expanding_acc_fft_2D.py
+    ON    # ImpactX MPI-parallel
+    OFF  # analysis in situ in run script
+    OFF  # no plot script yet
+)
+
+# Momentum Kick in the 1D Steady-State CSR Model ###########
+if(ImpactX_FFT)
+    add_impactx_test(csr-kick
+        examples/wake_csr_kick/input_csr_kick.in
+        ON    # ImpactX MPI-parallel
+        examples/wake_csr_kick/analysis_csr_kick.py
+        examples/wake_csr_kick/plot_csr_kick.py
+    )
+    add_impactx_test(csr-kick.py
+        examples/wake_csr_kick/run_csr_kick.py
+        ON    # ImpactX MPI-parallel
+        examples/wake_csr_kick/analysis_csr_kick.py
+        examples/wake_csr_kick/plot_csr_kick.py
+    )
+endif()
+
+# Benchmark of linear dipole fringe field map #################################
+file(COPY ${ImpactX_SOURCE_DIR}/examples/edge_effects/dipedge.madx
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dipedge-linear-map.py)
+add_impactx_test(dipedge-linear-map.py
+    examples/edge_effects/run_dipedge_linear_map.py
+    ON    # ImpactX MPI-parallel
+    examples/edge_effects/analysis_dipedge_linear_map.py
+    OFF  # no plot script yet
+)
+
+# Momentum Kick in a 1D User-Specified Longitudinal Wake Model ###########
+if(ImpactX_FFT)
+# copy on-axis RF cavity field data
+file(COPY ${ImpactX_SOURCE_DIR}/examples/wake_csr_kick/onaxis_data.in
+     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/user-wake-kick.py)
+        add_impactx_test(user-wake-kick.py
+        examples/wake_csr_kick/run_user_wake_kick.py
+        ON    # ImpactX MPI-parallel
+        examples/wake_csr_kick/analysis_user_wake_kick.py
+        examples/wake_csr_kick/plot_user_wake_kick.py
+    )
+endif()
+
+# Acceleration by RF Cavities with Space Charge and Wakefields ###########
+if(ImpactX_FFT)
+    file(COPY ${ImpactX_SOURCE_DIR}/examples/rfcavity/onaxis_data.in
+         DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rfcavity-wake-sc.MPI.py)
+    add_impactx_test(rfcavity-wake-sc.MPI.py
+        examples/rfcavity/run_rfcavity_wake_sc.py
+        ON   # ImpactX MPI-parallel
+        examples/rfcavity/analysis_rfcavity_wake_sc.py
+        OFF  # no plot script yet
+    )
+    label_impactx_test(rfcavity-wake-sc.MPI.py slow)
+endif()

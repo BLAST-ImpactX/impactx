@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -10,7 +10,6 @@ import math
 
 import numpy as np
 
-import amrex.space3d as amr
 from impactx import Config, ImpactX, elements
 
 
@@ -42,37 +41,7 @@ def _track_particle_dipedge(modify_ref_part, edge_angle, g, rc):
     dpy = [0.0]
     dt = [0.0]
     dpt = [0.0]
-    if not Config.have_gpu:  # initialize using cpu-based PODVectors
-        dx_podv = amr.PODVector_real_std()
-        dy_podv = amr.PODVector_real_std()
-        dt_podv = amr.PODVector_real_std()
-        dpx_podv = amr.PODVector_real_std()
-        dpy_podv = amr.PODVector_real_std()
-        dpt_podv = amr.PODVector_real_std()
-    else:  # initialize on device using arena/gpu-based PODVectors
-        dx_podv = amr.PODVector_real_arena()
-        dy_podv = amr.PODVector_real_arena()
-        dt_podv = amr.PODVector_real_arena()
-        dpx_podv = amr.PODVector_real_arena()
-        dpy_podv = amr.PODVector_real_arena()
-        dpt_podv = amr.PODVector_real_arena()
-
-    for p_dx in dx:
-        dx_podv.push_back(p_dx)
-    for p_dy in dy:
-        dy_podv.push_back(p_dy)
-    for p_dt in dt:
-        dt_podv.push_back(p_dt)
-    for p_dpx in dpx:
-        dpx_podv.push_back(p_dpx)
-    for p_dpy in dpy:
-        dpy_podv.push_back(p_dpy)
-    for p_dpt in dpt:
-        dpt_podv.push_back(p_dpt)
-
-    beam.add_n_particles(
-        dx_podv, dy_podv, dt_podv, dpx_podv, dpy_podv, dpt_podv, qm_eev, bunch_charge_C
-    )
+    beam.add_n_particles(dx, dy, dt, dpx, dpy, dpt, qm_eev, bunch_charge_C)
 
     # design the accelerator lattice)
     dipedge1 = elements.DipEdge(
@@ -147,7 +116,7 @@ def test_dipedge_modify_ref_part_false():
         (ref.px) ** 2 + (ref.py) ** 2 + (ref.pz) ** 2 - (ref.pt) ** 2 + 1.0
     )
 
-    atol = 1.0e-12
+    atol = 1.0e-12 if Config.precision != "SINGLE" else 1.0e-6
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)
     np.testing.assert_allclose(vec_ref_on_shell, 0.0, atol=atol)
@@ -158,8 +127,8 @@ def test_dipedge_modify_ref_part_true():
     This tests the application of longitudinal particle boundary conditions.
     """
     edge_angle = math.pi / 8.0
-    rc = 10.0
-    g = 1.0e-2
+    rc = 1.0
+    g = 0.1
 
     K0 = np.pi**2 / 6.0
     c2 = (1.0 / np.cos(edge_angle)) ** 3 * np.sin(edge_angle) / 2.0 * g**2 / rc**2 * K0
@@ -188,11 +157,11 @@ def test_dipedge_modify_ref_part_true():
 
     # access reference particle
     vec_ref = np.array([ref.x, ref.px, ref.y, ref.py, ref.t])
-    vec_ref_pred = [x_shift, px_shift, 0, 0, t_shift]
+    vec_ref_pred = [x_shift, ref.beta_gamma * px_shift, 0, 0, t_shift]
     vec_ref_on_shell = (
         (ref.px) ** 2 + (ref.py) ** 2 + (ref.pz) ** 2 - (ref.pt) ** 2 + 1.0
     )
-    atol = 1.0e-12
+    atol = 1.0e-12 if Config.precision != "SINGLE" else 1.0e-6
     np.testing.assert_allclose(vec_part, vec_part_pred, atol=atol)
     np.testing.assert_allclose(vec_ref, vec_ref_pred, atol=atol)
     np.testing.assert_allclose(vec_ref_on_shell, 0.0, atol=atol)

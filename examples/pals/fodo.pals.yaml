@@ -1,22 +1,33 @@
-fodo_cell:
-  kind: BeamLine
-  line:
-  - drift1:
-      kind: Drift
-      length: 0.25
-  - quad1:
-      MagneticMultipoleP:
-        Bn1: 1.0
-      kind: Quadrupole
-      length: 1.0
-  - drift2:
-      kind: Drift
-      length: 0.5
-  - quad2:
-      MagneticMultipoleP:
-        Bn1: -1.0
-      kind: Quadrupole
-      length: 1.0
-  - drift3:
-      kind: Drift
-      length: 0.25
+PALS:
+  version: null  # the PALS schema is not yet versioned
+
+  facility:
+    - fodo_cell:
+        kind: BeamLine
+        line:
+          - drift1:
+              kind: Drift
+              length: 0.25
+          - quad1:
+              MagneticMultipoleP:
+                Kn1: 1.0
+              kind: Quadrupole
+              length: 1.0
+          - drift2:
+              kind: Drift
+              length: 0.5
+          - quad2:
+              MagneticMultipoleP:
+                Kn1: -1.0
+              kind: Quadrupole
+              length: 1.0
+          - drift3:
+              kind: Drift
+              length: 0.25
+
+    - fodo_lattice:
+        kind: Lattice
+        branches:
+          - fodo_cell
+
+    - use: fodo_lattice

@@ -22,6 +22,10 @@ This example can be run **either** as:
 * ImpactX **executable** using an input file: ``impactx input_solenoid.in``
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
+In MPI-parallel runs, the ``source`` element distributes reading of the particles in the openPMD file over all MPI ranks (each rank reads a different :math:`1/N`-th of the particles).
+
+By default, the ``source`` element also restores the reference particle from the metadata of the openPMD file (:py:class:`load_ref_particle <impactx.elements.Source>` option; see ``run_solenoid.py`` and ``input_solenoid.in``).
+Alternatively, after disabling that option, particles are loaded relative to a manually configured reference particle (``run_solenoid_noref.py``).
 
 .. tab-set::
 
@@ -30,6 +34,12 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
        .. literalinclude:: run_solenoid.py
           :language: python3
           :caption: You can copy this file from ``examples/solenoid_restart/run_solenoid.py``.
+
+   .. tab-item:: Python: Script (manually configured reference particle)
+
+       .. literalinclude:: run_solenoid_noref.py
+          :language: python3
+          :caption: You can copy this file from ``examples/solenoid_restart/run_solenoid_noref.py``.
 
    .. tab-item:: Executable: Input File
 

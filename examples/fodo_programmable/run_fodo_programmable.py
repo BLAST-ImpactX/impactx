@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -131,15 +131,15 @@ monitor = elements.BeamMonitor("monitor", backend="h5")
 # design the accelerator lattice
 fodo = [
     monitor,
-    pge1,  # equivalent to elements.Drift("d1", ds=0.25, nslice=ns)
+    pge1,  # equivalent to elements.Drift(name="d1", ds=0.25, nslice=ns)
     monitor,
     elements.Quad(name="q1", ds=1.0, k=1.0, nslice=ns),
     monitor,
-    pge2,  # equivalent to elements.Drift("d2", ds=0.5, nslice=ns)
+    pge2,  # equivalent to elements.Drift(name="d2", ds=0.5, nslice=ns)
     monitor,
     elements.Quad(name="q2", ds=1.0, k=-1.0, nslice=ns),
     monitor,
-    pge1,  # equivalent to elements.Drift("d1", ds=0.25, nslice=ns)
+    pge1,  # equivalent to elements.Drift(name="d1", ds=0.25, nslice=ns)
     monitor,
 ]
 # assign a fodo segment

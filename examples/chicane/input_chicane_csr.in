@@ -23,7 +23,7 @@ beam.mutpt = 0.999999961419755
 ###############################################################################
 lattice.elements = monitor sbend1 dipedge1 drift1 dipedge2 sbend2 drift2      \
                    sbend2 dipedge2 drift1 dipedge1 sbend1 drift3 monitor
-lattice.nslice = 25
+lattice.nslice = 6
 
 #lattice.elements = sbend1
 #lattice.nslice = 1

@@ -17,7 +17,10 @@ import numpy as np
 import pytest
 
 import amrex.space3d as amr
-from impactx import elements
+from impactx import Config, elements
+
+# amrex Real SmallMatrix precision suffix matching the build
+_REAL = "float" if Config.precision == "SINGLE" else "double"
 
 
 def get_constructor_params(element_class):
@@ -65,7 +68,8 @@ def get_constructor_params(element_class):
     param_names = set()
     for p in params:
         name = p.split(":")[0].strip()
-        if name:
+        # the keyword-only marker is not a parameter
+        if name and name != "*":
             param_names.add(name)
 
     return param_names
@@ -143,13 +147,33 @@ def all_elements():
     )
 
     monitor = elements.BeamMonitor(
-        name="test_monitor", backend="h5", encoding="g", period_sample_intervals=2
+        name="test_monitor",
+        backend="h5",
+        encoding="g",
+        period_sample_intervals=2,
     )
     lattice.append(monitor)
 
+    monitor_nopart = elements.BeamMonitor(
+        name="monitor_nopart",
+        backend="h5",
+        encoding="f",
+        period_sample_intervals=3,
+        particles=False,
+        beam_moments=True,
+    )
+    lattice.append(monitor_nopart)
+
     lattice.append(
         elements.Buncher(
-            V=0.5, k=10.0, dx=0.001, dy=0.002, rotation=0.05, name="test_buncher"
+            V=0.5,
+            k=10.0,
+            dx=0.001,
+            dy=0.002,
+            rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
+            name="test_buncher",
         )
     )
 
@@ -249,6 +273,8 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
             name="test_dipedge",
         )
     )
@@ -355,14 +381,23 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
+            aperture_x=0.03,
+            aperture_y=0.04,
             name="test_kicker",
         )
     )
 
-    R = amr.SmallMatrix_6x6_F_SI1_double.identity()
+    R = getattr(amr, f"SmallMatrix_6x6_F_SI1_{_REAL}").identity()
     lattice.append(
         elements.LinearMap(
-            R=R, ds=0.5, dx=0.001, dy=0.002, rotation=0.05, name="test_linearmap"
+            R=R,
+            ds=0.5,
+            dx=0.001,
+            dy=0.002,
+            rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
+            name="test_linearmap",
         )
     )
 
@@ -376,6 +411,8 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
             name="test_multipole",
         )
     )
@@ -387,6 +424,8 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
+            aperture_x=0.03,
+            aperture_y=0.04,
             name="test_nonlinearlens",
         )
     )
@@ -440,6 +479,8 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
             name="test_quadedge",
         )
     )
@@ -485,6 +526,8 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
+            aperture_x=0.03,
+            aperture_y=0.04,
             name="test_shortrf",
         )
     )
@@ -538,13 +581,19 @@ def all_elements():
         )
     )
 
-    v = amr.SmallMatrix_3x1_F_SI1_double()
+    v = getattr(amr, f"SmallMatrix_3x1_F_SI1_{_REAL}")()
     v.set_val(0.1)
-    A = amr.SmallMatrix_3x6_F_SI1_double()
+    A = getattr(amr, f"SmallMatrix_3x6_F_SI1_{_REAL}")()
     A.set_val(0.01)
     lattice.append(
         elements.SpinMap(
-            v=v, A=A, ds=0.5, dx=0.001, dy=0.002, rotation=0.05, name="test_spinmap"
+            v=v,
+            A=A,
+            ds=0.5,
+            dx=0.001,
+            dy=0.002,
+            rotation=0.05,
+            name="test_spinmap",
         )
     )
 
@@ -556,6 +605,8 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
             name="test_taperedpl",
         )
     )
@@ -567,6 +618,8 @@ def all_elements():
             dx=0.001,
             dy=0.002,
             rotation=0.05,
+            aperture_x=0.03,
+            aperture_y=0.04,
             name="test_thindipole",
         )
     )
@@ -633,6 +686,89 @@ def test_element_dict_has_constructor_params(all_elements):
 
         assert not missing, f"{element_type}: to_dict() missing params: {missing}"
         assert not extra, f"{element_type}: to_dict() has extra keys: {extra}"
+
+
+def test_mixin_properties_are_settable(all_elements):
+    """
+    Test that the read/write properties inherited from the mixin classes can be
+    assigned after construction, and that to_dict() sees the new value.
+    """
+    lattice, _ = all_elements
+
+    # property name -> value to assign
+    settable = {
+        "aperture_x": 0.05,
+        "aperture_y": 0.06,
+        "dx": 0.007,
+        "dy": 0.008,
+        "rotation": 0.09,
+        # the apertures and polygons of all_elements fit inside these periods
+        "repeat_x": 0.2,
+        "repeat_y": 0.2,
+        "shift_odd_x": True,
+    }
+    # apertures are stored inverted, so a set/get pair costs two divisions
+    rtol = 1e-5 if Config.precision == "SINGLE" else 1e-12
+
+    covered = set()
+    for element in lattice:
+        element_type = type(element).__name__
+
+        if element_type in SKIP_ELEMENTS:
+            continue
+
+        for prop, value in settable.items():
+            if not hasattr(element, prop):
+                continue
+
+            setattr(element, prop, value)
+            assert getattr(element, prop) == pytest.approx(value, rel=rtol), (
+                f"{element_type}.{prop} did not keep the assigned value"
+            )
+
+            d = element.to_dict()
+            assert prop in d, f"{element_type}: to_dict() is missing {prop}"
+            assert d[prop] == pytest.approx(value, rel=rtol), (
+                f"{element_type}: to_dict()[{prop!r}] does not reflect the assignment"
+            )
+
+            covered.add(prop)
+
+    assert covered == set(settable), (
+        f"no element exercised: {sorted(set(settable) - covered)}"
+    )
+
+
+def test_aperture_disabled_by_nonpositive():
+    """
+    Test that Aperture.aperture_x/aperture_y follow the PipeAperture convention:
+    a half-aperture of zero or less disables the boundary in that plane and
+    reads back as zero, both from the constructor and from assignment.
+    """
+    aperture = elements.Aperture(aperture_x=0.01, aperture_y=0.02)
+
+    # a valid assignment is kept and is visible in to_dict()
+    aperture.aperture_x = 0.03
+    aperture.aperture_y = 0.04
+    assert aperture.aperture_x == pytest.approx(0.03)
+    assert aperture.aperture_y == pytest.approx(0.04)
+    assert aperture.to_dict()["aperture_x"] == pytest.approx(0.03)
+    assert aperture.to_dict()["aperture_y"] == pytest.approx(0.04)
+
+    # zero or less disables the boundary and reads back as an exact zero,
+    # so that a to_dict() roundtrip reproduces the disabled element
+    for disabled in [0.0, -0.01]:
+        aperture.aperture_x = disabled
+        aperture.aperture_y = disabled
+        assert aperture.aperture_x == 0.0
+        assert aperture.aperture_y == 0.0
+        assert aperture.to_dict()["aperture_x"] == 0.0
+        assert aperture.to_dict()["aperture_y"] == 0.0
+
+        # the constructor uses the same convention
+        from_ctor = elements.Aperture(aperture_x=disabled, aperture_y=disabled)
+        assert from_ctor.aperture_x == 0.0
+        assert from_ctor.aperture_y == 0.0
 
 
 def test_individual_element_roundtrip(all_elements):
@@ -707,3 +843,195 @@ def test_to_py_roundtrip(all_elements):
             f"  Original: {d1}\n"
             f"  Reconstructed: {d2}"
         )
+
+
+def test_copy_covers_all_element_types(all_elements):
+    """Every element type must survive ``copy()`` with its configuration intact.
+
+    ``replace_each()`` copies the template it is given once per selected position, so a
+    type that cannot be copied would break that operation for any lattice containing one.
+    """
+    lattice, _ = all_elements
+
+    failures = []
+    for element in lattice:
+        type_name = type(element).__name__
+        if type_name in SKIP_ELEMENTS:
+            continue
+        try:
+            duplicate = element.copy()
+        except Exception as e:  # noqa: BLE001 - report every offender at once
+            failures.append(f"{type_name}: {type(e).__name__}: {e}")
+            continue
+        assert type(duplicate) is type(element), type_name
+        assert dicts_equal(duplicate.to_dict(), element.to_dict()), (
+            f"copy of {type_name} does not match the original:\n"
+            f"  Original: {element.to_dict()}\n"
+            f"  Copy:     {duplicate.to_dict()}"
+        )
+
+    assert not failures, "elements that cannot be cloned:\n  " + "\n  ".join(failures)
+
+
+def _require_constructor_signatures():
+    """Skip the calling test if pybind11 docstrings carry no constructor signatures."""
+    if get_constructor_params(elements.Drift) is None:
+        pytest.skip("constructor signatures are not in the docstrings of this build")
+
+
+def test_thin_elements_are_those_without_ds():
+    """Exactly the thin elements have constructors without ``ds``.
+
+    ``to_dict()`` reports ``ds`` for every element, and unpacking it into a
+    constructor drops ``ds`` for subclasses of ``elements.mixin.Thin`` only.
+    """
+    _require_constructor_signatures()
+
+    element_classes = [
+        cls
+        for cls in vars(elements).values()
+        if isinstance(cls, type) and hasattr(cls, "to_dict")
+    ]
+    assert element_classes, "no element classes found"
+
+    mismatches = []
+    for cls in element_classes:
+        constructor_params = get_constructor_params(cls)
+        assert constructor_params is not None, f"{cls.__name__}: unreadable signature"
+        takes_ds = "ds" in constructor_params
+        is_thin = issubclass(cls, elements.mixin.Thin)
+        if takes_ds == is_thin:
+            mismatches.append(f"{cls.__name__}: thin={is_thin}, takes ds={takes_ds}")
+
+    assert not mismatches, (
+        "elements.mixin.Thin disagrees with the constructor signature:\n  "
+        + "\n  ".join(mismatches)
+    )
+
+
+def test_zero_length_thick_element_roundtrip(all_elements):
+    """Thick elements with ``ds=0.0`` survive ``from_dicts()`` and ``to_py()``.
+
+    ``to_dict()`` reports ``ds`` for thin and thick elements alike, so its value
+    alone does not tell whether the constructor takes it.
+    """
+    _require_constructor_signatures()
+    lattice, _ = all_elements
+
+    tested = []
+    for element in lattice:
+        type_name = type(element).__name__
+        if type_name in SKIP_ELEMENTS:
+            continue
+        constructor_params = get_constructor_params(type(element))
+        assert constructor_params is not None, f"{type_name}: unreadable signature"
+        if "ds" not in constructor_params:
+            continue
+        element.ds = 0.0
+        tested.append(type_name)
+    assert tested, "no thick element in the fixture"
+
+    dicts = lattice.to_dicts()
+
+    failures = []
+    for d in dicts:
+        if d["type"] not in tested:
+            continue
+        try:
+            elements.KnownElementsList().from_dicts([d])
+        except Exception as e:  # noqa: BLE001 - report every offender at once
+            failures.append(f"{d['type']}: {type(e).__name__}: {e}")
+    assert not failures, (
+        "zero-length elements that cannot be reconstructed:\n  " + "\n  ".join(failures)
+    )
+
+    lattice2 = elements.KnownElementsList()
+    lattice2.from_dicts(dicts)
+
+    # the generated source has to keep ``ds`` as well to stay executable
+    namespace = {}
+    exec(lattice.to_py(), namespace)
+    lattice3 = namespace["get_lattice"]()
+
+    for how, rebuilt in (("from_dicts()", lattice2), ("to_py()", lattice3)):
+        assert len(rebuilt) == len(lattice), how
+        for i, (d1, d2) in enumerate(zip(dicts, rebuilt.to_dicts())):
+            assert dicts_equal(d1, d2), (
+                f"{how} roundtrip failed at index {i} ({d1['type']}):\n"
+                f"  Original: {d1}\n"
+                f"  Reconstructed: {d2}"
+            )
+
+
+def test_zero_length_thick_elements_next_to_thin_elements():
+    """Zero-length thick elements keep ``ds`` while thin elements drop it."""
+    lattice = elements.KnownElementsList(
+        [
+            elements.Marker(name="m1"),
+            elements.Drift(ds=0.0, name="d0"),
+            elements.Quad(ds=0.0, k=1.0, name="q0"),
+            elements.Drift(ds=1.0, name="d1"),
+        ]
+    )
+    dicts = lattice.to_dicts()
+
+    lattice2 = elements.KnownElementsList()
+    lattice2.from_dicts(dicts)
+
+    namespace = {}
+    exec(lattice.to_py(), namespace)
+    lattice3 = namespace["get_lattice"]()
+
+    for rebuilt in (lattice2, lattice3):
+        assert [type(e).__name__ for e in rebuilt] == [
+            "Marker",
+            "Drift",
+            "Quad",
+            "Drift",
+        ]
+        for d1, d2 in zip(dicts, rebuilt.to_dicts()):
+            assert dicts_equal(d1, d2), f"Original: {d1}\nReconstructed: {d2}"
+
+
+def test_thin_element_with_nonzero_ds_is_rejected():
+    """A thin element has no length: a nonzero ``ds`` in its dict is an error."""
+    d = elements.Marker(name="m1").to_dict()
+    assert d["ds"] == 0.0
+    d["ds"] = 0.5
+
+    with pytest.raises(ValueError, match="Marker is a thin element"):
+        elements.KnownElementsList().from_dicts([d])
+
+
+def test_lattice_rebuild_covers_all_element_types(all_elements):
+    """The same coverage through the public API that depends on cloning."""
+    lattice, _ = all_elements
+
+    n_before = len(lattice)
+    # delete a single element: every *other* element has to be cloned
+    lattice.select(kind="Marker").delete()
+    assert len(lattice) < n_before
+
+
+def test_a_subclass_serializes_by_its_element_kind():
+    """The lattice keeps Python subclasses, and serialization has to see through them.
+
+    Regression test: the radians/degrees work-around keyed off the exact class name, so a
+    subclass of one of those elements skipped it and a 30 degree bend came back as 0.52.
+    """
+
+    class MyBend(elements.ExactSbend):
+        pass
+
+    lattice = elements.KnownElementsList()
+    lattice.extend(
+        [
+            elements.ExactSbend(ds=1.0, phi=30.0, B=0.0),
+            MyBend(ds=1.0, phi=30.0, B=0.0),
+        ]
+    )
+
+    plain, subclassed = lattice.to_dicts()
+
+    assert plain["phi"] == pytest.approx(30.0)
+    assert subclassed["phi"] == pytest.approx(30.0)

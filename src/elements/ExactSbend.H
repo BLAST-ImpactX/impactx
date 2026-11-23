@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -11,13 +11,14 @@
 #define IMPACTX_EXACTSBEND_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "mixin/alignment.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/beamoptic.H"
 #include "mixin/thick.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
+#include "mixin/synchrotronradiation.H"
 #include "mixin/nofinalize.H"
 
 #include <AMReX_Extension.H>
@@ -28,22 +29,23 @@
 #include <cmath>
 #include <stdexcept>
 
-
 namespace impactx::elements
 {
-    struct ExactSbend
-    : public mixin::Named,
-      public mixin::BeamOptic<ExactSbend>,
-      public mixin::LinearTransport<ExactSbend>,
+    struct ExactSbendGPU
+    : public mixin::BeamOptic<ExactSbendGPU>,
+      public mixin::LinearTransport<ExactSbendGPU>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
       public mixin::SpinTransport,
+      public mixin::SynchrotronRadiation,
       public mixin::NoFinalize,
       public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
     {
         static constexpr auto type = "ExactSbend";
         using PType = ImpactXParticleContainer::ParticleType;
+
+        static constexpr amrex::ParticleReal DEFAULT_B = 0;
 
         /** The body of an ideal sector bend, using the exact nonlinear transfer map.
          *  The map corresponds to the map described in:
@@ -66,22 +68,19 @@ namespace impactx::elements
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        ExactSbend (
+        ExactSbendGPU (
             amrex::ParticleReal ds,
             amrex::ParticleReal phi,
-            amrex::ParticleReal B,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal B = DEFAULT_B,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int nslice = DEFAULT_nslice
         )
-        : Named(std::move(name)),
-          Thick(ds, nslice),
+        : Thick(ds, nslice),
           Alignment(dx, dy, rotation_degree),
           PipeAperture(aperture_x, aperture_y),
           m_phi(phi * degree2rad), m_B(B)
@@ -102,7 +101,6 @@ namespace impactx::elements
 
         /** Push all particles */
         using BeamOptic::operator();
-
 
         /** Compute and cache the constants for the push.
          *
@@ -160,8 +158,8 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT y,
             T_Real & AMREX_RESTRICT t,
             T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
             T_IdCpu & AMREX_RESTRICT idcpu,
             [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
         ) const
@@ -171,9 +169,6 @@ namespace impactx::elements
             using namespace std; // for cmath(float)
             namespace stdx = amrex::simd::stdx;
 
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
             // access position data
             T_Real const xout = x;
             T_Real const yout = y;
@@ -181,8 +176,8 @@ namespace impactx::elements
 
             // initialize output values of momenta
             T_Real pxout = px;
-            T_Real pyout = py;
-            T_Real ptout = pt;
+            // T_Real pyout = py;
+            // T_Real ptout = pt;
 
             // treat the special case of zero field
             if (m_phi==0_prt && m_B==0_prt) {
@@ -203,9 +198,9 @@ namespace impactx::elements
                // ptout = pt;
 
                // assign updated momenta
-               px = pxout;
-               py = pyout;
-               pt = ptout;
+               // px = pxout;
+               // py = pyout;
+               // pt = ptout;
 
             } else {
 
@@ -222,8 +217,8 @@ namespace impactx::elements
 
                    // update momenta
                    pxout = px * m_cos_phi + (pzi - rho / m_rc) * m_sin_phi;
-                   pyout = py;
-                   ptout = pt;
+                   // pyout = py;
+                   // ptout = pt;
 
                    // angle of momentum rotation
                    T_Real const px2f = powi<2>(pxout);
@@ -241,17 +236,11 @@ namespace impactx::elements
 
                        // assign updated momenta
                        px = pxout;
-                       py = pyout;
-                       pt = ptout;
+                       // py = pyout;
+                       // pt = ptout;
                    }
                }
             }
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes the reference particle.
@@ -337,36 +326,41 @@ namespace impactx::elements
             amrex::ParticleReal const pt_ref = refpart.pt;
             amrex::ParticleReal const betgam2 = powi<2>(pt_ref) - 1_prt;
             amrex::ParticleReal const bet = refpart.beta();
+            amrex::ParticleReal const inv_bet = 1_prt / bet;
 
             // initialize linear map matrix elements
             Map6x6 R = Map6x6::Identity();
 
             // treat the special case of zero field
-            if (m_rc==0.0_prt) {
+            if (m_phi == 0.0_prt && m_B == 0.0_prt)
+            {
                R(1,2) = slice_ds;
                R(3,4) = slice_ds;
                R(5,6) = slice_ds / betgam2;
-
-            } else {
+            } else
+            {
+               // reference particle's orbital radius
+               amrex::ParticleReal const rc = this->rc(refpart);
 
                // calculate expensive terms once
-               amrex::ParticleReal const theta = slice_ds/m_rc;
+               amrex::ParticleReal const theta = slice_ds / rc;
                auto const [sin_theta, cos_theta] = amrex::Math::sincos(theta);
 
                // assign linear map matrix elements
                R(1,1) = cos_theta;
-               R(1,2) = m_rc * sin_theta;
-               R(1,6) = - ( m_rc / bet) * (1_prt - cos_theta);
-               R(2,1) = -sin_theta / m_rc;
+               R(1,2) = rc * sin_theta;
+               R(1,6) = -rc * inv_bet * (1_prt - cos_theta);
+               R(2,1) = -sin_theta / rc;
                R(2,2) = cos_theta;
-               R(2,6) = - sin_theta / bet;
-               R(3,4) = m_rc * theta;
-               R(5,1) = sin_theta / bet;
-               R(5,2) = m_rc / bet * (1_prt - cos_theta);
-               R(5,6) = m_rc * (-theta + sin_theta / (bet * bet));
+               R(2,6) = -sin_theta * inv_bet;
+               R(3,4) = rc * theta;
+               R(5,1) = sin_theta * inv_bet;
+               R(5,2) = rc * inv_bet * (1_prt - cos_theta);
+               R(5,6) = rc * (sin_theta * inv_bet * inv_bet - theta);
             }
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
 
@@ -382,22 +376,22 @@ namespace impactx::elements
          * @param sy particle spin y-component
          * @param sz particle spin z-component
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void spin_and_phasespace_push (
-            [[maybe_unused]] T_Real & AMREX_RESTRICT x,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT y,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT t,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT px,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT py,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT pt,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sx,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sy,
-            [[maybe_unused]] T_Real & AMREX_RESTRICT sz,
-            [[maybe_unused]] T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real const & AMREX_RESTRICT py,
+            T_Real const & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            T_IdCpu & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
@@ -415,12 +409,12 @@ namespace impactx::elements
             T_Real lambdaz = 0_prt;
 
             // store initial variables needed for spin push
-            T_Real ti = t;
-            T_Real Pnorm = sqrt(1_prt + pt*pt - 2_prt*pt*m_ibeta);
-            T_Real gamma = (1_prt - pt*m_beta)*refpart.gamma();
-            T_Real ux = px/Pnorm;
-            T_Real uy = py/Pnorm;
-            T_Real uz = sqrt(1_prt - ux*ux - uy*uy);
+            T_Real const ti = t;
+            T_Real const Pnorm = sqrt(1_prt + pt*pt - 2_prt*pt*m_ibeta);
+            T_Real const gamma = (1_prt - pt*m_beta)*refpart.gamma();
+            T_Real const ux = px/Pnorm;
+            T_Real const uy = py/Pnorm;
+            T_Real const uz = sqrt(1_prt - ux*ux - uy*uy);
 
             // For this element, note that the time-of-flight from entry to
             // exit is needed for evaluation of the spin map, so the phase
@@ -430,10 +424,10 @@ namespace impactx::elements
             (*this)(x, y, t, px, py, pt, idcpu, refpart);
 
             // particle transit time through the slice
-            T_Real dt = t - ti + m_slice_phi * m_rc * m_ibeta;
+            T_Real const dt = t - ti + m_slice_phi * m_rc * m_ibeta;
 
             // advance in cyclotron phase
-            T_Real theta = dt / m_rc * m_beta_gamma / gamma;
+            T_Real const theta = dt / m_rc * m_beta_gamma / gamma;
 
             lambdax = m_gyro * theta * (gamma - 1_prt) * uy * ux;
             lambday = m_gyro * theta * ( -gamma + (gamma - 1_prt) * uy * uy );
@@ -463,8 +457,11 @@ namespace impactx::elements
 
     };
 
+    /** ExactSbend: GPU state plus common host-only metadata */
+    using ExactSbend = Element<ExactSbendGPU>;
+
 } // namespace impactx
 
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactSbend)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactSbendGPU)
 
 #endif // IMPACTX_EXACTSBEND_H

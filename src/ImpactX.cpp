@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -8,12 +8,15 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ImpactX.H"
-#include "elements/mixin/dynamicdata.H"
+#include "diagnostics/DiagnosticOutput.H"
+#include "diagnostics/FilePrefix.H"
+#include "elements/helper/Accessors.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/Push.H"
-#include "diagnostics/DiagnosticOutput.H"
 #include "particles/wakefields/HandleWakefield.H"
+
+#include <ablastr/warn_manager/WarnManager.H>
 
 #include <AMReX.H>
 #include <AMReX_AmrParGDB.H>
@@ -23,8 +26,10 @@
 #include <AMReX_Print.H>
 #include <AMReX_Utility.H>
 
+#include <functional>
 #include <iostream>
 #include <memory>
+#include <string>
 
 
 namespace impactx {
@@ -37,18 +42,75 @@ namespace impactx {
 
     ImpactX::~ImpactX()
     {
-        this->finalize();
+        // A destructor may not let an exception out: doing so ends the process, and
+        // finalize() does throw -- it refuses while a traversal is walking the lattice.
+        // The Python bindings hold the simulation for the duration of a lattice call so
+        // that cannot happen from there, but a destructor is the wrong place to find out.
+        // Report and carry on: whatever is left unfinalized is going away with us.
+        try
+        {
+            this->finalize();
+        }
+        catch (std::exception const & e)
+        {
+            amrex::Print() << "ImpactX: could not finalize on destruction: " << e.what() << "\n";
+        }
+        catch (...)
+        {
+            amrex::Print() << "ImpactX: could not finalize on destruction.\n";
+        }
     }
 
     void ImpactX::finalize ()
     {
+        // Refuse before anything is torn down. Reached from a tracking hook, finalizing
+        // the elements first and only then failing to empty the lattice would leave
+        // tracking to run on through elements that are already finished with.
+        if (m_lattice->is_being_traversed())
+        {
+            throw std::runtime_error(
+                "ImpactX: cannot finalize while tracking through the lattice.");
+        }
+
+        // Let go of the element the tracking state points at. Tracking releases it on
+        // its way out, but a run that ended in an exception from a user hook may not
+        // have got there, and a share kept here would outlive the element it names.
+        m_tracking_state.set_no_element();
+
         // loop over all beamline elements & finalize them
         finalize_elements();
 
+        // Empty the lattice before releasing Python wrappers. A wrapper's finalizer may
+        // iterate the lattice; it must not find the elements being released and recreate
+        // their owner list, keeping AMReX-backed data alive past AMReX shutdown.
+        m_lattice->clear();
+
+        // Let the caller release what it keeps alive on behalf of the lattice, and release the
+        // hooks, while AMReX is still up. The Python bindings drop the element wrappers here:
+        // an element can carry AMReX-backed data on its Python side -- a MultiFab attached to
+        // a Programmable, say -- and that has to be destroyed before the arena it came from.
+        // This runs after the elements' own finalization, which may run a user callback
+        // that reads what a wrapper holds.
+        {
+            // Releasing wrappers and hooks runs Python finalizers. They may read the empty
+            // lattice, but must not repopulate it and retain AMReX-backed data past shutdown.
+            Lattice::TraversalGuard const cleanup(*m_lattice);
+
+            if (m_release_lattice_owners)
+            {
+                m_release_lattice_owners();
+            }
+
+            // A hook can hold AMReX-backed data, or this simulation in a cycle the garbage
+            // collector cannot see. A finalizer run on release can register another hook.
+            while (!m_hook.empty())
+            {
+                decltype(m_hook)().swap(m_hook);
+            }
+        }
+
         if (m_grids_initialized)
         {
-            m_lattice.clear();
-
             // this one last
             amr_data.reset();
 
@@ -62,12 +124,15 @@ namespace impactx {
 
     void ImpactX::finalize_elements ()
     {
+        // An element's finalization can run a callback of its own, and that callback can
+        // reach this lattice. Appending would reallocate the storage under the loop below,
+        // so refuse structural edits for the walk.
+        Lattice::TraversalGuard const traversal(*m_lattice);
+
         // loop over all beamline elements & finalize them
-        for (auto & element_variant : m_lattice)
+        for (auto & element_variant : *m_lattice)
         {
-            std::visit([](auto&& element){
-                element.finalize();
-            }, element_variant);
+            elements::finalize(element_variant);
         }
     }
 
@@ -85,8 +150,8 @@ namespace impactx {
         // move old diagnostics out of the way
         bool diag_enable = true;
         amrex::ParmParse("diag").queryAdd("enable", diag_enable);
-        if (diag_enable) {
-            amrex::UtilCreateCleanDirectory("diags", true);
+        if (diag_enable && diagnostics::FilePrefixCanClean()) {
+            amrex::UtilCreateCleanDirectory(diagnostics::FilePrefix(), true);
         }
 
         // the particle container has been set to track the same Geometry as ImpactX
@@ -117,6 +182,55 @@ namespace impactx {
             if (verbose > 0) {
                 std::cout << "\nGrids Summary:\n";
                 amr_data->printGridSummary(std::cout, 0, amr_data->finestLevel());
+            }
+        }
+
+        // warn on inefficient domain decompositions (number of boxes vs. parallel processes)
+        {
+            std::string const python_hint(
+                " In Python, the equivalent options are sim.max_grid_size and "
+                "sim.max_grid_size_x/_y/_z."
+            );
+            int const nprocs = amrex::ParallelDescriptor::NProcs();
+            for (int lev = 0; lev <= amr_data->finestLevel(); ++lev) {
+                amrex::Long const nboxes = amr_data->boxArray(lev).size();
+                if (nprocs == 1 && nboxes > 1) {
+                    ablastr::warn_manager::WMRecordWarning(
+                        "ImpactX::init_grids",
+                        "The mesh on level " + std::to_string(lev) + " is decomposed into " +
+                        std::to_string(nboxes) + " boxes, but this simulation runs on a "
+                        "single process. More than one box per process causes significant "
+                        "overhead (particle redistribution, communication in field solves, "
+                        "extra kernel launches) without any parallelization benefit. "
+                        "Set amr.max_grid_size at least as large as amr.n_cell "
+                        "(per direction: amr.max_grid_size_x/_y/_z) to create a single box, "
+                        "or run with more MPI processes." + python_hint,
+                        ablastr::warn_manager::WarnPriority::high
+                    );
+                } else if (nboxes > nprocs) {
+                    ablastr::warn_manager::WMRecordWarning(
+                        "ImpactX::init_grids",
+                        "The mesh on level " + std::to_string(lev) + " is decomposed into " +
+                        std::to_string(nboxes) + " boxes for only " + std::to_string(nprocs) +
+                        " MPI processes. More than one box per process (e.g., per GPU) "
+                        "causes significant overhead (particle redistribution, communication "
+                        "in field solves, extra kernel launches). Increase amr.max_grid_size "
+                        "(per direction: amr.max_grid_size_x/_y/_z) so that the number of "
+                        "boxes matches the number of processes." + python_hint,
+                        ablastr::warn_manager::WarnPriority::high
+                    );
+                } else if (lev == 0 && nboxes < nprocs) {
+                    ablastr::warn_manager::WMRecordWarning(
+                        "ImpactX::init_grids",
+                        "The mesh on level 0 is decomposed into " + std::to_string(nboxes) +
+                        " box(es) for " + std::to_string(nprocs) + " MPI processes. Processes "
+                        "without a box do not participate in field solves and hold no "
+                        "particles after redistribution. Decrease amr.max_grid_size "
+                        "(per direction: amr.max_grid_size_x/_y/_z) so that the number of "
+                        "boxes matches the number of processes." + python_hint,
+                        ablastr::warn_manager::WarnPriority::high
+                    );
+                }
             }
         }
 

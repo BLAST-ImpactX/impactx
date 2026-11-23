@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 The Regents of the University of California, through Lawrence
+/* Copyright 2022-2026 The Regents of the University of California, through Lawrence
  *           Berkeley National Laboratory (subject to receipt of any required
  *           approvals from the U.S. Dept. of Energy). All rights reserved.
  *
@@ -20,11 +20,16 @@
 
 namespace impactx::elements::mixin
 {
-    /** This is a helper class for applying a transverse aperture restriction to thick lattice elements
+    /** This is a helper class for applying a transverse aperture restriction to lattice elements
      */
     struct PipeAperture
     {
-        /** A finite-length element with a constant elliptical aperture over s.
+        static constexpr amrex::ParticleReal DEFAULT_aperture_x = 0;
+        static constexpr amrex::ParticleReal DEFAULT_aperture_y = 0;
+
+        /** An element with a constant elliptical aperture.
+         *
+         * A half-aperture of zero or less removes the boundary in that plane.
          *
          * @param aperture_x horizontal half-aperture size [m]
          * @param aperture_y vertical half-aperture size [m]
@@ -34,10 +39,8 @@ namespace impactx::elements::mixin
             amrex::ParticleReal aperture_y
         )
         {
-            using namespace amrex::literals;  // for _prt
-
-            m_inv_aperture_x = aperture_x > 0_prt ? 1_prt / aperture_x : 0_prt;
-            m_inv_aperture_y = aperture_y > 0_prt ? 1_prt / aperture_y : 0_prt;
+            set_aperture_x(aperture_x);
+            set_aperture_y(aperture_y);
         }
 
         PipeAperture () = default;
@@ -50,15 +53,21 @@ namespace impactx::elements::mixin
 
         /** Apply the transverse aperture
          *
-         * @param[inout] x horizontal position relative to reference particle
-         * @param[inout] y vertical position relative to reference particle
-         * @param idcpu particle global index
+         * Each plane is bounded independently: a half-aperture of zero or less
+         * removes the constraint in that plane only, while the other plane still
+         * cuts. This falls out of storing the inverse half-aperture: a stored zero
+         * scales its coordinate away, so that plane never contributes to the
+         * boundary comparison and the ellipse degenerates into a slab.
+         *
+         * @param[in] x horizontal position relative to reference particle
+         * @param[in] y vertical position relative to reference particle
+         * @param[inout] idcpu particle global index, made invalid if the particle is lost
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void apply_aperture (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
+            T_Real const & AMREX_RESTRICT x,
+            T_Real const & AMREX_RESTRICT y,
             T_IdCpu & AMREX_RESTRICT idcpu
         ) const
         {
@@ -66,13 +75,15 @@ namespace impactx::elements::mixin
             using amrex::Math::powi;
             namespace stdx = amrex::simd::stdx;
 
-            // skip aperture application if aperture_x <= 0 or aperture_y <= 0
-            if (m_inv_aperture_x > 0_prt && m_inv_aperture_y > 0_prt) {
+            // skip aperture application if neither plane is bounded
+            if (aperture_active()) {
 
                 // scale horizontal and vertical coordinates
                 // performance optimization: we intentionally store the inverse of
                 //   the aperture, so we can do a quick multiplication (instead of a
                 //   costly division) here.
+                // a stored zero disables that plane: the coordinate is scaled away
+                //   and never contributes to the comparison below
                 T_Real const u = x * m_inv_aperture_x;
                 T_Real const v = y * m_inv_aperture_y;
 
@@ -80,6 +91,26 @@ namespace impactx::elements::mixin
                 auto const mask = u*u + v*v > 1_prt;
                 amrex::ParticleIDWrapper<T_IdCpu>{idcpu}.make_invalid(mask);
             }
+        }
+
+        /** Is the aperture restriction active?
+         *
+         * The restriction is removed only if both planes are non-positive: a
+         * single bounded plane still cuts, @see apply_aperture.
+         *
+         * Both stored inverses are non-negative, @see set_aperture_x, so the sum
+         * is positive exactly if at least one plane is bounded. Written as a sum
+         * rather than the equivalent `||` on purpose: the single comparison keeps
+         * GCC hoisting this loop-invariant test out of the vectorized particle
+         * loop, so an element without an aperture pays nothing per particle.
+         *
+         * @return true if particles can be lost in this aperture
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        bool aperture_active () const
+        {
+            using namespace amrex::literals; // for _prt
+            return m_inv_aperture_x + m_inv_aperture_y > 0_prt;
         }
 
         /** Horizontal aperture size
@@ -102,6 +133,38 @@ namespace impactx::elements::mixin
         {
             using namespace amrex::literals; // for _prt
             return m_inv_aperture_y > 0_prt ? 1_prt / m_inv_aperture_y : 0_prt;
+        }
+
+        /** Set the horizontal aperture size
+         *
+         * A value of zero or less removes the horizontal aperture restriction.
+         *
+         * @param aperture_x horizontal aperture size [m]
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void set_aperture_x (amrex::ParticleReal aperture_x)
+        {
+            using namespace amrex::literals; // for _prt
+
+            // performance optimization: we intentionally store the inverse of
+            //   the aperture, @see m_inv_aperture_x
+            m_inv_aperture_x = aperture_x > 0_prt ? 1_prt / aperture_x : 0_prt;
+        }
+
+        /** Set the vertical aperture size
+         *
+         * A value of zero or less removes the vertical aperture restriction.
+         *
+         * @param aperture_y vertical aperture size [m]
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void set_aperture_y (amrex::ParticleReal aperture_y)
+        {
+            using namespace amrex::literals; // for _prt
+
+            // performance optimization: we intentionally store the inverse of
+            //   the aperture, @see m_inv_aperture_y
+            m_inv_aperture_y = aperture_y > 0_prt ? 1_prt / aperture_y : 0_prt;
         }
 
         // performance optimization: we intentionally store the inverse of

@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-# Copyright 2021-2023 Axel Huebl
+# Copyright 2022-2026 Axel Huebl
 # This file is part of ImpactX.
 # License: BSD-3-Clause-LBNL
 #

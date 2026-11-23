@@ -200,8 +200,8 @@ Brew can be used to install dependencies on Linux and macOS.
 .. code-block:: bash
 
    brew update
-   brew tap openpmd/openpmd
    brew install adios2      # for openPMD
+   brew install boost       # for synmadx MAD-X parser
    brew install ccache
    brew install cmake
    brew install fftw        # for IGF space charge, CSR
@@ -213,7 +213,7 @@ Brew can be used to install dependencies on Linux and macOS.
    brew install pkg-config  # for fftw
    brew install open-mpi
    brew install openblas
-   brew install openpmd-api # for openPMD
+   brew install openpmd/openpmd/openpmd-api # for openPMD
 
 Compile ImpactX with ``-DImpactX_MPI=ON``.
 For ``pip``, use ``export IMPACTX_MPI=ON``.
@@ -231,7 +231,7 @@ The `Advanced Package Tool (APT) <https://en.wikipedia.org/wiki/APT_(software)>`
       .. code-block:: bash
 
          sudo apt update
-         sudo apt install build-essential ccache cmake g++ git libfftw3-mpi-dev libfftw3-dev libhdf5-openmpi-dev libopenmpi-dev pkg-config python3 python3-dev python3-matplotlib python3-mpi4py python3-numpy python3-pandas python3-pip python3-scipy python3-venv
+         sudo apt install build-essential ccache cmake g++ git libboost-dev libfftw3-mpi-dev libfftw3-dev libhdf5-openmpi-dev libopenmpi-dev pkg-config python3 python3-dev python3-matplotlib python3-mpi4py python3-numpy python3-pandas python3-pip python3-scipy python3-venv
 
          # optional:
          # for CUDA, either install
@@ -247,7 +247,7 @@ The `Advanced Package Tool (APT) <https://en.wikipedia.org/wiki/APT_(software)>`
       .. code-block:: bash
 
          sudo apt update
-         sudo apt install build-essential ccache cmake g++ git libfftw3-dev libhdf5-dev pkg-config python3 python3-dev python3-matplotlib python3-numpy python3-pandas python3-pip python3-scipy python3-venv
+         sudo apt install build-essential ccache cmake g++ git libboost-dev libfftw3-dev libhdf5-dev pkg-config python3 python3-dev python3-matplotlib python3-numpy python3-pandas python3-pip python3-scipy python3-venv
 
          # optional:
          # for CUDA, either install
@@ -305,6 +305,8 @@ For example, this builds ImpactX with Python bindings and Nvidia GPU (CUDA) supp
 .. code-block:: bash
 
    cmake -S . -B build -DImpactX_PYTHON=ON -DImpactX_COMPUTE=CUDA
+
+On a machine without a visible GPU, e.g. an HPC login node, additionally select the GPU architecture to compile for (see :ref:`building-cmake-gpu-archs`).
 
 
 An executable ImpactX application binary will be created in ``build/bin/``.
@@ -398,10 +400,55 @@ We also support adding `additional compiler flags via environment variables <htt
    # example: treat all compiler warnings as errors
    export CXXFLAGS="-Werror"
 
+.. tip::
+
+   To get the most performance out of your CPU, compile for the
+   instruction set of the machine you run on:
+
+   .. code-block:: bash
+
+      export CXXFLAGS="-march=native -mtune=native"
+
+   Use ``-march=native`` only for builds that run on the same CPU generation they were
+   compiled on. For portable binaries, pick a specific baseline architecture instead
+   (e.g. ``-march=x86-64-v3 -mtune=generic`` for AMD/Intel CPUs build since the year 2021, our :ref:`HPC configurations <install-hpc>` set the right match in their profile files for you).
+   Also enable our vectorization option in the table below: ``-DImpactX_SIMD=ON``
+
 .. note::
 
-   Please clean your build directory with ``rm -rf build/`` after changing the compiler.
+   Please clean your build directory with ``rm -rf build/`` after changing the compiler or environment variables like ``CXXFLAGS``.
    Now call ``cmake -S . -B build`` (+ further options) again to re-initialize the build configuration.
+
+
+.. _building-cmake-gpu-archs:
+
+Select GPU Architectures
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+For Nvidia GPUs, ImpactX uses the standard CMake interface to select the CUDA architectures to compile for.
+By default, we select ``native``, i.e., CMake detects the architecture of the GPU(s) visible on the machine that runs ``cmake`` and ImpactX is built exactly for those.
+
+If no GPU is visible at configuration time (a typical situation on HPC login nodes, in containers and in CI) then configuration stops with an error and you need to select the architecture explicitly, either as a CMake option:
+
+.. code-block:: bash
+
+   cmake -S . -B build -DImpactX_COMPUTE=CUDA -DCMAKE_CUDA_ARCHITECTURES=80
+
+or as an `environment variable <https://cmake.org/cmake/help/latest/envvar/CUDAARCHS.html>`__, which is what our :ref:`HPC profiles <install-hpc>` do:
+
+.. code-block:: bash
+
+   export CUDAARCHS=80
+
+Architectures are written as integers, e.g., ``80`` for A100 (compute capability 8.0) and ``90`` for H100.
+`Multiple architectures <https://cmake.org/cmake/help/latest/prop_tgt/CUDA_ARCHITECTURES.html>`__ are separated by semicolons (``"80;90"``), and the special values ``native``, ``all`` and ``all-major`` are supported as well.
+
+.. note::
+
+   The older AMReX-specific spellings ``-DAMReX_CUDA_ARCH=8.0`` and ``export AMREX_CUDA_ARCH=8.0`` still work, but are deprecated and warn.
+   They are translated to the CMake variables above, including their historical value formats (``Auto``, ``Common``, ``Volta``, ``8.0``, ``7.0+PTX``, whitespace-separated lists).
+
+For AMD GPUs, select the architecture with ``-DAMReX_AMD_ARCH=gfx90a`` or ``export AMREX_AMD_ARCH=gfx90a``.
 
 
 CMake
@@ -412,6 +459,7 @@ CMake Option                    Default & Values                             Des
 =============================== ============================================ ===========================================================
 ``BUILD_TESTING``               **ON**/OFF                                   `Build tests <https://cmake.org/cmake/help/latest/module/CTest.html>`__
 ``CMAKE_BUILD_TYPE``            RelWithDebInfo/**Release**/Debug             `Type of build, symbols & optimizations <https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html>`__
+``CMAKE_CUDA_ARCHITECTURES``    **native**/all/all-major/``80``/...          `Nvidia GPU architectures to compile for <https://cmake.org/cmake/help/latest/prop_tgt/CUDA_ARCHITECTURES.html>`__ (``ImpactX_COMPUTE=CUDA``)
 ``CMAKE_INSTALL_PREFIX``        system-dependent path                        `Install path prefix <https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html>`__
 ``CMAKE_VERBOSE_MAKEFILE``      ON/**OFF**                                   `Print all compiler commands to the terminal during build <https://cmake.org/cmake/help/latest/variable/CMAKE_VERBOSE_MAKEFILE.html>`__
 ``ImpactX_APP``                 **ON**/OFF                                   Build the ImpactX executable application
@@ -422,13 +470,20 @@ CMake Option                    Default & Values                             Des
 ``ImpactX_MPI``                 **ON**/OFF                                   Multi-node support (message-passing)
 ``ImpactX_MPI_THREAD_MULTIPLE`` **ON**/OFF                                   MPI thread-multiple support, i.e. for ``async_io``
 ``ImpactX_OPENPMD``             **ON**/OFF                                   openPMD I/O (HDF5, ADIOS)
+``ImpactX_OPTIMIZE_ALIGNMENT``  **ON**/OFF                                   Branch-free push paths for aligned/misaligned elements (OFF halves element-push compile time)
 ``ImpactX_PRECISION``           SINGLE/**DOUBLE**                            Floating point precision (single/double)
 ``ImpactX_PYTHON``              ON/**OFF**                                   Python bindings
 ``ImpactX_SIMD``                ON/**OFF**                                   CPU SIMD acceleration (requires ``vir-simd``)
+``ImpactX_SYNMADX``             ON/**OFF**                                   Custom Synergia migration parser (requires ``Boost``)
 ``Python_EXECUTABLE``           (newest found)                               Path to Python executable
 ``PY_PIP_OPTIONS``              ``-v``                                       Additional options for ``pip``, e.g., ``-vvv;-q``
 ``PY_PIP_INSTALL_OPTIONS``                                                   Additional options for ``pip install``, e.g., ``--user;-q``
 =============================== ============================================ ===========================================================
+
+.. note::
+
+   Single-precision builds (``ImpactX_PRECISION=SINGLE``) are in development and are not yet
+   fully supported.
 
 ImpactX can be configured in further detail with options from AMReX, which are documented in the AMReX manual:
 
@@ -452,9 +507,10 @@ CMake Option                  Default & Values                               Des
 ``ImpactX_amrex_repo``        ``https://github.com/AMReX-Codes/amrex.git``   Repository URI to pull and build AMReX from
 ``ImpactX_amrex_branch``      *we set and maintain a compatible commit*      Repository branch for ``ImpactX_amrex_repo``
 ``ImpactX_amrex_internal``    **ON**/OFF                                     Needs a pre-installed AMReX library if set to ``OFF``
+``ImpactX_catch_internal``     **ON**/OFF                                     Needs a pre-installed Catch2 library if set to ``OFF``
 ``ImpactX_openpmd_src``       *None*                                         Path to openPMD-api source directory (preferred if set)
 ``ImpactX_openpmd_repo``      ``https://github.com/openPMD/openPMD-api.git`` Repository URI to pull and build openPMD-api from
-``ImpactX_openpmd_branch``    ``0.17.0``                                     Repository branch for ``ImpactX_openpmd_repo``
+``ImpactX_openpmd_branch``    ``0.17.1``                                     Repository branch for ``ImpactX_openpmd_repo``
 ``ImpactX_openpmd_internal``  **ON**/OFF                                     Needs a pre-installed openPMD-api library if set to ``OFF``
 ``ImpactX_pyamrex_src``       *None*                                         Path to pyAMReX source directory (preferred if set)
 ``ImpactX_pyamrex_repo``      ``https://github.com/AMReX-Codes/pyamrex.git`` Repository URI to pull and build pyAMReX from
@@ -494,6 +550,7 @@ Environment variables can be used to control the build step:
 Environment Variable          Default & Values                             Description
 ============================= ============================================ ================================================================
 ``IMPACTX_COMPUTE``           NOACC/**OMP**/CUDA/SYCL/HIP                  On-node, accelerated computing backend
+``CUDAARCHS``                 **native**/all/all-major/``80``/...          Nvidia GPU architectures to compile for (see :ref:`building-cmake-gpu-archs`)
 ``IMPACTX_MPI``               ON/**OFF**                                   Multi-node support (message-passing)
 ``IMPACTX_PRECISION``         SINGLE/**DOUBLE**                            Floating point precision (single/double)
 ``IMPACTX_FFT``               ON/**OFF**                                   FFT-based solvers (IGF space charge, CSR)
@@ -507,13 +564,18 @@ Environment Variable          Default & Values                             Descr
 ``IMPACTX_PYAMREX_REPO``      *None (uses cmake default)*                  Repository URI to pull and build pyAMReX from
 ``IMPACTX_PYAMREX_BRANCH``    *None (uses cmake default)*                  Repository branch for ``IMPACTX_PYAMREX_REPO``
 ``IMPACTX_PYAMREX_INTERNAL``  **ON**/OFF                                   Needs a pre-installed pyAMReX library if set to ``OFF``
+``IMPACTX_OPENPMD_SRC``       *None*                                       Absolute path to openPMD-api source directory (preferred if set)
+``IMPACTX_OPENPMD_REPO``      *None (uses cmake default)*                  Repository URI to pull and build openPMD-api from
+``IMPACTX_OPENPMD_BRANCH``    *None (uses cmake default)*                  Repository branch for ``IMPACTX_OPENPMD_REPO``
+``IMPACTX_OPENPMD_INTERNAL``  **ON**/OFF                                   Needs a pre-installed openPMD-api library if set to ``OFF``
 ``PYIMPACTX_LIBDIR``          *None*                                       If set, search for pre-built ImpactX C++ libraries (see below)
 ============================= ============================================ ================================================================
 
 Note that we currently change the ``IMPACTX_MPI`` default intentionally to ``OFF``, to simplify a first install from source.
 
 Additional CMake options can be passed through ``pip`` using variables of the form ``IMPACTX_CMAKE_<NAME>=<VALUE>``, which will be forwarded as ``-D<NAME>=<VALUE>`` to CMake.
-Use this to control, e.g., ABLASTR, openPMD-api, or pybind11 source/repo/branch selection when building via ``pip``.
+Use this to control, e.g., ABLASTR or pybind11 source/repo/branch selection when building via ``pip``.
+Note that Windows upper-cases environment variable names while CMake variables are case-sensitive, so mixed-case CMake options (e.g. ``ImpactX_openpmd_internal``) cannot be passed this way on Windows -- use the dedicated all-caps variables above.
 
 Some hints and workflows follow.
 Developers that want to test a change of the source code but did not change the ``impactx`` version number can force a reinstall via:

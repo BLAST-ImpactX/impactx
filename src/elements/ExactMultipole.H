@@ -11,29 +11,27 @@
 #define IMPACTX_EXACTMULTIPOLE_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "mixin/gpuelement.H"
 #include "particles/integrators/Integrators.H"
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
-#include "mixin/dynamicdata.H"
+#include "helper/ArrayValidation.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
-#include "mixin/named.H"
-#include "mixin/nofinalize.H"
 #include "mixin/pipeaperture.H"
 #include "mixin/thick.H"
-#include "mixin/TrackedVector.H"
 
 #include <AMReX_Extension.H>
 #include <AMReX_GpuComplex.H>
 #include <AMReX_Math.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SIMD.H>
+#include <AMReX_TrackedVector.H>
 
 #include <cmath>
 #include <memory>
 #include <stdexcept>
 #include <vector>
-
 
 namespace impactx::elements
 {
@@ -45,19 +43,21 @@ namespace impactx::elements
      */
     struct MultipoleCoefficients
     {
-        mixin::TrackedVector<amrex::ParticleReal> k_normal;
-        mixin::TrackedVector<amrex::ParticleReal> k_skew;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> k_normal;
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> k_skew;
     };
 
-    struct ExactMultipole
-    : public mixin::Named,
-      public mixin::BeamOptic<ExactMultipole>,
-      public mixin::LinearTransport<ExactMultipole>,
+    /** The prepared pusher for an exact multipole.
+     *
+     * Holds the particle-facing configuration, the constants derived from the reference
+     * particle, and a bounded, non-owning view of the multipole coefficients.
+     */
+    struct ExactMultipolePusher
+    : public mixin::ParticlePush<ExactMultipolePusher>,
       public mixin::Thick,
       public mixin::Alignment,
       public mixin::PipeAperture,
-      public mixin::SpinTransport,
-      public mixin::NoFinalize
+      public mixin::SpinTransport
 #ifndef _WIN32
       // https://github.com/AMReX-Codes/amrex/issues/4609
       , public amrex::simd::Vectorized<amrex::simd::native_simd_size_particlereal>
@@ -66,73 +66,50 @@ namespace impactx::elements
         static constexpr auto type = "ExactMultipole";
         using PType = ImpactXParticleContainer::ParticleType;
 
-        using DynamicData = mixin::GPUDataRegistry<MultipoleCoefficients>;
+        static constexpr int DEFAULT_unit = 0;
+        static constexpr int DEFAULT_int_order = 2;
+        static constexpr int DEFAULT_mapsteps = 10;
 
-        /** A general (thick) straight-axis magnetic element whose field consists
-         *  of a superposition of ideal hard-edge multipoles.  Like the element
-         *  ExactQuad, the magnet is treated using the exact Hamiltonian, which
-         *  includes all nonlinear kinematic effects.  This is a generalization
-         *  of the (thin) element Multipole, which applies the kick associated
-         *  with a single ideal multipole.  Here, symplectic integration
-         *  is used based on a splitting of the underlying Hamiltonian.
+        //! most coefficients per array: map2 and map3 advance an int factorial past the last one
+        static constexpr int MAX_order = 12;
+
+        /** The particle-facing configuration of an exact multipole
          *
          * @param ds Segment length in m.
-         * @param k_normal Array of normal multipole coefficients (units below)
-         * @param k_skew   Array of skew multipole coefficients (units below)
-         * @param unit  Unit specification
-         *           unit = 0 multipole strengths in units of 1/m^n (default)
-         *           unit = 1 multipole strengths in units of T/m^(n-1)
+         * @param unit unit specification for the multipole strengths
          * @param dx horizontal translation error in m
          * @param dy vertical translation error in m
          * @param rotation_degree rotation error in the transverse plane [degrees]
          * @param aperture_x horizontal half-aperture in m
          * @param aperture_y vertical half-aperture in m
          * @param int_order order used for symplectic integration (2, 4, or 6)
-         * @param mapsteps number of integration steps per slice used for
-         *        particle push in the applied fields
+         * @param mapsteps number of integration steps per slice
          * @param nslice number of slices used for the application of space charge
-         * @param name a user defined and not necessarily unique name of the element
          */
-        ExactMultipole (
+        ExactMultipolePusher (
             amrex::ParticleReal ds,
-            std::vector<amrex::ParticleReal> k_normal,
-            std::vector<amrex::ParticleReal> k_skew,
             int unit,
-            amrex::ParticleReal dx = 0,
-            amrex::ParticleReal dy = 0,
-            amrex::ParticleReal rotation_degree = 0,
-            amrex::ParticleReal aperture_x = 0,
-            amrex::ParticleReal aperture_y = 0,
-            int int_order = 2,
-            int mapsteps = 1,
-            int nslice = 1,
-            std::optional<std::string> name = std::nullopt
+            amrex::ParticleReal dx,
+            amrex::ParticleReal dy,
+            amrex::ParticleReal rotation_degree,
+            amrex::ParticleReal aperture_x,
+            amrex::ParticleReal aperture_y,
+            int int_order,
+            int mapsteps,
+            int nslice
         )
-        : Named(std::move(name)),
-          Thick(ds, nslice),
-          Alignment(dx, dy, rotation_degree),
-          PipeAperture(aperture_x, aperture_y),
-          m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps),
-          m_id(DynamicData::allocate_id())
+          : Thick(ds, nslice),
+            Alignment(dx, dy, rotation_degree),
+            PipeAperture(aperture_x, aperture_y),
+            m_unit(unit), m_int_order(int_order), m_mapsteps(mapsteps)
         {
-            m_ncoef = int(k_normal.size());
-            if (m_ncoef != int(k_skew.size()))
-                throw std::runtime_error("ExactMultipole: normal and skew coefficient arrays must have same length!");
-
-            auto& coef = DynamicData::emplace(
-                m_id,
-                std::move(k_normal),
-                std::move(k_skew)
-            );
-            m_k_normal_h_data = coef.k_normal.host_const().data();
-            m_k_skew_h_data = coef.k_skew.host_const().data();
         }
 
         /** Reverse the element (negate ds) */
         void reverse () { Thick::reverse(); }
 
-        /** Push all particles */
-        using BeamOptic::operator();
+        /** Push all particles on a tile */
+        using mixin::ParticlePush<ExactMultipolePusher>::operator();
 
         /** Compute and cache the constants for the push.
          *
@@ -148,11 +125,6 @@ namespace impactx::elements
 
             Alignment::compute_constants(refpart);
 
-            // Ensure dynamic coefficient data is on GPU and we have fresh pointers to it
-            auto const & coef = *DynamicData::get(m_id);
-            m_k_normal_d_data = coef.k_normal.device_const().data();
-            m_k_skew_d_data = coef.k_skew.device_const().data();
-
             // length of the current slice
             m_slice_ds = m_ds / nslice();
 
@@ -163,11 +135,6 @@ namespace impactx::elements
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
             m_brho = refpart.rigidity_Tm();
-
-            // additional constants needed for spin push
-            m_gamma_ref = refpart.gamma();
-            m_gyro_anomaly = refpart.gyromagnetic_anomaly;
-
         }
 
         /** This is a Multipole functor, so that a variable of this type can be used like a Multipole function.
@@ -181,7 +148,7 @@ namespace impactx::elements
          * @param py particle momentum in y
          * @param pt particle momentum in t
          * @param idcpu particle global index
-         * @param refpart reference particle (unused)
+         * @param refpart reference particle
          */
         template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -192,14 +159,11 @@ namespace impactx::elements
             T_Real & AMREX_RESTRICT px,
             T_Real & AMREX_RESTRICT py,
             T_Real & AMREX_RESTRICT pt,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
         ) const
         {
             using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
 
             // coordinates within the multipole (not needed)
             //amrex::ParticleReal const s = refpart.s;
@@ -217,13 +181,13 @@ namespace impactx::elements
 
             // call integrator to advance through slice (int_order = 2 or 4, otherwise default 2)
             if (m_int_order == 2) {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else if (m_int_order == 4) {
-                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp4_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else if (m_int_order == 6) {
-                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp6_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             } else {
-                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,*this);
+                integrators::symp2_integrate_particle(particle,zin,zout,nsteps,refpart,*this);
             }
 
             // assign updated values
@@ -233,12 +197,6 @@ namespace impactx::elements
             py = particle(4);
             t = particle(5);
             pt = particle(6);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
         }
 
         /** This pushes a particle in an ExactMultipole element through
@@ -248,12 +206,14 @@ namespace impactx::elements
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map1 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using amrex::Math::powi;
@@ -308,12 +268,14 @@ namespace impactx::elements
          * @param tau Map step size in m
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map2 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
@@ -332,13 +294,8 @@ namespace impactx::elements
             T_Real tout = t;
             T_Real ptout = pt;
 
-#if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal const * k_normal = m_k_normal_d_data;
-            amrex::ParticleReal const * k_skew = m_k_skew_d_data;
-#else
-            amrex::ParticleReal const * k_normal = m_k_normal_h_data;
-            amrex::ParticleReal const * k_skew = m_k_skew_h_data;
-#endif
+            amrex::ParticleReal const * const k_normal = m_k_normal;
+            amrex::ParticleReal const * const k_skew = m_k_skew;
 
             // a complex type with two T_Real
             using Complex = amrex::GpuComplex<T_Real>;
@@ -384,7 +341,6 @@ namespace impactx::elements
             zeval += tau;
         }
 
-
         /** This pushes particle spin in an ExactMultipole element over a
          *  single step of size tau, based on the Thomas-BMT equation.
          *
@@ -392,17 +348,23 @@ namespace impactx::elements
          * @param[in,out] particle particle phase space 6-vector
          * @param[in,out] particle_spin particle spin 3-vector
          * @param[in,out] zeval Longitudinal on-axis location in m
+         * @param[in] refpart reference particle
          */
         template<typename T_Real>
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
         void map3 (amrex::ParticleReal const tau,
                    amrex::SmallVector<T_Real, 6, 1> & particle,
                    amrex::SmallVector<T_Real, 3, 1> & particle_spin,
-                   amrex::ParticleReal & zeval) const
+                   amrex::ParticleReal & zeval,
+                   RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
             using namespace std; // for cmath(float)
             using amrex::Math::powi;
+
+            // reference particle relativistic factors
+            amrex::ParticleReal const gamma_ref = refpart.gamma();
+            amrex::ParticleReal const gyro_anomaly = refpart.gyromagnetic_anomaly;
 
             // initialize the three components of the axis-angle vector
             T_Real lambdax = 0_prt;
@@ -419,13 +381,8 @@ namespace impactx::elements
             T_Real sy = particle_spin(2);
             T_Real sz = particle_spin(3);
 
-#if AMREX_DEVICE_COMPILE
-            const amrex::ParticleReal *const k_normal = m_k_normal_d_data;
-            const amrex::ParticleReal *const k_skew = m_k_skew_d_data;
-#else
-            const amrex::ParticleReal *const k_normal = m_k_normal_h_data;
-            const amrex::ParticleReal *const k_skew = m_k_skew_h_data;
-#endif
+            amrex::ParticleReal const * const k_normal = m_k_normal;
+            amrex::ParticleReal const * const k_skew = m_k_skew;
 
             // a complex type with two T_Real
             using Complex = amrex::GpuComplex<T_Real>;
@@ -450,8 +407,8 @@ namespace impactx::elements
                // multipole contribution to magnetic field normalized by q/mc:
                Complex alpha(knormal_value, kskew_value);
                Complex kick = amrex::pow(zeta, m) * alpha;
-               Bx += kick.m_imag / factorial * m_beta * m_gamma_ref;
-               By += kick.m_real / factorial * m_beta * m_gamma_ref;
+               Bx += kick.m_imag / factorial * m_beta * gamma_ref;
+               By += kick.m_real / factorial * m_beta * gamma_ref;
 
                factorial *= m+1;
 
@@ -466,7 +423,7 @@ namespace impactx::elements
             T_Real const Pnorm = sqrt(1_prt - 2_prt * pt * m_ibeta + pt*pt);
             T_Real const iPnorm = 1_prt/Pnorm;
             T_Real const Ps = sqrt(Pnorm*Pnorm - px*px - py*py);
-            T_Real const gamma = m_gamma_ref * (1_prt - pt*m_beta);
+            T_Real const gamma = gamma_ref * (1_prt - pt*m_beta);
             T_Real const ux = px * iPnorm;
             T_Real const uy = py * iPnorm;
             T_Real const uz = Ps * iPnorm;
@@ -475,7 +432,7 @@ namespace impactx::elements
             amrex::ParticleReal const h = 0.0_prt;
 
             // Evaluation of the full Thomas-BMT precession vector.
-            tbmt_precession_vector(x,ux,uy,uz,gamma,h,m_gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
+            tbmt_precession_vector(x,ux,uy,uz,gamma,h,gyro_anomaly,Bx,By,Bz,Ex,Ey,Ez,lambdax,lambday,lambdaz);
 
             // Generator of the spin rotation for a single step
             lambdax *= tau;
@@ -495,6 +452,154 @@ namespace impactx::elements
             zeval += 0_prt;
         }
 
+        /** This operator pushes the particle spin.
+         *
+         * @param[in,out] x particle position in x
+         * @param[in,out] y particle position in y
+         * @param[in,out] t particle position in t
+         * @param[in,out] px particle momentum in x
+         * @param[in,out] py particle momentum in y
+         * @param[in,out] pt particle momentum in t
+         * @param[in,out] sx particle spin x-component
+         * @param[in,out] sy particle spin y-component
+         * @param[in,out] sz particle spin z-component
+         * @param[in,out] idcpu particle global index (unused)
+         * @param[in] refpart reference particle
+         */
+        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        void spin_and_phasespace_push (
+            T_Real & AMREX_RESTRICT x,
+            T_Real & AMREX_RESTRICT y,
+            T_Real & AMREX_RESTRICT t,
+            T_Real & AMREX_RESTRICT px,
+            T_Real & AMREX_RESTRICT py,
+            T_Real & AMREX_RESTRICT pt,
+            T_Real & AMREX_RESTRICT sx,
+            T_Real & AMREX_RESTRICT sy,
+            T_Real & AMREX_RESTRICT sz,
+            [[maybe_unused]] T_IdCpu const & AMREX_RESTRICT idcpu,
+            RefPart const & AMREX_RESTRICT refpart
+        ) const
+        {
+            using namespace amrex::literals; // for _rt and _prt
+
+            // numerical integration parameters
+            amrex::ParticleReal const zin = 0_prt;
+            amrex::ParticleReal const zout = m_slice_ds;
+            int const nsteps = m_mapsteps;
+
+            // initialize phase space 6-vector
+            amrex::SmallVector<T_Real, 6, 1> particle{
+                x, px, y, py, t, pt
+            };
+
+            // initialize spin 3-vector
+            amrex::SmallVector<T_Real, 3, 1> particle_spin{
+                sx, sy, sz
+            };
+
+            // call integrator to advance through slice
+            integrators::symp_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,m_int_order,refpart,*this);
+
+            // assign updated values
+            x = particle(1);
+            px = particle(2);
+            y = particle(3);
+            py = particle(4);
+            t = particle(5);
+            pt = particle(6);
+            sx = particle_spin(1);
+            sy = particle_spin(2);
+            sz = particle_spin(3);
+        }
+
+        int m_unit; //! unit specification for Multipole strength
+        int m_int_order; //! order used for the symplectic integration (2 or 4)
+        int m_mapsteps; //! number of integration steps per slice
+        /** Coefficients resolved to this pusher's execution space; non-owning */
+        //! non-owning, device-copyable; valid for the launch it was prepared for
+        amrex::ParticleReal const * m_k_normal = nullptr;
+        amrex::ParticleReal const * m_k_skew = nullptr;
+        int m_ncoef = 0;
+
+
+    private:
+        // constants that are independent of the individually tracked particle,
+        // see: compute_constants() to refresh
+        amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
+        amrex::ParticleReal m_betgam2;        //! beta*gamma^2
+        amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
+        amrex::ParticleReal m_beta;           //! beta
+        amrex::ParticleReal m_ibeta;          //! 1 / m_beta
+        amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m
+    };
+
+    /** An exact multipole: the canonical element that owns its coefficients.
+     *
+     * The reference-particle push, the transfer map, serialization and finalization run
+     * here on the host. Particle pushes run against @see ExactMultipolePusher.
+     */
+    struct ExactMultipoleGPU
+    : public mixin::BeamOptic<ExactMultipoleGPU>,
+      public mixin::LinearTransport<ExactMultipoleGPU>,
+      public ExactMultipolePusher
+    {
+        /** A general (thick) straight-axis magnetic element whose field consists
+         *  of a superposition of ideal hard-edge multipoles.  Like the element
+         *  ExactQuad, the magnet is treated using the exact Hamiltonian, which
+         *  includes all nonlinear kinematic effects.  This is a generalization
+         *  of the (thin) element Multipole, which applies the kick associated
+         *  with a single ideal multipole.  Here, symplectic integration
+         *  is used based on a splitting of the underlying Hamiltonian.
+         *
+         * @param ds Segment length in m.
+         * @param k_normal Array of normal multipole coefficients (units below)
+         * @param k_skew   Array of skew multipole coefficients (units below)
+         * @param unit  Unit specification
+         *           unit = 0 multipole strengths in units of 1/m^n (default)
+         *           unit = 1 multipole strengths in units of T/m^(n-1)
+         * @param dx horizontal translation error in m
+         * @param dy vertical translation error in m
+         * @param rotation_degree rotation error in the transverse plane [degrees]
+         * @param aperture_x horizontal half-aperture in m
+         * @param aperture_y vertical half-aperture in m
+         * @param int_order order used for symplectic integration (2, 4, or 6)
+         * @param mapsteps number of integration steps per slice used for
+         *        particle push in the applied fields
+         * @param nslice number of slices used for the application of space charge
+         */
+        ExactMultipoleGPU (
+            amrex::ParticleReal ds,
+            std::vector<amrex::ParticleReal> k_normal,
+            std::vector<amrex::ParticleReal> k_skew,
+            int unit = DEFAULT_unit,
+            amrex::ParticleReal dx = DEFAULT_dx,
+            amrex::ParticleReal dy = DEFAULT_dy,
+            amrex::ParticleReal rotation_degree = DEFAULT_rotation_degree,
+            amrex::ParticleReal aperture_x = DEFAULT_aperture_x,
+            amrex::ParticleReal aperture_y = DEFAULT_aperture_y,
+            int int_order = DEFAULT_int_order,
+            int mapsteps = DEFAULT_mapsteps,
+            int nslice = DEFAULT_nslice
+        )
+          : ExactMultipolePusher(ds, unit, dx, dy, rotation_degree, aperture_x, aperture_y, int_order, mapsteps, nslice),
+            m_coefficients{std::move(k_normal), std::move(k_skew)}
+        {
+            require_array_pair(m_coefficients.k_normal, m_coefficients.k_skew,
+                               "ExactMultipole: normal and skew coefficient", 0, MAX_order);
+            if (m_int_order != 2 && m_int_order != 4 && m_int_order != 6)
+                throw std::invalid_argument("ExactMultipole: The order used for symplectic integration must be 2, 4 or 6.");
+
+            if (m_mapsteps <= 0)
+                throw std::invalid_argument("ExactMultipole: mapsteps must be > 0!");
+        }
+
+        /** Push all particles */
+        using mixin::BeamOptic<ExactMultipoleGPU>::operator();
+
+        /** This pushes the covariance matrix. */
+        using mixin::LinearTransport<ExactMultipoleGPU>::operator();
 
         /** This pushes the reference particle.
          *
@@ -532,7 +637,6 @@ namespace impactx::elements
             // advance integrated path length
             refpart.s = s + slice_ds;
         }
-
         /** This function returns the linear transport map.
          *
          * @returns 6x6 transport matrix
@@ -553,19 +657,35 @@ namespace impactx::elements
 
             // pick the right data depending if we are on the host side
             // (reference particle push) or device side (particles):
-#if AMREX_DEVICE_COMPILE
-            amrex::ParticleReal const * k_normal = m_k_normal_d_data;
-            amrex::ParticleReal const * k_skew = m_k_skew_d_data;
-#else
-            amrex::ParticleReal const * k_normal = m_k_normal_h_data;
-            amrex::ParticleReal const * k_skew = m_k_skew_h_data;
-#endif
+            // host view, obtained at the point of use
+            auto const & k_normal_h = m_coefficients.k_normal.host_const();
+            auto const & k_skew_h = m_coefficients.k_skew.host_const();
+            amrex::ParticleReal const * k_normal = k_normal_h.data();
+            amrex::ParticleReal const * k_skew = k_skew_h.data();
 
             // normalize quad units to MAD-X convention if needed
-            amrex::ParticleReal const kn = m_unit == 1 ? k_normal[1] / refpart.rigidity_Tm() : k_normal[1];
-            amrex::ParticleReal const ks = m_unit == 1 ? k_skew[1] / refpart.rigidity_Tm() : k_skew[1];
-
+            // a pure dipole (or an element with no coefficients at all) has no quadrupole
+            // component, and then supplies no index 1
+            amrex::ParticleReal const kn_raw = static_cast<int>(k_normal_h.size()) > 1 ? k_normal[1] : 0.0_prt;
+            amrex::ParticleReal const ks_raw = static_cast<int>(k_normal_h.size()) > 1 ? k_skew[1] : 0.0_prt;
+            amrex::ParticleReal const kn = m_unit == 1 ? kn_raw / refpart.rigidity_Tm() : kn_raw;
+            amrex::ParticleReal const ks = m_unit == 1 ? ks_raw / refpart.rigidity_Tm() : ks_raw;
             amrex::ParticleReal const kabs = std::sqrt(powi<2>(kn) + powi<2>(ks));
+
+            // initialize linear map matrix elements
+            Map6x6 R = Map6x6::Identity();
+
+            // No quadrupole component (e.g. a pure sextupole or higher
+            // multipole, or a pure dipole): the first-order map about the
+            // reference orbit reduces to a drift.
+            if (kabs == 0.0_prt) {
+                R(1,2) = slice_ds;
+                R(3,4) = slice_ds;
+                R(5,6) = slice_ds / betgam2;
+                // apply the transverse rotation (roll) alignment error
+                return rotate_aligned_map(R);
+            }
+
             amrex::ParticleReal const kplus = kn + kabs;
             amrex::ParticleReal const kminus = kn - kabs;
 
@@ -575,9 +695,6 @@ namespace impactx::elements
             amrex::ParticleReal const cos_omega_ds = std::cos(omega*slice_ds);
             amrex::ParticleReal const sinh_omega_ds = std::sinh(omega*slice_ds);
             amrex::ParticleReal const cosh_omega_ds = std::cosh(omega*slice_ds);
-
-            // initialize linear map matrix elements
-            Map6x6 R = Map6x6::Identity();
 
             // linear matrix for a quadrupole with both normal and skew coefficients
             R(1,1) = (kplus * cos_omega_ds - kminus * cosh_omega_ds) / (2_prt * kabs);
@@ -606,112 +723,73 @@ namespace impactx::elements
             }
             */
 
-            return R;
+            // apply the transverse rotation (roll) alignment error
+            return rotate_aligned_map(R);
         }
 
-
-        /** This operator pushes the particle spin.
+        /** Prepare the pusher for one element slice
          *
-         * @param[in,out] x particle position in x
-         * @param[in,out] y particle position in y
-         * @param[in,out] t particle position in t
-         * @param[in,out] px particle momentum in x
-         * @param[in,out] py particle momentum in y
-         * @param[in,out] pt particle momentum in t
-         * @param[in,out] sx particle spin x-component
-         * @param[in,out] sy particle spin y-component
-         * @param[in,out] sz particle spin z-component
-         * @param[in,out] idcpu particle global index
-         * @param[in] refpart reference particle (unused)
+         * @param refpart reference particle, already advanced for this slice
+         * @return a pusher holding an execution-space view of the coefficients
          */
-        template<typename T_Real=amrex::ParticleReal, typename T_IdCpu=uint64_t>
-        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-        void spin_and_phasespace_push (
-            T_Real & AMREX_RESTRICT x,
-            T_Real & AMREX_RESTRICT y,
-            T_Real & AMREX_RESTRICT t,
-            T_Real & AMREX_RESTRICT px,
-            T_Real & AMREX_RESTRICT py,
-            T_Real & AMREX_RESTRICT pt,
-            T_Real & AMREX_RESTRICT sx,
-            T_Real & AMREX_RESTRICT sy,
-            T_Real & AMREX_RESTRICT sz,
-            T_IdCpu & AMREX_RESTRICT idcpu,
-            [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart
-        ) const
+        [[nodiscard]] ExactMultipolePusher make_particle_pusher (RefPart const & refpart) const
         {
-            using namespace amrex::literals; // for _rt and _prt
-
-            // shift due to alignment errors of the element
-            shift_in(x, y, px, py);
-
-            // numerical integration parameters
-            amrex::ParticleReal const zin = 0_prt;
-            amrex::ParticleReal const zout = m_slice_ds;
-            int const nsteps = m_mapsteps;
-
-            // initialize phase space 6-vector
-            amrex::SmallVector<T_Real, 6, 1> particle{
-                x, px, y, py, t, pt
-            };
-
-            // initialize spin 3-vector
-            amrex::SmallVector<T_Real, 3, 1> particle_spin{
-                sx, sy, sz
-            };
-
-            // call integrator to advance through slice
-            integrators::symp_integrate_particle_spin(particle,particle_spin,zin,zout,nsteps,m_int_order,*this);
-
-            // assign updated values
-            x = particle(1);
-            px = particle(2);
-            y = particle(3);
-            py = particle(4);
-            t = particle(5);
-            pt = particle(6);
-            sx = particle_spin(1);
-            sy = particle_spin(2);
-            sz = particle_spin(3);
-
-            // apply transverse aperture
-            apply_aperture(x, y, idcpu);
-
-            // undo shift due to alignment errors of the element
-            shift_out(x, y, px, py);
+            ExactMultipolePusher pusher = *this;
+            pusher.compute_constants(refpart);
+            pusher.m_k_normal = m_coefficients.k_normal.device_const().data();
+            pusher.m_k_skew = m_coefficients.k_skew.device_const().data();
+            pusher.m_ncoef = static_cast<int>(m_coefficients.k_normal.host_const().size());
+            return pusher;
         }
 
+        /** Normal multipole coefficients */
+        [[nodiscard]] std::vector<amrex::ParticleReal> k_normal_coefficients () const
+        {
+            return m_coefficients.k_normal.host_const();
+        }
 
-        /** This pushes the covariance matrix. */
-        using LinearTransport::operator();
+        /** Skew multipole coefficients */
+        [[nodiscard]] std::vector<amrex::ParticleReal> k_skew_coefficients () const
+        {
+            return m_coefficients.k_skew.host_const();
+        }
 
-        int m_unit; //! unit specification for Multipole strength
-        int m_int_order; //! order used for the symplectic integration (2 or 4)
-        int m_mapsteps; //! number of integration steps per slice
-        int m_id; //! unique ExactMultipole id used for data lookup map
+        /** Replace both arrays at once
+         *
+         * The two are validated before either is stored, so a rejected update leaves the
+         * element as it was. They are always the same length, which is why this takes
+         * both rather than offering to change one of them alone.
+         *
+         * @param first the new normal values
+         * @param second the new skew values
+         */
+        void set_coefficients (
+            std::vector<amrex::ParticleReal> first,
+            std::vector<amrex::ParticleReal> second
+        )
+        {
+            require_array_pair(first, second,
+                               "ExactMultipole: normal and skew coefficient", 0, MAX_order);
+            m_coefficients.k_normal.host() = std::move(first);
+            m_coefficients.k_skew.host() = std::move(second);
+        }
 
-        int m_ncoef = 0; //! number of Fourier coefficients
-        amrex::ParticleReal const * m_k_normal_h_data = nullptr; //! non-owning pointer to host normal coefficients
-        amrex::ParticleReal const * m_k_skew_h_data = nullptr; //! non-owning pointer to host skew coefficients
-        amrex::ParticleReal const * m_k_normal_d_data = nullptr; //! non-owning pointer to device normal coefficients
-        amrex::ParticleReal const * m_k_skew_d_data = nullptr; //! non-owning pointer to device skew coefficients
+        /** Release device storage; host configuration survives for reuse */
+        void finalize ()
+        {
+            m_coefficients.k_normal.release_gpu();
+            m_coefficients.k_skew.release_gpu();
+        }
 
-    private:
-        // constants that are independent of the individually tracked particle,
-        // see: compute_constants() to refresh
-        amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
-        amrex::ParticleReal m_betgam2;        //! beta*gamma^2
-        amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
-        amrex::ParticleReal m_beta;           //! beta
-        amrex::ParticleReal m_ibeta;          //! 1 / m_beta
-        amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m
-        amrex::ParticleReal m_gamma_ref;      //! relativistic gamma
-        amrex::ParticleReal m_gyro_anomaly;   //! gyromagnetic anomaly
+        //! the coefficient arrays this element owns, mirrored to the device on demand
+        MultipoleCoefficients m_coefficients;
     };
+
+    /** ExactMultipole: GPU state plus common host-only metadata */
+    using ExactMultipole = Element<ExactMultipoleGPU>;
 
 } // namespace impactx
 
-IMPACTX_GPUDATA_EXTERN(impactx::elements::ExactMultipole)
-IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactMultipole)
+IMPACTX_PUSH_EXTERN_TEMPLATE(impactx::elements::ExactMultipoleGPU)
 
 #endif // IMPACTX_EXACTMULTIPOLE_H

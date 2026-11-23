@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022-2023 ImpactX contributors
+# Copyright 2022-2026 ImpactX contributors
 # Authors: Marco Garten, Axel Huebl, Chad Mitchell
 # License: BSD-3-Clause-LBNL
 #
@@ -12,6 +12,7 @@ sim = ImpactX()
 
 # set numerical parameters and IO control
 sim.n_cell = [48, 48, 40]  # [72, 72, 64] for increased precision
+sim.max_grid_size = [72]  # one box per process: this example runs on a single process
 sim.particle_shape = 2  # B-spline order
 sim.space_charge = "3D"
 sim.poisson_solver = "fft"
@@ -47,7 +48,7 @@ sim.add_particles(bunch_charge_C, distr, npart)
 monitor = elements.BeamMonitor("monitor", backend="h5")
 
 # design the accelerator lattice
-nslice = 50  # use 1e5 for increased precision
+nslice = 12  # use 1e5 for increased precision
 
 # design the accelerator lattice
 sim.lattice.extend(

@@ -1,13 +1,7 @@
 ###############################################################################
 # Reference Particle
 ###############################################################################
-beam.kin_energy = 250.0
-beam.particle = proton
-
-# ignored
-beam.charge = 1.0e-9
-beam.units = static
-beam.distribution = empty
+# Restored from file in the `source` element below.
 
 
 ###############################################################################
@@ -19,6 +13,12 @@ lattice.nslice = 1
 source.type = source
 source.distribution = openPMD
 source.openpmd_path = "../solenoid/diags/openPMD/m1.h5"
+# the reference particle is restored from the file, too (default):
+#   source.load_ref_particle = true
+# the step to load, by step number in the file or by position in it;
+# set at most one of the two (default: the last step in the file):
+#   source.load_step = 3
+#   source.load_step_index = -1
 
 m1.type = beam_monitor
 m1.backend = h5

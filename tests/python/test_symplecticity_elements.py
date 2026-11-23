@@ -329,6 +329,39 @@ def test_ExactSbend(sim, reference):
     )
 
 
+# The potentials of examples/vector_potential: a hard-edge quadrupole and an
+# s-dependent solenoid (in T-m)
+SOLENOID_PROFILE = (
+    "((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))"
+)
+VECTOR_POTENTIALS = {
+    "quad": dict(ds=1.0, unit=0, dazdx="-x", dazdy="y", mapsteps=mapsteps),
+    "solenoid": dict(
+        ds=6.0,
+        unit=1,
+        ax=f"-0.790585*y*{SOLENOID_PROFILE}",
+        ay=f"0.790585*x*{SOLENOID_PROFILE}",
+        daxdy=f"-0.790585*{SOLENOID_PROFILE}",
+        daydx=f"0.790585*{SOLENOID_PROFILE}",
+        mapsteps=20,
+    ),
+}
+
+
+@pytest.mark.parametrize("int_order", [2, 4, 6])
+@pytest.mark.parametrize("potential", list(VECTOR_POTENTIALS))
+def test_MagnetostaticVectorPotential(sim, potential, int_order):
+    check_symplectic(
+        elements.MagnetostaticVectorPotential(
+            int_order=int_order,
+            nslice=nslice,
+            **VECTOR_POTENTIALS[potential],
+            **ALIGNMENT_KWARGS,
+        ),
+        sim,
+    )
+
+
 def test_Quad(sim):
     check_symplectic(
         elements.Quad(ds=1.0, k=1.0, nslice=nslice, **ALIGNMENT_KWARGS), sim

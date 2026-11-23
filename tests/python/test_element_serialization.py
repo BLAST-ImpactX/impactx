@@ -401,6 +401,30 @@ def all_elements():
         )
     )
 
+    lattice.append(
+        elements.MagnetostaticVectorPotential(
+            ds=0.5,
+            unit=1,
+            ax="-0.05*y",
+            ay="0.05*x",
+            daxdx="0.0",
+            daxdy="-0.05",
+            daydx="0.05",
+            daydy="0.0",
+            dazdx="-x",
+            dazdy="y",
+            dx=0.001,
+            dy=0.002,
+            rotation=0.05,
+            aperture_x=0.02,
+            aperture_y=0.03,
+            int_order=4,
+            mapsteps=3,
+            nslice=2,
+            name="test_magnetostaticvectorpotential",
+        )
+    )
+
     lattice.append(elements.Marker(name="test_marker"))
 
     lattice.append(

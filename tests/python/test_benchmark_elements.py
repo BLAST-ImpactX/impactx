@@ -287,6 +287,21 @@ def test_LinearMap(benchmark, sim):
     benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
 
 
+# Note: has no spin support
+def test_MagnetostaticVectorPotential(benchmark, sim):
+    el = elements.MagnetostaticVectorPotential(
+        name="quad1",
+        ds=1.0,
+        unit=0,
+        dazdx="-x",
+        dazdy="y",
+        int_order=2,
+        mapsteps=mapsteps,
+        nslice=nslice,
+    )
+    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)
+
+
 # def test_Marker(benchmark, sim):
 #    el = elements.Marker(name="marker")
 #    benchmark.pedantic(el.push, setup=partial(pc_setup, sim), rounds=rounds)

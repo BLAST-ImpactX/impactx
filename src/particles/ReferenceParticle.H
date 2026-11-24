@@ -339,6 +339,23 @@ namespace impactx
             return *this;
         }
 
+        /** Get reference particle classical radius in meters
+         *
+         * @returns classical particle radius in m
+         */
+        AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+        amrex::ParticleReal
+        radius_classical_m () const
+        {
+            using namespace amrex::literals;
+            using amrex::Math::powi;
+
+            amrex::ParticleReal const E_rest_SI = mass * powi<2>(ablastr::constant::SI::c);
+            amrex::ParticleReal const inv_4pieps = 1_rt / (4_rt * ablastr::constant::math::pi * ablastr::constant::SI::epsilon_0);
+            amrex::ParticleReal const radius = inv_4pieps * powi<2>(charge) / E_rest_SI;
+            return radius;
+        }
+
     };
 
 } // namespace impactx

@@ -25,6 +25,7 @@
 #include <AMReX_Parser.H>
 #include <AMReX_REAL.H>
 #include <AMReX_SmallMatrix.H>
+#include <AMReX_Utility.H>
 #include <AMReX_Vector.H>
 
 #include <cmath>
@@ -254,15 +255,17 @@ namespace impactx::elements
 
             amrex::ParticleReal const z = zeval;
 
-            // Evaluate the vector potential and its derivatives in the local frame
-            auto const ax    = m_ax(x, y, z)    * m_scale;
-            auto const ay    = m_ay(x, y, z)    * m_scale;
-            auto const daxdx = m_daxdx(x, y, z) * m_scale;
-            auto const daxdy = m_daxdy(x, y, z) * m_scale;
-            auto const daydx = m_daydx(x, y, z) * m_scale;
-            auto const daydy = m_daydy(x, y, z) * m_scale;
-            auto const dazdx = m_dazdx(x, y, z) * m_scale;
-            auto const dazdy = m_dazdy(x, y, z) * m_scale;
+            // Evaluate the vector potential and its derivatives in the local frame.
+            // Not inlined: one shared parser instance instead of eight at every stage
+            // of the integrator, which keeps the GPU compile time and stack small.
+            auto const ax    = amrex::callNoinline(m_ax, x, y, z)    * m_scale;
+            auto const ay    = amrex::callNoinline(m_ay, x, y, z)    * m_scale;
+            auto const daxdx = amrex::callNoinline(m_daxdx, x, y, z) * m_scale;
+            auto const daxdy = amrex::callNoinline(m_daxdy, x, y, z) * m_scale;
+            auto const daydx = amrex::callNoinline(m_daydx, x, y, z) * m_scale;
+            auto const daydy = amrex::callNoinline(m_daydy, x, y, z) * m_scale;
+            auto const dazdx = amrex::callNoinline(m_dazdx, x, y, z) * m_scale;
+            auto const dazdy = amrex::callNoinline(m_dazdy, x, y, z) * m_scale;
 
             // Rectilinear magnetostatic element: pz is the radical appearing
             // in the Hamiltonian.

@@ -105,6 +105,10 @@ assert np.allclose(
 
 # join tables on particle ID, so we can compare the same particle initial->final
 beam_joined = final.join(initial, lsuffix="_final", rsuffix="_initial")
+# evaluate H in double precision: its terms cancel below float32 round-off
+beam_joined = beam_joined.astype(
+    {col: np.float64 for col in beam_joined.select_dtypes(np.float32).columns}
+)
 xi = beam_joined["position_x_initial"]
 yi = beam_joined["position_y_initial"]
 pxi = beam_joined["momentum_x_initial"]

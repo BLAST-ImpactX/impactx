@@ -55,6 +55,7 @@ emittance_yi = emittance_y.iloc[0]
 emittance_ti = emittance_t.iloc[0]
 
 length = len(s) - 1
+num_particles = 10000  # beam.npart
 
 sf = s.iloc[length]
 sig_xf = sig_x.iloc[length]
@@ -72,7 +73,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 1.0e-2  # from random sampling of a smooth distribution
+rtol = 3.0 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(
@@ -98,7 +99,7 @@ print(
 )
 
 atol = 0.0  # ignored
-rtol = 2.0e-2  # from random sampling of a smooth distribution
+rtol = 3.0 * num_particles**-0.5  # from random sampling of a smooth distribution
 print(f"  rtol={rtol} (ignored: atol~={atol})")
 
 assert np.allclose(

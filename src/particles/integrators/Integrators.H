@@ -12,9 +12,13 @@
 
 #include "particles/ReferenceParticle.H"
 
+#include <AMReX_Algorithm.H>     // for max
 #include <AMReX_Extension.H>     // for AMREX_RESTRICT
 #include <AMReX_REAL.H>          // for ParticleReal
 #include <AMReX_SmallMatrix.H>   // for SmallVector
+
+#include <cmath>
+#include <limits>
 
 
 namespace impactx::integrators
@@ -634,10 +638,11 @@ namespace impactx::integrators
     * @param element Element defining the two maps associated with H_1 and H_2
     * @param zeval Evaluation point in s
     * @param int_order Order used for symplectic integration (2, 4 or 6)
+    * @return false if the implicit iteration did not converge
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-    void semiexplicit_integrator_step(
+    bool semiexplicit_integrator_step(
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
         amrex::ParticleReal const tau,
         T_Element const & element,
@@ -647,8 +652,11 @@ namespace impactx::integrators
     {
         using namespace amrex::literals; // for _rt and _prt
 
-        // Parameters defining the implicit iteration loop
-        amrex::ParticleReal const tolerance = 1.0e-12_prt;
+        // Parameters defining the implicit iteration loop: the defect cannot
+        // drop below the round-off of the phase space vector
+        amrex::ParticleReal const tolerance = amrex::max(1.0e-12_prt,
+            64_prt * std::numeric_limits<amrex::ParticleReal>::epsilon()
+                * std::sqrt((particle.transpose()*particle).trace()));
         int max_iterations = 100;
 
         // Initialize the perturbation vector
@@ -681,9 +689,10 @@ namespace impactx::integrators
            // Update particle phase space vector once the desired tolerance is reached
            if (defect_norm < tolerance) {
               particle = particle_copy1;
-              break;
+              return true;
            }
        }
+       return false;
     }
 
    /** Integrate a non-separable Hamiltonian from zin to zout in nsteps
@@ -696,10 +705,11 @@ namespace impactx::integrators
     * @param int_order Order used for symplectic integration (2, 4 or 6)
     * @param nsteps Number of integration steps
     * @param element Element defining the map on the extended phase space
+    * @return false if a step did not converge
     */
     template <typename T_Element>
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-    void symp_integrate_semiexplicit (
+    bool symp_integrate_semiexplicit (
         amrex::SmallVector<amrex::ParticleReal, 6, 1> & particle,
         amrex::ParticleReal const zin,
         amrex::ParticleReal const zout,
@@ -719,9 +729,10 @@ namespace impactx::integrators
         // loop over integration steps
         for(int j=0; j < nsteps; ++j)
         {
-            semiexplicit_integrator_step(particle,dz,element,zeval,int_order);
+            if (!semiexplicit_integrator_step(particle,dz,element,zeval,int_order)) { return false; }
             zeval = zeval + dz;
         }
+        return true;
     }
 
 

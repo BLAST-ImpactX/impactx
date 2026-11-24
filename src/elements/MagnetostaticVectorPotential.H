@@ -135,7 +135,7 @@ namespace impactx::elements
          * @param px particle momentum in x
          * @param py particle momentum in y
          * @param pt particle momentum in t
-         * @param idcpu particle global index (unused)
+         * @param idcpu particle global index
          * @param refpart reference particle
          */
         AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -146,7 +146,7 @@ namespace impactx::elements
             amrex::ParticleReal & AMREX_RESTRICT px,
             amrex::ParticleReal & AMREX_RESTRICT py,
             amrex::ParticleReal & AMREX_RESTRICT pt,
-            [[maybe_unused]] uint64_t const & AMREX_RESTRICT idcpu,
+            uint64_t & AMREX_RESTRICT idcpu,
             RefPart const & AMREX_RESTRICT refpart
         ) const
         {
@@ -164,8 +164,10 @@ namespace impactx::elements
                 x, px, y, py, t, pt
             };
 
-            // call integrator to advance through slice
-            integrators::symp_integrate_semiexplicit(particle, zin, zout, m_int_order, nsteps, *this);
+            // call integrator to advance through slice; a particle it cannot advance is lost
+            bool const converged = integrators::symp_integrate_semiexplicit(
+                particle, zin, zout, m_int_order, nsteps, *this);
+            amrex::ParticleIDWrapper<uint64_t>{idcpu}.make_invalid(!converged);
 
             // assign updated values
             x  = particle(1);

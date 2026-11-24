@@ -702,7 +702,7 @@ def unroll_impactx_lattice(lattice):
             if edict.get(pname) is None:
                 output_elem = output_elem + f"{pname}=None"
             # in general if the type of the parameter is a string enclose it in quotes
-            elif type(edict.get(pname)) == str:
+            elif type(edict.get(pname)) is str:
                 output_elem = output_elem + f'{pname}="{edict.get(pname)}"'
             else:
                 # just output the parameter and value using the default repr

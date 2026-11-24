@@ -47,6 +47,7 @@ def test_kick_element_string_arguments():
 
     for e in rebuilt:
         if e.to_dict()['type'] == "Kicker":
+            assert not e.has_name
             assert e.to_dict()['name'] is None
         
 
@@ -60,6 +61,8 @@ def test_beammonitor_element():
     source = synmadx.unroll_impactx_lattice(lattice)
     rebuilt = eval(source, {"impactx": impactx} )
 
+    gotit = False
     for e in rebuilt:
-        print(e)
-    
+        if e.to_dict()['type'] == "BeamMonitor":
+            gotit = True
+    assert gotit

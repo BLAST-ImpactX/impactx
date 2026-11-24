@@ -266,7 +266,7 @@ def cnv_rbend(elem, order):
             model=de_model,
             name=nm + "_dsedge",
             rotation=rot,
-        ) 
+        )
 
     if elem.get_double_attribute("h1", 0.0) != 0.0:
         print("h1 attribute not supported for sbend in ImpactX")

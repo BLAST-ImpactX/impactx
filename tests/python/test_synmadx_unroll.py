@@ -61,7 +61,6 @@ def test_beammonitor_element():
     source = synmadx.unroll_impactx_lattice(lattice)
     rebuilt = eval(source, {"impactx": impactx} )
 
-    gotit = False
     for e in rebuilt:
         if e.to_dict()['type'] == "BeamMonitor":
             gotit = True

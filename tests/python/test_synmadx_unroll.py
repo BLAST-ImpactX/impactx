@@ -34,34 +34,35 @@ def test_unroll_keeps_unnamed_elements_unnamed():
     assert [e.name for e in rebuilt] == [None, "q1", None, None]
     assert [e.has_name for e in rebuilt] == [False, True, False, False]
 
+
 def test_kick_element_string_arguments():
     """The unit argument of the Kicker element needs to be quoted."""
 
-    lattice = [
-        elements.Kicker(xkick=0.01, ykick=-0.01)
-        ]
+    lattice = [elements.Kicker(xkick=0.01, ykick=-0.01)]
     source = synmadx.unroll_impactx_lattice(lattice)
 
     print(source)
-    rebuilt = eval(source, {"impactx": impactx} )
+    rebuilt = eval(source, {"impactx": impactx})
 
     for e in rebuilt:
-        if e.to_dict()['type'] == "Kicker":
+        if e.to_dict()["type"] == "Kicker":
             assert not e.has_name
-            assert e.to_dict()['name'] is None
-        
+            assert e.to_dict()["name"] is None
+
 
 def test_beammonitor_element():
     """Test BeamMonitor elements now supported."""
 
     lattice = [
-        elements.BeamMonitor("monitor", backend='bp5', encoding='v', period_sample_intervals=10000)
-        ]
+        elements.BeamMonitor(
+            "monitor", backend="bp5", encoding="v", period_sample_intervals=10000
+        )
+    ]
 
     source = synmadx.unroll_impactx_lattice(lattice)
-    rebuilt = eval(source, {"impactx": impactx} )
+    rebuilt = eval(source, {"impactx": impactx})
 
     for e in rebuilt:
-        if e.to_dict()['type'] == "BeamMonitor":
+        if e.to_dict()["type"] == "BeamMonitor":
             gotit = True
     assert gotit

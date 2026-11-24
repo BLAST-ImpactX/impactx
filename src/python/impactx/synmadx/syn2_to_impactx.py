@@ -388,7 +388,7 @@ def cnv_multipole(elem, order):
                 multipole=i + 1,
                 K_normal=norm_mom[i],
                 K_skew=skew_mom[i],
-                name=f"{nm}_{i+1}",
+                name=f"{nm}_{i + 1}",
                 rotation=rot,
             )
         )

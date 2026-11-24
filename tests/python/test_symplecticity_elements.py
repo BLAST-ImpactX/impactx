@@ -345,6 +345,23 @@ VECTOR_POTENTIALS = {
         daydx=f"0.790585*{SOLENOID_PROFILE}",
         mapsteps=20,
     ),
+    # A quadrupole whose gradient (1 + 0.5 z) tapers along the element, with skew
+    # quadrupole and sextupole components (as in test_ExactMultipole): there is no
+    # symmetry in z, x or y, and none of the eight formulas vanishes. The axial
+    # field B_z = g' x y of the taper keeps it an exact vacuum field.
+    "asymmetric": dict(
+        ds=1.0,
+        unit=0,
+        ax="-0.125*x*y**2",
+        ay="0.125*x**2*y",
+        daxdx="-0.125*y**2",
+        daxdy="-0.25*x*y",
+        daydx="0.25*x*y",
+        daydy="0.125*x**2",
+        dazdx="-(1+0.5*z)*x + 0.35*y - 0.075*(x**2-y**2)",
+        dazdy="(1+0.5*z)*y + 0.35*x + 0.15*x*y",
+        mapsteps=mapsteps,
+    ),
 }
 
 

@@ -63,11 +63,11 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const chi_bin_size = isr_data.chi_bin_size;
         int const chi_nbins = isr_data.chi_nbins;
         #ifdef AMREX_USE_GPU
-            auto const g_function = isr_data.g_function.device_const();
-            auto const h_function = isr_data.h_function.device_const();
+            const auto* g_ptr = isr_data.g_function.device_const().data();
+            const auto* h_ptr = isr_data.h_function.device_const().data();
         #else
-            auto const g_function = isr_data.g_function.host_const();
-            auto const h_function = isr_data.h_function.host_const();
+            const auto* g_ptr = isr_data.g_function.host_const().data();
+            const auto* h_ptr = isr_data.h_function.host_const().data();
         #endif
 
         // Loop over refinement levels
@@ -120,8 +120,8 @@ namespace impactx::particles::wakefields
                        g = g0 + g1*chi + g2*powi<2>(chi);
                        h = h1*chi + h2*powi<2>(chi) + h3*powi<3>(chi);
                     } else if (isr_order > 3) {
-                       g = (chi < 0_rt || chi > 2_rt)? 0_rt : InterpolateLinear1D(chi, g_function.data(), chi_nbins, 0_rt, 1_rt / chi_bin_size);
-                       amrex::ParticleReal h_inv_chi2 = (chi < 0_rt || chi > 2_rt)? 0_rt : InterpolateLinear1D(chi, h_function.data(), chi_nbins, 0_rt, 1_rt / chi_bin_size);
+                       g = (chi < 0_rt || chi > 2_rt)? 0_rt : InterpolateLinear1D(chi, g_ptr, chi_nbins, 0_rt, 1_rt / chi_bin_size);
+                       amrex::ParticleReal h_inv_chi2 = (chi < 0_rt || chi > 2_rt)? 0_rt : InterpolateLinear1D(chi, h_ptr, chi_nbins, 0_rt, 1_rt / chi_bin_size);
                        h = h_inv_chi2 * powi<2>(chi);
                     }
 

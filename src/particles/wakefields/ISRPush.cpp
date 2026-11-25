@@ -125,8 +125,6 @@ namespace impactx::particles::wakefields
                        h = h_inv_chi2 * powi<2>(chi);
                     }
 
-                    amrex::Print() << chi << " " << g << " " << h << "\n";
-
                     // Value of the ISR kick in total momentum (relative to total momentum):
                     amrex::ParticleReal dp = -tau*g + std::sqrt(tau*h)*xi;
 

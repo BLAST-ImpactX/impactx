@@ -60,7 +60,7 @@ namespace impactx::particles::wakefields
 
         // Access tabulated g, h data (outside loop over refinement levels)
         ISRData const isr_data;
-        amrex::ParticleReal const chi_bin_size = isr_data.chi_bin_size;
+        amrex::Real const chi_bin_size = isr_data.chi_bin_size;
         int const chi_nbins = isr_data.chi_nbins;
         #ifdef AMREX_USE_GPU
             const auto* g_ptr = isr_data.g_function.device_const().data();

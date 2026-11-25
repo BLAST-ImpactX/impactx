@@ -32,7 +32,9 @@ namespace impactx::particles::wakefields
      */
     struct ISRData
     {
-        amrex::ParticleReal const chi_bin_size = 0.01;
+        using namespace amrex::literals;
+
+        amrex::ParticleReal const chi_bin_size = 0.01_rt;
         int const chi_nbins = 201;
 
         amrex::Gpu::TrackedVector<amrex::ParticleReal> g_function = {

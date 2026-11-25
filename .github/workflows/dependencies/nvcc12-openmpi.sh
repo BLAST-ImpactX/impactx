@@ -36,7 +36,8 @@ sudo apt-get install -y          \
     cuda-nvtx-12-2               \
     libcufft-dev-12-2            \
     libcurand-dev-12-2           \
-    libcusparse-dev-12-2
+    libcusparse-dev-12-2         \
+    libnvjitlink-dev-12-2
 sudo ln -s cuda-12.2 /usr/local/cuda
 
 # cmake-easyinstall

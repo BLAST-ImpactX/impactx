@@ -8,6 +8,8 @@
  * License: BSD-3-Clause-LBNL
  */
 #include "ISRPush.H"
+#include "ISRData.H"
+#include "InterpolateLinear1D.H"
 
 #include <AMReX_BLProfiler.H>
 #include <AMReX_REAL.H>
@@ -55,6 +57,13 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const h1 = 55_prt/(16_prt*std::sqrt(3_prt));
         amrex::ParticleReal const h2 = -28_prt;
         amrex::ParticleReal const h3 = 14245_prt*std::sqrt(3_prt)/64_prt;
+
+        // Access tabulated g, h data (outside loop over refinement levels)
+        ISRData const isr_data;
+        amrex::ParticleReal const chi_bin_size = isr_data.chi_bin_size;
+        int const chi_nbins = isr_data.chi_nbins;
+        auto const g_function = isr_data.g_function;
+        auto const h_function = isr_data.h_function;
 
         // Loop over refinement levels
         int const nLevel = pc.finestLevel();
@@ -105,7 +114,13 @@ namespace impactx::particles::wakefields
                     } else if (isr_order == 3) {
                        g = g0 + g1*chi + g2*powi<2>(chi);
                        h = h1*chi + h2*powi<2>(chi) + h3*powi<3>(chi);
+                    } else if (isr_order > 3) {
+                       g = (chi < 0_rt || chi > 2_rt)? 0_rt : InterpolateLinear1D(chi, g_function.data(), chi_nbins, 0_rt, 1_rt / chi_bin_size);
+                       amrex::ParticleReal h_inv_chi2 = (chi < 0_rt || chi > 2_rt)? 0_rt : InterpolateLinear1D(chi, h_function.data(), chi_nbins, 0_rt, 1_rt / chi_bin_size);
+                       h = h_inv_chi2 * powi<2>(chi);
                     }
+
+                    amrex::Print() << chi << " " << g << " " << h << "\n";
 
                     // Value of the ISR kick in total momentum (relative to total momentum):
                     amrex::ParticleReal dp = -tau*g + std::sqrt(tau*h)*xi;

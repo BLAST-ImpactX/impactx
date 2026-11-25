@@ -14,7 +14,7 @@
 
 #include <AMReX_GpuContainers.H>
 #include <AMReX_REAL.H>
-
+#include <AMReX_TrackedVector.H>
 
 namespace impactx::particles::wakefields
 {
@@ -35,7 +35,7 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const chi_bin_size = 0.01;
         int const chi_nbins = 201;
 
-        amrex::Vector<amrex::ParticleReal> g_function = {
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> g_function = {
             1.000000000000000,
             0.944830982046812,
             0.896998823780238,
@@ -239,7 +239,7 @@ namespace impactx::particles::wakefields
             0.100159014997203
         };
 
-        amrex::Vector<amrex::ParticleReal> h_function = {
+        amrex::Gpu::TrackedVector<amrex::ParticleReal> h_function = {
             0.e-16,
             0.017382620951748,
             0.030881898620553,

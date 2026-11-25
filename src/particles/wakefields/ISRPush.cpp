@@ -62,8 +62,13 @@ namespace impactx::particles::wakefields
         ISRData const isr_data;
         amrex::ParticleReal const chi_bin_size = isr_data.chi_bin_size;
         int const chi_nbins = isr_data.chi_nbins;
-        auto const g_function = isr_data.g_function.host_const();
-        auto const h_function = isr_data.h_function.host_const();
+        #ifdef AMREX_USE_GPU
+            auto const g_function = isr_data.g_function.device_const();
+            auto const h_function = isr_data.h_function.device_const();
+        #else
+            auto const g_function = isr_data.g_function.host_const();
+            auto const h_function = isr_data.h_function.host_const();
+        #endif
 
         // Loop over refinement levels
         int const nLevel = pc.finestLevel();

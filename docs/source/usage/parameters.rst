@@ -1177,7 +1177,7 @@ The coefficients must appear in the following sequence:
 
 dipole, quadrupole, sextupole, octupole, etc...
 
-(Note: Dipole coefficients are currently ignored, and will be supported in a separate combined-function dipole element.)
+(Note: A nonzero dipole normal or skew coefficient results in a kick to the beam particles, but the reference particle is not deflected.)
 
 Particle tracking is performed using symplectic integration based on the Hamiltonian splitting :math:`H = H_1 + H_2`.
 Here :math:`H_1` is the nonlinear Hamiltonian for a drift (including the kinematic square root),

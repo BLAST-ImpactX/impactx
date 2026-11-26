@@ -1861,6 +1861,12 @@ add_impactx_test(expanding-fft-2d.py
     examples/expanding_beam/analysis_expanding_fft_2D.py
     OFF  # no plot script yet
 )
+add_impactx_test(expanding-fft-2d-unbunched
+    examples/expanding_beam/input_expanding_fft_2D_unbunched.in
+    ON   # ImpactX MPI-parallel
+    examples/expanding_beam/analysis_expanding_fft_2D_unbunched.py
+    OFF  # no plot script yet
+)
 
 # FODO cell with 2D space charge using particle tracking ######################
 #

@@ -87,6 +87,9 @@ In the laboratory frame, the beam expands to twice its original transverse size.
 
 In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
 
+The variant ``input_expanding_fft_2D_unbunched.in`` starts all particles at the same time of flight (:math:`\sigma_t = 0`), as in a DC beam.
+The 2D space-charge model does not resolve the longitudinal direction, so the beam must expand in the same way (``analysis_expanding_fft_2D_unbunched.py``).
+
 
 Run
 ---

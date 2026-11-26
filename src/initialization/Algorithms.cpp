@@ -100,4 +100,73 @@ namespace impactx
         return str;
     }
 
+    CSR_Algo
+    get_csr_algo ()
+    {
+        amrex::ParmParse const pp_algo("algo");
+        std::string csr;
+        bool has_csr = pp_algo.query("csr", csr);
+
+        if (!has_csr) { return CSR_Algo::False; }
+
+        // TODO: at some point, remove backwards compatibility
+        std::string csr_lower = csr;
+        std::transform(csr.begin(), csr.end(), csr_lower.begin(),
+               [](unsigned char c){ return std::tolower(c); });
+        if (csr == "1" || csr_lower == "true" || csr_lower == "on")
+        {
+            /* ablastr::warn_manager::WMRecordWarning(
+                "algo.csr",
+                "The option algo.csr = true is deprecated and will be removed in a future version of ImpactX. "
+                "Please use algo.csr = Ultrarelativistic instead.",
+                ablastr::warn_manager::WarnPriority::medium
+            ); */
+            return CSR_Algo::Ultrarelativistic;
+        }
+        if (csr == "0")
+        {
+            /* ablastr::warn_manager::WMRecordWarning(
+                "algo.csr",
+                "The option algo.csr = 0 is deprecated and will be removed in a future version of ImpactX. "
+                "Please use algo.csr = false instead.",
+                ablastr::warn_manager::WarnPriority::medium
+            ); */
+            return CSR_Algo::False;
+        }
+
+        if (csr_lower == "false" || csr_lower == "off")
+        {
+            return CSR_Algo::False;
+        }
+        else if (csr == "SteadyState")
+        {
+            return CSR_Algo::SteadyState;
+        }
+        else if (csr == "Ultrarelativistic")
+        {
+            return CSR_Algo::Ultrarelativistic;
+        }
+        else
+        {
+            throw std::runtime_error("algo.csr = " + csr + " is not a valid option");
+        }
+    }
+
+    std::string
+    to_string (CSR_Algo csra)
+    {
+        std::string const str = amrex::getEnumNameString(csra);
+
+        // strip True_ prefix, which we only added because var names / enum member names
+        // cannot start with a number
+        std::string const true_prefix = "True_";
+        if (str.find(true_prefix) == 0)
+        {
+            return str.substr(true_prefix.length());
+        }
+
+        return str;
+    }
+
+
 } // namespace impactx

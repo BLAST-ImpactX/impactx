@@ -2302,3 +2302,31 @@ if(ImpactX_FFT)
     )
     label_impactx_test(rfcavity-wake-sc.MPI.py slow)
 endif()
+
+# Test of CSR kick Using Finite-Gamma Steady-State Model (Gaussian) ###########
+add_impactx_test(csr-kick-finite-gamma-gaussian
+    examples/wake_csr_kick/input_csr_kick_finite_gamma_gaussian.in
+    OFF    # ImpactX MPI-parallel
+    examples/wake_csr_kick/analysis_csr_kick_finite_gamma_gaussian.py
+    OFF  # no plot script yet
+)
+add_impactx_test(csr-kick-finite-gamma-gaussian.py
+    examples/wake_csr_kick/run_csr_kick_finite_gamma_gaussian.py
+    ON    # ImpactX MPI-parallel
+    examples/wake_csr_kick/analysis_csr_kick_finite_gamma_gaussian.py
+    OFF  # no plot script yet
+)
+
+# Test of CSR kick Using Finite-Gamma Steady-State Model (Uniform) ###########
+add_impactx_test(csr-kick-finite-gamma-uniform
+    examples/wake_csr_kick/input_csr_kick_finite_gamma_uniform.in
+    OFF    # ImpactX MPI-parallel
+    examples/wake_csr_kick/analysis_csr_kick_finite_gamma_uniform.py
+    OFF  # no plot script yet
+)
+add_impactx_test(csr-kick-finite-gamma-uniform.py
+    examples/wake_csr_kick/run_csr_kick_finite_gamma_uniform.py
+    ON    # ImpactX MPI-parallel
+    examples/wake_csr_kick/analysis_csr_kick_finite_gamma_uniform.py
+    OFF  # no plot script yet
+)

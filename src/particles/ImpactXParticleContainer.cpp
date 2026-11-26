@@ -109,12 +109,11 @@ namespace impactx
         int v = 0;
         bool const has_shape = pp_algo.queryWithParser("particle_shape", v);
         if (!has_shape) {
-            bool csr = false;
-            pp_algo.query("csr", csr);
+            auto csr = get_csr_algo();
             auto space_charge = get_space_charge_algo();
             std::string track = "particles";
             pp_algo.query("track", track);
-            if (csr ||
+            if (csr != CSR_Algo::False ||
                 (space_charge != SpaceChargeAlgo::False && track == "particles"))
             {
                 throw std::runtime_error("particle_shape is not set, cannot initialize grids with guard cells for collective effects.");

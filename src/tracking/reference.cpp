@@ -77,10 +77,8 @@ namespace impactx
             throw std::runtime_error("Space charge effects cannot be modeled for single particle tracking.");
         }
 
-        amrex::ParmParse const pp_algo("algo");
-        bool csr = false;
-        pp_algo.query("csr", csr);
-        if (csr)
+        auto csr = get_csr_algo();
+        if (csr != CSR_Algo::False)
         {
             throw std::runtime_error(
                 "Coherent Synchrotron Radiation (CSR) cannot be "
@@ -89,6 +87,7 @@ namespace impactx
             );
         }
 
+        amrex::ParmParse const pp_algo("algo");
         bool short_range_wakefields = false;
         pp_algo.query("short_range_wakefields", short_range_wakefields);
         if (short_range_wakefields)

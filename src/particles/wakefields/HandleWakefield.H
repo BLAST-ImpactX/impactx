@@ -11,6 +11,7 @@
 #define HANDLE_WAKEFIELD_H
 
 #include "particles/ImpactXParticleContainer.H"
+#include "initialization/Algorithms.H"
 #include "ChargeBinning.H"
 #include "BendRadius.H"
 #include "ShortRangeWakeElement.H"
@@ -53,11 +54,9 @@ namespace impactx::particles::wakefields
 
         using namespace amrex::literals;
 
+        auto csr = get_csr_algo();
+
         amrex::ParmParse pp_algo("algo");
-
-        bool csr = false;
-        pp_algo.queryAdd("csr", csr);
-
         bool short_range_wakefields = false;
         pp_algo.queryAdd("short_range_wakefields", short_range_wakefields);
 
@@ -70,7 +69,7 @@ namespace impactx::particles::wakefields
             impactx::particles::wakefields::ShortRangeWakeElement(element_variant) : std::nullopt;
 
         // Which effect applies to this very element?
-        bool const apply_csr = csr && rc.has_value();
+        bool const apply_csr = !(csr == CSR_Algo::False) && rc.has_value();
         bool const apply_short_range_wake = short_range_wake.has_value();
 
         // Enter loop if wakefields are turned on
@@ -161,7 +160,7 @@ namespace impactx::particles::wakefields
             // same length.
             amrex::Gpu::DeviceVector<amrex::Real> convolved_wakefield(num_edges, 0.0);
             if (amrex::ParallelDescriptor::IOProcessor()) {
-                if (apply_csr){
+                if (apply_csr && csr == CSR_Algo::Ultrarelativistic){
                     // Slopes of the charge density at the bin edges, with zero charge density below
                     // bin_min: edge k lies between bin k-1 and bin k, edge 0 is the rising edge of bin 0
                     // The CSR wake function is the one between two elementary charges: the force
@@ -200,6 +199,33 @@ namespace impactx::particles::wakefields
 
                     // Call convolution function
                     convolved_wakefield = impactx::particles::wakefields::convolve_fft(slopes, wake_function, bin_size);
+                }
+                if (apply_csr && csr == CSR_Algo::SteadyState){
+                    // Construct wake function on 2N support: it only acts on trailing particles,
+                    // so the upper half, for negative separations, stays zero
+
+                    // The wake function is per unit source charge and positive where it
+                    // decelerates: the longitudinal force on a test particle of charge q is -q
+                    // times its convolution with the deposited line density q w.
+
+                    amrex::Gpu::DeviceVector<amrex::Real> wake_function(num_edges*2, 0.0);
+                    amrex::Real *const dptr_wake_function = wake_function.data();
+                    auto const dR = *rc;  // for NVCC capture; set, since CSR applies
+                    amrex::Real const gamma = particle_container.GetRefParticle().gamma();
+                    amrex::Real const charge_factor = particle_container.GetRefParticle().charge_qe()
+                                 / ablastr::constant::SI::q_e;
+
+                    // Trapezoidal rule over each bin ahead of an edge: bin j lies between the
+                    // separations (k-j-1) * bin_size and (k-j) * bin_size from edge k. A bin at or
+                    // behind an edge does not act on it, so the first value stays zero.
+                    amrex::ParallelFor(num_edges, [=] AMREX_GPU_DEVICE(int i) {
+                        amrex::Real const s_center = (static_cast<amrex::Real>(i)) * bin_size;
+                        int const fft_index = (i == 0) ? 0 : 2 * num_edges - i;
+                        dptr_wake_function[fft_index] = -charge_factor / bin_size *
+                              w_l_csr_caseB(s_center, dR, gamma, bin_size);
+                    });
+                    // Call convolution function
+                    convolved_wakefield = impactx::particles::wakefields::convolve_fft(charge_distribution, wake_function, bin_size);
                 }
                 if (apply_short_range_wake){
                     // Construct wake function on 2N support: it only acts on trailing particles,

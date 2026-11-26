@@ -24,9 +24,31 @@ namespace impactx::diagnostics
     /** Compute moments of the beam distribution from particle data
      *
      * This uses an MPI Allreduce and returns a result on all ranks.
+     *
+     * @param pc the particle beam
+     * @param covariance optional: if not nullptr, receives the 6x6 covariance matrix of the
+     *                   phase space coordinates x, px, y, py, t, pt
+     * @throws std::runtime_error if covariance is not nullptr and the beam has no particle
+     *         weight or the reference particle is not initialized
      */
     std::unordered_map<std::string, amrex::ParticleReal>
-    reduced_beam_characteristics (ImpactXParticleContainer const & pc);
+    reduced_beam_characteristics (
+        ImpactXParticleContainer const & pc,
+        CovarianceMatrix * covariance = nullptr
+    );
+
+    /** Compute the covariance matrix of the beam distribution from particle data
+     *
+     * The 6x6 covariance matrix of the phase space coordinates x, px, y, py, t, pt, as used
+     * in envelope tracking. This uses an MPI Allreduce and returns a result on all ranks.
+     *
+     * @param pc the particle beam
+     * @return the covariance matrix
+     * @throws std::runtime_error if the beam has no particle weight or the reference particle
+     *         is not initialized
+     */
+    CovarianceMatrix
+    covariance_matrix (ImpactXParticleContainer const & pc);
 
     /** Compute moments of the beam distribution from covariance matrix
      */

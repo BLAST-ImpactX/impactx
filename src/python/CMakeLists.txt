@@ -10,6 +10,7 @@ target_sources(pyImpactX
     flatten_rho.cpp
     ImpactX.cpp
     ImpactXParticleContainer.cpp
+    InSitu.cpp
     lattice.cpp
     ReferenceParticle.cpp
     transformation.cpp

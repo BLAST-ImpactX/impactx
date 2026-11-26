@@ -10,6 +10,7 @@
 #include "ImpactX.H"
 #include "diagnostics/DiagnosticOutput.H"
 #include "diagnostics/FilePrefix.H"
+#include "diagnostics/InSitu.H"
 #include "elements/helper/Accessors.H"
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
@@ -79,6 +80,14 @@ namespace impactx {
 
         // loop over all beamline elements & finalize them
         finalize_elements();
+
+        // in situ visualization refers to particle data and uses MPI: the simulation that
+        // finalizes AMReX closes it. A simulation that was finalized before, e.g., when
+        // garbage collected later, must not close the instances of another simulation.
+        if (m_grids_initialized)
+        {
+            diagnostics::insitu::close_all();
+        }
 
         // Empty the lattice before releasing Python wrappers. A wrapper's finalizer may
         // iterate the lattice; it must not find the elements being released and recreate

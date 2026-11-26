@@ -622,6 +622,11 @@ Collective Effects & Overall Simulation Parameters
       Indicates GPU support.
       Possible values: ``True``/``False``
 
+   .. py:property:: have_ascent
+
+      Indicates support for in situ visualization with `Ascent <https://ascent.readthedocs.io>`__, see :ref:`usage-python-insitu`.
+      Possible values: ``True``/``False``
+
    .. py:property:: gpu_backend
 
       Indicates the available GPU support.
@@ -764,6 +769,17 @@ For step-by-step recipes on how to access particle data live during a simulation
 
       :return: beam properties with string keywords
       :rtype: dict
+
+   .. py:method:: covariance_matrix()
+
+      Calculate the 6x6 covariance matrix of the phase space coordinates :math:`x`, :math:`p_x`, :math:`y`, :math:`p_y`, :math:`t`, :math:`p_t` at current ``s``, including the correlations between the planes.
+      This is the covariance matrix of envelope tracking, see :py:meth:`impactx.ImpactX.init_envelope`.
+
+      This is MPI-collective.
+
+      :return: covariance matrix; indices start at 1
+      :rtype: Map6x6
+      :raises RuntimeError: if the beam has no particle weight or the reference particle is not initialized
 
    .. py:property:: store_beam_moments
 
@@ -972,6 +988,176 @@ For step-by-step recipes on how to access particle data live during a simulation
 .. py:class:: impactx.ImpactXParConstIter(particle_container, level)
 
    Read-only variant of :py:class:`impactx.ImpactXParIter`.
+
+
+.. _usage-python-insitu:
+
+In Situ Visualization
+---------------------
+
+ImpactX can visualize the particle beam in situ with `Ascent <https://ascent.readthedocs.io>`__, while it is tracked.
+ImpactX passes the particle arrays to Ascent without copies, over all MPI ranks; see :ref:`dataanalysis-insitu` for the copies that Ascent makes on GPUs.
+This needs ImpactX built with ``-DImpactX_ASCENT=ON``, see :py:attr:`impactx.Config.have_ascent`.
+
+The beam is described in its coordinates relative to the reference particle at fixed :math:`s`: the coordinates are ``position_x``, ``position_y`` and ``position_t``.
+Every particle component is a field, named as in :py:meth:`~impactx.ParticleContainer.to_df`, e.g., ``momentum_t`` or ``weighting``.
+The Ascent cycle is the simulation step and the Ascent time is the position :math:`s` of the reference particle in meters.
+
+See :ref:`dataanalysis-insitu` for an overview.
+
+.. py:method:: impactx.ParticleContainer.plot_ascent(preset="beam3d", *, actions=None, options=None, step=0, period=0, **kwargs)
+
+   Visualize the particle beam in situ with Ascent, as a matplotlib figure.
+
+   This is MPI-collective.
+   The figure is only created on MPI rank 0; other ranks return ``None``.
+
+   :param str preset: a visualization preset, see :py:func:`impactx.insitu.ascent_actions`
+   :param list actions: `Ascent actions <https://ascent.readthedocs.io/en/latest/Actions/index.html>`__ to execute instead of a preset; the figure shows the images that they render
+   :param dict options: Ascent options, see :py:class:`impactx.insitu.Ascent`
+   :param int step: global step, the Ascent cycle
+   :param int period: current period (turn or cycle)
+   :param kwargs: options of the preset
+   :return: a matplotlib figure, or ``None`` on MPI ranks other than 0
+   :raises RuntimeError: if ImpactX is built without Ascent, Ascent fails, the particles are not at fixed :math:`s`, or ``"phasespace"`` is requested for particles in GPU device memory
+
+.. py:function:: impactx.insitu.ascent_actions(preset, pc=None, **kwargs)
+
+   Ascent actions of a visualization preset, e.g., as a starting point for own actions.
+
+   ``"beam3d"``: Ascent renders the particles in :math:`x`, :math:`y` and :math:`t`, colored by a particle component.
+   Options:
+
+   * ``color``: particle component that sets the color (default: ``"momentum_t"``)
+   * ``image_size``: width and height in pixels (default: ``(1024, 768)``)
+   * ``color_table``: name of an `Ascent color table <https://ascent.readthedocs.io/en/latest/Actions/Scenes.html#color-tables>`__
+   * ``radius``: radius of a particle, in the scaled coordinates
+   * ``camera``: `Ascent camera parameters <https://ascent.readthedocs.io/en/latest/Actions/Scenes.html#cameras>`__ (default: an oblique view)
+   * ``scale``: the extent of a beam in :math:`t` and in :math:`x`, :math:`y` can differ by orders of magnitude.
+     ``"auto"`` (default) scales each axis by the inverse extent of the beam on the first frame, and renders no axes;
+     ``None`` renders the beam in meters, with axes;
+     or three scaling factors for :math:`x`, :math:`y` and :math:`t`.
+
+   ``"phasespace"``: Ascent sums the particle charge per bin of the :math:`x`-:math:`p_x`, :math:`y`-:math:`p_y` and :math:`t`-:math:`p_t` phase space projections, over all MPI ranks.
+   The figure shows the same as :py:meth:`~impactx.ParticleContainer.plot_phasespace`, which counts macroparticles of a beam without charge; this preset raises an error instead.
+   Ascent bins on the host (CPU): on GPUs, this preset needs the particles in managed memory (``amrex.the_arena_is_managed = 1``).
+   Options:
+
+   * ``num_bins``: number of bins per axis (default: ``50``)
+
+   ``"survey3d"``: Ascent renders the lattice in the global frame of its survey (see :py:meth:`~impactx.elements.KnownElementsList.survey`), with the reference orbit, and with a beam, the beam particles and a cage of its envelope.
+   The actions refer to the geometry of the lattice that :py:class:`impactx.insitu.Animation` and :py:meth:`~impactx.elements.KnownElementsList.plot_survey` publish next to the beam.
+   Options:
+
+   * ``lattice``: the lattice, e.g., ``sim.lattice`` (required)
+   * ``ref``: without a beam, the reference particle at a slice boundary of the lattice
+   * ``envelope``, ``magnify``, ``camera``, ``camera_smoothing``, ``image_size``, ``lighting``, ``bore``, ``cutaway``, ``opacity``, ``supersample``, ``palette``: see :py:meth:`~impactx.elements.KnownElementsList.plot_survey`
+   * ``element_size``: half size of the elements in meters (default: ``"auto"``, 2% of the extent of the lattice)
+   * ``color``: particle component that sets the color of the beam (default: ``"momentum_t"``)
+   * ``radius``: radius of a particle in meters (default: about a pixel)
+   * ``samples``: samples of the volume rendering along a ray (default: a few across the thinnest wall)
+
+   :param str preset: ``"beam3d"``, ``"phasespace"`` or ``"survey3d"``
+   :param pc: the particle beam, needed for ``"phasespace"``, for ``"beam3d"`` with ``scale="auto"`` and for the beam in ``"survey3d"``; this is then MPI-collective
+   :param kwargs: options of the preset
+   :return: Ascent actions
+   :rtype: list
+   :raises ValueError: if the preset is unknown, or ``"phasespace"`` is requested without a beam
+   :raises RuntimeError: if ``"phasespace"`` is requested for a beam without charge, or for particles in GPU device memory
+
+.. py:class:: impactx.insitu.Animation(preset="beam3d", *, actions=None, options=None, every=1, directory=None, **kwargs)
+
+   Visualize the particle beam in situ with Ascent while it is tracked, and animate it.
+
+   Each call renders one frame.
+   Attach it to a tracking hook, e.g., ``sim.hook["after_element"] = anim``, or call it with the simulation.
+   Ascent is opened on the first frame and stays open until :py:meth:`close` or until the simulation is finalized.
+
+   :param str preset: a visualization preset, see :py:func:`impactx.insitu.ascent_actions`
+   :param list actions: Ascent actions to execute instead of a preset; the frames are the images that they render
+   :param dict options: Ascent options, see :py:class:`impactx.insitu.Ascent`
+   :param int every: render every N-th call
+   :param str directory: where to keep rendered images (default: a temporary directory that is removed with this object)
+   :param kwargs: options of the preset
+
+   .. py:method:: __call__(sim)
+
+      Visualize the beam of a simulation as the next frame, e.g., from a tracking hook.
+      This is MPI-collective.
+
+   .. py:method:: render(pc, step=0, period=0, element=None)
+
+      Visualize a particle beam as the next frame.
+      For ``"survey3d"``, ``element`` is the lattice element that the beam is in or has just passed, see :py:meth:`~impactx.elements.KnownElementsList.survey`; ``__call__`` passes ``sim.tracking_element``.
+      This is MPI-collective.
+
+   .. py:attribute:: frames
+
+      The visualized frames, each a dictionary with the ``step``, the ``period``, the position ``s`` and the time ``t`` (as :math:`ct`) of the reference particle in meters, and the data of the frame on MPI rank 0.
+
+   .. py:method:: show(interval=100)
+
+      Show the animation in a window (matplotlib), with ``interval`` milliseconds between frames.
+
+   .. py:method:: save(filename, fps=10, dpi=100, pace="frame")
+
+      Save the animation: a filename ending in ``.gif`` (needs Pillow; 256 colors, shared by all frames and dithered), ``.webp`` (needs Pillow with WebP; full color), ``.mp4`` (needs FFmpeg; H.264, visually lossless) or ``.html``; otherwise a directory that receives one PNG image per frame.
+      With ``pace="s"`` or ``"t"``, a ``.gif`` or ``.webp`` file shows each frame for a time proportional to the distance in :math:`s`, or in the time :math:`t`, of the reference particle to the next frame: the beam moves at a steady pace even if the frames are not evenly spaced, e.g., in elements of different lengths; ``fps`` is then the average frame rate.
+
+   .. py:method:: animation(interval=100, dpi=100)
+
+      The frames as a ``matplotlib.animation.FuncAnimation``, or ``None`` on MPI ranks other than 0 and without frames.
+
+   .. py:method:: close()
+
+      Close Ascent. The frames stay.
+      This is MPI-collective.
+
+   In Jupyter, an ``Animation`` displays itself as an interactive animation of its frames.
+
+.. py:class:: impactx.insitu.Ascent(options={})
+
+   An open Ascent instance, for full control over publishing the beam and executing `Ascent actions <https://ascent.readthedocs.io/en/latest/Actions/index.html>`__.
+   It can also be used as a context manager, which closes it.
+
+   This is MPI-collective.
+
+   :param options: `Ascent options <https://ascent.readthedocs.io/en/latest/AscentAPI.html#open>`__, as a dict or JSON text.
+                   ImpactX sets the MPI communicator.
+                   Unless set otherwise, ImpactX sets:
+
+                   * ``"exceptions": "forward"``: errors in Ascent raise exceptions
+                   * ``"field_filtering": "true"``: only the particle components that the actions use are passed on, e.g., on GPUs this avoids copying the others;
+                     actions that use no particle component need ``"field_filtering": "false"``
+                   * ``"actions_file": ""``: the actions passed to :py:meth:`execute` run unchanged, even if an ``ascent_actions.yaml`` file is in the current directory
+                   * ``"default_dir": ""`` and ``"session_name": ""``: the results of Ascent queries are not saved to a session file when the process exits.
+                     Images named without a directory are written to the current directory.
+
+   .. py:method:: execute(pc, actions, step=0, period=0, geometry=None)
+
+      Publish the particle beam and execute Ascent actions.
+      Images are written by MPI rank 0.
+      This is MPI-collective.
+
+      :param pc: the particle beam, at fixed :math:`s`, or ``None`` to publish only the geometry
+      :param actions: Ascent actions, as a list of dicts or JSON text
+      :param int step: global step, the Ascent cycle
+      :param int period: current period (turn or cycle)
+      :param geometry: a domain of a `Conduit Mesh Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`__, e.g., of the lattice, that MPI rank 0 publishes next to the beam: a dict of dicts, strings, numbers and arrays (numpy arrays of float64, float32, int64 or int32, or lists of numbers), or JSON text.
+                       Its coordinate sets, topologies and fields need names that differ from the ones of the beam.
+                       Only the one of MPI rank 0 is used.
+      :raises ValueError: without a beam and without a geometry on MPI rank 0
+      :return: the Ascent info, e.g., with the written images under ``"images"`` and the results of queries under ``"expressions"``
+      :rtype: dict
+
+   .. py:method:: close()
+
+      Close Ascent and release the published data.
+      This is MPI-collective.
+
+   .. py:property:: is_open
+
+      Is Ascent open?
 
 
 Initial Beam Phase Space Distributions
@@ -1568,19 +1754,79 @@ This module provides elements and methods for the accelerator lattice.
          the special ``"type"`` key for cross-variant comparisons.
       :rtype: bool
 
-   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc")
+   .. py:method:: plot_survey(ref=None, ax=None, legend=True, legend_ncols=5, palette="cern-lhc", *, projection="s", beam=None, element=None, envelope=None, magnify="auto", camera="overview", camera_smoothing="auto", image_size=(1280, 720), lighting=None, bore="round", cutaway=False, opacity=0.3, supersample=2, options=None)
 
-      Plot over s of all elements in the KnownElementsList.
+      Plot the elements in the KnownElementsList.
 
+      With ``projection="s"``, the elements are drawn over s.
       A positive element strength denotes horizontal focusing (e.g. for quadrupoles) and bending to the right (for dipoles).  In general, this depends on both the sign of the field and the sign of the charge.
+
+      With ``projection="3D"``, `Ascent <https://ascent.readthedocs.io>`__ renders the lattice in the global frame of its survey (see :py:meth:`survey`): the elements as translucent boxes with a bore, the reference orbit, and with a beam, the beam particles and a cage of its envelope.
+      The beam particles and the envelope are magnified, to be visible next to the elements, which are drawn at a size relative to the lattice.
+      This needs ImpactX with Ascent, and is MPI-collective with a beam.
+
+      .. code-block:: python
+
+         # in a tracking hook, e.g., "after_element"
+         sim.lattice.plot_survey(
+             projection="3D", beam=sim.beam, element=sim.tracking_element, camera="beam"
+         )
 
       Either populates the matplotlib axes in ax or creates a new axes containing the plot.
 
       :param ref: A reference particle, checked for the charge sign to plot focusing/defocusing strength directions properly.
+                  For ``projection="3D"`` without a beam, the reference particle at a slice boundary of the lattice.
       :param ax: A plotting area in matplotlib (called axes there).
       :param legend: Plot a legend if true.
       :param legend_ncols: Number of columns for lattice element types in the legend.
       :param palette: Color palette of the elements: ``"cern-lhc"``; ``"fnal-booster"`` with dipoles blue, quadrupoles red, sextupoles (multipoles) yellow and combined-function magnets green; or ``"fnal-iota"`` with dipoles blue, quadrupoles green, sextupoles (multipoles) yellow, nonlinear lenses red and RF cavities tan.
+      :param str projection: ``"s"``: the elements over s; ``"3D"``: rendered with Ascent.
+      :param beam: for ``projection="3D"``, the particle beam, at a slice boundary of the lattice
+      :param element: for ``projection="3D"``, the element of this lattice, or its index, that the beam is in or has just passed, see :py:meth:`survey`
+      :param float envelope: for ``projection="3D"``, the half size of the envelope cage in rms beam sizes, ``0`` for none (default: 1 with a beam); it needs a linear transport map for each element
+      :param magnify: for ``projection="3D"``, magnification of the beam coordinates and of the envelope: ``"auto"`` (the envelope fills most of the bore at its largest, the bunch is at most a few elements long), a factor, or a pair of factors for the transverse and the longitudinal coordinates
+      :param camera: for ``projection="3D"``, ``"overview"`` of the lattice, ``"beam"`` for a close-up of the beam, ``"racecar"`` for a chase camera in the beam pipe, behind the bunch and a little above and to the side of it, looking down the pipe ahead, or `Ascent camera parameters <https://ascent.readthedocs.io/en/latest/Actions/Scenes.html#cameras>`__
+      :param camera_smoothing: for ``projection="3D"`` with ``camera="beam"`` or ``"racecar"``, the width in s [m] of a Gaussian average of the reference orbit that the camera follows, so that it turns steadily through bends: ``"auto"`` (8 element sizes) or ``0`` for the local direction of the orbit
+      :param image_size: for ``projection="3D"``, width and height of the image in pixels
+      :param lighting: for ``projection="3D"``, ``None`` draws the translucent elements in their colors, ``"camera"`` lights them from the camera, and ``"cinematic"`` lights them with a soft sky light, a key light, a fill light and a spot light on the beam, in front of a dark background
+      :param bore: for ``projection="3D"``, ``"round"`` or ``"square"`` bore through the elements, or ``None`` for solid elements
+      :param bool cutaway: for ``projection="3D"``, draw the lower half of the elements, cut open through the beam axis, opaque; with a bore, drifts are drawn as cut open beam pipes around the same bore
+      :param float opacity: for ``projection="3D"``, opacity of a wall of the translucent elements, in [0, 1]; ``1`` draws opaque elements, closed around the bore, and with a bore, drifts as beam pipes around the same bore: with ``camera="racecar"``, a tunnel
+      :param int supersample: for ``projection="3D"``, anti-aliasing: the image is rendered this many times larger in width and in height and averaged down; ``1`` for none. The rendering time grows with its square.
+      :param dict options: for ``projection="3D"``, Ascent options, see :py:class:`impactx.insitu.Ascent`
+      :return: the matplotlib axes; with ``projection="3D"``, ``None`` on MPI ranks other than 0
+      :raises ValueError: if the projection is unknown, or for ``projection="3D"``, without a beam and without a reference particle, or with both
+      :raises RuntimeError: for ``projection="3D"``, if ImpactX is built without Ascent, or the envelope cannot be tracked through an element
+
+   .. py:method:: survey(ref, *, slices=True, covariance=None, element=None)
+
+      Survey of the lattice: the reference trajectory in the global frame, as a table with one row for the start and one after each slice (or each element).
+
+      The reference particle can be at any slice boundary of the lattice, e.g., the reference particle of a beam during or after tracking.
+      A copy of it is pushed backward to the start of the lattice, then forward through the elements, slice by slice, as in tracking.
+
+      With the covariance matrix of the beam at the position of the reference particle, e.g., from :py:meth:`impactx.ParticleContainer.covariance_matrix`, the survey also contains the rms beam sizes along the lattice.
+      They come from envelope tracking of the covariance matrix, backward to the start of the lattice and forward from there, which needs a linear transport map for each element.
+
+      .. code-block:: python
+
+         # the beam sizes along the lattice, from the beam during tracking
+         df = sim.lattice.survey(
+             sim.beam.ref,
+             covariance=sim.beam.covariance_matrix(),
+             element=sim.tracking_element,
+         )
+
+      :param ref: the reference particle at a slice boundary of the lattice, e.g., at its start; in a repeated lattice, its position is taken within the current period
+      :param bool slices: one row after each element slice if true, otherwise one row after each element
+      :param covariance: covariance matrix of the beam at the position of the reference particle
+      :param element: the element of this lattice, or its index, that the reference particle is in or has just passed, e.g., ``sim.tracking_element`` in a tracking hook.
+                      It is needed if the reference particle is inside the lattice at the position of zero-length elements that change the reference particle or the beam.
+                      At the start of the lattice, the reference particle is before such elements, at the end after them.
+      :return: columns ``element`` (index, ``-1`` for the start), ``name``, ``kind``, ``s`` [m], ``x``, ``y``, ``z`` [m] (position in the global frame), ``theta`` [rad] (horizontal angle of the direction of motion to the :math:`z` axis, towards :math:`+x`), ``phi`` [rad] (vertical angle to the :math:`x`-:math:`z` plane), ``px``, ``py``, ``pz``, ``pt``, ``kin_energy_MeV``, and with a covariance matrix ``sigma_x``, ``sigma_px``, ``sigma_y``, ``sigma_py``, ``sigma_t``, ``sigma_pt``
+      :rtype: pandas.DataFrame
+      :raises ValueError: if the reference particle is not at a slice boundary, if its position among zero-length elements is ambiguous without the element, or if the element is not in the lattice
+      :raises RuntimeError: with a covariance matrix, if an element has no linear transport map, or if the reference particle is not at the start and an element cannot be reversed
 
 .. py:class:: impactx.elements.FilteredElementsList
 

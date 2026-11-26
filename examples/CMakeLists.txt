@@ -240,6 +240,18 @@ add_impactx_test(FODO.Twiss.py
 )
 
 
+# FODO Cell w/ in situ visualization ##########################################
+#
+if(ImpactX_ASCENT)
+    add_impactx_test(FODO.Ascent.py
+        examples/fodo/run_fodo_ascent.py
+        ON  # ImpactX MPI-parallel
+        examples/fodo/analysis_fodo_ascent.py
+        OFF  # no plot script yet
+    )
+endif()
+
+
 # MPI-Parallel FODO Cell ######################################################
 #
 add_impactx_test(FODO.MPI

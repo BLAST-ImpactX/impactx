@@ -29,6 +29,11 @@ Optional dependencies include:
 - `openPMD-api 0.17.0+ <https://github.com/openPMD/openPMD-api>`__: we automatically download and compile a copy of openPMD-api for openPMD I/O support
 
   - see `optional I/O backends <https://github.com/openPMD/openPMD-api#dependencies>`__
+- `Ascent 0.9.6+ <https://ascent.readthedocs.io>`__: for in situ visualization (``ImpactX_ASCENT``)
+
+  - build it with the same compiler and MPI as ImpactX, e.g., with Ascent's `build_ascent.sh <https://ascent.readthedocs.io/en/latest/BuildingAscent.html>`__, and add its install path to ``CMAKE_PREFIX_PATH``
+  - when ImpactX also uses HDF5 for openPMD I/O, build Conduit without HDF5 or with the same HDF5 library as openPMD-api
+  - for CUDA, also pass ``-DCMAKE_CUDA_HOST_COMPILER=$(which c++)`` (the host compiler of ImpactX) to CMake when configuring ImpactX
 - `CCache <https://ccache.dev>`__: to speed up rebuilds (For CUDA support, needs version 3.7.9+ and 4.2+ is recommended)
 - `Ninja <https://ninja-build.org>`__: for faster parallel compiles
 - `Python 3.11+ <https://www.python.org>`__

@@ -463,6 +463,7 @@ CMake Option                    Default & Values                             Des
 ``CMAKE_INSTALL_PREFIX``        system-dependent path                        `Install path prefix <https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html>`__
 ``CMAKE_VERBOSE_MAKEFILE``      ON/**OFF**                                   `Print all compiler commands to the terminal during build <https://cmake.org/cmake/help/latest/variable/CMAKE_VERBOSE_MAKEFILE.html>`__
 ``ImpactX_APP``                 **ON**/OFF                                   Build the ImpactX executable application
+``ImpactX_ASCENT``              ON/**OFF**                                   In situ visualization with Ascent (requires ``Ascent``)
 ``ImpactX_COMPUTE``             NOACC/**OMP**/CUDA/SYCL/HIP                  On-node, accelerated computing backend
 ``ImpactX_FASTMATH``            ON/**OFF**                                   Enable fast-math optimizations
 ``ImpactX_FFT``                 ON/**OFF**                                   FFT-based solvers (IGF space charge, CSR)

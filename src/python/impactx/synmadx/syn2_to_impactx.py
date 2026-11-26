@@ -250,6 +250,7 @@ def cnv_rbend(elem, order):
             rc=radius_of_curvature,
             g=2 * hgap,
             K2=fint,
+            location="entry",
             model=de_model,
             name=nm + "_usedge",
             rotation=rot,
@@ -261,6 +262,7 @@ def cnv_rbend(elem, order):
             rc=radius_of_curvature,
             g=2 * hgap,
             K2=fint,
+            location="exit",
             model=de_model,
             name=nm + "_dsedge",
             rotation=rot,
@@ -378,7 +380,7 @@ def cnv_multipole(elem, order):
     skew_mom[:slen] = kslvect
     elem_list = []
     for i in range(maxlen):
-        # is there anything this order?
+        # is there anything for this order?
         if norm_mom[i] == 0.0 and skew_mom[i] == 0.0:
             pass
         elem_list.append(
@@ -386,7 +388,7 @@ def cnv_multipole(elem, order):
                 multipole=i + 1,
                 K_normal=norm_mom[i],
                 K_skew=skew_mom[i],
-                name=f"{nm}_{order}",
+                name=f"{nm}_{i + 1}",
                 rotation=rot,
             )
         )
@@ -690,21 +692,20 @@ def unroll_impactx_lattice(lattice):
         # drop what the constructor does not take (``type``; ``ds`` of thin elements)
         edict = _filter_kwargs(edict)
 
-        # skipping BeamMonitors for now. They seem to cause trouble
-        if etype == "BeamMonitor":
-            continue
-
         for pname in edict:
             # the name parameter is a string and must be enclosed in quotes,
             # unless the element is unnamed (None).
             # Also location and model parameters on the DipEdge element
             if not firstparm:
                 output_elem = output_elem + ", "
-            if pname == "name" and edict.get(pname) is None:
+            # if the parameter has value None, output it that way
+            if edict.get(pname) is None:
                 output_elem = output_elem + f"{pname}=None"
-            elif pname == "name" or pname == "location" or pname == "model":
+            # in general if the type of the parameter is a string enclose it in quotes
+            elif type(edict.get(pname)) is str:
                 output_elem = output_elem + f'{pname}="{edict.get(pname)}"'
             else:
+                # just output the parameter and value using the default repr
                 output_elem = output_elem + f"{pname}={edict.get(pname)}"
             firstparm = False
         # close out this element

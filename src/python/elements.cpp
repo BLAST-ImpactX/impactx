@@ -3460,6 +3460,145 @@ void init_elements(py::module& m)
      register_copy(py_SpinMap);
 
 
+
+    py::class_<MagnetostaticVectorPotential, elements::mixin::Named, elements::mixin::Thick, elements::mixin::Alignment, elements::mixin::PipeAperture, py::smart_holder> py_MagnetostaticVectorPotential(me, "MagnetostaticVectorPotential");
+    py_MagnetostaticVectorPotential
+        .def("__repr__",
+             [](MagnetostaticVectorPotential const & vp) {
+                 return element_name(
+                     vp,
+                     std::make_pair("unit", vp.m_unit)
+                 );
+             }
+        )
+        .def("to_dict",
+            [](MagnetostaticVectorPotential const & vp) {
+                return element_dict(
+                    vp,
+                    std::make_pair("unit", vp.m_unit),
+                    std::make_pair("ax", vp.m_potential.ax.expression()),
+                    std::make_pair("ay", vp.m_potential.ay.expression()),
+                    std::make_pair("daxdx", vp.m_potential.daxdx.expression()),
+                    std::make_pair("daxdy", vp.m_potential.daxdy.expression()),
+                    std::make_pair("daydx", vp.m_potential.daydx.expression()),
+                    std::make_pair("daydy", vp.m_potential.daydy.expression()),
+                    std::make_pair("dazdx", vp.m_potential.dazdx.expression()),
+                    std::make_pair("dazdy", vp.m_potential.dazdy.expression()),
+                    std::make_pair("int_order", vp.m_int_order),
+                    std::make_pair("mapsteps", vp.m_mapsteps)
+                );
+            }
+        )
+        .def(py::init<
+                amrex::ParticleReal,
+                int,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                amrex::ParticleReal,
+                int,
+                int,
+                int,
+                std::optional<std::string>
+             >(),
+             py::kw_only(),
+             py::arg("ds"),
+             py::arg("unit") = MagnetostaticVectorPotential::DEFAULT_unit,
+             py::arg("ax") = "0",
+             py::arg("ay") = "0",
+             py::arg("daxdx") = "0",
+             py::arg("daxdy") = "0",
+             py::arg("daydx") = "0",
+             py::arg("daydy") = "0",
+             py::arg("dazdx") = "0",
+             py::arg("dazdy") = "0",
+             py::arg("dx") = MagnetostaticVectorPotential::DEFAULT_dx,
+             py::arg("dy") = MagnetostaticVectorPotential::DEFAULT_dy,
+             py::arg("rotation") = MagnetostaticVectorPotential::DEFAULT_rotation_degree,
+             py::arg("aperture_x") = MagnetostaticVectorPotential::DEFAULT_aperture_x,
+             py::arg("aperture_y") = MagnetostaticVectorPotential::DEFAULT_aperture_y,
+             py::arg("int_order") = MagnetostaticVectorPotential::DEFAULT_int_order,
+             py::arg("mapsteps") = MagnetostaticVectorPotential::DEFAULT_mapsteps,
+             py::arg("nslice") = MagnetostaticVectorPotential::DEFAULT_nslice,
+             py::arg("name") = py::none(),
+             R"doc(Symplectic integration in a user-defined vector potential using the exact Hamiltonian, which includes all nonlinear kinematic effects.
+
+             Integration is performed with respect
+             to a Cartesian coordinate system local to the body of the
+             element.  A symmetric, semi-explicit symplectic integration
+             scheme is used, based on:
+
+             B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic
+             integrators for non-separable Hamiltonian systems,"
+             Math. Comput. 92, pp. 251-281 (2022),
+             https://doi.org/10.1090/mcom/3778
+             )doc"
+        )
+        .def_property("unit",
+            [](MagnetostaticVectorPotential & vp) { return vp.m_unit; },
+            [](MagnetostaticVectorPotential & vp, int unit) {
+                MagnetostaticVectorPotential::check(unit, vp.m_int_order, vp.m_mapsteps);
+                vp.m_unit = unit;
+            },
+            "unit specification for the vector potential: 0 (dimensionless), 1 (SI units, T-m)"
+        )
+        .def_property("int_order",
+            [](MagnetostaticVectorPotential & vp) { return vp.m_int_order; },
+            [](MagnetostaticVectorPotential & vp, int int_order) {
+                MagnetostaticVectorPotential::check(vp.m_unit, int_order, vp.m_mapsteps);
+                vp.m_int_order = int_order;
+            },
+            "order used for symplectic integration (2, 4 or 6)"
+        )
+        .def_property("mapsteps",
+            [](MagnetostaticVectorPotential & vp) { return vp.m_mapsteps; },
+            [](MagnetostaticVectorPotential & vp, int mapsteps) {
+                MagnetostaticVectorPotential::check(vp.m_unit, vp.m_int_order, mapsteps);
+                vp.m_mapsteps = mapsteps;
+            },
+            "number of integration steps per slice used for particle push in the applied fields"
+        )
+    ;
+    {
+        // the formulas of (x, y, z): strings that are checked for syntax when set
+        auto const formula_property = [&py_MagnetostaticVectorPotential](
+            char const * name,
+            elements::TrackedParser<3> elements::VectorPotentialFormulas::* member,
+            char const * doc
+        ) {
+            py_MagnetostaticVectorPotential.def_property(name,
+                [member](MagnetostaticVectorPotential const & vp) {
+                    return (vp.m_potential.*member).expression();
+                },
+                [member](MagnetostaticVectorPotential & vp, std::string formula) {
+                    (vp.m_potential.*member).set_expression(std::move(formula));
+                },
+                doc
+            );
+        };
+        using F = elements::VectorPotentialFormulas;
+        formula_property("ax", &F::ax, "formula for A_x(x,y,z)");
+        formula_property("ay", &F::ay, "formula for A_y(x,y,z)");
+        formula_property("daxdx", &F::daxdx, "formula for dA_x/dx(x,y,z)");
+        formula_property("daxdy", &F::daxdy, "formula for dA_x/dy(x,y,z)");
+        formula_property("daydx", &F::daydx, "formula for dA_y/dx(x,y,z)");
+        formula_property("daydy", &F::daydy, "formula for dA_y/dy(x,y,z)");
+        formula_property("dazdx", &F::dazdx, "formula for dA_z/dx(x,y,z)");
+        formula_property("dazdy", &F::dazdy, "formula for dA_z/dy(x,y,z)");
+    }
+    register_push(py_MagnetostaticVectorPotential);
+    register_reverse(py_MagnetostaticVectorPotential);
+    register_copy(py_MagnetostaticVectorPotential);
+
     // freestanding push function
     m.def("push", py::overload_cast<ImpactXParticleContainer &, elements::ElementHandle &, int, int>(&push),
         py::call_guard<py::gil_scoped_release>(),

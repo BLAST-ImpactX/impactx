@@ -80,6 +80,19 @@ def create_soft_quadrupole(name="quad"):
     )
 
 
+def create_vector_potential(name="vp"):
+    """Create a MagnetostaticVectorPotential element with a quadrupole potential."""
+    return elements.MagnetostaticVectorPotential(
+        name=name,
+        ds=0.5,
+        unit=0,
+        dazdx="-x",
+        dazdy="y",
+        mapsteps=4,
+        nslice=1,
+    )
+
+
 @pytest.mark.manages_amrex
 def test_element_creation_before_amrex_init():
     """
@@ -91,6 +104,7 @@ def test_element_creation_before_amrex_init():
     # Create element BEFORE AMReX/ImpactX is initialized
     sol = create_soft_solenoid("sol_pre_init")
     quad = create_soft_quadrupole("quad_pre_init")
+    vp = create_vector_potential("vp_pre_init")
 
     # Now initialize ImpactX (which initializes AMReX) and run simulation
     sim = ImpactX()
@@ -100,7 +114,7 @@ def test_element_creation_before_amrex_init():
     sim.slice_step_diagnostics = False
     sim.init_grids()
 
-    run_minimal_simulation(sim, [sol, quad])
+    run_minimal_simulation(sim, [sol, quad, vp])
 
     sim.finalize()
 
@@ -116,6 +130,7 @@ def test_unused_element_cleanup():
     # Create elements before ImpactX init
     unused_sol = create_soft_solenoid("unused_sol")
     unused_quad = create_soft_quadrupole("unused_quad")
+    unused_vp = create_vector_potential("unused_vp")
 
     sim = ImpactX()
     sim.particle_shape = 2
@@ -138,6 +153,7 @@ def test_unused_element_cleanup():
     # Keep references alive to ensure they weren't prematurely destroyed
     assert unused_sol is not None
     assert unused_quad is not None
+    assert unused_vp is not None
     assert another_unused is not None
 
 
@@ -151,6 +167,7 @@ def test_element_reuse_across_simulations():
     """
     # Create element before first simulation
     reusable_sol = create_soft_solenoid("reusable_sol")
+    reusable_vp = create_vector_potential("reusable_vp")
 
     # First simulation
     sim1 = ImpactX()
@@ -160,7 +177,7 @@ def test_element_reuse_across_simulations():
     sim1.slice_step_diagnostics = False
     sim1.init_grids()
 
-    run_minimal_simulation(sim1, [reusable_sol])
+    run_minimal_simulation(sim1, [reusable_sol, reusable_vp])
 
     sim1.finalize()
 
@@ -173,7 +190,7 @@ def test_element_reuse_across_simulations():
     sim2.init_grids()
 
     # Use the SAME element again - its host data should still be valid
-    run_minimal_simulation(sim2, [reusable_sol])
+    run_minimal_simulation(sim2, [reusable_sol, reusable_vp])
 
     sim2.finalize()
 
@@ -226,6 +243,87 @@ print("survived")
 
     finished = subprocess.run(
         [sys.executable, "-c", program.replace("CLEANUP", cleanup)],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+    assert finished.returncode == 0, finished.stdout + finished.stderr[-2000:]
+    assert "survived" in finished.stdout
+
+
+@pytest.mark.manages_amrex
+def test_compiled_formulas_are_rebuilt_in_a_new_amrex_session():
+    """A user-defined formula is compiled for one AMReX session.
+
+    An element pushed outside the lattice is not finalized with it, yet must compile
+    again in the next session. A stale compiled formula would keep the constant of the
+    previous session and point into freed memory, hence the subprocess.
+    """
+
+    import subprocess
+    import sys
+
+    program = """
+import amrex.space3d as amr
+import impactx
+import numpy as np
+from impactx import ImpactX, elements
+
+# as in conftest.py: MPI outlives both AMReX sessions
+if impactx.Config.have_mpi:
+    from mpi4py import MPI  # noqa
+
+
+def session(g):
+    sim = ImpactX()
+    sim.particle_shape = 2
+    sim.space_charge = False
+    sim.diagnostics = False
+    sim.slice_step_diagnostics = False
+    sim.init_grids()
+    # a constant of the formulas, resolved when they are compiled
+    amr.ParmParse("").add("g", g)
+    sim.beam.ref.set_species("proton").set_kin_energy_MeV(250.0)
+    return sim
+
+
+def push(sim, el):
+    beam = sim.beam
+    beam.clear_particles()
+    x = np.linspace(-1.0e-3, 1.0e-3, 8)
+    zero = np.zeros_like(x)
+    beam.add_n_particles(x, -x, zero, zero, zero, zero, beam.ref.qm_ratio_SI, 1.0e-12)
+    beam.ref.sedge = beam.ref.s
+    el.push(beam)
+    df = beam.to_df(local=True).reset_index(drop=True).sort_values("idcpu")
+    return df["momentum_x"].to_numpy()
+
+
+def quad():
+    return elements.MagnetostaticVectorPotential(
+        ds=0.5, dazdx="-g*x", dazdy="g*y", mapsteps=4
+    )
+
+
+vp = quad()
+
+sim = session(1.0)
+px_first = push(sim, vp)
+sim.finalize()
+
+sim = session(-1.0)
+px_reused = push(sim, vp)
+px_new = push(sim, quad())
+sim.finalize()
+
+assert not np.allclose(px_first, px_new), "the constant does not change the push"
+assert np.array_equal(px_reused, px_new), (px_reused, px_new)
+print("survived")
+"""
+
+    finished = subprocess.run(
+        [sys.executable, "-c", program],
         capture_output=True,
         text=True,
         timeout=120,

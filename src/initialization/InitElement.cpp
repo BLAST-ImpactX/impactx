@@ -521,6 +521,48 @@ element_name) );
             pp_element.getWithParser("rc", rc);
 
             m_lattice.emplace_back( ThinDipole(theta, rc, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], element_name) );
+
+        } else if (element_type == "magnetostatic_vector_potential")
+        {
+            auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);
+            auto a = detail::query_alignment<MagnetostaticVectorPotential>(pp_element);
+            auto b = detail::query_aperture<MagnetostaticVectorPotential>(pp_element);
+
+            int unit = MagnetostaticVectorPotential::DEFAULT_unit;
+            int int_order = MagnetostaticVectorPotential::DEFAULT_int_order;
+            int mapsteps = MagnetostaticVectorPotential::DEFAULT_mapsteps;
+            pp_element.queryAddWithParser("unit", unit);
+            pp_element.queryAddWithParser("int_order", int_order);
+            pp_element.queryAddWithParser("mapsteps", mapsteps);
+
+            // formulas of (x,y,z): read the whole line, so that spaces do not cut them short
+            auto const formula = [&pp_element](char const * key) {
+                std::string f = "0";
+                pp_element.queryline(key, f);
+                return f;
+            };
+
+            m_lattice.emplace_back(MagnetostaticVectorPotential(
+                ds,
+                unit,
+                formula("A_x(x,y,z)"),
+                formula("A_y(x,y,z)"),
+                formula("dA_x/dx(x,y,z)"),
+                formula("dA_x/dy(x,y,z)"),
+                formula("dA_y/dx(x,y,z)"),
+                formula("dA_y/dy(x,y,z)"),
+                formula("dA_z/dx(x,y,z)"),
+                formula("dA_z/dy(x,y,z)"),
+                a["dx"],
+                a["dy"],
+                a["rotation_degree"],
+                b["aperture_x"],
+                b["aperture_y"],
+                int_order,
+                mapsteps,
+                nslice,
+                element_name
+            ));
         } else if (element_type == "kicker")
         {
             auto a = detail::query_alignment<Kicker>(pp_element);

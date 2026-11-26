@@ -1122,6 +1122,132 @@ This element is defined via ``<linear_map_name>.type = linear_map`` and requires
     Horizontal / vertical half-aperture (elliptical).
 
 
+``magnetostatic_vector_potential``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Symplectic integration in a user-defined magnetostatic vector potential, using the exact Hamiltonian, which includes all
+nonlinear kinematic effects.  Integration is performed with respect to a Cartesian coordinate system local to the body of
+the element.  A symmetric, semi-explicit symplectic integration scheme is used, based on:
+
+B. Jayawardana and T. Ohsawa, ``Semiexplicit symplectic integrators for non-separable Hamiltonian systems,"
+Math. Comput. 92, pp. 251-281 (2022), `DOI:10.1090/mcom/3778 <https://doi.org/10.1090/mcom/3778>`__
+
+The vector potential and its transverse derivatives are formulas of ``x``, ``y`` and ``z`` in the Cartesian frame local to the element (see :ref:`running-cpp-parameters-parser`).
+Here, ``z`` is measured from the center of the element: it runs from ``-ds/2`` at the entrance to ``ds/2`` at the exit.
+A formula that is not set is zero.
+The reference particle moves on a straight line through the element.
+
+This element is defined via ``<magnetostatic_vector_potential_name>.type = magnetostatic_vector_potential`` and requires these additional parameters:
+
+.. pp:param:: <magnetostatic_vector_potential_name>.ds
+    :type: ``float``
+    :unit: m
+
+    The segment length.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.unit
+    :type: ``integer``
+    :default: ``0``
+
+    Specification of units for the vector potential.
+    By default (``0``), the vector potential is normalized by the magnetic rigidity of the reference particle.
+    Use ``1`` to specify it in SI units.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.A_x(x,y,z)
+    :type: ``string``
+    :unit: dimensionless OR T-m
+    :default: ``0``
+
+    Formula for the horizontal component of the vector potential.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.A_y(x,y,z)
+    :type: ``string``
+    :unit: dimensionless OR T-m
+    :default: ``0``
+
+    Formula for the vertical component of the vector potential.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.dA_x/dx(x,y,z)
+    :type: ``string``
+    :unit: 1/m OR T
+    :default: ``0``
+
+    Formula for the x-derivative of the horizontal component of the vector potential.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.dA_x/dy(x,y,z)
+    :type: ``string``
+    :unit: 1/m OR T
+    :default: ``0``
+
+    Formula for the y-derivative of the horizontal component of the vector potential.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.dA_y/dx(x,y,z)
+    :type: ``string``
+    :unit: 1/m OR T
+    :default: ``0``
+
+    Formula for the x-derivative of the vertical component of the vector potential.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.dA_y/dy(x,y,z)
+    :type: ``string``
+    :unit: 1/m OR T
+    :default: ``0``
+
+    Formula for the y-derivative of the vertical component of the vector potential.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.dA_z/dx(x,y,z)
+    :type: ``string``
+    :unit: 1/m OR T
+    :default: ``0``
+
+    Formula for the x-derivative of the longitudinal component of the vector potential.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.dA_z/dy(x,y,z)
+    :type: ``string``
+    :unit: 1/m OR T
+    :default: ``0``
+
+    Formula for the y-derivative of the longitudinal component of the vector potential.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.dx/dy
+    :link_aliases: <magnetostatic_vector_potential_name>.dx <magnetostatic_vector_potential_name>.dy
+    :type: ``float``
+    :unit: m
+
+    Horizontal / vertical translation error.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.rotation
+    :type: ``float``
+    :unit: degree
+
+    Rotation error in the transverse plane.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.aperture_x/y
+    :link_aliases: <magnetostatic_vector_potential_name>.aperture_x <magnetostatic_vector_potential_name>.aperture_y
+    :type: ``float``
+    :unit: m
+
+    Horizontal / vertical half-aperture (elliptical).
+
+.. pp:param:: <magnetostatic_vector_potential_name>.int_order
+    :type: ``integer``
+    :default: ``2``
+
+    The order used for symplectic integration (2, 4, or 6).
+
+.. pp:param:: <magnetostatic_vector_potential_name>.mapsteps
+    :type: ``integer``
+    :default: ``10``
+
+    Number of integration steps per slice used for symplectic integration.
+
+.. pp:param:: <magnetostatic_vector_potential_name>.nslice
+    :type: ``integer``
+    :default: ``1``
+
+    Number of slices used for the application of space charge.
+
+
 ``multipole``
 ^^^^^^^^^^^^^
 

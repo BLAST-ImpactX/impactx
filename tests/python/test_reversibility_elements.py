@@ -229,12 +229,18 @@ def roundtrip(
     ref_atol=ref_atol,
     spin=False,
     after_forward=None,
+    set_edge=False,
 ):
     """Run forward + reverse + forward and verify roundtrip.
 
     ``after_forward`` is an optional ``check(beam, initial)`` callback applied to
     the state after the forward push only, for element-specific assertions that
     the reverse push would otherwise cancel (@see check_spin_rotation).
+
+    ``set_edge`` starts each push at the entrance of the element it pushes
+    through, as tracking a lattice does: s-dependent maps evaluate their fields
+    relative to it. FIXME: off by default, because RFCavity, SoftQuadrupole and
+    SoftSolenoid only invert relative to the entrance of the original element.
     """
     beam = sim.beam
 
@@ -242,6 +248,8 @@ def roundtrip(
     initial_ref = save_ref_state(beam)
 
     # forward push
+    if set_edge:
+        beam.ref.sedge = beam.ref.s
     el.push(beam)
 
     # verify something changed
@@ -251,8 +259,10 @@ def roundtrip(
     if spin and after_forward is not None:
         after_forward(beam, initial)
 
-    # reverse and push again
+    # reverse and push again: the reversed element starts at the exit of the original
     el.reverse()
+    if set_edge:
+        beam.ref.sedge = beam.ref.s
     el.push(beam)
 
     # verify roundtrip
@@ -459,6 +469,58 @@ def test_ExactSbend(sim):
         elements.ExactSbend(ds=1.0, phi=10.0, B=0.45, nslice=nslice, **PIPE_KWARGS),
         sim,
         spin=sim.spin,
+    )
+
+
+# The potentials of examples/vector_potential: a hard-edge quadrupole and an
+# s-dependent solenoid (in T-m)
+SOLENOID_PROFILE = (
+    "((1-2*z)/sqrt(0.111156+(1-2*z)**2)+(1+2*z)/sqrt(0.111156+(1+2*z)**2))"
+)
+VECTOR_POTENTIALS = {
+    "quad": dict(ds=1.0, unit=0, dazdx="-x", dazdy="y", mapsteps=mapsteps),
+    "solenoid": dict(
+        ds=6.0,
+        unit=1,
+        ax=f"-0.790585*y*{SOLENOID_PROFILE}",
+        ay=f"0.790585*x*{SOLENOID_PROFILE}",
+        daxdy=f"-0.790585*{SOLENOID_PROFILE}",
+        daydx=f"0.790585*{SOLENOID_PROFILE}",
+        mapsteps=20,
+    ),
+    # A quadrupole whose gradient (1 + 0.5 z) tapers along the element, with skew
+    # quadrupole and sextupole components (as in test_ExactMultipole): there is no
+    # symmetry in z, x or y, and none of the eight formulas vanishes. The axial
+    # field B_z = g' x y of the taper keeps it an exact vacuum field.
+    "asymmetric": dict(
+        ds=1.0,
+        unit=0,
+        ax="-0.125*x*y**2",
+        ay="0.125*x**2*y",
+        daxdx="-0.125*y**2",
+        daxdy="-0.25*x*y",
+        daydx="0.25*x*y",
+        daydy="0.125*x**2",
+        dazdx="-(1+0.5*z)*x + 0.35*y - 0.075*(x**2-y**2)",
+        dazdy="(1+0.5*z)*y + 0.35*x + 0.15*x*y",
+        mapsteps=mapsteps,
+    ),
+}
+
+
+# Note: has no spin support
+@pytest.mark.parametrize("int_order", [2, 4, 6])
+@pytest.mark.parametrize("potential", list(VECTOR_POTENTIALS))
+def test_MagnetostaticVectorPotential(sim, potential, int_order):
+    roundtrip(
+        elements.MagnetostaticVectorPotential(
+            int_order=int_order,
+            nslice=nslice,
+            **VECTOR_POTENTIALS[potential],
+            **PIPE_KWARGS,
+        ),
+        sim,
+        set_edge=True,
     )
 
 

@@ -37,7 +37,7 @@ namespace impactx::particles::wakefields
         amrex::ParticleReal const mc_SI = pc.GetRefParticle().mass * (ablastr::constant::SI::c);
         amrex::ParticleReal const gamma_ref = pc.GetRefParticle().gamma();
         amrex::ParticleReal const bg_ref = pc.GetRefParticle().beta_gamma();
-        amrex::ParticleReal const r_e = (ablastr::constant::SI::r_e);
+        amrex::ParticleReal const r_e = pc.GetRefParticle().radius_classical_m();
         amrex::ParticleReal const hbar = (ablastr::constant::SI::hbar);
         amrex::ParticleReal const lambda_e = hbar/mc_SI;
 

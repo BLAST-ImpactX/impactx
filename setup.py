@@ -330,6 +330,7 @@ setup(
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: 3.14",
+        "Programming Language :: Python :: 3.15",
         (
             "License :: OSI Approved :: BSD License"
         ),  # TODO: use real SPDX: BSD-3-Clause-LBNL

@@ -87,7 +87,9 @@ namespace detail
      * models divide by the beam extent.  The 2D model of an unbunched beam does not resolve
      * the longitudinal direction (the charge is projected to x-y), so it accepts a beam
      * without longitudinal extent, e.g. a DC beam with all particles at the same time of
-     * flight.  An empty beam (min > max) is not checked.
+     * flight.  An empty beam (min > max) is not checked, and an extent that is not
+     * finite (an infinite position, or a NaN that reaches the min/max reduction) gets
+     * its own error.
      */
     void
     check_beam_extent (
@@ -100,26 +102,26 @@ namespace detail
 
         for (amrex::ParticleReal const v : {x_min, y_min, z_min, x_max, y_max, z_max}) {
             if (!std::isfinite(v)) {
-                throw std::runtime_error("ResizeMesh: the beam has non-finite particle positions");
+                throw std::runtime_error("ResizeMesh: the extent of the beam is not finite");
             }
         }
         auto const is_flat = [] (amrex::ParticleReal lo, amrex::ParticleReal hi) {
             amrex::ParticleReal const eps = std::numeric_limits<amrex::ParticleReal>::epsilon();
             return hi - lo <= amrex::ParticleReal(8) * eps * std::max(std::abs(lo), std::abs(hi));
         };
-        std::string const issue = "https://github.com/BLAST-ImpactX/impactx/issues/44";
+        std::string const see = " See https://github.com/BLAST-ImpactX/impactx/issues/44";
         if (is_flat(x_min, x_max) || is_flat(y_min, y_max)) {
-            throw std::runtime_error("Flat beam detected: the beam has no transverse extent. "
-                                     "This is not yet supported: " + issue);
+            throw std::runtime_error("Flat beam detected: the beam has no transverse extent, "
+                                     "which is not yet supported." + see);
         }
         if (is_flat(z_min, z_max) && space_charge != SpaceChargeAlgo::True_2D) {
-            std::string msg = "Flat beam detected: the beam has no longitudinal extent. "
-                              "This is not yet supported for algo.space_charge = "
-                              + to_string(space_charge) + ": " + issue + ".";
+            std::string msg = "Flat beam detected: the beam has no longitudinal extent, which "
+                              "algo.space_charge = " + to_string(space_charge)
+                              + " does not support yet.";
             if (space_charge != SpaceChargeAlgo::False) {
                 msg += " For an unbunched (e.g., DC) beam, use algo.space_charge = 2D.";
             }
-            throw std::runtime_error(msg);
+            throw std::runtime_error(msg + see);
         }
     }
 }

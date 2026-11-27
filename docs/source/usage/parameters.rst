@@ -2474,7 +2474,7 @@ See there ``nslice`` option on lattice elements for slicing.
 
     * ``2D``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
       The longitudinal direction is not resolved, so the beam may have no longitudinal extent, e.g., a DC beam with all particles at the same time of flight.
-      With :pp:param:`geometry.dynamic_size`, the field mesh then uses the larger transverse width of the beam as its longitudinal extent, padded by :pp:param:`geometry.prob_relative`.
+      With :pp:param:`geometry.dynamic_size`, the field mesh then uses the larger transverse width of the beam as its longitudinal extent, padded by :pp:param:`geometry.prob_relative`; a longitudinal extent below ``1e-6`` of that width counts as none.
 
     * ``2p5D``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
       longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.
@@ -2632,7 +2632,7 @@ See there ``nslice`` option on lattice elements for slicing.
     The beam minimum and maximum extent are symmetrically padded by the mesh.
     For instance, ``1.2`` means the mesh will span 10% above and 10% below the beam;
     ``1.0`` means the beam is exactly covered with the mesh.
-    With :pp:param:`algo.space_charge = 2D`, a beam without longitudinal extent uses its larger transverse width as longitudinal extent here.
+    With :pp:param:`algo.space_charge = 2D`, a beam without longitudinal extent (or with less than ``1e-6`` of its transverse width) uses its larger transverse width as longitudinal extent here.
 
 .. pp:param:: geometry.prob_lo/hi
     :link_aliases: geometry.prob_lo geometry.prob_hi

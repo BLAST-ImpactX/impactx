@@ -1868,14 +1868,15 @@ if(ImpactX_FFT)
         examples/expanding_beam/analysis_expanding_fft_2D_unbunched.py
         OFF  # no plot script yet
     )
-    # the same without MPI (one box), and on a fixed mesh (geometry.dynamic_size = false)
+    # the same without MPI (one box)
     add_impactx_test(expanding-fft-2d-unbunched-serial
         "examples/expanding_beam/input_expanding_fft_2D_unbunched.in amr.max_grid_size_x=32"
         OFF  # ImpactX MPI-parallel
         examples/expanding_beam/analysis_expanding_fft_2D_unbunched.py
         OFF  # no plot script yet
     )
-    # (two boxes, as for two MPI ranks; the input's geometry.prob_relative is unused)
+    # the same on a fixed mesh, geometry.dynamic_size = false (two boxes, as for two MPI
+    # ranks; the input's geometry.prob_relative is unused)
     set(_static_mesh
         "geometry.dynamic_size=false"
         "geometry.prob_lo=-3.0e-3 -3.0e-3 -1.0e-3 geometry.prob_hi=3.0e-3 3.0e-3 1.0e-3"

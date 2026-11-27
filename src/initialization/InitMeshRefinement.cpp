@@ -79,6 +79,14 @@ namespace detail
         return prob_relative;
     }
 
+    /** True if [lo, hi] has no extent, up to the rounding of the coordinates (8 ulp) */
+    bool
+    is_flat (amrex::ParticleReal lo, amrex::ParticleReal hi)
+    {
+        amrex::ParticleReal const eps = std::numeric_limits<amrex::ParticleReal>::epsilon();
+        return hi - lo <= amrex::ParticleReal(8) * eps * std::max(std::abs(lo), std::abs(hi));
+    }
+
     /** Throw if the beam has no extent in a direction that the space charge model needs.
      *
      * https://github.com/BLAST-ImpactX/impactx/issues/44
@@ -105,21 +113,19 @@ namespace detail
                 throw std::runtime_error("ResizeMesh: the extent of the beam is not finite");
             }
         }
-        auto const is_flat = [] (amrex::ParticleReal lo, amrex::ParticleReal hi) {
-            amrex::ParticleReal const eps = std::numeric_limits<amrex::ParticleReal>::epsilon();
-            return hi - lo <= amrex::ParticleReal(8) * eps * std::max(std::abs(lo), std::abs(hi));
-        };
         std::string const see = " See https://github.com/BLAST-ImpactX/impactx/issues/44";
         if (is_flat(x_min, x_max) || is_flat(y_min, y_max)) {
             throw std::runtime_error("Flat beam detected: the beam has no transverse extent, "
                                      "which is not yet supported." + see);
         }
         if (is_flat(z_min, z_max) && space_charge != SpaceChargeAlgo::True_2D) {
-            std::string msg = "Flat beam detected: the beam has no longitudinal extent, which "
-                              "algo.space_charge = " + to_string(space_charge)
-                              + " does not support yet.";
-            if (space_charge != SpaceChargeAlgo::False) {
-                msg += " For an unbunched (e.g., DC) beam, use algo.space_charge = 2D.";
+            std::string msg = "Flat beam detected: the beam has no longitudinal extent, ";
+            if (space_charge == SpaceChargeAlgo::False) {
+                msg += "which sizing the mesh needs.";
+            } else {
+                msg += "which algo.space_charge = " + to_string(space_charge)
+                       + " does not support yet. For an unbunched (e.g., DC) beam, use "
+                         "algo.space_charge = 2D.";
             }
             throw std::runtime_error(msg + see);
         }
@@ -164,7 +170,9 @@ namespace detail
             // jitter in the time of flight of a DC beam) is treated as none, which keeps
             // the cells from becoming degenerate; a short but resolved beam keeps its box.
             amrex::ParticleReal const width = std::max(x_max - x_min, y_max - y_min);
-            if (space_charge == SpaceChargeAlgo::True_2D && z_max - z_min < 1.0e-6_prt * width) {
+            bool const no_z_extent =
+                detail::is_flat(z_min, z_max) || z_max - z_min < 1.0e-6_prt * width;
+            if (space_charge == SpaceChargeAlgo::True_2D && no_z_extent) {
                 amrex::ParticleReal const z_center = 0.5_prt * (z_min + z_max);
                 z_min = z_center - 0.5_prt * width;
                 z_max = z_center + 0.5_prt * width;

@@ -20,6 +20,8 @@
 #include <AMReX_REAL.H>
 #include <AMReX_Utility.H>
 
+#include <algorithm>
+#include <cmath>
 #include <limits>
 #include <stdexcept>
 #include <string>
@@ -76,6 +78,58 @@ namespace detail
 
         return prob_relative;
     }
+
+    /** True if [lo, hi] has no extent, up to the rounding of the coordinates (8 ulp) */
+    bool
+    is_flat (amrex::ParticleReal lo, amrex::ParticleReal hi)
+    {
+        amrex::ParticleReal const eps = std::numeric_limits<amrex::ParticleReal>::epsilon();
+        return hi - lo <= amrex::ParticleReal(8) * eps * std::max(std::abs(lo), std::abs(hi));
+    }
+
+    /** Throw if the beam has no extent in a direction that the space charge model needs.
+     *
+     * https://github.com/BLAST-ImpactX/impactx/issues/44
+     * A direction counts as flat when its extent is zero up to the rounding of the particle
+     * coordinates.  Such a direction gives the mesh no size, and the 2.5D and Gaussian
+     * models divide by the beam extent.  The 2D model of an unbunched beam does not resolve
+     * the longitudinal direction (the charge is projected to x-y), so it accepts a beam
+     * without longitudinal extent, e.g. a DC beam with all particles at the same time of
+     * flight.  An empty beam (min > max) is not checked, and an extent that is not
+     * finite (an infinite position, or a NaN that reaches the min/max reduction) gets
+     * its own error.
+     */
+    void
+    check_beam_extent (
+        amrex::ParticleReal x_min, amrex::ParticleReal y_min, amrex::ParticleReal z_min,
+        amrex::ParticleReal x_max, amrex::ParticleReal y_max, amrex::ParticleReal z_max,
+        SpaceChargeAlgo space_charge
+    )
+    {
+        if (x_min > x_max) { return; }  // no particles
+
+        for (amrex::ParticleReal const v : {x_min, y_min, z_min, x_max, y_max, z_max}) {
+            if (!std::isfinite(v)) {
+                throw std::runtime_error("ResizeMesh: the extent of the beam is not finite");
+            }
+        }
+        std::string const see = " See https://github.com/BLAST-ImpactX/impactx/issues/44";
+        if (is_flat(x_min, x_max) || is_flat(y_min, y_max)) {
+            throw std::runtime_error("Flat beam detected: the beam has no transverse extent, "
+                                     "which is not yet supported." + see);
+        }
+        if (is_flat(z_min, z_max) && space_charge != SpaceChargeAlgo::True_2D) {
+            std::string msg = "Flat beam detected: the beam has no longitudinal extent, ";
+            if (space_charge == SpaceChargeAlgo::False) {
+                msg += "which sizing the mesh needs.";
+            } else {
+                msg += "which algo.space_charge = " + to_string(space_charge)
+                       + " does not support yet. For an unbunched (e.g., DC) beam, use "
+                         "algo.space_charge = 2D.";
+            }
+            throw std::runtime_error(msg + see);
+        }
+    }
 }
 
     void ImpactX::ResizeMesh ()
@@ -84,25 +138,23 @@ namespace detail
 
         using namespace amrex::literals; // for _rt and _prt
 
-        {
-            auto space_charge = get_space_charge_algo();
-            if (space_charge == SpaceChargeAlgo::False)
-                ablastr::warn_manager::WMRecordWarning(
-                    "ImpactX::ResizeMesh",
-                    "This is a simulation without space charge. "
-                    "ResizeMesh (and pc.Redistribute) should only be called "
-                    "in space charge simulations.",
-                    ablastr::warn_manager::WarnPriority::high
-                );
+        auto const space_charge = get_space_charge_algo();
+        if (space_charge == SpaceChargeAlgo::False) {
+            ablastr::warn_manager::WMRecordWarning(
+                "ImpactX::ResizeMesh",
+                "This is a simulation without space charge. "
+                "ResizeMesh (and pc.Redistribute) should only be called "
+                "in space charge simulations.",
+                ablastr::warn_manager::WarnPriority::high
+            );
         }
 
         // Extract the min and max of the particle positions
-        auto const [x_min, y_min, z_min, x_max, y_max, z_max] = amr_data->track_particles.m_particle_container->MinAndMaxPositions();
+        auto [x_min, y_min, z_min, x_max, y_max, z_max] =
+            amr_data->track_particles.m_particle_container->MinAndMaxPositions();
 
-        // guard for flat beams:
-        //   https://github.com/BLAST-ImpactX/impactx/issues/44
-        if (x_min == x_max || y_min == y_max || z_min == z_max)
-            throw std::runtime_error("Flat beam detected. This is not yet supported: https://github.com/BLAST-ImpactX/impactx/issues/44");
+        // guard for flat beams (only the 2D model accepts a beam without longitudinal extent)
+        detail::check_beam_extent(x_min, y_min, z_min, x_max, y_max, z_max, space_charge);
 
         amrex::ParmParse pp_geometry("geometry");
         bool dynamic_size = true;
@@ -111,6 +163,21 @@ namespace detail
         amrex::Vector<amrex::RealBox> rb(amr_data->finestLevel() + 1);  // extent per level
         if (dynamic_size)
         {
+            // The 2D model of an unbunched beam does not resolve the longitudinal
+            // direction (the charge is projected to x-y), so a beam without longitudinal
+            // extent only needs some finite box length: it gets the larger transverse
+            // width of the beam.  A longitudinal extent below 1e-6 of that width (e.g.
+            // jitter in the time of flight of a DC beam) is treated as none, which keeps
+            // the cells from becoming degenerate; a short but resolved beam keeps its box.
+            amrex::ParticleReal const width = std::max(x_max - x_min, y_max - y_min);
+            bool const no_z_extent =
+                detail::is_flat(z_min, z_max) || z_max - z_min < 1.0e-6_prt * width;
+            if (space_charge == SpaceChargeAlgo::True_2D && no_z_extent) {
+                amrex::ParticleReal const z_center = 0.5_prt * (z_min + z_max);
+                z_min = z_center - 0.5_prt * width;
+                z_max = z_center + 0.5_prt * width;
+            }
+
             // The coarsest level is expanded (or reduced) relative the min and max of particles.
             auto const prob_relative = detail::read_mr_prob_relative();
 

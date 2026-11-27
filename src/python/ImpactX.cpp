@@ -233,7 +233,10 @@ void init_ImpactX (py::module& m)
                   amrex::ParmParse pp_geometry("geometry");
                   pp_geometry.addarr("prob_relative", frac);
               },
-              "The field mesh spans, per direction, multiple times the maximum physical extent of beam particles, as given by this factor."
+              "The field mesh spans, per direction, multiple times the maximum physical "
+              "extent of beam particles, as given by this factor. With 2D space charge, a "
+              "beam without longitudinal extent (or with less than 1e-6 of its transverse "
+              "width) uses its larger transverse width as longitudinal extent."
         )
 
         .def_property("dynamic_size",

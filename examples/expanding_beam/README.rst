@@ -39,25 +39,25 @@ We also provide the same example with the multi-grid (MLMG) Poisson solver.
 
       .. literalinclude:: run_expanding_fft.py
          :language: python3
-         :caption: You can copy this file from ``examples/expanding/run_expanding_fft.py``.
+         :caption: You can copy this file from ``examples/expanding_beam/run_expanding_fft.py``.
 
    .. tab-item:: Python: Script (MLMG)
 
       .. literalinclude:: run_expanding_mlmg.py
          :language: python3
-         :caption: You can copy this file from ``examples/expanding/run_expanding_mlmg.py``.
+         :caption: You can copy this file from ``examples/expanding_beam/run_expanding_mlmg.py``.
 
    .. tab-item:: Executable: Input File (FFT)
 
        .. literalinclude:: input_expanding_fft.in
           :language: ini
-          :caption: You can copy this file from ``examples/expanding/input_expanding_fft.in``.
+          :caption: You can copy this file from ``examples/expanding_beam/input_expanding_fft.in``.
 
    .. tab-item:: Executable: Input File (MLMG)
 
        .. literalinclude:: input_expanding_mlmg.in
           :language: ini
-          :caption: You can copy this file from ``examples/expanding/input_expanding_mlmg.in``.
+          :caption: You can copy this file from ``examples/expanding_beam/input_expanding_mlmg.in``.
 
 
 Analyze
@@ -69,7 +69,7 @@ We run the following script to analyze correctness:
 
    .. literalinclude:: analysis_expanding.py
       :language: python3
-      :caption: You can copy this file from ``examples/expanding/analysis_expanding.py``.
+      :caption: You can copy this file from ``examples/expanding_beam/analysis_expanding.py``.
 
 
 
@@ -80,12 +80,15 @@ Expanding Beam in Free Space with 2D Space Charge
 
 A long, coasting unbunched beam expanding freely in free space under its own 2D space charge.
 
-We use a cold (zero emittance) 250 MeV electron bunch whose
+We use a cold (zero emittance) 250 MeV proton bunch whose
 initial distribution is a uniformly-populated cylinder of radius R0 = 1 mm.
 
 In the laboratory frame, the beam expands to twice its original transverse size.  This is tested using the second moments of the distribution.
 
 In this test, the initial and final values of :math:`\sigma_x`, :math:`\sigma_y`, :math:`\sigma_t`, :math:`\epsilon_x`, :math:`\epsilon_y`, and :math:`\epsilon_t` must agree with nominal values.
+
+The variant ``input_expanding_fft_2D_unbunched.in`` starts all particles at the same time of flight (:math:`\sigma_t = 0`), as in a DC beam.
+The 2D space-charge model does not resolve the longitudinal direction, so the beam must expand in the same way (``analysis_expanding_fft_2D_unbunched.py``).
 
 
 Run
@@ -98,21 +101,25 @@ This example can be run **either** as:
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
-We also provide the same example with the multi-grid (MLMG) Poisson solver.
-
 .. tab-set::
 
    .. tab-item:: Python: Script (FFT)
 
       .. literalinclude:: run_expanding_fft_2D.py
          :language: python3
-         :caption: You can copy this file from ``examples/expanding/run_expanding_fft_2D.py``.
+         :caption: You can copy this file from ``examples/expanding_beam/run_expanding_fft_2D.py``.
 
    .. tab-item:: Executable: Input File (FFT)
 
        .. literalinclude:: input_expanding_fft_2D.in
           :language: ini
-          :caption: You can copy this file from ``examples/expanding/input_expanding_fft_2D.in``.
+          :caption: You can copy this file from ``examples/expanding_beam/input_expanding_fft_2D.in``.
+
+   .. tab-item:: Executable: Input File (FFT, no longitudinal extent)
+
+       .. literalinclude:: input_expanding_fft_2D_unbunched.in
+          :language: ini
+          :caption: You can copy this file from ``examples/expanding_beam/input_expanding_fft_2D_unbunched.in``.
 
 
 Analyze
@@ -124,7 +131,13 @@ We run the following script to analyze correctness:
 
    .. literalinclude:: analysis_expanding_fft_2D.py
       :language: python3
-      :caption: You can copy this file from ``examples/expanding/analysis_expanding_fft_2D.py``.
+      :caption: You can copy this file from ``examples/expanding_beam/analysis_expanding_fft_2D.py``.
+
+.. dropdown:: Script ``analysis_expanding_fft_2D_unbunched.py``
+
+   .. literalinclude:: analysis_expanding_fft_2D_unbunched.py
+      :language: python3
+      :caption: You can copy this file from ``examples/expanding_beam/analysis_expanding_fft_2D_unbunched.py``.
 
 
 
@@ -154,7 +167,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
       .. literalinclude:: run_expanding_fft_2D_test_particles.py
          :language: python3
-         :caption: You can copy this file from ``examples/expanding/run_expanding_fft_2D_test_particles.py``.
+         :caption: You can copy this file from ``examples/expanding_beam/run_expanding_fft_2D_test_particles.py``.
 
 For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with ``mpiexec -n 4 ...`` or ``srun -n 4 ...``, depending on the system.
 
@@ -188,7 +201,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
       .. literalinclude:: run_expanding_acc_fft.py
          :language: python3
-         :caption: You can copy this file from ``examples/expanding/run_expanding_acc_fft.py``.
+         :caption: You can copy this file from ``examples/expanding_beam/run_expanding_acc_fft.py``.
 
 
 Analyze
@@ -228,7 +241,7 @@ For `MPI-parallel <https://www.mpi-forum.org>`__ runs, prefix these lines with `
 
       .. literalinclude:: run_expanding_acc_fft_2D.py
          :language: python3
-         :caption: You can copy this file from ``examples/expanding/run_expanding_acc_fft_2D.py``.
+         :caption: You can copy this file from ``examples/expanding_beam/run_expanding_acc_fft_2D.py``.
 
 
 Analyze

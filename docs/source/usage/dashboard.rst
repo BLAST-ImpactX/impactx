@@ -65,6 +65,17 @@ The user-friendly interface includes multiple tabs and menu options, intended to
    Input section in the dashboard.
 
 
+Import and Export
+-----------------
+
+The toolbar of the Input tab exports the inputs as an ImpactX Python script (**Export**), imports such a script (**Import**), and loads select ImpactX examples (**Select an example**).
+
+.. note::
+
+   The import is only intended to support the scripts that the dashboard exports, and select ImpactX examples with a limited script structure, e.g., for tutorials on how to use the dashboard.
+   Loading arbitrary ImpactX Python scripts is generally unsupported: the import raises, on a best-effort basis, an error for code that it cannot follow.
+
+
 Developers
 ----------
 

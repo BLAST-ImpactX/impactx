@@ -7,14 +7,16 @@ License: BSD-3-Clause-LBNL
 """
 
 from .. import state
+from ..Input.defaults import beam_intensity_name
 from ..Input.distribution.utils import DistributionFunctions
+from ..Input.validation import DashboardValidation
 
 TRACKING_MODE_COMMANDS = {
     "Particle Tracking": """\
-sim.add_particles(bunch_charge_C, distr, npart)
+sim.add_particles({intensity}, distr, npart)
 sim.track_particles()""",
     "Envelope Tracking": """\
-sim.init_envelope(ref, distr)
+sim.init_envelope(ref, distr, {intensity})
 sim.track_envelope()""",
     "Reference Tracking": "sim.track_reference(ref)",
 }
@@ -69,6 +71,12 @@ def build_lattice_list() -> str:
             param_value = param["sim_input"]
             param_type = param["parameter_type"]
 
+            # an optional parameter left blank stays at its default: passing an
+            # empty string instead would build the wrong element
+            if param.get("parameter_is_optional", False):
+                if DashboardValidation.is_blank(param_value):
+                    continue
+
             if param_type == "str":
                 formatted_value = f'"{param_value}"'
             elif param_type == "bool":
@@ -100,7 +108,7 @@ sim.dynamic_size = {state.dynamic_size}
 sim.poisson_solver = '{state.poisson_solver}'
 sim.particle_shape = {state.particle_shape}
 sim.max_level = {state.max_level}
-sim.n_cell = {state.n_cell}
+sim.n_cell = [{state.n_cell_x}, {state.n_cell_y}, {state.n_cell_z}]
 sim.blocking_factor_x = [{state.blocking_factor_x}]
 sim.blocking_factor_y = [{state.blocking_factor_y}]
 sim.blocking_factor_z = [{state.blocking_factor_z}]
@@ -119,7 +127,7 @@ sim.mlmg_verbosity = {state.mlmg_verbosity}
 sim.csr = {state.csr}
 sim.csr_bins = {state.csr_bins}
 """
-        if not state.space_charge:
+        if state.space_charge == "false":
             content += f"""
 sim.particle_shape = {state.particle_shape}
 """
@@ -148,7 +156,9 @@ def build_tracking_commands() -> str:
     Read the user's choice from state.tracking_mode and
     return the corresponding ImpactX sim command block.
     """
-    return TRACKING_MODE_COMMANDS[state.tracking_mode]
+    return TRACKING_MODE_COMMANDS[state.tracking_mode].format(
+        intensity=beam_intensity_name()
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -174,6 +184,7 @@ def dashboard_sim_inputs(is_exporting=False) -> str:
     This function creates the template to export
     dashboard user inputs into a python script.
     """
+    intensity = beam_intensity_name()
     script = f"""
 from impactx import ImpactX, distribution, elements, twiss
 
@@ -186,7 +197,7 @@ sim.init_grids()
 
 # Initialize particle beam
 kin_energy_MeV = {state.kin_energy_MeV}
-bunch_charge_C = {state.bunch_charge_C}
+{intensity} = {getattr(state, intensity)}
 npart = {state.npart}
 
 pc = sim.particle_container()

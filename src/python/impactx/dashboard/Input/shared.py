@@ -40,23 +40,29 @@ class SharedUtilities:
 
         for state_name in state_changes:
             input = getattr(state, state_name)
-            if type(input) is str:
-                validation_result = DashboardValidation.validate(state_name, input)
-                DashboardValidation.update_error_message_on_ui(
-                    state_name, validation_result
-                )
 
-                if not validation_result:
+            # Validate the text inputs: strings typed in the browser, and numbers
+            # set by the dashboard itself, e.g., by an import or a reset.
+            if isinstance(input, bool) or not isinstance(input, (str, int, float)):
+                continue
+            if not state.has(f"{state_name}_error_message"):
+                continue  # no input field
+
+            validation_result = DashboardValidation.validate(state_name, input)
+            DashboardValidation.update_error_message_on_ui(
+                state_name, validation_result
+            )
+
+            if not validation_result:
+                if type(input) is str:
                     GeneralFunctions.set_state_to_numeric(state_name)
+                    if state_name == "kin_energy_on_ui":
+                        state.dirty("kin_energy_unit")
+                if "blocking_factor" in state_name or "n_cell" in state_name:
+                    direction = state_name[-1]
+                    DashboardValidation.update_n_cell_validation(direction)
 
-                    match state_name:
-                        case "kin_energy_on_ui":
-                            state.dirty("kin_energy_unit")
-                        case _ if "blocking_factor" or "n_cell" in state_name:
-                            direction = state_name[-1]
-                            DashboardValidation.update_n_cell_validation(direction)
-
-                errors_tracker.update_simulation_validation_status()
+            errors_tracker.update_simulation_validation_status()
 
     @ctrl.add("collapse_all_sections")
     def on_collapse_all_sections_click():

@@ -21,6 +21,12 @@ class DashboardParser:
     """
     Provides functionality to import ImpactX simulation files
     to the dashboard and auto-populate the UI with their configurations.
+
+    The import is only intended to support the Python scripts that the
+    dashboard exports, and select ImpactX examples with a limited script
+    structure, e.g., for tutorials on how to use the dashboard. Loading
+    arbitrary ImpactX Python scripts is generally unsupported: the import
+    raises, on a best-effort basis, an error for code that it cannot follow.
     """
 
     @staticmethod
@@ -64,11 +70,21 @@ class DashboardParser:
 
         file_content = DashboardParserHelper.import_file_content(file, state)
 
-        lattice_parser = DashboardLatticeParser(file_content)
-        single_input_contents = DashboardParserHelper.parse_single_inputs(file_content)
-        list_input_contents = DashboardParserHelper.parse_list_inputs(file_content)
-        distribution_contents = DashboardParserHelper.parse_distribution(file_content)
-        lattice_contents = lattice_parser.parse()
+        try:
+            # first, as it checks that the dashboard can follow the script
+            lattice_parser = DashboardLatticeParser(file_content)
+            lattice_contents = lattice_parser.parse()
+            single_input_contents = DashboardParserHelper.parse_single_inputs(
+                file_content
+            )
+            list_input_contents = DashboardParserHelper.parse_list_inputs(file_content)
+            distribution_contents = DashboardParserHelper.parse_distribution(
+                file_content
+            )
+        except RecursionError:
+            raise ValueError(
+                "Cannot import the file: its code is nested too deeply."
+            ) from None
 
         used_inputs = lattice_parser.extract_lattice_inputs(lattice_contents)
         variable_contents = DashboardParserHelper.parse_variables(

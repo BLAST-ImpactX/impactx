@@ -12,21 +12,31 @@ from ...Input.lattice.variable_handler import LatticeVariableHandler
 from ...Input.visualization.lattice import update_lattice_statistics
 from .python.parser import DashboardParser
 
+# The import flushes the state part way through (@see _prepare_distribution_update). trame
+# then runs the state.change listeners that are still active, this one included, and would
+# import the same file again, from within the import, for as long as the state keeps changing.
+_import_in_progress = False
+
 
 @state.change("import_file")
 def on_import_file_change(import_file, **kwargs):
-    if import_file:
-        try:
-            state.importing_file = True
-            DashboardParser.file_details(import_file)
-            populate_impactx_simulation_file_to_ui(import_file)
-        except Exception as error:
-            state.import_file_error = True
-            state.import_file_error_message = (
-                f"Unable to parse because of the following error: {error}"
-            )
-        finally:
-            state.importing_file = False
+    global _import_in_progress
+    if not import_file or _import_in_progress:
+        return
+
+    _import_in_progress = True
+    try:
+        state.importing_file = True
+        DashboardParser.file_details(import_file)
+        populate_impactx_simulation_file_to_ui(import_file)
+    except Exception as error:
+        state.import_file_error = True
+        state.import_file_error_message = (
+            f"Unable to parse because of the following error: {error}"
+        )
+    finally:
+        state.importing_file = False
+        _import_in_progress = False
 
 
 def _apply_distribution_inputs():
@@ -72,10 +82,38 @@ def populate_impactx_simulation_file_to_ui(file) -> None:
     parsed_variables = imported_data["variables"]
     non_state_inputs = ["distribution", "lattice_elements", "variables"]
 
+    # check before changing any input, so a failed import keeps the current inputs
+    unsupported_elements = sorted(
+        {element["name"] for element in imported_lattice_data}
+        - set(state.listOfLatticeElementParametersAndDefault)
+    )
+    if unsupported_elements:
+        raise ValueError(
+            "The dashboard does not support the lattice elements: "
+            + ", ".join(unsupported_elements)
+        )
+    for element in imported_lattice_data:
+        parameter_types = {
+            name: parameter_type
+            for name, _, parameter_type in state.listOfLatticeElementParametersAndDefault[
+                element["name"]
+            ]
+        }
+        for name, value in element["parameters"].items():
+            # the import gives the source code, e.g., False, for a checkbox
+            if parameter_types.get(name) == "bool" and value not in ("True", "False"):
+                raise ValueError(
+                    f"Cannot import {element['name']}({name}={value}): the "
+                    f"dashboard takes only True or False."
+                )
+
     # Update state inputs (simulation parameters, Space Charge, CSR, ISR)
     for input_name, input_value in imported_data.items():
         if hasattr(state, input_name) and input_name not in non_state_inputs:
             setattr(state, input_name, input_value)
+    # the listener of the tracking mode resets the inputs it does not offer,
+    # e.g., space charge of reference tracking, also if the mode is the same
+    state.dirty("tracking_mode")
 
     _prepare_distribution_update(imported_distribution_data)
     _populate_lattice_config_to_ui(imported_lattice_data)
@@ -90,6 +128,9 @@ def _prepare_distribution_update(parsed_data):
     state.imported_distribution_parameters = parameters.copy() if parameters else None
     state.distribution = parsed_data["name"]
     state.distribution_type = parsed_data["type"]
+    # The listener of distribution_type rebuilds the parameters and applies the
+    # imported ones, also if neither the distribution nor its type change.
+    state.dirty("distribution_type")
     state.flush()  # force calls state.change("distribution") and state.change("distribution_type")
 
 
@@ -117,6 +158,9 @@ def _populate_lattice_config_to_ui(parsed_data):
                 if parameter_info_name == parsed_param_name:
                     parameter_type = parameter_info["parameter_type"]
                     break
+
+            if parameter_type == "bool":
+                parsed_param_value = parsed_param_value == "True"
 
             if parameter_type:
                 ctrl.updateLatticeElementParameters(

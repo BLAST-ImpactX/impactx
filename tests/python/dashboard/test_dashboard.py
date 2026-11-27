@@ -6,6 +6,10 @@ Authors: Parthib Roy
 License: BSD-3-Clause-LBNL
 """
 
+import time
+
+from .utils import TIMEOUT
+
 
 def test_dashboard(dashboard):
     """
@@ -49,6 +53,16 @@ def test_dashboard(dashboard):
 
     for param_id, value in {**BEAM_PROPERTIES, **DISTRIBUTION_PARAMETERS}.items():
         dashboard.set_input(param_id, value)
+
+    # a zero momentum spread, e.g., of a cold beam, is valid
+    dashboard.set_input("lambdaPx", 0.0)
+    for _ in range(TIMEOUT):
+        lambda_px = dashboard.get_state("selected_distribution_parameters")["lambdaPx"]
+        if lambda_px["value"] == 0.0:
+            break
+        time.sleep(1)
+    assert lambda_px["value"] == 0.0 and not lambda_px["error_message"], lambda_px
+    dashboard.set_input("lambdaPx", DISTRIBUTION_PARAMETERS["lambdaPx"])
 
     # Lattice
     for name in ["Drift", "Quad", "Drift", "Quad", "Drift"]:

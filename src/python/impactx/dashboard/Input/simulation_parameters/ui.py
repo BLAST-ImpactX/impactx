@@ -8,7 +8,12 @@ License: BSD-3-Clause-LBNL
 
 from ... import state, vuetify
 from ...Input.components import CardBase, CardComponents, InputComponents
-from ..defaults import CONVERSION_FACTORS, TRACKING_MODE_PROPERTIES
+from ..defaults import (
+    CONVERSION_FACTORS,
+    TRACKING_MODE_PROPERTIES,
+    USES_BEAM_CURRENT_JS,
+)
+from ..validation import errors_tracker
 
 
 @state.change("kin_energy_unit")
@@ -17,6 +22,14 @@ def on_kin_energy_unit_change(kin_energy_unit, **kwargs) -> None:
         state.kin_energy_MeV = (
             state.kin_energy_on_ui * CONVERSION_FACTORS[kin_energy_unit]
         )
+
+
+@state.change("csr")
+def on_csr_change(**kwargs) -> None:
+    """
+    The CSR inputs block a run only while CSR is on.
+    """
+    errors_tracker.update_simulation_validation_status()
 
 
 @state.change("tracking_mode")
@@ -32,6 +45,8 @@ def on_tracking_mode_change(**kwargs) -> None:
     current_sc_list = ui_props.get("space_charge_list", [])
     if state.space_charge not in current_sc_list:
         state.space_charge = current_sc_list[0]
+    # e.g., 2D space charge needs the FFT solver for particle tracking only
+    errors_tracker.update_simulation_validation_status()
 
 
 class SimulationParameters(CardBase):
@@ -103,7 +118,12 @@ class SimulationParameters(CardBase):
                             v_model_name="kin_energy_unit",
                         )
                 with vuetify.VRow(**self.ROW_STYLE):
-                    with vuetify.VCol(cols=12):
+                    with vuetify.VCol(cols=12, v_if=USES_BEAM_CURRENT_JS):
+                        InputComponents.text_field(
+                            label="Beam Current",
+                            v_model_name="beam_current_A",
+                        )
+                    with vuetify.VCol(cols=12, v_else=True):
                         InputComponents.text_field(
                             label="Bunch Charge",
                             v_model_name="bunch_charge_C",

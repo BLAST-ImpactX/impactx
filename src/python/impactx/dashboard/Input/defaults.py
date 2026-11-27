@@ -34,7 +34,7 @@ TRACKING_MODE_PROPERTIES: dict[str, dict[str, Any]] = {
     "Particle Tracking": {
         "disable_space_charge": False,
         "disable_csr": False,
-        "space_charge_list": ["false", "3D"],
+        "space_charge_list": ["false", "2D", "3D"],
     },
 }
 
@@ -47,6 +47,20 @@ CONVERSION_FACTORS = {
     "GeV": 1.0e3,
     "TeV": 1.0e6,
 }
+
+# 2D space charge takes the beam current in A as the beam intensity, all other
+# space charge models the bunch charge in C.
+USES_BEAM_CURRENT_JS = "space_charge === '2D'"
+
+
+def beam_intensity_name() -> str:
+    """
+    Returns the name of the beam intensity input for the selected space charge
+    model: "beam_current_A" or "bunch_charge_C".
+    """
+    if state.space_charge == "2D":
+        return "beam_current_A"
+    return "bunch_charge_C"
 
 
 class DashboardDefaults:
@@ -78,6 +92,7 @@ class DashboardDefaults:
         "kin_energy_MeV": 2e3,
         "kin_energy_unit": "MeV",
         "bunch_charge_C": 1e-9,
+        "beam_current_A": 0.5,
     }
 
     DISTRIBUTION_PARAMETERS = {
@@ -157,6 +172,7 @@ class DashboardDefaults:
         "npart": "int",
         "kin_energy_on_ui": "float",
         "bunch_charge_C": "float",
+        "beam_current_A": "float",
         "mass_MeV": "float",
         "charge_qe": "int",
         "csr_bins": "int",
@@ -175,6 +191,7 @@ class DashboardDefaults:
 
     VALIDATION_CONDITION = {
         "lambda": ["positive"],
+        "lambdaP": ["non_negative"],  # RMS momenta, zero for a cold beam
         "beta": ["positive"],
         "emitt": ["positive"],
         "charge_qe": ["non_zero"],
@@ -191,6 +208,7 @@ class DashboardDefaults:
     STEPS = {
         "mass_MeV": 0.1,
         "bunch_charge_C": 1e-11,
+        "beam_current_A": 0.01,
         "prob_relative": 0.1,
         "mlmg_relative_tolerance": 1e-12,
         "mlmg_absolute_tolerance": 1e-12,
@@ -203,6 +221,7 @@ class DashboardDefaults:
         "charge_qe": "qe",
         "mass_MeV": "MeV",
         "bunch_charge_C": "C",
+        "beam_current_A": "A",
         "mlmg_absolute_tolerance": "V/m",
         "beta": "m",
         "emitt": "m",

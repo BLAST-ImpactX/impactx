@@ -1868,23 +1868,45 @@ if(ImpactX_FFT)
         examples/expanding_beam/analysis_expanding_fft_2D_unbunched.py
         OFF  # no plot script yet
     )
-    # A beam without extent is still rejected where the mesh needs one: without
-    # longitudinal extent with 3D and 2.5D space charge, and transversely flat.
+    # the same on a fixed mesh (geometry.dynamic_size = false)
+    # (two boxes, as for two MPI ranks; the input's geometry.prob_relative is unused)
+    set(_static_mesh
+        "geometry.dynamic_size=false"
+        "geometry.prob_lo=-3.0e-3 -3.0e-3 -1.0e-3 geometry.prob_hi=3.0e-3 3.0e-3 1.0e-3"
+        "amr.n_cell=64 64 1 amr.max_grid_size_x=32 amr.max_grid_size_y=64"
+        "amrex.abort_on_unused_inputs=0")
+    list(JOIN _static_mesh " " _static_mesh)
+    add_impactx_test(expanding-fft-2d-unbunched-static
+        "examples/expanding_beam/input_expanding_fft_2D_unbunched.in ${_static_mesh}"
+        ON   # ImpactX MPI-parallel
+        examples/expanding_beam/analysis_expanding_fft_2D_unbunched.py
+        OFF  # no plot script yet
+    )
+    # A beam without extent is still rejected where it cannot be simulated: without
+    # longitudinal extent with 3D, 2.5D (also on a fixed mesh) and the Gaussian models,
+    # and transversely flat.  The uncaught exception aborts the run; mpiexec reports this as
+    # an exit code, which PASS_REGULAR_EXPRESSION may ignore (a signal it may not).
     # (3D and 2.5D space charge use the bunch charge instead of the current)
     foreach(case IN ITEMS "3d-sc;algo.space_charge=3D beam.charge=1.0e-9"
                           "2p5d-sc;algo.space_charge=2p5D beam.charge=1.0e-9"
+                          "2p5d-sc-static;algo.space_charge=2p5D beam.charge=1.0e-9 ${_static_mesh}"
+                          "gauss3d;algo.space_charge=Gauss3D beam.charge=1.0e-9"
+                          "gauss2p5d;algo.space_charge=Gauss2p5D beam.charge=1.0e-9"
                           "flat-y;beam.lambdaY=0.0")
         list(GET case 0 suffix)
         list(GET case 1 override)
         add_impactx_test(expanding-fft-2d-unbunched-rejects-${suffix}
             "examples/expanding_beam/input_expanding_fft_2D_unbunched.in ${override}"
-            ON   # ImpactX MPI-parallel (mpiexec reports the failure as an exit code)
+            ON   # ImpactX MPI-parallel
             OFF  # the run must fail, see below
             OFF  # no plot script
         )
-        set_tests_properties(expanding-fft-2d-unbunched-rejects-${suffix}.run
-            PROPERTIES PASS_REGULAR_EXPRESSION "Flat beam detected")
+        if(TEST expanding-fft-2d-unbunched-rejects-${suffix}.run)  # not without MPI
+            set_tests_properties(expanding-fft-2d-unbunched-rejects-${suffix}.run
+                PROPERTIES PASS_REGULAR_EXPRESSION "Flat beam detected")
+        endif()
     endforeach()
+    unset(_static_mesh)
 endif()
 
 # FODO cell with 2D space charge using particle tracking ######################

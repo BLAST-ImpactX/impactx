@@ -12,6 +12,7 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/Waterbag.H"
+#include "particles/spacecharge/HandleSpacecharge.H"
 
 #include <ablastr/warn_manager/WarnManager.H>
 
@@ -96,6 +97,14 @@ namespace detail
             );
         }
 
+        // Extract the min and max of the particle positions
+        auto [x_min, y_min, z_min, x_max, y_max, z_max] =
+            amr_data->track_particles.m_particle_container->MinAndMaxPositions();
+
+        // guard for flat beams (only the 2D model accepts a beam without longitudinal extent)
+        bool const flat_longitudinal = particles::spacecharge::CheckBeamExtent(
+            x_min, y_min, z_min, x_max, y_max, z_max, space_charge);
+
         amrex::ParmParse pp_geometry("geometry");
         bool dynamic_size = true;
         pp_geometry.query("dynamic_size", dynamic_size);
@@ -103,30 +112,15 @@ namespace detail
         amrex::Vector<amrex::RealBox> rb(amr_data->finestLevel() + 1);  // extent per level
         if (dynamic_size)
         {
-            // Extract the min and max of the particle positions
-            auto [x_min, y_min, z_min, x_max, y_max, z_max] =
-                amr_data->track_particles.m_particle_container->MinAndMaxPositions();
-
             // The 2D model of an unbunched beam does not resolve the longitudinal
-            // direction (the charge is projected to x-y), so there the box only needs a
-            // finite length: it is made at least as long as the beam is wide.  This also
-            // covers a beam with (almost) no longitudinal extent, e.g. a DC beam with all
-            // particles at the same time of flight.
-            if (space_charge == SpaceChargeAlgo::True_2D) {
+            // direction (the charge is projected to x-y), so a beam without longitudinal
+            // extent only needs some finite box length: it gets the larger transverse
+            // width of the beam.
+            if (flat_longitudinal) {
                 amrex::ParticleReal const width = std::max(x_max - x_min, y_max - y_min);
-                if (z_max - z_min < width) {
-                    amrex::ParticleReal const z_center = 0.5_prt * (z_min + z_max);
-                    z_min = z_center - 0.5_prt * width;
-                    z_max = z_center + 0.5_prt * width;
-                }
-            }
-
-            // guard for flat beams:
-            //   https://github.com/BLAST-ImpactX/impactx/issues/44
-            // A direction in which the beam has no extent gives the mesh no size.
-            if (x_min == x_max || y_min == y_max || z_min == z_max) {
-                throw std::runtime_error("Flat beam detected. This is not yet supported: "
-                                         "https://github.com/BLAST-ImpactX/impactx/issues/44");
+                amrex::ParticleReal const z_center = 0.5_prt * (z_min + z_max);
+                z_min = z_center - 0.5_prt * width;
+                z_max = z_center + 0.5_prt * width;
             }
 
             // The coarsest level is expanded (or reduced) relative the min and max of particles.

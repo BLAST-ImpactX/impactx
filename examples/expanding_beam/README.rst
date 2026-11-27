@@ -80,7 +80,7 @@ Expanding Beam in Free Space with 2D Space Charge
 
 A long, coasting unbunched beam expanding freely in free space under its own 2D space charge.
 
-We use a cold (zero emittance) 250 MeV electron bunch whose
+We use a cold (zero emittance) 250 MeV proton bunch whose
 initial distribution is a uniformly-populated cylinder of radius R0 = 1 mm.
 
 In the laboratory frame, the beam expands to twice its original transverse size.  This is tested using the second moments of the distribution.
@@ -117,6 +117,12 @@ We also provide the same example with the multi-grid (MLMG) Poisson solver.
           :language: ini
           :caption: You can copy this file from ``examples/expanding/input_expanding_fft_2D.in``.
 
+   .. tab-item:: Executable: Input File (FFT, no longitudinal extent)
+
+       .. literalinclude:: input_expanding_fft_2D_unbunched.in
+          :language: ini
+          :caption: You can copy this file from ``examples/expanding/input_expanding_fft_2D_unbunched.in``.
+
 
 Analyze
 -------
@@ -128,6 +134,12 @@ We run the following script to analyze correctness:
    .. literalinclude:: analysis_expanding_fft_2D.py
       :language: python3
       :caption: You can copy this file from ``examples/expanding/analysis_expanding_fft_2D.py``.
+
+.. dropdown:: Script ``analysis_expanding_fft_2D_unbunched.py``
+
+   .. literalinclude:: analysis_expanding_fft_2D_unbunched.py
+      :language: python3
+      :caption: You can copy this file from ``examples/expanding/analysis_expanding_fft_2D_unbunched.py``.
 
 
 

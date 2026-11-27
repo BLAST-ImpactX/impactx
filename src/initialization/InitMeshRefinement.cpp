@@ -86,7 +86,7 @@ namespace detail
         using namespace amrex::literals; // for _rt and _prt
 
         auto const space_charge = get_space_charge_algo();
-        if (space_charge == SpaceChargeAlgo::False)
+        if (space_charge == SpaceChargeAlgo::False) {
             ablastr::warn_manager::WMRecordWarning(
                 "ImpactX::ResizeMesh",
                 "This is a simulation without space charge. "
@@ -94,25 +94,6 @@ namespace detail
                 "in space charge simulations.",
                 ablastr::warn_manager::WarnPriority::high
             );
-
-        // Extract the min and max of the particle positions
-        auto [x_min, y_min, z_min, x_max, y_max, z_max] = amr_data->track_particles.m_particle_container->MinAndMaxPositions();
-
-        // guard for flat beams:
-        //   https://github.com/BLAST-ImpactX/impactx/issues/44
-        // A direction in which the beam has no extent gives the mesh no size.  The 2D
-        // model of an unbunched beam does not resolve the longitudinal direction (one
-        // cell, the charge is projected to x-y), so there a beam without longitudinal
-        // extent, e.g. a DC beam with all particles at the same time of flight, only needs
-        // some finite box: it gets the larger transverse extent of the beam.
-        bool const flat_longitudinal = z_min == z_max;
-        bool const longitudinal_unresolved = space_charge == SpaceChargeAlgo::True_2D;
-        if (x_min == x_max || y_min == y_max || (flat_longitudinal && !longitudinal_unresolved))
-            throw std::runtime_error("Flat beam detected. This is not yet supported: https://github.com/BLAST-ImpactX/impactx/issues/44");
-        if (flat_longitudinal) {
-            amrex::ParticleReal const half_width = 0.5_prt * std::max(x_max - x_min, y_max - y_min);
-            z_min -= half_width;
-            z_max += half_width;
         }
 
         amrex::ParmParse pp_geometry("geometry");
@@ -122,6 +103,32 @@ namespace detail
         amrex::Vector<amrex::RealBox> rb(amr_data->finestLevel() + 1);  // extent per level
         if (dynamic_size)
         {
+            // Extract the min and max of the particle positions
+            auto [x_min, y_min, z_min, x_max, y_max, z_max] =
+                amr_data->track_particles.m_particle_container->MinAndMaxPositions();
+
+            // The 2D model of an unbunched beam does not resolve the longitudinal
+            // direction (the charge is projected to x-y), so there the box only needs a
+            // finite length: it is made at least as long as the beam is wide.  This also
+            // covers a beam with (almost) no longitudinal extent, e.g. a DC beam with all
+            // particles at the same time of flight.
+            if (space_charge == SpaceChargeAlgo::True_2D) {
+                amrex::ParticleReal const width = std::max(x_max - x_min, y_max - y_min);
+                if (z_max - z_min < width) {
+                    amrex::ParticleReal const z_center = 0.5_prt * (z_min + z_max);
+                    z_min = z_center - 0.5_prt * width;
+                    z_max = z_center + 0.5_prt * width;
+                }
+            }
+
+            // guard for flat beams:
+            //   https://github.com/BLAST-ImpactX/impactx/issues/44
+            // A direction in which the beam has no extent gives the mesh no size.
+            if (x_min == x_max || y_min == y_max || z_min == z_max) {
+                throw std::runtime_error("Flat beam detected. This is not yet supported: "
+                                         "https://github.com/BLAST-ImpactX/impactx/issues/44");
+            }
+
             // The coarsest level is expanded (or reduced) relative the min and max of particles.
             auto const prob_relative = detail::read_mr_prob_relative();
 

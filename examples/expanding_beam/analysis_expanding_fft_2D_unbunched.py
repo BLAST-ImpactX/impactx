@@ -24,9 +24,10 @@ num_particles = 10000
 assert num_particles == len(initial)
 assert num_particles == len(final)
 
-for name, beam, sig_expected in (
-    ("Initial", initial, 5.0e-4),
-    ("Final", final, 1.0e-3),
+# tolerances from random sampling of a smooth distribution, as in analysis_expanding_fft_2D.py
+for name, beam, sig_expected, rtol in (
+    ("Initial", initial, 5.0e-4, 1.5 * num_particles**-0.5),
+    ("Final", final, 1.0e-3, 3.5 * num_particles**-0.5),
 ):
     beam = beam.select_dtypes(np.floating).astype(np.float64)
     sigx = moment(beam["position_x"], moment=2) ** 0.5
@@ -37,10 +38,15 @@ for name, beam, sig_expected in (
         cov["position_x"]["position_x"] * cov["momentum_x"]["momentum_x"]
         - cov["position_x"]["momentum_x"] ** 2
     ) ** 0.5
+    emittance_y = (
+        cov["position_y"]["position_y"] * cov["momentum_y"]["momentum_y"]
+        - cov["position_y"]["momentum_y"] ** 2
+    ) ** 0.5
     print(
-        f"{name} Beam: sigx={sigx:e} sigy={sigy:e} sigt={sigt:e} emittance_x={emittance_x:e}"
+        f"{name} Beam: sigx={sigx:e} sigy={sigy:e} sigt={sigt:e} "
+        f"emittance_x={emittance_x:e} emittance_y={emittance_y:e} rtol={rtol:e}"
     )
-    rtol = 3.5 * num_particles**-0.5  # from random sampling of a smooth distribution
     assert np.allclose([sigx, sigy], [sig_expected, sig_expected], rtol=rtol, atol=0.0)
     assert sigt == 0.0
     assert emittance_x < 1.0e-8
+    assert emittance_y < 1.0e-8

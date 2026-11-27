@@ -1887,14 +1887,16 @@ if(ImpactX_FFT)
     # and transversely flat.  The uncaught exception aborts the run; mpiexec reports this as
     # an exit code, which PASS_REGULAR_EXPRESSION may ignore (a signal it may not).
     # (3D and 2.5D space charge use the bunch charge instead of the current)
-    foreach(case IN ITEMS "3d-sc;algo.space_charge=3D beam.charge=1.0e-9"
-                          "2p5d-sc;algo.space_charge=2p5D beam.charge=1.0e-9"
-                          "2p5d-sc-static;algo.space_charge=2p5D beam.charge=1.0e-9 ${_static_mesh}"
-                          "gauss3d;algo.space_charge=Gauss3D beam.charge=1.0e-9"
-                          "gauss2p5d;algo.space_charge=Gauss2p5D beam.charge=1.0e-9"
-                          "flat-y;beam.lambdaY=0.0")
+    set(_long "no longitudinal extent")
+    foreach(case IN ITEMS "3d-sc;${_long};algo.space_charge=3D beam.charge=1.0e-9"
+                          "2p5d-sc;${_long};algo.space_charge=2p5D beam.charge=1.0e-9"
+                          "2p5d-sc-static;${_long};algo.space_charge=2p5D beam.charge=1.0e-9 ${_static_mesh}"
+                          "gauss3d;${_long};algo.space_charge=Gauss3D beam.charge=1.0e-9"
+                          "gauss2p5d;${_long};algo.space_charge=Gauss2p5D beam.charge=1.0e-9"
+                          "flat-y;no transverse extent;beam.lambdaY=0.0")
         list(GET case 0 suffix)
-        list(GET case 1 override)
+        list(GET case 1 message)
+        list(GET case 2 override)
         add_impactx_test(expanding-fft-2d-unbunched-rejects-${suffix}
             "examples/expanding_beam/input_expanding_fft_2D_unbunched.in ${override}"
             ON   # ImpactX MPI-parallel
@@ -1903,10 +1905,11 @@ if(ImpactX_FFT)
         )
         if(TEST expanding-fft-2d-unbunched-rejects-${suffix}.run)  # not without MPI
             set_tests_properties(expanding-fft-2d-unbunched-rejects-${suffix}.run
-                PROPERTIES PASS_REGULAR_EXPRESSION "Flat beam detected")
+                PROPERTIES PASS_REGULAR_EXPRESSION "Flat beam detected: the beam has ${message}")
         endif()
     endforeach()
     unset(_static_mesh)
+    unset(_long)
 endif()
 
 # FODO cell with 2D space charge using particle tracking ######################

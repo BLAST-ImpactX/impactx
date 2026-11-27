@@ -79,6 +79,7 @@ Collective Effects & Overall Simulation Parameters
       The beam minimum and maximum extent are symmetrically padded by the mesh.
       For instance, ``1.2`` means the mesh will span 10% above and 10% below the beam;
       ``1.0`` means the beam is exactly covered with the mesh.
+      With ``space_charge = "2D"``, a beam without longitudinal extent uses its larger transverse width as longitudinal extent here.
 
       Default: ``[3.0 1.0 1.0 ...]``.
       When set, turns ``dynamic_size`` to ``True``.
@@ -102,6 +103,7 @@ Collective Effects & Overall Simulation Parameters
       * ``False`` (default): space charge effects are not calculated.
 
       * ``"2D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, assuming the beam is long and unbunched.
+        The longitudinal direction is not resolved, so the beam may have no longitudinal extent, e.g., a DC beam with all particles at the same time of flight.
 
       * ``"2p5D"``: Space charge forces are computed in the plane ``(x,y)`` transverse to the reference particle velocity, while the transverse space charge kicks are weighted by the
         longitudinal line density determined by charge deposition (2.5D model).  Longitudinal space charge kicks are determined by the derivative of the line charge density.

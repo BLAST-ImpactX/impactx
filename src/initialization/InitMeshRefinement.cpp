@@ -12,7 +12,6 @@
 #include "initialization/InitAmrCore.H"
 #include "particles/ImpactXParticleContainer.H"
 #include "particles/distribution/Waterbag.H"
-#include "particles/spacecharge/HandleSpacecharge.H"
 
 #include <ablastr/warn_manager/WarnManager.H>
 
@@ -22,6 +21,7 @@
 #include <AMReX_Utility.H>
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <stdexcept>
 #include <string>
@@ -78,6 +78,50 @@ namespace detail
 
         return prob_relative;
     }
+
+    /** Throw if the beam has no extent in a direction that the space charge model needs.
+     *
+     * https://github.com/BLAST-ImpactX/impactx/issues/44
+     * A direction counts as flat when its extent is zero up to the rounding of the particle
+     * coordinates.  Such a direction gives the mesh no size, and the 2.5D and Gaussian
+     * models divide by the beam extent.  The 2D model of an unbunched beam does not resolve
+     * the longitudinal direction (the charge is projected to x-y), so it accepts a beam
+     * without longitudinal extent, e.g. a DC beam with all particles at the same time of
+     * flight.  An empty beam (min > max) is not checked.
+     */
+    void
+    check_beam_extent (
+        amrex::ParticleReal x_min, amrex::ParticleReal y_min, amrex::ParticleReal z_min,
+        amrex::ParticleReal x_max, amrex::ParticleReal y_max, amrex::ParticleReal z_max,
+        SpaceChargeAlgo space_charge
+    )
+    {
+        if (x_min > x_max) { return; }  // no particles
+
+        for (amrex::ParticleReal const v : {x_min, y_min, z_min, x_max, y_max, z_max}) {
+            if (!std::isfinite(v)) {
+                throw std::runtime_error("ResizeMesh: the beam has non-finite particle positions");
+            }
+        }
+        auto const is_flat = [] (amrex::ParticleReal lo, amrex::ParticleReal hi) {
+            amrex::ParticleReal const eps = std::numeric_limits<amrex::ParticleReal>::epsilon();
+            return hi - lo <= amrex::ParticleReal(8) * eps * std::max(std::abs(lo), std::abs(hi));
+        };
+        std::string const issue = "https://github.com/BLAST-ImpactX/impactx/issues/44";
+        if (is_flat(x_min, x_max) || is_flat(y_min, y_max)) {
+            throw std::runtime_error("Flat beam detected: the beam has no transverse extent. "
+                                     "This is not yet supported: " + issue);
+        }
+        if (is_flat(z_min, z_max) && space_charge != SpaceChargeAlgo::True_2D) {
+            std::string msg = "Flat beam detected: the beam has no longitudinal extent. "
+                              "This is not yet supported for algo.space_charge = "
+                              + to_string(space_charge) + ": " + issue + ".";
+            if (space_charge != SpaceChargeAlgo::False) {
+                msg += " For an unbunched (e.g., DC) beam, use algo.space_charge = 2D.";
+            }
+            throw std::runtime_error(msg);
+        }
+    }
 }
 
     void ImpactX::ResizeMesh ()
@@ -102,8 +146,7 @@ namespace detail
             amr_data->track_particles.m_particle_container->MinAndMaxPositions();
 
         // guard for flat beams (only the 2D model accepts a beam without longitudinal extent)
-        bool const flat_longitudinal = particles::spacecharge::CheckBeamExtent(
-            x_min, y_min, z_min, x_max, y_max, z_max, space_charge);
+        detail::check_beam_extent(x_min, y_min, z_min, x_max, y_max, z_max, space_charge);
 
         amrex::ParmParse pp_geometry("geometry");
         bool dynamic_size = true;
@@ -115,9 +158,11 @@ namespace detail
             // The 2D model of an unbunched beam does not resolve the longitudinal
             // direction (the charge is projected to x-y), so a beam without longitudinal
             // extent only needs some finite box length: it gets the larger transverse
-            // width of the beam.
-            if (flat_longitudinal) {
-                amrex::ParticleReal const width = std::max(x_max - x_min, y_max - y_min);
+            // width of the beam.  A longitudinal extent below 1e-6 of that width (e.g.
+            // jitter in the time of flight of a DC beam) is treated as none, which keeps
+            // the cells from becoming degenerate; a short but resolved beam keeps its box.
+            amrex::ParticleReal const width = std::max(x_max - x_min, y_max - y_min);
+            if (space_charge == SpaceChargeAlgo::True_2D && z_max - z_min < 1.0e-6_prt * width) {
                 amrex::ParticleReal const z_center = 0.5_prt * (z_min + z_max);
                 z_min = z_center - 0.5_prt * width;
                 z_max = z_center + 0.5_prt * width;

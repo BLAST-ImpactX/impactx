@@ -21,12 +21,8 @@
 
 #include <AMReX_REAL.H>
 
-#include <algorithm>
-#include <cmath>
-#include <limits>
 #include <memory>
 #include <stdexcept>
-#include <string>
 
 
 namespace impactx::particles::spacecharge
@@ -56,14 +52,6 @@ namespace impactx::particles::spacecharge
                 *amr_data->track_particles.m_particle_container,
                 CoordSystem::t
             );
-        }
-
-        // the Gaussian models divide by the beam extent (the mesh models check it in ResizeMesh)
-        if (space_charge == SpaceChargeAlgo::Gauss3D || space_charge == SpaceChargeAlgo::Gauss2p5D)
-        {
-            auto const [x_min, y_min, z_min, x_max, y_max, z_max] =
-                amr_data->track_particles.m_particle_container->MinAndMaxPositions();
-            CheckBeamExtent(x_min, y_min, z_min, x_max, y_max, z_max, space_charge);
         }
 
         if (space_charge == SpaceChargeAlgo::Gauss3D)
@@ -139,33 +127,6 @@ namespace impactx::particles::spacecharge
         //
         // in original Impact, we gather and space-charge push in x',y',t ,
         // assuming that the distribution did not change
-    }
-
-
-    bool CheckBeamExtent (
-        amrex::ParticleReal x_min, amrex::ParticleReal y_min, amrex::ParticleReal z_min,
-        amrex::ParticleReal x_max, amrex::ParticleReal y_max, amrex::ParticleReal z_max,
-        SpaceChargeAlgo space_charge
-    )
-    {
-        // https://github.com/BLAST-ImpactX/impactx/issues/44
-        auto const is_flat = [] (amrex::ParticleReal lo, amrex::ParticleReal hi) {
-            amrex::ParticleReal const eps = std::numeric_limits<amrex::ParticleReal>::epsilon();
-            return hi - lo <= amrex::ParticleReal(8) * eps * std::max(std::abs(lo), std::abs(hi));
-        };
-        std::string const unsupported =
-            " This is not yet supported: https://github.com/BLAST-ImpactX/impactx/issues/44";
-        if (is_flat(x_min, x_max) || is_flat(y_min, y_max)) {
-            throw std::runtime_error(
-                "Flat beam detected: the beam has no transverse extent." + unsupported);
-        }
-        bool const flat_longitudinal = is_flat(z_min, z_max);
-        if (flat_longitudinal && space_charge != SpaceChargeAlgo::True_2D) {
-            throw std::runtime_error(
-                "Flat beam detected: the beam has no longitudinal extent. For an unbunched "
-                "(e.g., DC) beam, use algo.space_charge = 2D." + unsupported);
-        }
-        return flat_longitudinal;
     }
 
 } // namespace impactx::particles::spacecharge

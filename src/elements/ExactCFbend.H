@@ -19,6 +19,7 @@
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/pipeaperture.H"
+#include "mixin/shortrangewake.H"
 #include "mixin/thick.H"
 
 #include <AMReX_Extension.H>
@@ -645,7 +646,8 @@ namespace impactx::elements
     struct ExactCFbendGPU
     : public mixin::BeamOptic<ExactCFbendGPU>,
       public mixin::LinearTransport<ExactCFbendGPU>,
-      public ExactCFbendPusher
+      public ExactCFbendPusher,
+      public mixin::ShortRangeWake
     {
         /** A general (thick) combined-function sector dipole whose field consists
          *  of a superposition of ideal curvilinear hard-edge multipoles.
@@ -658,6 +660,14 @@ namespace impactx::elements
          * @param ds Segment length in m.
          * @param k_normal Array of normal multipole coefficients (units below)
          * @param k_skew   Array of skew multipole coefficients (units below)
+         * @param z_data Optional longitudinal positions of the single-particle wake function in m,
+         *               ascending from 0 in uniform steps
+         * @param wake_x_data Optional horizontal single-particle wake function data: not yet
+         *                    implemented, has to be absent or empty
+         * @param wake_y_data Optional vertical single-particle wake function data: not yet
+         *                    implemented, has to be absent or empty
+         * @param wake_z_data Optional longitudinal single-particle wake function data in V/(C m),
+         *                    positive where it decelerates a trailing particle
          * @param unit  Unit specification
          *           unit = 0 multipole strengths in units of 1/m^n (default)
          *           unit = 1 multipole strengths in units of T/m^(n-1)
@@ -675,6 +685,10 @@ namespace impactx::elements
             amrex::ParticleReal ds,
             std::vector<amrex::ParticleReal> k_normal,
             std::vector<amrex::ParticleReal> k_skew,
+            std::optional<std::vector<amrex::ParticleReal>> z_data,
+            std::optional<std::vector<amrex::ParticleReal>> wake_x_data,
+            std::optional<std::vector<amrex::ParticleReal>> wake_y_data,
+            std::optional<std::vector<amrex::ParticleReal>> wake_z_data,
             int unit = DEFAULT_unit,
             amrex::ParticleReal dx = DEFAULT_dx,
             amrex::ParticleReal dy = DEFAULT_dy,
@@ -686,6 +700,8 @@ namespace impactx::elements
             int nslice = DEFAULT_nslice
         )
           : ExactCFbendPusher(ds, unit, dx, dy, rotation_degree, aperture_x, aperture_y, int_order, mapsteps, nslice),
+            ShortRangeWake(std::move(z_data), std::move(wake_x_data),
+                           std::move(wake_y_data), std::move(wake_z_data)),
             m_coefficients{std::move(k_normal), std::move(k_skew)}
         {
             require_array_pair(m_coefficients.k_normal, m_coefficients.k_skew,
@@ -918,6 +934,7 @@ namespace impactx::elements
         {
             m_coefficients.k_normal.release_gpu();
             m_coefficients.k_skew.release_gpu();
+            release_wake_gpu();
         }
 
         //! the coefficient arrays this element owns, mirrored to the device on demand

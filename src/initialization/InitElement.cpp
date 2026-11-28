@@ -478,6 +478,10 @@ element_name) );
 
             std::vector<amrex::ParticleReal> k_normal = {0.0};
             std::vector<amrex::ParticleReal> k_skew = {0.0};
+            std::vector<amrex::ParticleReal> z_data;
+            std::vector<amrex::ParticleReal> wake_x_data;
+            std::vector<amrex::ParticleReal> wake_y_data;
+            std::vector<amrex::ParticleReal> wake_z_data;
             int units = ExactCFbend::DEFAULT_unit;
             int int_order = ExactCFbend::DEFAULT_int_order;
             int mapsteps = ExactCFbend::DEFAULT_mapsteps;
@@ -486,8 +490,12 @@ element_name) );
             pp_element.queryAddWithParser("mapsteps", mapsteps);
             detail::queryAddResize(pp_element, "k_normal", k_normal);
             detail::queryAddResize(pp_element, "k_skew", k_skew);
+            detail::queryAddResize(pp_element, "z_data", z_data);
+            detail::queryAddResize(pp_element, "wake_x_data", wake_x_data);
+            detail::queryAddResize(pp_element, "wake_y_data", wake_y_data);
+            detail::queryAddResize(pp_element, "wake_z_data", wake_z_data);
 
-            m_lattice.emplace_back( ExactCFbend(ds, k_normal, k_skew, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
+            m_lattice.emplace_back( ExactCFbend(ds, k_normal, k_skew, z_data, wake_x_data, wake_y_data, wake_z_data, units, a["dx"], a["dy"], a["rotation_degree"], b["aperture_x"], b["aperture_y"], int_order, mapsteps, nslice, element_name) );
         } else if (element_type == "sbend_exact")
         {
             auto const [ds, nslice] = detail::query_ds(pp_element, nslice_default);

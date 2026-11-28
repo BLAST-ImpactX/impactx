@@ -16,6 +16,7 @@
 #include "mixin/alignment.H"
 #include "mixin/beamoptic.H"
 #include "helper/ArrayValidation.H"
+#include "helper/ExactDriftSlopes.H"
 #include "mixin/lineartransport.H"
 #include "mixin/spintransport.H"
 #include "mixin/pipeaperture.H"
@@ -121,17 +122,13 @@ namespace impactx::elements
         void compute_constants (RefPart const & refpart)
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
 
             Alignment::compute_constants(refpart);
 
             // length of the current slice
             m_slice_ds = m_ds / nslice();
 
-            // find beta*gamma^2
-            amrex::ParticleReal const pt_ref = refpart.pt;
-            m_betgam2 = powi<2>(pt_ref) - 1.0_prt;
-            m_ibetgam2 = 1_prt / m_betgam2;
+            // access reference particle values to find relativistic factors
             m_beta = refpart.beta();
             m_ibeta = 1_prt / m_beta;
             m_brho = refpart.rigidity_Tm();
@@ -216,7 +213,6 @@ namespace impactx::elements
                    [[maybe_unused]] RefPart const & AMREX_RESTRICT refpart) const
         {
             using namespace amrex::literals; // for _rt and _prt
-            using amrex::Math::powi;
             using namespace std; // for cmath(float)
 
             T_Real const x = particle(1);
@@ -233,20 +229,15 @@ namespace impactx::elements
             T_Real tout = t;
             T_Real ptout = pt;
 
-            // compute the radical in the denominator (= pz):
-            T_Real const inv_pzden = 1_prt / sqrt(
-                powi<2>(pt - m_ibeta) -
-                m_ibetgam2 -
-                powi<2>(px) -
-                powi<2>(py)
-            );
+            // slopes of the exact drift
+            auto const drift = exact_drift_slopes(px, py, pt, m_ibeta);
 
             // advance position and momentum (exact drift)
-            xout = x + tau * px * inv_pzden;
+            xout = x + tau * px * drift.inv_pz;
             // pxout = px;
-            yout = y + tau * py * inv_pzden;
+            yout = y + tau * py * drift.inv_pz;
             // pyout = py;
-            tout = t - tau * (m_ibeta + (pt - m_ibeta) * inv_pzden);
+            tout = t + tau * drift.dt_ds;
             // ptout = pt;
 
             // push particle coordinates
@@ -528,8 +519,6 @@ namespace impactx::elements
         // constants that are independent of the individually tracked particle,
         // see: compute_constants() to refresh
         amrex::ParticleReal m_slice_ds;       //! m_ds / nslice();
-        amrex::ParticleReal m_betgam2;        //! beta*gamma^2
-        amrex::ParticleReal m_ibetgam2;       //! 1 / m_betgam2
         amrex::ParticleReal m_beta;           //! beta
         amrex::ParticleReal m_ibeta;          //! 1 / m_beta
         amrex::ParticleReal m_brho;           //! magnetic ridigity in T-m

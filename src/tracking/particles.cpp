@@ -141,7 +141,12 @@ namespace impactx
             particles::wakefields::HandleISR(*pc, element_variant, slice_ds);
 
             // Space-charge calculation
-            particles::spacecharge::HandleSpacecharge(amr_data, [this](){ this->ResizeMesh(); }, slice_ds);
+            particles::spacecharge::HandleSpacecharge(
+                amr_data,
+                [this](){ this->ResizeMesh(); },
+                slice_ds,
+                m_tracking_state.m_step
+            );
         };
 
         // the external-field transport map ``M`` of one element slice

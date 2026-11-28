@@ -28,11 +28,13 @@ namespace impactx::particles::spacecharge
      * @param[in,out] amr_data AMR data like particle container and fields
      * @param[in] ResizeMesh function to call to resize the mesh
      * @param[in] slice_ds slice spacing along s
+     * @param[in] step the current global (slice) step, used to decide on particle sorting
      */
     void HandleSpacecharge (
         std::unique_ptr<initialization::AmrCoreData> & amr_data,
         std::function<void()> ResizeMesh,
-        amrex::Real slice_ds
+        amrex::Real slice_ds,
+        int step
     );
 
 } // namespace impactx::particles::spacecharge

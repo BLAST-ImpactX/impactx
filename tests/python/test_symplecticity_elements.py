@@ -90,7 +90,7 @@ def sim(request, reference):
     sim.finalize()
 
 
-def jacobian(el, sim, center=CENTER):
+def jacobian(el, sim, center=CENTER, step=step):
     """Jacobian of the particle map of an element, by fourth-order central differences
 
     @return the Jacobian and the ratio of the reference momenta before and after
@@ -121,13 +121,13 @@ def jacobian(el, sim, center=CENTER):
     return M, beta_gamma_in / beta_gamma_out
 
 
-def check_symplectic(el, sim, center=CENTER, atol=atol):
+def check_symplectic(el, sim, center=CENTER, atol=atol, step=step):
     """Assert that the particle map of an element is symplectic at a point
 
     The check is relative to lambda, M^T J M / lambda = J, so that atol bounds the
     same relative defect for every element.
     """
-    M, ratio = jacobian(el, sim, center)
+    M, ratio = jacobian(el, sim, center, step)
     np.testing.assert_allclose(M.T @ J @ M / ratio, J, rtol=0.0, atol=atol)
 
 
@@ -449,9 +449,13 @@ def test_Kicker(sim, unit, xkick, ykick):
 )
 def test_Multipole(sim, multipole, K_normal, K_skew):
     tol = atol
+    fd_step = step
     if Config.precision == "SINGLE" and multipole == 2:
-        # the strong kick makes the Jacobian entries of order 300, and the rounding
-        # error of M^T J M grows with them, up to 7e-4
+        # The strong kick makes px and py of order 15, which float32 rounds to ~1e-6.
+        # The finite differences divide this rounding by the step: the error of
+        # M^T J M is up to 1.7e-3 for a step of 1e-3, and 1.3e-4 for 1e-2. The map
+        # of a thin quadrupole is linear, so a larger step has no truncation error.
+        fd_step = 1.0e-2
         tol = 1.5e-3
     check_symplectic(
         elements.Multipole(
@@ -459,6 +463,7 @@ def test_Multipole(sim, multipole, K_normal, K_skew):
         ),
         sim,
         atol=tol,
+        step=fd_step,
     )
 
 

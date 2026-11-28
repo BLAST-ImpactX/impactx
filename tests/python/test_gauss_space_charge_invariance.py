@@ -74,6 +74,14 @@ def test_gauss_space_charge_follows_the_bunch(model):
     for p, kick in centered.items():
         rms = np.sqrt(np.mean(kick**2))
         assert rms > 0.0, f"{model}: no {p} kick"
+        atol = rtol * rms
+        if Config.precision == "SINGLE" and model == "Gauss3D" and p == "momentum_t":
+            # FIXME: Gauss3D kicks at fixed t, and the transformation back to fixed s
+            # rounds pt to multiples of ulp(gamma) / beta_gamma, here 1.5e-7 or 1.7e-3
+            # of the rms kick. A particle of the shifted bunch can round to the
+            # neighboring multiple.
+            #   https://github.com/BLAST-ImpactX/impactx/issues/1705
+            atol = 3.0e-3 * rms
         np.testing.assert_allclose(
-            shifted[p], kick, rtol=0.0, atol=rtol * rms, err_msg=f"{model}: {p}"
+            shifted[p], kick, rtol=0.0, atol=atol, err_msg=f"{model}: {p}"
         )

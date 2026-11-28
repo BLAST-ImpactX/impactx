@@ -8,7 +8,10 @@ However, ImpactX also supports several additional soft-edge element models.  The
 
 * **RFCavity** - soft-edge model of an RF cavity using on-axis field data :math:`(z,E_z(z))`
 * **SoftSolenoid** - soft-edge model of a solenoid using on-axis field data :math:`(z,B_z(z))`
-* **SoftQuadrupole** - soft-edge model of a solenoid using on-axis field gradient data :math:`(z,\partial B_y(z)/\partial x)`
+* **SoftQuadrupole** - soft-edge model of a quadrupole using on-axis field gradient data :math:`(z,\partial B_y(z)/\partial x)`
+* **ChrSoftQuadrupole** - chromatic (paraxial) soft-edge model of a quadrupole
+
+The latter is similar to **SoftQuadrupole**, except that the vector potential is expanded in :math:`(x,y)` through terms of degree 4, the Hamiltonian is expanded to second degree in the transverse mechanical momenta, while the nonlinear dependence on :math:`p_t` (and therefore, energy) is retained.
 
 For these elements, the user may specify the on-axis field or field gradient in one of two forms:
 
@@ -33,3 +36,4 @@ Examples demonstrating the use of soft-edge elements include:
 * :ref:`Acceleration by RF Cavities <examples-rfcavity>`
 * :ref:`Soft-edge solenoid <examples-solenoid-softedge>`
 * :ref:`Soft-Edge Quadrupole <examples-quadrupole-softedge>`
+* :ref:`Chromatic Soft-Edge Quadrupole <examples-quadrupole-softedge-chromatic>`
